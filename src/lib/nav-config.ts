@@ -22,7 +22,10 @@ import {
   FileText,
   Folder,
   Globe,
+  Handshake,
+  HeartHandshake,
   Home,
+  Layers,
   LayoutDashboard,
   LineChart,
   Link,
@@ -33,9 +36,12 @@ import {
   Search,
   Settings,
   Shield,
+  ShieldCheck,
   Trophy,
   User,
+  UserCheck,
   Users,
+  Zap,
 } from "lucide-react";
 import type { Permission } from "@/lib/auth/permissions";
 import {
@@ -129,7 +135,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   },
   {
     id: "learning-circle",
-    title: "Learning Circles",
+    title: "Learning Circle",
     href: "/dashboard/learning-circle",
     icon: BookOpen,
     section: "main",
@@ -199,15 +205,15 @@ export const NAV_ITEMS: readonly NavItem[] = [
   //   dynamicCheck: (roles) =>
   //     !roles.some((r) => r === ROLES.MENTOR || r === ROLES.COMPANY),
   // },
-  // {
-  //   id: "talent-pool",
-  //   title: "Talent Pool",
-  //   href: "/dashboard/talent-pool",
-  //   icon: UserCheck,
-  //   section: "main",
-  //   dynamicCheck: (roles) =>
-  //     roles.some((r) => r === ROLES.MENTOR || r === ROLES.COMPANY),
-  // },
+  {
+    id: "talent-pool",
+    title: "Talent Pool",
+    href: "/dashboard/talent-pool",
+    icon: UserCheck,
+    section: "main",
+    dynamicCheck: (roles) =>
+      roles.some((r) => r === ROLES.MENTOR || r === ROLES.COMPANY),
+  },
   {
     id: "intern-dashboard",
     title: "Intern",
@@ -287,6 +293,46 @@ export const NAV_ITEMS: readonly NavItem[] = [
     roles: [ROLES.COMPANY],
   },
   {
+    id: "company-admins",
+    title: "Co-Administrators",
+    href: "/dashboard/company/admin",
+    icon: ShieldCheck,
+    section: "management",
+    roles: [ROLES.COMPANY],
+  },
+  {
+    id: "company-feedback",
+    title: "Impact & Feedback",
+    href: "/dashboard/company/feedback",
+    icon: HeartHandshake,
+    section: "management",
+    roles: [ROLES.COMPANY],
+  },
+  {
+    id: "company-collaborations",
+    title: "Collaborations",
+    href: "/dashboard/company/collaborations",
+    icon: Handshake,
+    section: "management",
+    roles: [ROLES.COMPANY],
+  },
+  {
+    id: "company-ig-sponsorship",
+    title: "IG Sponsorships",
+    href: "/dashboard/company/ig-sponsorship",
+    icon: Zap,
+    section: "management",
+    roles: [ROLES.COMPANY],
+  },
+  {
+    id: "company-templates",
+    title: "Templates",
+    href: "/dashboard/company/event-templates",
+    icon: Layers,
+    section: "management",
+    roles: [ROLES.COMPANY],
+  },
+  {
     id: "campus-manage",
     title: "Campus",
     href: "/dashboard/campus/manage",
@@ -325,6 +371,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
       IG_ROLES.some((role) => userRoles.includes(role)) ||
       hasIgLeadRole(userRoles),
   },
+
   {
     id: "management",
     title: "Management",
@@ -367,9 +414,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     dynamicCheck: (roles) =>
       roles.includes(ROLES.ADMIN) ||
       roles.includes(ROLES.ASSOCIATE) ||
-      roles.includes(ROLES.IG_LEAD) ||
-      roles.includes(ROLES.ZONAL_CAMPUS_LEAD) ||
-      roles.includes(ROLES.DISTRICT_CAMPUS_LEAD),
+      roles.includes(ROLES.IG_LEAD),
   },
 
   // ── Bottom Section (all authenticated users) ──────────────

@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { formatTime } from "../lib/format-time";
 import type { CampusContentItem, CampusContentType } from "../schemas";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -70,7 +71,7 @@ export function CampusContentDetailDialog({
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Date">{item.date}</Field>
             <Field label="Time">
-              {item.time ? item.time.slice(0, 5) : "—"}
+              {item.time ? formatTime(item.time) : "—"}
             </Field>
           </div>
 

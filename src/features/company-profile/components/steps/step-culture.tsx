@@ -23,7 +23,8 @@ export function StepCulture() {
   const remotePolicy = watch("remote_policy");
 
   const [techInput, setTechInput] = useState("");
-  const techStack = useWatch({ name: "tech_stack" }) ?? [];
+  const rawTech = useWatch({ name: "tech_stack" });
+  const techStack: string[] = Array.isArray(rawTech) ? rawTech : [];
 
   function addTech() {
     const val = techInput.trim();
@@ -33,7 +34,8 @@ export function StepCulture() {
   }
 
   const [perkInput, setPerkInput] = useState("");
-  const perks = useWatch({ name: "perks" }) ?? [];
+  const rawPerks = useWatch({ name: "perks" });
+  const perks: string[] = Array.isArray(rawPerks) ? rawPerks : [];
 
   function addPerk() {
     const val = perkInput.trim();

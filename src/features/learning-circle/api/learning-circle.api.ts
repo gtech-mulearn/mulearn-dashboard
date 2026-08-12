@@ -232,6 +232,17 @@ export async function getSentInvites(circleId: string): Promise<Invite[]> {
   return response.response;
 }
 
+/** Revoke a sent invite as a circle lead/owner */
+export async function revokeInvite(
+  circleId: string,
+  linkId: string,
+): Promise<void> {
+  await respondToJoinRequest(circleId, {
+    link_id: linkId,
+    action: "reject",
+  });
+}
+
 /** Get current user's pending invites */
 export async function getMyPendingInvites(): Promise<Invite[]> {
   const response = await apiClient.get(
@@ -392,6 +403,14 @@ export async function rsvpMeeting(meetingId: string): Promise<void> {
   await apiClient.post(
     endpoints.learningCircle.meetingRsvp(meetingId),
     {},
+    EmptyResponseSchema,
+  );
+}
+
+/** Remove RSVP from meeting */
+export async function removeRsvpMeeting(meetingId: string): Promise<void> {
+  await apiClient.delete(
+    endpoints.learningCircle.meetingRsvp(meetingId),
     EmptyResponseSchema,
   );
 }

@@ -83,7 +83,10 @@ export function AppTopbar() {
             </div>
           </div>
         ) : data ? (
-          <div className="flex items-center gap-2 pr-1">
+          <Link
+            href="/dashboard/profile"
+            className="flex items-center gap-2 pr-1"
+          >
             <Avatar className="w-8 h-8 shrink-0">
               <AvatarImage src={displayImage} alt={displayName ?? ""} />
               <AvatarFallback className="text-xs font-semibold">
@@ -98,7 +101,7 @@ export function AppTopbar() {
                 {displaySubtitle}
               </span>
             </div>
-          </div>
+          </Link>
         ) : (
           <div className="flex items-center gap-2 pr-1">
             <Link

@@ -20,6 +20,8 @@ export const MentorApplicationSchema = z.object({
   preferred_ig_ids: z.array(z.string()).optional().default([]),
   org: z.string().nullable().optional(),
   company: z.string().nullable().optional(),
+  linkedin: z.string().nullable().optional(),
+  linkedin_url: z.string().nullable().optional(),
   verified_by: z.string().nullable().optional(),
   verified_at: z.string().nullable().optional(),
   verification_note: z.string().nullable().optional(),
@@ -58,8 +60,10 @@ function normaliseMentorStatus(raw: unknown): MentorStatusData {
       rejection_reason:
         typeof obj.rejection_reason === "string" ? obj.rejection_reason : null,
       mentor_id: typeof obj.mentor_id === "string" ? obj.mentor_id : null,
+      id: typeof obj.id === "string" ? obj.id : null,
       organization:
         typeof obj.organization === "string" ? obj.organization : null,
+      mentor_tier: typeof obj.mentor_tier === "string" ? obj.mentor_tier : null,
     };
   }
 
@@ -69,7 +73,9 @@ function normaliseMentorStatus(raw: unknown): MentorStatusData {
     verification_note: null,
     rejection_reason: null,
     mentor_id: null,
+    id: null,
     organization: null,
+    mentor_tier: null,
   };
 }
 
@@ -81,25 +87,70 @@ export type MentorStatusData = {
   verification_note?: string | null;
   rejection_reason?: string | null;
   mentor_id?: string | null;
+  id?: string | null;
   // Mentor's affiliated organization, shown in the mentor profile sidebar. Same
   // `GET /mentor/status/` response previously read via a separate `useMentorStatus`
   // hook; consolidated onto this canonical hook/key.
   organization?: string | null;
+  // Mentor tier (IG_MENTOR | COMPANY_MENTOR), used to build the pending-review
+  // card description (e.g. "Applying as IG_MENTOR on behalf of μLearn").
+  mentor_tier?: string | null;
 };
 
 // ─── GET/PATCH /profile/ and POST/PATCH /register/ response wrapper ───────────
 export const MentorApplicationResponseSchema = ApiResponseSchema(
-  MentorApplicationSchema,
+  z.preprocess((val: unknown) => {
+    if (
+      val &&
+      typeof val === "object" &&
+      "applications" in val &&
+      Array.isArray((val as Record<string, unknown>).applications) &&
+      (val as Record<string, unknown[]>).applications.length > 0
+    ) {
+      const v = val as Record<string, unknown>;
+      const apps = v.applications as Record<string, unknown>[];
+      // The backend creates new applications on updates. The array is chronologically
+      // ordered, so the LAST item is always the latest, most up-to-date application.
+      const app = apps[apps.length - 1];
+      return {
+        ...v,
+        ...app,
+        id: app.id, // Ensure the application ID overrides the profile ID
+      };
+    }
+    return val;
+  }, MentorApplicationSchema),
 );
 
 // ─── Form values for POST/PATCH /register/ ───────────────────────────────────
 // `expertise` is collected as chips (an array) in the UI; it is joined to a
 // comma-separated string at the API boundary (see MentorProfileWrite).
 export const OnboardingFormSchema = z.object({
+  mentor_tier: z.string().optional(),
+  // `company` is the human-readable display name shown in the form.
+  company: z.string().optional(),
+  // `org` is the UUID sent to the API as `"org": "<uuid>"`. Optional because
+  // pending-review (custom) organisations don't have a UUID yet.
+  org: z.string().optional(),
   about: z.string().trim().min(50, "About must be at least 50 characters"),
   expertise: z
     .array(z.string())
     .min(3, "Please add at least three areas of expertise"),
+  linkedin_url: z
+    .string()
+    .optional()
+    .refine(
+      (val) =>
+        !val ||
+        val === "" ||
+        /^https:\/\/(www\.)?linkedin\.com\/(in|pub|company)\/[a-zA-Z0-9_-]+\/?/.test(
+          val,
+        ),
+      {
+        message:
+          "Enter a valid LinkedIn URL (e.g. https://www.linkedin.com/in/username)",
+      },
+    ),
   reason: z.string().trim().min(30, "Reason must be at least 30 characters"),
   hours: z.number().min(0).optional(),
   preferred_ig_ids: z
@@ -111,9 +162,14 @@ export type OnboardingFormValues = z.infer<typeof OnboardingFormSchema>;
 // ─── Wire payload for register/profile endpoints ──────────────────────────────
 // Derived from the form type, but with `expertise` as the comma-joined string
 // the backend stores (the forms collect it as chips and join before sending).
-// Keeping it tied to OnboardingFormValues avoids drift between form and wire.
-export type MentorProfileWrite = Omit<OnboardingFormValues, "expertise"> & {
+// `company` is stripped — the API only understands `org` (the UUID).
+// `linkedin_url` is mapped to `linkedin` to match the API expectation.
+export type MentorProfileWrite = Omit<
+  OnboardingFormValues,
+  "expertise" | "company" | "linkedin_url"
+> & {
   expertise: string;
+  linkedin?: string;
 };
 
 // ─── UI state derived from status ─────────────────────────────────────────────

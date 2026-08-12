@@ -10,6 +10,11 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  await requireRole([...MANAGEMENT_ROLES, ROLES.IG_LEAD]);
+  await requireRole([
+    ...MANAGEMENT_ROLES,
+    ROLES.IG_LEAD,
+    ROLES.ZONAL_CAMPUS_LEAD,
+    ROLES.DISTRICT_CAMPUS_LEAD,
+  ]);
   return <WeeklyTwitchesView />;
 }

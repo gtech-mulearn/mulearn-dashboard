@@ -11,9 +11,15 @@ import {
   ArrowLeft,
   BookOpen,
   Briefcase,
+  Calendar,
   Clock,
   ExternalLink,
   FileText,
+  Github,
+  Globe,
+  Handshake,
+  Instagram,
+  Linkedin,
   Sparkles,
   Twitter,
   Users,
@@ -21,10 +27,11 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import type { AnchorHTMLAttributes } from "react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { IGIcon, useInterestGroupDetail } from "@/features/interest-groups";
-import { ImpactProjectsSection } from "@/features/manage-ig";
 import { PersonCard } from "./person-card";
 
 export function InterestGroupDetailClient() {
@@ -84,6 +91,17 @@ export function InterestGroupDetailClient() {
   }
 
   // ── Helpers ───────────────────────────────────────────────
+  const officeHoursSessions = (group.media_content_links ?? []).filter(
+    (link) =>
+      link.content_type === "office_hours" && link.status !== "completed",
+  );
+
+  const OFFICE_HOURS_STATUS_COLORS: Record<string, string> = {
+    upcoming: "app-status-applied",
+    ongoing: "app-status-accepted",
+    completed: "ig-status-cancelled",
+  };
+
   const hasContent =
     group.about ||
     group.prerequisites?.length ||
@@ -94,7 +112,9 @@ export function InterestGroupDetailClient() {
     group.leads?.length ||
     group.thinktank ||
     group.office_hours ||
-    group.resource;
+    group.resource ||
+    officeHoursSessions.length ||
+    group.community_partners?.length;
 
   return (
     <div className="w-full space-y-8 py-6 sm:py-8">
@@ -422,6 +442,68 @@ export function InterestGroupDetailClient() {
               </div>
             </div>
 
+            {officeHoursSessions.length > 0 && (
+              <div className="overflow-hidden rounded-3xl border border-border/50 bg-card shadow-sm">
+                <div className="border-b border-border/50 bg-muted/30 px-4 sm:px-6 py-3 sm:py-4">
+                  <h3 className="text-base sm:text-lg font-bold text-foreground">
+                    Office Hours Sessions
+                  </h3>
+                </div>
+                <div className="p-4 sm:p-6 space-y-3">
+                  {officeHoursSessions.map((session) => (
+                    <div
+                      key={session.id}
+                      className="flex items-start gap-3 rounded-xl border border-border/60 bg-muted/20 p-3"
+                    >
+                      <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-warning/10 text-warning">
+                        <Clock className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1 space-y-1.5">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-sm font-semibold text-foreground line-clamp-2">
+                            {session.title}
+                          </p>
+                          {session.status && (
+                            <span
+                              className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-medium capitalize ${
+                                OFFICE_HOURS_STATUS_COLORS[session.status] ?? ""
+                              }`}
+                            >
+                              {session.status}
+                            </span>
+                          )}
+                        </div>
+                        {session.date && (
+                          <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Calendar className="h-3 w-3" />
+                            {session.date}
+                          </p>
+                        )}
+                        {session.link && (
+                          <a
+                            href={session.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            Join Meeting
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  <Link
+                    href="/dashboard/weekly-twitches"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-foreground transition-all hover:border-primary/50 hover:text-primary"
+                  >
+                    View All Office Hours
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+              </div>
+            )}
+
             {group.thinktank && group.thinktank.length > 0 && (
               <div className="overflow-hidden rounded-3xl border border-border/50 bg-card shadow-sm">
                 <div className="border-b border-border/50 bg-muted/30 px-4 sm:px-6 py-3 sm:py-4">
@@ -465,6 +547,124 @@ export function InterestGroupDetailClient() {
                 </div>
               </div>
             )}
+
+            {/* Community Partners */}
+            {group.community_partners &&
+              group.community_partners.length > 0 && (
+                <div className="overflow-hidden rounded-3xl border border-border/50 bg-card shadow-sm">
+                  <div className="border-b border-border/50 bg-muted/30 px-4 sm:px-6 py-3 sm:py-4">
+                    <div className="flex items-center gap-2">
+                      <Handshake className="h-4 w-4 text-primary" />
+                      <h3 className="text-base sm:text-lg font-bold text-foreground">
+                        Community Partners
+                      </h3>
+                    </div>
+                  </div>
+                  <div className="p-4 sm:p-6 space-y-3">
+                    {group.community_partners.map((partner) => {
+                      const partnerHref = partner.website || undefined;
+                      const PartnerLink = partnerHref
+                        ? (props: AnchorHTMLAttributes<HTMLAnchorElement>) => (
+                            <a
+                              href={partnerHref}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              {...props}
+                            />
+                          )
+                        : undefined;
+                      const cardContent = (
+                        <div className="flex items-start gap-3">
+                          {partner.logo_key ? (
+                            <Image
+                              src={partner.logo_key}
+                              alt={partner.name}
+                              width={40}
+                              height={40}
+                              unoptimized
+                              className="h-10 w-10 shrink-0 rounded-xl object-contain border border-border/60 bg-background p-1"
+                            />
+                          ) : (
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-sm">
+                              {partner.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-foreground truncate">
+                              {partner.name}
+                            </p>
+                            {partner.description && (
+                              <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                                {partner.description}
+                              </p>
+                            )}
+                            {(partner.linkedin ||
+                              partner.github ||
+                              partner.website ||
+                              partner.instagram) && (
+                              <div className="flex items-center gap-2 mt-1.5">
+                                {partner.website && (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-2 py-0.5 text-[10px] font-medium text-primary">
+                                    <Globe className="h-3 w-3" />
+                                    Website
+                                  </span>
+                                )}
+                                {partner.linkedin && (
+                                  <a
+                                    href={partner.linkedin}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label={`${partner.name} LinkedIn`}
+                                    className="text-muted-foreground hover:text-[#0a66c2] transition-colors"
+                                  >
+                                    <Linkedin className="h-3.5 w-3.5" />
+                                  </a>
+                                )}
+                                {partner.github && (
+                                  <a
+                                    href={partner.github}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label={`${partner.name} GitHub`}
+                                    className="text-muted-foreground hover:text-foreground transition-colors"
+                                  >
+                                    <Github className="h-3.5 w-3.5" />
+                                  </a>
+                                )}
+                                {partner.instagram && (
+                                  <a
+                                    href={partner.instagram}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label={`${partner.name} Instagram`}
+                                    className="text-muted-foreground hover:text-pink-500 transition-colors"
+                                  >
+                                    <Instagram className="h-3.5 w-3.5" />
+                                  </a>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                      return (
+                        <Card
+                          key={partner.id}
+                          className="rounded-2xl border border-border/60 bg-muted/20 p-3 transition-all hover:border-primary/30 hover:bg-card"
+                        >
+                          {PartnerLink ? (
+                            <PartnerLink className="block text-left hover:opacity-80 transition-opacity">
+                              {cardContent}
+                            </PartnerLink>
+                          ) : (
+                            cardContent
+                          )}
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
             {/* Support / Help Box */}
             <div className="rounded-3xl bg-linear-to-br from-muted/50 to-muted/10 p-4 sm:p-6 border border-border/50 text-center">

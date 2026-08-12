@@ -90,7 +90,10 @@ export async function GET(request: NextRequest) {
 
     cookieStore.set("accessToken", newAccessToken, {
       httpOnly: false,
-      expires: new Date(Date.now() + 86_400_000),
+      // Must match authStore.setTokens' 15-minute accessToken lifetime —
+      // otherwise the cookie outlives the JWT it holds and browsers keep
+      // presenting an already-expired token until this cookie itself expires.
+      expires: new Date(Date.now() + 15 * 60 * 1000),
       secure: isProduction,
       sameSite: "lax",
       path: "/",

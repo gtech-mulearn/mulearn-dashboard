@@ -25,7 +25,7 @@ const baseCookieOptions = {
 };
 
 export const authStore = {
-  setTokens: async (accessToken: string, refreshToken: string) => {
+  setTokens: (accessToken: string, refreshToken: string) => {
     Cookies.set(ACCESS_TOKEN_KEY, accessToken, {
       ...baseCookieOptions,
       expires: 15 / (24 * 60), // 15 minutes (JWT lifetime)
@@ -62,11 +62,17 @@ export const authStore = {
    */
   isAuthenticated: () => Cookies.get(IS_AUTHENTICATED_KEY) === "true",
 
-  clearTokens: async () => {
+  clearTokens: () => {
     Cookies.remove(ACCESS_TOKEN_KEY, { path: "/" });
     Cookies.remove(REFRESH_TOKEN_KEY, { path: "/" });
     Cookies.remove(IS_AUTHENTICATED_KEY, { path: "/" });
     Cookies.remove(TEMP_TOKEN_KEY, { path: "/" });
+
+    // Wipe form drafts that are persisted to localStorage so they don't bleed
+    // over to the next user who logs in on the same browser.
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("mentor-onboarding-draft");
+    }
   },
 
   clearTempToken: async () => {

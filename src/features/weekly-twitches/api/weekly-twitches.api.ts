@@ -23,7 +23,7 @@ export interface ListParams {
   pageIndex: number;
   perPage: number;
   search?: string;
-  status?: string;
+  status?: string | string[];
   sortBy?: string;
   zone?: string;
 }
@@ -40,7 +40,13 @@ function buildQuery(params: ListParams): string {
     pageIndex: String(params.pageIndex),
   });
   if (params.search?.trim()) q.set("search", params.search.trim());
-  if (params.status) q.set("status", params.status);
+  if (params.status) {
+    for (const s of Array.isArray(params.status)
+      ? params.status
+      : [params.status]) {
+      q.append("status", s);
+    }
+  }
   if (params.zone) q.set("zone", params.zone);
   if (params.sortBy?.trim()) q.set("sortBy", params.sortBy.trim());
   return q.toString();

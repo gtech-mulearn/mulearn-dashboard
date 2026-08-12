@@ -28,7 +28,7 @@ export function OfficeHoursCards() {
     pageIndex: page,
     perPage: 12,
     search,
-    status: status || undefined,
+    status: status || "ongoing,upcoming",
   });
 
   const items = data?.data ?? [];
@@ -61,7 +61,6 @@ export function OfficeHoursCards() {
               <SelectItem value="all">All statuses</SelectItem>
               <SelectItem value="upcoming">Upcoming</SelectItem>
               <SelectItem value="ongoing">Ongoing</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -107,15 +106,17 @@ export function OfficeHoursCards() {
       )}
 
       {/* Pagination */}
-      <Pagination
-        currentPage={page}
-        totalPages={totalPages}
-        perPage={12}
-        totalCount={data?.pagination.count}
-        currentPageCount={items.length}
-        handlePreviousClick={() => setPage((p) => p - 1)}
-        handleNextClick={() => setPage((p) => p + 1)}
-      />
+      {items.length > 0 && (
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          perPage={12}
+          totalCount={data?.pagination.count}
+          currentPageCount={items.length}
+          handlePreviousClick={() => setPage((p) => p - 1)}
+          handleNextClick={() => setPage((p) => p + 1)}
+        />
+      )}
 
       {/* Detail dialog */}
       <OfficeHoursDetailDialog

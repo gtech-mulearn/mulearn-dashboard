@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,8 +57,12 @@ export function OfficeHoursForm({ isOpen, onClose, initialData }: Props) {
   const { create, update } = useOfficeHoursMutations();
   const { data: igListData } = useInterestGroupsList();
   const [_posterFile, setPosterFile] = useState<File | null>(null);
-  const igOptions = (igListData?.response?.interestGroup ?? []).map((ig) => ({
-    value: ig.code ?? ig.id,
+  const igList = useMemo(
+    () => igListData?.response?.interestGroup ?? [],
+    [igListData],
+  );
+  const igOptions = igList.map((ig) => ({
+    value: ig.id,
     label: ig.name,
   }));
 
@@ -77,6 +81,11 @@ export function OfficeHoursForm({ isOpen, onClose, initialData }: Props) {
     if (!isOpen) return;
     setPosterFile(null);
     if (initialData) {
+      // interest_groups comes back from the API as IG names, but the
+      // multiselect (and the write payload) works with IG ids.
+      const selectedIds = (initialData.interest_groups ?? [])
+        .map((name) => igList.find((ig) => ig.name === name)?.id)
+        .filter((id): id is string => Boolean(id));
       reset({
         title: initialData.title,
         date: isoToInputDate(initialData.date),
@@ -85,12 +94,12 @@ export function OfficeHoursForm({ isOpen, onClose, initialData }: Props) {
         designation: initialData.designation ?? "",
         description: initialData.description ?? "",
         link: initialData.link ?? "",
-        interest_groups: initialData.interest_groups ?? [],
+        interest_groups: selectedIds,
       });
     } else {
       reset(DEFAULTS);
     }
-  }, [isOpen, initialData, reset]);
+  }, [isOpen, initialData, reset, igList]);
 
   const onSubmit = async (values: OfficeHoursWrite) => {
     if (initialData) {
@@ -172,7 +181,9 @@ export function OfficeHoursForm({ isOpen, onClose, initialData }: Props) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1">
-              <p className="text-sm font-medium text-foreground">Performer</p>
+              <p className="text-sm font-medium text-foreground">
+                Performer <span className="text-destructive">*</span>
+              </p>
               <Input
                 className="rounded-xl border-border bg-background"
                 placeholder="e.g. Alice Thomas"
@@ -186,7 +197,9 @@ export function OfficeHoursForm({ isOpen, onClose, initialData }: Props) {
             </div>
 
             <div className="space-y-1">
-              <p className="text-sm font-medium text-foreground">Designation</p>
+              <p className="text-sm font-medium text-foreground">
+                Designation <span className="text-destructive">*</span>
+              </p>
               <Input
                 className="rounded-xl border-border bg-background"
                 placeholder="e.g. Senior Developer"
@@ -201,13 +214,20 @@ export function OfficeHoursForm({ isOpen, onClose, initialData }: Props) {
           </div>
 
           <div className="space-y-1">
-            <p className="text-sm font-medium text-foreground">Description</p>
+            <p className="text-sm font-medium text-foreground">
+              Description <span className="text-destructive">*</span>
+            </p>
             <Textarea
               className="rounded-xl border-border bg-background"
               placeholder="Session description..."
               rows={3}
               {...register("description")}
             />
+            {errors.description && (
+              <p className="text-xs text-destructive">
+                {errors.description.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-1">
@@ -226,7 +246,7 @@ export function OfficeHoursForm({ isOpen, onClose, initialData }: Props) {
 
           <div className="space-y-1">
             <p className="text-sm font-medium text-foreground">
-              Interest Groups
+              Interest Groups <span className="text-destructive">*</span>
             </p>
             <Controller
               control={control}
@@ -241,6 +261,11 @@ export function OfficeHoursForm({ isOpen, onClose, initialData }: Props) {
                 />
               )}
             />
+            {errors.interest_groups && (
+              <p className="text-xs text-destructive">
+                {errors.interest_groups.message}
+              </p>
+            )}
           </div>
 
           {/* TODO: Poster upload disabled — backend conflict */}

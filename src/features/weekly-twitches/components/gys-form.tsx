@@ -192,7 +192,9 @@ export function GysForm({ isOpen, onClose, initialData }: Props) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1">
-              <p className="text-sm font-medium text-foreground">Performer</p>
+              <p className="text-sm font-medium text-foreground">
+                Performer <span className="text-destructive">*</span>
+              </p>
               <Input
                 className="rounded-xl border-border bg-background"
                 placeholder="e.g. Anjali Menon"
@@ -206,7 +208,9 @@ export function GysForm({ isOpen, onClose, initialData }: Props) {
             </div>
 
             <div className="space-y-1">
-              <p className="text-sm font-medium text-foreground">Designation</p>
+              <p className="text-sm font-medium text-foreground">
+                Designation <span className="text-destructive">*</span>
+              </p>
               <Input
                 className="rounded-xl border-border bg-background"
                 placeholder="e.g. Product Manager, Zoho"
@@ -221,13 +225,20 @@ export function GysForm({ isOpen, onClose, initialData }: Props) {
           </div>
 
           <div className="space-y-1">
-            <p className="text-sm font-medium text-foreground">Description</p>
+            <p className="text-sm font-medium text-foreground">
+              Description <span className="text-destructive">*</span>
+            </p>
             <Textarea
               className="rounded-xl border-border bg-background"
               placeholder="Session description..."
               rows={3}
               {...register("description")}
             />
+            {errors.description && (
+              <p className="text-xs text-destructive">
+                {errors.description.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-1">

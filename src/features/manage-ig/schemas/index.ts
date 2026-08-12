@@ -1,4 +1,19 @@
 export type {
+  CommunityPartner,
+  CommunityPartnerDetailResponse,
+  CommunityPartnerListResponse,
+  CommunityPartnerWrite,
+  PartnerIgStub,
+} from "./community-partner.schema";
+export {
+  CommunityPartnerDetailResponseSchema,
+  CommunityPartnerListResponseSchema,
+  CommunityPartnerMutationResponseSchema,
+  CommunityPartnerSchema,
+  CommunityPartnerWriteSchema,
+  PartnerIgStubSchema,
+} from "./community-partner.schema";
+export type {
   ImpactProject,
   ImpactProjectCreate,
   ImpactProjectLink,

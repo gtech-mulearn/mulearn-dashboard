@@ -357,67 +357,97 @@ export const MentorHomeSummaryResponseSchema = ApiResponseSchema(
 // Company Home Summary (/dashboard/company/home-summary/)
 // ============================================
 
-export const CompanyQuickStatsSchema = z.object({
-  jobs_posted: z.number().catch(0),
-  total_views: z.number().catch(0),
-  applications: z.number().catch(0),
-  hired: z.number().catch(0),
-});
+export const CompanyQuickStatsSchema = z
+  .object({
+    jobs_posted: z.coerce.number().catch(0).default(0),
+    total_views: z.coerce.number().catch(0).default(0),
+    applications: z.coerce.number().catch(0).default(0),
+    hired: z.coerce.number().catch(0).default(0),
+  })
+  .passthrough();
 export type CompanyQuickStats = z.infer<typeof CompanyQuickStatsSchema>;
 
-export const LevelDistributionItemSchema = z.object({
-  level_id: z.string(),
-  level_name: z.string(),
-  level_order: z.number(),
-  count: z.number(),
-  percentage: z.number(),
-});
+export const LevelDistributionItemSchema = z
+  .object({
+    level_id: z.string().optional().nullable(),
+    level_name: z.string().optional().nullable(),
+    level_order: z.coerce.number().optional().default(0),
+    count: z.coerce.number().optional().default(0),
+    percentage: z.coerce.number().optional().default(0),
+  })
+  .passthrough();
 export type LevelDistributionItem = z.infer<typeof LevelDistributionItemSchema>;
 
-export const TalentPoolTopIgSchema = z.object({
-  ig_id: z.string(),
-  name: z.string(),
-  learner_count: z.number(),
-  total_karma: z.number(),
-});
+export const TalentPoolTopIgSchema = z
+  .object({
+    ig_id: z.string().optional().nullable(),
+    name: z.string().optional().nullable(),
+    learner_count: z.coerce.number().optional().default(0),
+    total_karma: z.coerce.number().optional().default(0),
+  })
+  .passthrough();
 export type TalentPoolTopIg = z.infer<typeof TalentPoolTopIgSchema>;
 
-export const CompanyTalentPoolSchema = z.object({
-  total_learners: z.number(),
-  level_distribution: z.array(LevelDistributionItemSchema),
-  top_interest_groups: z.array(TalentPoolTopIgSchema),
-});
+export const CompanyTalentPoolSchema = z
+  .object({
+    total_learners: z.coerce.number().catch(0).default(0),
+    level_distribution: z
+      .array(LevelDistributionItemSchema)
+      .optional()
+      .default([]),
+    top_interest_groups: z.array(TalentPoolTopIgSchema).optional().default([]),
+  })
+  .passthrough();
 export type CompanyTalentPool = z.infer<typeof CompanyTalentPoolSchema>;
 
-export const CompanyStatCardSchema = z.object({
-  key: z.string(),
-  label: z.string(),
-  value: z.number(),
-  delta: z.number(),
-  delta_type: z.string(),
-  period: z.string(),
-});
+export const CompanyStatCardSchema = z
+  .object({
+    key: z.string(),
+    label: z.string(),
+    value: z.coerce.number().catch(0).default(0),
+    delta: z.coerce.number().catch(0).default(0),
+    delta_type: z.string().optional().default("increase"),
+    period: z.string().optional().default("30d"),
+  })
+  .passthrough();
 export type CompanyStatCard = z.infer<typeof CompanyStatCardSchema>;
 
-export const CompanyHomeSummaryDataSchema = z.object({
-  company: z.object({
-    id: z.string(),
-    name: z.string(),
-    slug: z.string(),
-    status: z.string(),
-    logo: z.string().nullable(),
-  }),
-  quick_stats: CompanyQuickStatsSchema,
-  stat_cards: z.array(CompanyStatCardSchema),
-  talent_pool: CompanyTalentPoolSchema,
-});
+export const CompanyHomeSummaryDataSchema = z
+  .object({
+    company: z
+      .object({
+        id: z.string().optional().nullable(),
+        name: z.string().optional().nullable(),
+        slug: z.string().optional().nullable(),
+        status: z.string().optional().nullable(),
+        logo: z.string().nullable().optional(),
+      })
+      .passthrough(),
+    quick_stats: CompanyQuickStatsSchema.optional().default({
+      jobs_posted: 0,
+      total_views: 0,
+      applications: 0,
+      hired: 0,
+    }),
+    stat_cards: z.array(CompanyStatCardSchema).optional().default([]),
+    talent_pool: CompanyTalentPoolSchema.optional().default({
+      total_learners: 0,
+      level_distribution: [],
+      top_interest_groups: [],
+    }),
+  })
+  .passthrough();
 export type CompanyHomeSummaryData = z.infer<
   typeof CompanyHomeSummaryDataSchema
 >;
 
-export const CompanyHomeSummaryResponseSchema = ApiResponseSchema(
+export const CompanyHomeSummaryResponseSchema = z.union([
+  ApiResponseSchema(CompanyHomeSummaryDataSchema),
+  z.object({
+    response: CompanyHomeSummaryDataSchema,
+  }),
   CompanyHomeSummaryDataSchema,
-);
+]);
 
 // ============================================
 // Learner Streak (/dashboard/home/learner/streak/)

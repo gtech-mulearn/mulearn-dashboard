@@ -14,20 +14,35 @@ export const LEARNER_APPLICATIONS_KEYS = {
   list: (params?: {
     search?: string;
     sortBy?: string;
+    sort_by?: string;
     pageIndex?: number;
+    page?: number;
     perPage?: number;
+    per_page?: number;
   }) => [...LEARNER_APPLICATIONS_KEYS.all, "list", params ?? {}] as const,
 };
 
 export function useLearnerApplications(params?: {
   search?: string;
   sortBy?: string;
+  sort_by?: string;
   pageIndex?: number;
+  page?: number;
   perPage?: number;
+  per_page?: number;
 }) {
+  const normalizedParams = params
+    ? {
+        search: params.search,
+        sort_by: params.sort_by ?? params.sortBy,
+        page: params.page ?? params.pageIndex,
+        per_page: params.per_page ?? params.perPage,
+      }
+    : undefined;
+
   return useQuery({
     queryKey: LEARNER_APPLICATIONS_KEYS.list(params),
-    queryFn: () => fetchLearnerApplications(params),
+    queryFn: () => fetchLearnerApplications(normalizedParams),
     refetchOnWindowFocus: false,
   });
 }

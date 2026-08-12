@@ -9,6 +9,18 @@ import { ApiResponseSchema } from "@/lib/schemas/api-response";
 
 export { ApiResponseSchema };
 
+// ─── Inline community partner stub (returned alongside IG detail) ─────────────
+const CommunityPartnerStubSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  logo_key: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  linkedin: z.string().nullable().optional(),
+  github: z.string().nullable().optional(),
+  website: z.string().nullable().optional(),
+  instagram: z.string().nullable().optional(),
+});
+
 function withCacheBust(
   url: string | null | undefined,
   version: string | null | undefined,
@@ -198,6 +210,30 @@ const InterestGroupDetailBaseSchema = z.object({
           .nullable(),
       }),
     )
+    .optional()
+    .nullable()
+    .catch(undefined),
+
+  // Linked media content (e.g. Office Hours sessions) for this IG
+  media_content_links: z
+    .array(
+      z.object({
+        id: z.string(),
+        media_content_id: z.string(),
+        content_type: z.string(),
+        title: z.string(),
+        date: z.string().optional().nullable(),
+        link: z.string().optional().nullable(),
+        status: z.string().optional().nullable(),
+      }),
+    )
+    .optional()
+    .nullable()
+    .catch(undefined),
+
+  // Linked community partners for this IG (from patch_3_8_2026.md § 5b)
+  community_partners: z
+    .array(CommunityPartnerStubSchema)
     .optional()
     .nullable()
     .catch(undefined),

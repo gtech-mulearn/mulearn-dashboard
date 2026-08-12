@@ -16,9 +16,9 @@ import { chipColor } from "@/lib/chip-colors";
 interface CompanyCultureSectionProps {
   cultureText?: string | null;
   /** @mock tracked: #company-profile-extended */
-  techStack: string[];
+  techStack?: string[] | null;
   /** @mock tracked: #company-profile-extended */
-  perks: string[];
+  perks?: string[] | null;
 }
 
 export function CompanyCultureSection({
@@ -26,7 +26,11 @@ export function CompanyCultureSection({
   techStack,
   perks,
 }: CompanyCultureSectionProps) {
-  const hasContent = cultureText || techStack.length > 0 || perks.length > 0;
+  const techStackArray = techStack || [];
+  const perksArray = perks || [];
+
+  const hasContent =
+    cultureText || techStackArray.length > 0 || perksArray.length > 0;
   if (!hasContent) return null;
 
   return (
@@ -51,14 +55,14 @@ export function CompanyCultureSection({
         )}
 
         {/* Tech Stack */}
-        {techStack.length > 0 && (
+        {techStackArray.length > 0 && (
           <div>
             <div className="mb-2.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               <Code2 className="size-3.5" />
               Tech Stack
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {techStack.map((tech) => (
+              {techStackArray.map((tech) => (
                 <span
                   key={tech}
                   className={`rounded-full px-3 py-1 text-xs font-medium ${chipColor(tech)}`}
@@ -71,14 +75,14 @@ export function CompanyCultureSection({
         )}
 
         {/* Perks */}
-        {perks.length > 0 && (
+        {perksArray.length > 0 && (
           <div>
             <div className="mb-2.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               <Layers className="size-3.5" />
               Perks &amp; Benefits
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {perks.map((perk) => (
+              {perksArray.map((perk) => (
                 <span
                   key={perk}
                   className={`rounded-full px-3 py-1 text-xs font-medium ${chipColor(perk)}`}

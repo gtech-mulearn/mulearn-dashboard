@@ -62,8 +62,7 @@ export function AppSidebar() {
 
   const isActive = useCallback(
     (href: string) => {
-      if (href === "/dashboard") return pathname === "/dashboard";
-      return pathname.startsWith(href);
+      return pathname === href;
     },
     [pathname],
   );

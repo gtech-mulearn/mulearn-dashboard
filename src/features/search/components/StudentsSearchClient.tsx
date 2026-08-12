@@ -1,5 +1,7 @@
 "use client";
 
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { StateDisplay } from "@/components/ui/state-display";
 import { useInfiniteScroll, useSearchUsers } from "../hooks";
@@ -14,6 +16,10 @@ const searchTabs = [
 ];
 
 export function StudentsSearchClient() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const {
     users,
     isLoading,
@@ -23,7 +29,14 @@ export function StudentsSearchClient() {
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-  } = useSearchUsers();
+  } = useSearchUsers(searchParams.get("q") ?? "");
+
+  useEffect(() => {
+    const url = searchQuery
+      ? `${pathname}?q=${encodeURIComponent(searchQuery)}`
+      : pathname;
+    router.replace(url, { scroll: false });
+  }, [searchQuery, pathname, router]);
 
   const loadMoreRef = useInfiniteScroll({
     onLoadMore: fetchNextPage,

@@ -25,7 +25,7 @@ export function QuickActionRow({
       id: "my-circles",
       label: "My Circles",
       sub: `${circleCount} active circle${circleCount !== 1 ? "s" : ""}`,
-      href: "/dashboard/learning-circle",
+      href: "/dashboard/learning-circle?filter=joined",
       icon: Users,
       iconBg: "bg-brand-purple/10",
       iconColor: "text-brand-purple",

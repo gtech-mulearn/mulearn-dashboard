@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { CustomDateTimePicker } from "@/components/ui/custom-datetime-picker";
 import {
   Dialog,
   DialogContent,
@@ -234,6 +235,35 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
 
   const startDatetimeValue = watch("start_datetime");
   const minEndDatetime = startDatetimeValue || undefined;
+  useEffect(() => {
+    if (!open) return;
+
+    const now = new Date();
+
+    const start = new Date(now.getTime() + 15 * 60 * 1000);
+    const startDatetime = new Date(
+      start.getTime() - start.getTimezoneOffset() * 60000,
+    )
+      .toISOString()
+      .slice(0, 16);
+
+    const end = new Date(start.getTime() + 60 * 60 * 1000);
+    const endDatetime = new Date(
+      end.getTime() - end.getTimezoneOffset() * 60000,
+    )
+      .toISOString()
+      .slice(0, 16);
+
+    setValue("start_datetime", startDatetime, {
+      shouldDirty: false,
+      shouldValidate: false,
+    });
+
+    setValue("end_datetime", endDatetime, {
+      shouldDirty: false,
+      shouldValidate: false,
+    });
+  }, [open, setValue]);
 
   // Auto-select the first available cluster when options load (replaces hardcoded "coder" default)
   useEffect(() => {
@@ -1270,9 +1300,15 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                         Start datetime{" "}
                         <span className="text-destructive">*</span>
                       </p>
-                      <Input
-                        type="datetime-local"
-                        {...register("start_datetime")}
+                      <Controller
+                        control={control}
+                        name="start_datetime"
+                        render={({ field }) => (
+                          <CustomDateTimePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                          />
+                        )}
                       />
                       {errors.start_datetime?.message ? (
                         <p className="text-xs text-destructive">
@@ -1284,10 +1320,20 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       <p className="text-sm font-medium text-foreground">
                         End datetime <span className="text-destructive">*</span>
                       </p>
-                      <Input
-                        type="datetime-local"
-                        min={minEndDatetime}
-                        {...register("end_datetime")}
+                      <Controller
+                        control={control}
+                        name="end_datetime"
+                        render={({ field }) => (
+                          <CustomDateTimePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                            minDate={
+                              minEndDatetime
+                                ? new Date(minEndDatetime)
+                                : undefined
+                            }
+                          />
+                        )}
                       />
                       {errors.end_datetime?.message ? (
                         <p className="text-xs text-destructive">

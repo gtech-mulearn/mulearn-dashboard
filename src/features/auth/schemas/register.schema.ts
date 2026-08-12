@@ -110,6 +110,9 @@ export const CompanySignupRequestSchema = z.object({
     .min(1, "Company name is required")
     .max(75, "Company name must be at most 75 characters"),
   description: z.string().min(1, "Description is required"),
+  verification_document_url: z
+    .string()
+    .min(1, "Verification document URL is required"),
   logo: z.string().url().optional().or(z.literal("")),
   short_pitch: z.string().optional(),
   industry_sector: z.string().optional(),
@@ -144,9 +147,9 @@ export const CompanySignupRequestSchema = z.object({
   remote_policy: z.string().optional(),
   culture_text: z.string().optional(),
   tech_stack: z.array(z.string()).optional(),
-  perks: z.array(z.string()).optional(),
-  testimonials: z.array(z.unknown()).optional(),
-  gallery: z.array(z.unknown()).optional(),
+  perks: z.string().optional(),
+  testimonials: z.string().optional(),
+  gallery: z.array(z.string()).optional(),
 });
 
 /**
@@ -164,8 +167,12 @@ export const CompanySignupAuthSchema = z
   .passthrough();
 
 export const CompanySignupResponseDataSchema = z.object({
-  name: z.string(),
-  description: z.string(),
+  id: z.string().optional(),
+  name: z.string().optional(),
+  slug: z.string().optional(),
+  status: z.string().optional(),
+  description: z.string().optional(),
+  verification_document_url: z.string().nullable().optional(),
   logo: z.string().nullable().optional(),
   short_pitch: z.string().nullable().optional(),
   industry_sector: z.string().nullable().optional(),
@@ -184,17 +191,27 @@ export const CompanySignupResponseDataSchema = z.object({
   remote_policy: z.string().nullable().optional(),
   culture_text: z.string().nullable().optional(),
   tech_stack: z.array(z.string()).nullable().optional(),
-  perks: z.array(z.string()).nullable().optional(),
-  testimonials: z.array(z.unknown()).nullable().optional(),
-  gallery: z.array(z.unknown()).nullable().optional(),
+  perks: z
+    .union([z.string(), z.array(z.string())])
+    .nullable()
+    .optional(),
+  testimonials: z
+    .union([z.string(), z.array(z.unknown())])
+    .nullable()
+    .optional(),
+  gallery: z.array(z.string()).nullable().optional(),
+  created_at: z.string().optional(),
 });
 
 export const CompanySignupResponseSchema = z
   .object({
-    hasError: z.boolean(),
-    statusCode: z.number(),
-    message: z.record(z.string(), z.unknown()).optional(),
-    response: CompanySignupResponseDataSchema,
+    hasError: z.boolean().optional(),
+    statusCode: z.number().optional(),
+    general_message: z.string().optional(),
+    message: z
+      .union([z.record(z.string(), z.unknown()), z.string(), z.null()])
+      .optional(),
+    response: CompanySignupResponseDataSchema.optional(),
   })
   .passthrough();
 

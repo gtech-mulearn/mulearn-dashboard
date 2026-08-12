@@ -2,13 +2,18 @@ import { ArrowUpRight, MapPin, Trophy, Users } from "lucide-react";
 import Link from "next/link";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { pickCardGradient } from "@/lib/card-gradients";
-import type { CampusSearchResult } from "../schemas";
+import type { CampusSearchResult, SearchType } from "../schemas";
 
 interface CampusSearchCardProps {
   campus: CampusSearchResult;
+  searchType?: SearchType;
 }
 
-export function CampusSearchCard({ campus }: CampusSearchCardProps) {
+export function CampusSearchCard({
+  campus,
+  searchType,
+}: CampusSearchCardProps) {
+  const isSchool = searchType === "school";
   const firstLetter = campus.title.charAt(0).toUpperCase();
   const location = [campus.district, campus.zone].filter(Boolean).join(", ");
 
@@ -74,10 +79,12 @@ export function CampusSearchCard({ campus }: CampusSearchCardProps) {
               </span>
             </div>
 
-            <div className="flex shrink-0 items-center gap-1.5 rounded-full bg-background px-3.5 py-2 text-sm font-semibold text-foreground shadow-sm transition-colors group-hover:bg-background/90">
-              View Campus
-              <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 motion-reduce:transform-none" />
-            </div>
+            {!isSchool && (
+              <div className="flex shrink-0 items-center gap-1.5 rounded-full bg-background px-3.5 py-2 text-sm font-semibold text-foreground shadow-sm transition-colors group-hover:bg-background/90">
+                View Campus
+                <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 motion-reduce:transform-none" />
+              </div>
+            )}
           </div>
         </CardFooter>
       </Card>

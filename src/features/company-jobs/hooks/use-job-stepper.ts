@@ -62,10 +62,14 @@ function jobToFormValues(job: Job): JobFormValues {
     duration_unit: job.duration_unit ?? undefined,
     hourly_rate: job.hourly_rate ?? "",
     deliverables: Array.isArray(job.deliverables)
-      ? job.deliverables
-      : job.deliverables
+      ? job.deliverables.map((d) =>
+          typeof d === "string" ? d : JSON.stringify(d),
+        )
+      : typeof job.deliverables === "string"
         ? [job.deliverables]
-        : [],
+        : typeof job.deliverables === "object" && job.deliverables !== null
+          ? Object.entries(job.deliverables).map(([k, v]) => `${k}: ${v}`)
+          : [],
     stipend: job.stipend ?? "",
     certificate_provided: job.certificate_provided ?? false,
   };

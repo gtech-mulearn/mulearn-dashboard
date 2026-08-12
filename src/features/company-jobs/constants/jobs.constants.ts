@@ -284,6 +284,13 @@ export const COMPANY_STATUS_CONFIG = {
     message:
       "Your company profile is inactive. Contact support for assistance.",
   },
+  deactivated: {
+    label: "Deactivated",
+    color: "text-red-600",
+    bgColor: "bg-red-50",
+    borderColor: "border-red-200",
+    message: "This company has been deactivated.",
+  },
 } as const;
 
 export const JOB_STATUS_CONFIG = {
@@ -304,6 +311,24 @@ export const JOB_STATUS_CONFIG = {
     dotColor: "bg-amber-500",
     textColor: "text-amber-700",
     bgColor: "bg-amber-50",
+  },
+  "Pending Approval": {
+    label: "Pending Approval",
+    dotColor: "bg-blue-500",
+    textColor: "text-blue-700",
+    bgColor: "bg-blue-50",
+  },
+  "Needs Revision": {
+    label: "Needs Revision",
+    dotColor: "bg-amber-500",
+    textColor: "text-amber-700",
+    bgColor: "bg-amber-50",
+  },
+  Rejected: {
+    label: "Rejected",
+    dotColor: "bg-red-500",
+    textColor: "text-red-700",
+    bgColor: "bg-red-50",
   },
   Closed: {
     label: "Closed",

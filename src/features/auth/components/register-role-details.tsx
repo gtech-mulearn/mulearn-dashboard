@@ -9,14 +9,16 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Upload, X } from "lucide-react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { type Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
+import { FileUpload } from "@/components/ui/file-upload";
 import {
   Form,
   FormControl,
@@ -25,8 +27,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
+import { TagInput } from "@/components/ui/tag-input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   useCountries,
   useDistricts,
@@ -46,6 +52,29 @@ const COMPANY_SIZE_OPTIONS = [
   { id: "201-500", title: "201–500 employees" },
   { id: "501-1000", title: "501–1,000 employees" },
   { id: "1000+", title: "1,000+ employees" },
+];
+
+const REMOTE_POLICY_OPTIONS = [
+  { id: "Onsite", title: "Onsite" },
+  { id: "Hybrid", title: "Hybrid" },
+  { id: "Remote", title: "Remote" },
+];
+
+const INDUSTRY_SECTOR_OPTIONS = [
+  { id: "Software", title: "Software & Technology" },
+  { id: "Financial Services", title: "Financial Services & Fintech" },
+  { id: "Healthcare", title: "Healthcare & Life Sciences" },
+  { id: "E-Commerce", title: "E-Commerce & Retail" },
+  { id: "Education", title: "Education & EdTech" },
+  { id: "Manufacturing", title: "Manufacturing & Industrial" },
+  {
+    id: "Artificial Intelligence",
+    title: "Artificial Intelligence & Robotics",
+  },
+  { id: "Consulting", title: "Consulting & Professional Services" },
+  { id: "Media & Entertainment", title: "Media & Entertainment" },
+  { id: "Telecommunications", title: "Telecommunications" },
+  { id: "Other", title: "Other" },
 ];
 
 // Schema for Student
@@ -167,9 +196,24 @@ const enablerDetailsSchema = z
 // Schema for Mentor
 const mentorDetailsSchema = z
   .object({
-    organization: z.string().min(1, "Please select your company"),
+    organization: z.string().optional(),
     customOrganization: z.string().optional(),
+    isFreelancer: z.boolean().optional(),
+    mentorType: z.enum(["ig", "company"]).optional(),
   })
+  .refine(
+    (data) => {
+      // Non-freelancer must select a company (for both IG mentor and Company mentor)
+      if (!data.isFreelancer) {
+        return !!data.organization && data.organization.trim().length > 0;
+      }
+      return true;
+    },
+    {
+      message: "Please select your company",
+      path: ["organization"],
+    },
+  )
   .refine(
     (data) => {
       // If "Others" is selected, custom organization must be provided
@@ -188,48 +232,73 @@ const mentorDetailsSchema = z
 
 // Schema for Company
 // Note: poc_name and poc_email come from Step 1 (basicData); they are NOT
-// collected here. This form only collects company-level details.
-const companyDetailsSchema = z.object({
-  // Basic Info
-  companyName: z
-    .string()
-    .trim()
-    .min(1, "Company name is required")
-    .max(75, "Max 75 characters"),
-  companyDescription: z.string().min(1, "Description is required"),
-  logo: z.string().url("Please enter a valid URL").or(z.literal("")).optional(),
-  shortPitch: z.string().optional(),
-  industrySector: z.string().optional(),
-  companySize: z.string().optional(),
-  // Contact & Online Presence
-  websiteLink: z
-    .string()
-    .url("Please enter a valid URL")
-    .or(z.literal(""))
-    .optional(),
-  email: z.string().email("Invalid email address").or(z.literal("")).optional(),
-  linkedinUrl: z
-    .string()
-    .url("Please enter a valid LinkedIn URL")
-    .or(z.literal(""))
-    .optional(),
-  // Location
-  location: z.string().optional(),
-  countryId: z.string().optional(),
-  stateId: z.string().optional(),
-  districtId: z.string().optional(),
-  // Legal Information
-  legalName: z.string().optional(),
-  registrationNumber: z.string().optional(),
-  taxId: z.string().optional(),
-  foundedYear: z.number().optional(),
-  remotePolicy: z.string().optional(),
-  cultureText: z.string().optional(),
-  techStack: z.array(z.string()).optional(),
-  perks: z.array(z.string()).optional(),
-  testimonials: z.array(z.unknown()).optional(),
-  gallery: z.array(z.unknown()).optional(),
-});
+// collected here. This form collects company-level details across 5 logical steps.
+const companyDetailsSchema = z
+  .object({
+    // Basic Information
+    companyName: z
+      .string()
+      .trim()
+      .min(1, "Company name is required")
+      .max(75, "Max 75 characters"),
+    companyDescription: z.string().trim().min(1, "Description is required"),
+    shortPitch: z.string().optional(),
+    email: z
+      .string()
+      .email("Invalid email address")
+      .or(z.literal(""))
+      .optional(),
+    websiteLink: z
+      .string()
+      .url("Please enter a valid URL (e.g. https://example.com)")
+      .or(z.literal(""))
+      .optional(),
+    linkedinUrl: z
+      .string()
+      .url("Please enter a valid LinkedIn URL")
+      .or(z.literal(""))
+      .optional(),
+
+    // Legal Information
+    legalName: z.string().optional(),
+    registrationNumber: z.string().optional(),
+    taxId: z.string().optional(),
+    verificationDocument: z.custom<File | null | undefined>().optional(),
+    verification_document_url: z.string().optional(),
+
+    // Company Details
+    industrySector: z.string().optional(),
+    companySize: z.string().optional(),
+    foundedYear: z.number().optional(),
+    location: z.string().optional(),
+    countryId: z.string().optional(),
+    stateId: z.string().optional(),
+    districtId: z.string().optional(),
+
+    // Culture & Hiring
+    remotePolicy: z.string().optional(),
+    cultureText: z.string().optional(),
+    techStack: z.array(z.string()).optional(),
+    perks: z.string().optional(),
+    testimonials: z.string().optional(),
+
+    // Media
+    logo: z.string().optional(),
+    logoFile: z.custom<File | null | undefined>().optional(),
+    gallery: z.array(z.string()).optional(),
+    galleryFiles: z.array(z.custom<File>()).optional(),
+  })
+  .refine(
+    (data) =>
+      (data.verification_document_url &&
+        data.verification_document_url.trim().length > 0) ||
+      data.verificationDocument instanceof File,
+    {
+      message:
+        "Please provide a verification document URL or upload a verification document",
+      path: ["verification_document_url"],
+    },
+  );
 
 type RoleDetailsValues =
   | z.infer<typeof studentDetailsSchema>
@@ -238,29 +307,42 @@ type RoleDetailsValues =
   | z.infer<typeof companyDetailsSchema>;
 
 export interface CompanyDetailsValues {
+  // Basic Information
   companyName?: string;
   companyDescription?: string;
-  logo?: string;
   shortPitch?: string;
+  email?: string;
+  websiteLink?: string;
+  linkedinUrl?: string;
+
+  // Legal Information
+  legalName?: string;
+  registrationNumber?: string;
+  taxId?: string;
+  verificationDocument?: File | null;
+  verification_document_url?: string;
+
+  // Company Details
   industrySector?: string;
   companySize?: string;
-  websiteLink?: string;
-  email?: string;
-  linkedinUrl?: string;
+  foundedYear?: number;
   location?: string;
   countryId?: string;
   stateId?: string;
   districtId?: string;
-  legalName?: string;
-  registrationNumber?: string;
-  taxId?: string;
-  foundedYear?: number;
+
+  // Culture & Hiring
   remotePolicy?: string;
   cultureText?: string;
   techStack?: string[];
-  perks?: string[];
-  testimonials?: unknown[];
-  gallery?: unknown[];
+  perks?: string;
+  testimonials?: string;
+
+  // Media
+  logo?: string;
+  logoFile?: File | null;
+  gallery?: string[];
+  galleryFiles?: File[];
 }
 
 interface RegisterRoleDetailsProps {
@@ -275,6 +357,8 @@ interface RegisterRoleDetailsProps {
       customOrganization?: string;
       organizationType?: "College" | "Company";
       role?: string;
+      mentorType?: "ig" | "company";
+      isFreelancer?: boolean;
     } & CompanyDetailsValues,
   ) => void;
   onBack?: () => void;
@@ -334,37 +418,45 @@ export function RegisterRoleDetails({
       return {
         organization: "",
         customOrganization: "",
+        isFreelancer: false,
+        mentorType: "ig" as const,
       };
     }
     return {
       companyName: "",
       companyDescription: "",
-      logo: "",
       shortPitch: "",
+      email: "",
+      websiteLink: "",
+      linkedinUrl: "",
+      legalName: "",
+      registrationNumber: "",
+      taxId: "",
+      verificationDocument: null,
+      verification_document_url: "",
       industrySector: "",
       companySize: "",
-      websiteLink: "",
-      email: "",
-      linkedinUrl: "",
+      foundedYear: undefined,
       location: "",
       countryId: "",
       stateId: "",
       districtId: "",
-      legalName: "",
-      registrationNumber: "",
-      taxId: "",
-      foundedYear: undefined,
       remotePolicy: "",
       cultureText: "",
       techStack: [],
-      perks: [],
-      testimonials: [],
+      perks: "",
+      testimonials: "",
+      logo: "",
+      logoFile: null,
       gallery: [],
+      galleryFiles: [],
     };
   };
 
   const form = useForm<RoleDetailsValues>({
-    resolver: zodResolver(getSchema()),
+    resolver: zodResolver(
+      getSchema(),
+    ) as unknown as Resolver<RoleDetailsValues>,
     defaultValues: getDefaultValues(),
   });
 
@@ -375,9 +467,19 @@ export function RegisterRoleDetails({
     "College",
   );
 
+  // Mentor-specific: freelancer toggle & mentor type selection
+  const [isFreelancer, setIsFreelancer] = useState(false);
+  const [mentorType, setMentorType] = useState<"ig" | "company">("ig");
+
   // Company stepper state
   const [companyStep, setCompanyStep] = useState(1);
-  const COMPANY_STEPS = ["Basic Info", "Contact", "Location", "Legal Info"];
+  const COMPANY_STEPS = [
+    "Basic Info",
+    "Legal Info",
+    "Details",
+    "Culture",
+    "Media",
+  ];
 
   // Location cascading state (company form only)
   const [selectedCountryId, setSelectedCountryId] = useState<
@@ -431,13 +533,22 @@ export function RegisterRoleDetails({
   }, [orgParam, role, router, form.setValue]);
 
   const handleSubmit = (values: RoleDetailsValues) => {
-    // For company, only submit on the final step — pressing Enter on earlier
+    // For company, only submit on the final step (step 5) — pressing Enter on earlier
     // steps should advance to the next step, not submit the form.
-    if (role === "company" && companyStep < 4) {
+    if (role === "company" && companyStep < 5) {
       void handleCompanyNext();
       return;
     }
-    onSubmit(values as Parameters<RegisterRoleDetailsProps["onSubmit"]>[0]);
+    const payload = values as Parameters<
+      RegisterRoleDetailsProps["onSubmit"]
+    >[0];
+    // Explicitly forward the mentor type selection (from local React state)
+    // so that the parent can persist it before routing away.
+    if (role === "mentor") {
+      payload.mentorType = mentorType;
+      payload.isFreelancer = isFreelancer;
+    }
+    onSubmit(payload);
   };
 
   const getRoleLabel = () => {
@@ -458,29 +569,37 @@ export function RegisterRoleDetails({
   const COMPANY_STEP_FIELDS: Record<number, (keyof CompanyDetailsValues)[]> = {
     1: [
       "companyName",
-      "logo",
       "companyDescription",
       "shortPitch",
-      "industrySector",
-      "companySize",
+      "email",
+      "websiteLink",
+      "linkedinUrl",
     ],
-    2: ["email", "websiteLink", "linkedinUrl"],
-    3: ["location", "countryId", "stateId", "districtId"],
-    4: [
+    2: [
       "legalName",
       "registrationNumber",
       "taxId",
-      "foundedYear",
-      "remotePolicy",
-      "cultureText",
+      "verification_document_url",
+      "verificationDocument",
     ],
+    3: [
+      "industrySector",
+      "companySize",
+      "foundedYear",
+      "location",
+      "countryId",
+      "stateId",
+      "districtId",
+    ],
+    4: ["remotePolicy", "cultureText", "techStack", "perks", "testimonials"],
+    5: ["logo", "logoFile", "gallery", "galleryFiles"],
   };
 
   const handleCompanyNext = async () => {
     const fields = COMPANY_STEP_FIELDS[companyStep];
     const valid = await form.trigger(fields);
     if (!valid) return;
-    setCompanyStep((s) => Math.min(s + 1, 4));
+    setCompanyStep((s) => Math.min(s + 1, 5));
   };
 
   const handleStepClick = async (targetStep: number) => {
@@ -826,69 +945,220 @@ export function RegisterRoleDetails({
           {/* Mentor Fields */}
           {role === "mentor" && (
             <>
-              <FormField
-                control={form.control}
-                name="organization"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium">
-                      Company
-                    </FormLabel>
-                    <FormControl>
-                      <Combobox
-                        options={companies}
-                        value={showCustomOrganization ? "others" : field.value}
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                          setShowCustomOrganization(false);
-                          form.setValue("customOrganization", "");
-                        }}
-                        placeholder="Select your company"
-                        searchPlaceholder="Search companies..."
-                        disabled={isLoading || isLoadingCompanies}
-                        onCreateNew={(searchTerm) => {
-                          field.onChange("others");
-                          form.setValue("customOrganization", searchTerm);
-                          setShowCustomOrganization(true);
-                        }}
-                        createNewText="Others"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {showCustomOrganization && (
-                <FormField
-                  control={form.control}
-                  name="customOrganization"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium">
-                        Company Name
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter your company name"
-                          className="h-12 rounded-xl border-border bg-muted/50 px-4"
-                          disabled={isLoading}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+              {/* Freelancer Toggle */}
+              <div className="flex items-center justify-between py-2 my-2">
+                <p className="text-sm font-semibold text-foreground">
+                  Are you a FREELANCER?
+                </p>
+                <Switch
+                  checked={isFreelancer}
+                  onCheckedChange={(checked) => {
+                    setIsFreelancer(checked);
+                    form.setValue("isFreelancer", checked);
+                    if (checked) {
+                      // Freelancer → IG mentor only, clear company
+                      setMentorType("ig");
+                      form.setValue("mentorType", "ig");
+                      form.setValue("organization", "");
+                      form.setValue("customOrganization", "");
+                      setShowCustomOrganization(false);
+                    } else {
+                      setMentorType("ig");
+                      form.setValue("mentorType", "ig");
+                    }
+                  }}
+                  disabled={isLoading}
                 />
+              </div>
+
+              {/* Mentor Type Cards */}
+              <div className="space-y-3">
+                {/* IG Mentor card — always visible */}
+                <button
+                  type="button"
+                  disabled={isLoading}
+                  onClick={() => {
+                    setMentorType("ig");
+                    form.setValue("mentorType", "ig");
+                  }}
+                  className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl border text-left transition-all duration-200 hover:shadow-md active:scale-[0.98] ${
+                    mentorType === "ig" || isFreelancer
+                      ? "border-primary bg-primary text-primary-foreground shadow-md"
+                      : "border-border bg-card shadow-sm hover:border-primary/30"
+                  } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                >
+                  <span className="text-2xl shrink-0">👨‍🏫</span>
+                  <span className="flex-1 min-w-0">
+                    <span
+                      className={`block text-base font-medium ${
+                        mentorType === "ig" || isFreelancer
+                          ? "text-primary-foreground"
+                          : "text-foreground"
+                      }`}
+                    >
+                      IG Mentor
+                    </span>
+                    <span
+                      className={`block text-xs mt-0.5 leading-snug ${
+                        mentorType === "ig" || isFreelancer
+                          ? "text-primary-foreground/80"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      I guide and support learners independently through
+                      interest groups.
+                    </span>
+                  </span>
+                  {(mentorType === "ig" || isFreelancer) && (
+                    <span className="w-5 h-5 rounded-full bg-primary-foreground flex items-center justify-center shrink-0">
+                      <svg
+                        className="w-3 h-3 text-primary"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={3}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    </span>
+                  )}
+                </button>
+
+                {/* Company Mentor card — hidden when freelancer */}
+                {!isFreelancer && (
+                  <button
+                    type="button"
+                    disabled={isLoading}
+                    onClick={() => {
+                      setMentorType("company");
+                      form.setValue("mentorType", "company");
+                    }}
+                    className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl border text-left transition-all duration-200 hover:shadow-md active:scale-[0.98] ${
+                      mentorType === "company"
+                        ? "border-primary bg-primary text-primary-foreground shadow-md"
+                        : "border-border bg-card shadow-sm hover:border-primary/30"
+                    } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                  >
+                    <span className="text-2xl shrink-0">🏢</span>
+                    <span className="flex-1 min-w-0">
+                      <span
+                        className={`block text-base font-medium ${
+                          mentorType === "company"
+                            ? "text-primary-foreground"
+                            : "text-foreground"
+                        }`}
+                      >
+                        Company Mentor
+                      </span>
+                      <span
+                        className={`block text-xs mt-0.5 leading-snug ${
+                          mentorType === "company"
+                            ? "text-primary-foreground/80"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        I mentor as a company employee. I&apos;ll select my
+                        company during setup.
+                      </span>
+                    </span>
+                    {mentorType === "company" && (
+                      <span className="w-5 h-5 rounded-full bg-primary-foreground flex items-center justify-center shrink-0">
+                        <svg
+                          className="w-3 h-3 text-primary"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      </span>
+                    )}
+                  </button>
+                )}
+              </div>
+
+              {/* Company combobox — visible for all mentors when toggle is off */}
+              {!isFreelancer && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="organization"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Company
+                        </FormLabel>
+                        <FormControl>
+                          <Combobox
+                            options={companies}
+                            value={
+                              showCustomOrganization ? "others" : field.value
+                            }
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              setShowCustomOrganization(false);
+                              form.setValue("customOrganization", "");
+                            }}
+                            placeholder="Select your company"
+                            searchPlaceholder="Search companies..."
+                            disabled={isLoading || isLoadingCompanies}
+                            onCreateNew={(searchTerm) => {
+                              field.onChange("others");
+                              form.setValue("customOrganization", searchTerm);
+                              setShowCustomOrganization(true);
+                            }}
+                            createNewText="Others"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {showCustomOrganization && (
+                    <FormField
+                      control={form.control}
+                      name="customOrganization"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">
+                            Company Name
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Enter your company name"
+                              className="h-12 rounded-xl border-border bg-muted/50 px-4"
+                              disabled={isLoading}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </>
               )}
             </>
           )}
 
           {/* Company Fields — Stepper */}
+          {/* Company Fields */}
           {role === "company" && (
             <>
               {/* Step indicator */}
-              <div className="flex items-center gap-0 mb-2">
+              <div className="flex items-center gap-0 mb-2 overflow-x-auto pb-1">
                 {COMPANY_STEPS.map((label, i) => {
                   const stepNum = i + 1;
                   const isActive = companyStep === stepNum;
@@ -896,17 +1166,17 @@ export function RegisterRoleDetails({
                   return (
                     <div
                       key={label}
-                      className="flex items-center flex-1 last:flex-none"
+                      className="flex items-center flex-1 min-w-16 last:flex-none"
                     >
                       <button
                         type="button"
                         onClick={() => handleStepClick(stepNum)}
-                        className="flex flex-col items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg p-1"
+                        className="flex flex-col items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg p-1 w-full"
                         aria-label={`Go to step ${stepNum}: ${label}`}
                         aria-current={isActive ? "step" : undefined}
                       >
                         <div
-                          className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
+                          className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors shrink-0 ${
                             isDone
                               ? "bg-primary text-primary-foreground"
                               : isActive
@@ -917,7 +1187,7 @@ export function RegisterRoleDetails({
                           {isDone ? "✓" : stepNum}
                         </div>
                         <span
-                          className={`text-[10px] whitespace-nowrap ${isActive ? "text-primary font-medium" : "text-muted-foreground"}`}
+                          className={`text-[10px] text-center line-clamp-1 ${isActive ? "text-primary font-medium" : "text-muted-foreground"}`}
                         >
                           {label}
                         </span>
@@ -932,7 +1202,7 @@ export function RegisterRoleDetails({
                 })}
               </div>
 
-              {/* Step 1: Basic Info */}
+              {/* Step 1: Basic Information */}
               {companyStep === 1 && (
                 <>
                   <FormField
@@ -941,7 +1211,8 @@ export function RegisterRoleDetails({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
-                          Company Name
+                          Company Name{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <FormControl>
                           <Input
@@ -958,40 +1229,17 @@ export function RegisterRoleDetails({
 
                   <FormField
                     control={form.control}
-                    name="logo"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">
-                          Logo URL{" "}
-                          <span className="text-muted-foreground">
-                            (optional)
-                          </span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="https://example.com/logo.png"
-                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
-                            disabled={isLoading}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
                     name="companyDescription"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
-                          Description
+                          Description{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="Brief description of your company"
-                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
+                          <Textarea
+                            placeholder="Tell us about your company, mission, and core offerings"
+                            className="min-h-24 rounded-xl border-border bg-muted/50 p-3 text-sm"
                             disabled={isLoading}
                             {...field}
                           />
@@ -1013,8 +1261,33 @@ export function RegisterRoleDetails({
                           </span>
                         </FormLabel>
                         <FormControl>
+                          <Textarea
+                            placeholder="A concise elevator pitch under 150 words"
+                            className="min-h-20 rounded-xl border-border bg-muted/50 p-3 text-sm"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Company Email{" "}
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
+                        </FormLabel>
+                        <FormControl>
                           <Input
-                            placeholder="A short pitch under 150 words"
+                            type="email"
+                            placeholder="hr@acme.com"
                             className="h-12 rounded-xl border-border bg-muted/50 px-4"
                             disabled={isLoading}
                             {...field}
@@ -1027,6 +1300,203 @@ export function RegisterRoleDetails({
 
                   <FormField
                     control={form.control}
+                    name="websiteLink"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Website Link{" "}
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="https://acme.com"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="linkedinUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          LinkedIn URL{" "}
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="https://linkedin.com/company/acme"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+
+              {/* Step 2: Legal Information */}
+              {companyStep === 2 && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="legalName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Legal Name{" "}
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Official registered legal name (e.g. Acme Corp Pvt Ltd)"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="registrationNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Registration Number{" "}
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., CIN / RoC / Registration number"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="taxId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Tax ID / GSTIN{" "}
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., GSTIN000 / PAN"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="verification_document_url"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Verification Document URL{" "}
+                          <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="https://drive.google.com/... or document URL"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <p className="text-xs text-muted-foreground">
+                          Provide a direct or cloud link (Google Drive, Cloud
+                          storage, etc.) to your Certificate of Incorporation or
+                          GST Certificate.
+                        </p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="verificationDocument"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Or Upload Verification Document
+                        </FormLabel>
+                        <FormControl>
+                          <FileUpload
+                            value={field.value ?? null}
+                            onChange={(file) => {
+                              field.onChange(file);
+                              if (
+                                file &&
+                                !form.getValues("verification_document_url")
+                              ) {
+                                form.setValue(
+                                  "verification_document_url",
+                                  `https://mulearn.org/documents/${encodeURIComponent(file.name)}`,
+                                  { shouldValidate: true },
+                                );
+                              }
+                            }}
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            maxSizeMB={10}
+                            disabled={isLoading}
+                            placeholder="Upload verification document (PDF, JPG, PNG)"
+                          />
+                        </FormControl>
+                        <p className="text-xs text-muted-foreground">
+                          Upload certificate of incorporation, GST certificate,
+                          or official company registration document (PDF, JPG,
+                          PNG up to 10MB).
+                        </p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+
+              {/* Step 3: Company Details */}
+              {companyStep === 3 && (
+                <>
+                  <FormField
+                    control={form.control}
                     name="industrySector"
                     render={({ field }) => (
                       <FormItem>
@@ -1037,11 +1507,13 @@ export function RegisterRoleDetails({
                           </span>
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="e.g., Technology, Healthcare, Finance"
-                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
+                          <Combobox
+                            options={INDUSTRY_SECTOR_OPTIONS}
+                            value={field.value || ""}
+                            onValueChange={field.onChange}
+                            placeholder="Select industry sector"
+                            searchPlaceholder="Search sector..."
                             disabled={isLoading}
-                            {...field}
                           />
                         </FormControl>
                         <FormMessage />
@@ -1065,7 +1537,7 @@ export function RegisterRoleDetails({
                             options={COMPANY_SIZE_OPTIONS}
                             value={field.value || ""}
                             onValueChange={field.onChange}
-                            placeholder="Select company size"
+                            placeholder="Select company size (e.g. 51-200)"
                             searchPlaceholder="Search..."
                             disabled={isLoading}
                           />
@@ -1074,30 +1546,35 @@ export function RegisterRoleDetails({
                       </FormItem>
                     )}
                   />
-                </>
-              )}
 
-              {/* Step 2: Contact & Online Presence */}
-              {companyStep === 2 && (
-                <>
                   <FormField
                     control={form.control}
-                    name="email"
+                    name="foundedYear"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
-                          Contact Email{" "}
+                          Founded Year{" "}
                           <span className="text-muted-foreground">
                             (optional)
                           </span>
                         </FormLabel>
                         <FormControl>
                           <Input
-                            type="email"
-                            placeholder="contact@acme.com"
+                            type="number"
+                            min={1800}
+                            max={new Date().getFullYear()}
+                            placeholder="e.g., 2015"
                             className="h-12 rounded-xl border-border bg-muted/50 px-4"
                             disabled={isLoading}
                             {...field}
+                            onChange={(e) =>
+                              field.onChange(
+                                e.target.value
+                                  ? parseInt(e.target.value, 10)
+                                  : undefined,
+                              )
+                            }
+                            value={field.value ?? ""}
                           />
                         </FormControl>
                         <FormMessage />
@@ -1105,59 +1582,6 @@ export function RegisterRoleDetails({
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="websiteLink"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">
-                          Website{" "}
-                          <span className="text-muted-foreground">
-                            (optional)
-                          </span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="https://example.com"
-                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
-                            disabled={isLoading}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="linkedinUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">
-                          LinkedIn{" "}
-                          <span className="text-muted-foreground">
-                            (optional)
-                          </span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="https://linkedin.com/company/..."
-                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
-                            disabled={isLoading}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </>
-              )}
-
-              {/* Step 3: Location */}
-              {companyStep === 3 && (
-                <>
                   <FormField
                     control={form.control}
                     name="location"
@@ -1171,7 +1595,7 @@ export function RegisterRoleDetails({
                         </FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="e.g., Kochi, Kerala"
+                            placeholder="City / Headquarters (e.g., Bengaluru)"
                             className="h-12 rounded-xl border-border bg-muted/50 px-4"
                             disabled={isLoading}
                             {...field}
@@ -1181,6 +1605,7 @@ export function RegisterRoleDetails({
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="countryId"
@@ -1287,114 +1712,9 @@ export function RegisterRoleDetails({
                 </>
               )}
 
-              {/* Step 4: Legal Information */}
+              {/* Step 4: Culture & Hiring */}
               {companyStep === 4 && (
                 <>
-                  <FormField
-                    control={form.control}
-                    name="legalName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">
-                          Legal Name{" "}
-                          <span className="text-muted-foreground">
-                            (optional)
-                          </span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Official registered legal name"
-                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
-                            disabled={isLoading}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="registrationNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">
-                          Registration Number{" "}
-                          <span className="text-muted-foreground">
-                            (optional)
-                          </span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="e.g., CIN / RoC number"
-                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
-                            disabled={isLoading}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="taxId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">
-                          Tax ID / GSTIN{" "}
-                          <span className="text-muted-foreground">
-                            (optional)
-                          </span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="e.g., GSTIN / PAN"
-                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
-                            disabled={isLoading}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="foundedYear"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">
-                          Founded Year{" "}
-                          <span className="text-muted-foreground">
-                            (optional)
-                          </span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            placeholder="e.g., 2018"
-                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
-                            disabled={isLoading}
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(
-                                e.target.value
-                                  ? parseInt(e.target.value, 10)
-                                  : undefined,
-                              )
-                            }
-                            value={field.value || ""}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
                   <FormField
                     control={form.control}
                     name="remotePolicy"
@@ -1407,11 +1727,13 @@ export function RegisterRoleDetails({
                           </span>
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="e.g., Hybrid, Fully Remote"
-                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
+                          <Combobox
+                            options={REMOTE_POLICY_OPTIONS}
+                            value={field.value || ""}
+                            onValueChange={field.onChange}
+                            placeholder="Select remote policy (Onsite, Hybrid, Remote)"
+                            searchPlaceholder="Search policy..."
                             disabled={isLoading}
-                            {...field}
                           />
                         </FormControl>
                         <FormMessage />
@@ -1431,9 +1753,9 @@ export function RegisterRoleDetails({
                           </span>
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="e.g., We move fast and care deeply."
-                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
+                          <Textarea
+                            placeholder="Describe your company culture, team values, and working style..."
+                            className="min-h-24 rounded-xl border-border bg-muted/50 p-3 text-sm"
                             disabled={isLoading}
                             {...field}
                           />
@@ -1441,6 +1763,226 @@ export function RegisterRoleDetails({
                         <FormMessage />
                       </FormItem>
                     )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="techStack"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Tech Stack{" "}
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <TagInput
+                            value={field.value || []}
+                            onChange={field.onChange}
+                            placeholder="Type skill (e.g. Python, React, Kubernetes) and press Enter"
+                            disabled={isLoading}
+                          />
+                        </FormControl>
+                        <p className="text-xs text-muted-foreground">
+                          Press Enter or comma to add technologies your team
+                          uses.
+                        </p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="perks"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Perks & Benefits{" "}
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Health insurance, stock options, flexible hours, annual offsites..."
+                            className="min-h-20 rounded-xl border-border bg-muted/50 p-3 text-sm"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="testimonials"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Testimonials{" "}
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="&quot;Great place to grow and build scalable systems&quot; — Alumnus"
+                            className="min-h-20 rounded-xl border-border bg-muted/50 p-3 text-sm"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+
+              {/* Step 5: Media */}
+              {companyStep === 5 && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="logoFile"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Company Logo{" "}
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <ImageUpload
+                            value={field.value ?? null}
+                            onChange={(file) => field.onChange(file)}
+                            disabled={isLoading}
+                            maxSizeMB={5}
+                          />
+                        </FormControl>
+                        <p className="text-xs text-muted-foreground">
+                          Upload company logo (PNG, JPG, WebP up to 5MB).
+                        </p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="galleryFiles"
+                    render={({ field }) => {
+                      const files: File[] = field.value || [];
+                      const handleAddFiles = (
+                        e: React.ChangeEvent<HTMLInputElement>,
+                      ) => {
+                        const selected = Array.from(e.target.files || []);
+                        const validImages = selected.filter((file) => {
+                          if (!file.type.startsWith("image/")) {
+                            toast.error(`${file.name} is not an image.`);
+                            return false;
+                          }
+                          if (file.size > 10 * 1024 * 1024) {
+                            toast.error(
+                              `${file.name} is too large (max 10MB).`,
+                            );
+                            return false;
+                          }
+                          return true;
+                        });
+                        field.onChange([...files, ...validImages]);
+                        if (e.target) e.target.value = "";
+                      };
+
+                      const handleRemoveFile = (targetFile: File) => {
+                        field.onChange(files.filter((f) => f !== targetFile));
+                      };
+
+                      return (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium flex items-center justify-between">
+                            <span>Gallery Images</span>
+                            <span className="text-muted-foreground">
+                              (optional)
+                            </span>
+                          </FormLabel>
+                          <FormControl>
+                            <div className="space-y-3">
+                              {files.length > 0 && (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                  {files.map((file) => {
+                                    const previewUrl =
+                                      URL.createObjectURL(file);
+                                    const fileKey = `${file.name}-${file.lastModified}-${file.size}`;
+                                    return (
+                                      <div
+                                        key={fileKey}
+                                        className="relative group aspect-video rounded-lg overflow-hidden border bg-muted"
+                                      >
+                                        <Image
+                                          src={previewUrl}
+                                          alt={file.name}
+                                          fill
+                                          unoptimized
+                                          className="object-cover"
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={() => handleRemoveFile(file)}
+                                          disabled={isLoading}
+                                          className="absolute top-1 right-1 p-1 rounded-full bg-background/80 text-foreground hover:bg-destructive hover:text-destructive-foreground transition-colors shadow"
+                                          aria-label={`Remove ${file.name}`}
+                                        >
+                                          <X className="w-3.5 h-3.5" />
+                                        </button>
+                                        <span className="absolute bottom-1 left-1 right-1 text-[10px] bg-background/80 px-1 py-0.5 rounded truncate">
+                                          {file.name}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                              <div>
+                                <label
+                                  className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-4 cursor-pointer transition-colors ${
+                                    isLoading
+                                      ? "opacity-50 cursor-not-allowed border-muted"
+                                      : "border-border hover:border-primary/50 hover:bg-muted/50"
+                                  }`}
+                                >
+                                  <div className="flex flex-col items-center gap-1.5 text-center">
+                                    <Upload className="w-6 h-6 text-muted-foreground" />
+                                    <span className="text-sm font-medium text-foreground">
+                                      {files.length > 0
+                                        ? "Add more images"
+                                        : "Upload gallery photos"}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">
+                                      PNG, JPG, WebP up to 10MB each
+                                    </span>
+                                  </div>
+                                  <input
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    disabled={isLoading}
+                                    className="hidden"
+                                    onChange={handleAddFiles}
+                                  />
+                                </label>
+                              </div>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
                   />
                 </>
               )}
@@ -1461,7 +2003,7 @@ export function RegisterRoleDetails({
                   Back
                 </Button>
               )}
-              {companyStep < 4 ? (
+              {companyStep < 5 ? (
                 <Button
                   key="next-btn"
                   type="button"

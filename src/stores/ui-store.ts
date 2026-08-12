@@ -18,15 +18,6 @@ interface UIState {
   collapseSidebar: () => void;
   isMobileOpen: boolean;
   setMobileOpen: (open: boolean) => void;
-  isConnectBannerDismissed: boolean;
-  dismissConnectBanner: () => void;
-  /**
-   * Persisted profile view preference.
-   * "mentor"  → show the mentor profile page (default for verified mentors)
-   * "learner" → show the standard learner profile page
-   */
-  profileViewMode: "mentor" | "learner";
-  setProfileViewMode: (mode: "mentor" | "learner") => void;
   resetUI: () => void;
 }
 
@@ -41,25 +32,16 @@ export const useUIStore = create<UIState>()(
       collapseSidebar: () => set({ isSidebarExpanded: false }),
       isMobileOpen: false,
       setMobileOpen: (open) => set({ isMobileOpen: open }),
-      isConnectBannerDismissed: false,
-      dismissConnectBanner: () => set({ isConnectBannerDismissed: true }),
-      profileViewMode: "mentor",
-      setProfileViewMode: (mode) => set({ profileViewMode: mode }),
       resetUI: () =>
         set({
           isSidebarExpanded: true,
           isMobileOpen: false,
-          isConnectBannerDismissed: false,
-          // Do NOT reset profileViewMode here — it should survive logout-level resets
-          // only the user's explicit toggle should change it.
         }),
     }),
     {
       name: "ui-storage",
       partialize: (state) => ({
         isSidebarExpanded: state.isSidebarExpanded,
-        isConnectBannerDismissed: state.isConnectBannerDismissed,
-        profileViewMode: state.profileViewMode,
       }),
     },
   ),

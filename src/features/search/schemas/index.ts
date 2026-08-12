@@ -10,6 +10,7 @@ export type {
   CampusSearchData,
   CampusSearchResponse,
   CampusSearchResult,
+  CampusSortBy,
   SearchType,
   UserSearchData,
   UserSearchResponse,

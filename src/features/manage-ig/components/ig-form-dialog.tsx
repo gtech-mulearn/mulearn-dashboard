@@ -1,7 +1,21 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Loader2, Lock, Plus, Trash2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  Check,
+  Github as GithubIcon,
+  Globe,
+  Instagram,
+  Linkedin,
+  Loader2,
+  Lock,
+  Pencil,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-react";
+import Image from "next/image";
 import { Fragment, useEffect, useState } from "react";
 import { type Control, Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -12,7 +26,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { MarkdownEditor } from "@/components/ui/markdown-editor";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
@@ -23,11 +36,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  IG_COVER_IMAGE_ASPECT,
-  IG_ICON_IMAGE_ASPECT,
-  IG_IMAGE_MAX_MB,
-} from "../constants/ig-images.constants";
+import { Textarea } from "@/components/ui/textarea";
+import { useCommunityPartners } from "../hooks/use-community-partners";
 import { useInterestGroupsAdmin } from "../hooks/use-manage-ig";
 import {
   type InterestGroup,
@@ -39,6 +49,7 @@ const IG_WIZARD_STEPS = [
   "Basic Info",
   "About & Learning",
   "Team & Schedule",
+  "Community Partners",
   "Review",
 ] as const;
 
@@ -212,9 +223,20 @@ export function InterestGroupFormDialog({
     createInterestGroup,
     updateInterestGroup,
     partialUpdateInterestGroup,
-    uploadCoverImage,
-    uploadIconImage,
   } = useInterestGroupsAdmin();
+
+  const queryClient = useQueryClient();
+
+  const {
+    partners,
+    isLoading: partnersLoading,
+    createPartner,
+    updatePartner,
+    deletePartner,
+    isCreating,
+    isUpdating,
+    isDeleting,
+  } = useCommunityPartners(initialData?.id || "");
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -226,6 +248,27 @@ export function InterestGroupFormDialog({
   const [peopleToFollow, setPeopleToFollow] = useState<PersonEntry[]>([]);
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [iconImageFile, setIconImageFile] = useState<File | null>(null);
+
+  // Community Partners
+  const [partnerName, setPartnerName] = useState("");
+  const [partnerLogoKey, setPartnerLogoKey] = useState("");
+  const [partnerDescription, setPartnerDescription] = useState("");
+  const [partnerLinkedin, setPartnerLinkedin] = useState("");
+  const [partnerGithub, setPartnerGithub] = useState("");
+  const [partnerWebsite, setPartnerWebsite] = useState("");
+  const [partnerInstagram, setPartnerInstagram] = useState("");
+  const [editingPartnerId, setEditingPartnerId] = useState<string | null>(null);
+  const [editPartnerDraft, setEditPartnerDraft] = useState({
+    name: "",
+    logo_key: "",
+    description: "",
+    linkedin: "",
+    github: "",
+    website: "",
+    instagram: "",
+  });
+  const [partnerWebsiteError, setPartnerWebsiteError] = useState("");
+  const [editWebsiteError, setEditWebsiteError] = useState("");
 
   const {
     control,
@@ -340,6 +383,9 @@ export function InterestGroupFormDialog({
         } else {
           await updateInterestGroup(initialData.id, payload);
         }
+        queryClient.invalidateQueries({
+          queryKey: ["community-partners", initialData.id],
+        });
         // PUT/PATCH never carry images — replace via the standalone endpoints.
         // Silenced so the save only shows one "Interest Group updated" toast.
         // TODO: Cover/Icon image uploading disabled — backend conflict
@@ -354,7 +400,12 @@ export function InterestGroupFormDialog({
         //   });
         // }
       } else {
-        await createInterestGroup(payload);
+        const created = await createInterestGroup(payload);
+        if (created?.id) {
+          queryClient.invalidateQueries({
+            queryKey: ["community-partners", created.id],
+          });
+        }
       }
 
       setCurrentStep(1);
@@ -850,8 +901,352 @@ export function InterestGroupFormDialog({
                 </section>
               ) : null}
 
-              {/* Step 4: Review */}
+              {/* Step 4: Community Partners */}
               {currentStep === 4 ? (
+                <section className="space-y-6">
+                  <h3 className="text-base font-semibold text-foreground">
+                    Community Partners
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Manage community partners linked to this interest group.
+                  </p>
+
+                  {/* Add new partner */}
+                  <div className="rounded-xl border border-dashed border-primary/40 bg-primary/5 p-4 space-y-3">
+                    <p className="text-xs font-semibold text-primary">
+                      New Partner
+                    </p>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <Input
+                        value={partnerName}
+                        onChange={(e) => setPartnerName(e.target.value)}
+                        placeholder="Partner name *"
+                        disabled={!initialData || isCreating}
+                      />
+                      <Input
+                        value={partnerLogoKey}
+                        onChange={(e) => setPartnerLogoKey(e.target.value)}
+                        placeholder="Logo URL"
+                        disabled={!initialData || isCreating}
+                      />
+                    </div>
+                    <Textarea
+                      value={partnerDescription}
+                      onChange={(e) => setPartnerDescription(e.target.value)}
+                      placeholder="Description"
+                      className="min-h-16"
+                      disabled={!initialData || isCreating}
+                    />
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <Input
+                        value={partnerLinkedin}
+                        onChange={(e) => setPartnerLinkedin(e.target.value)}
+                        placeholder="LinkedIn URL"
+                        disabled={!initialData || isCreating}
+                      />
+                      <Input
+                        value={partnerGithub}
+                        onChange={(e) => setPartnerGithub(e.target.value)}
+                        placeholder="GitHub URL"
+                        disabled={!initialData || isCreating}
+                      />
+                    </div>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <Input
+                        value={partnerWebsite}
+                        onChange={(e) => {
+                          setPartnerWebsite(e.target.value);
+                          if (partnerWebsiteError) setPartnerWebsiteError("");
+                        }}
+                        placeholder="Website URL *"
+                        disabled={!initialData || isCreating}
+                        className={
+                          partnerWebsiteError ? "border-destructive" : ""
+                        }
+                      />
+                      <Input
+                        value={partnerInstagram}
+                        onChange={(e) => setPartnerInstagram(e.target.value)}
+                        placeholder="Instagram URL"
+                        disabled={!initialData || isCreating}
+                      />
+                    </div>
+                    {partnerWebsiteError && (
+                      <p className="text-xs text-destructive">
+                        {partnerWebsiteError}
+                      </p>
+                    )}
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={
+                        !partnerName.trim() || !initialData || isCreating
+                      }
+                      onClick={async () => {
+                        if (!partnerWebsite.trim()) {
+                          setPartnerWebsiteError("Website URL is required");
+                          return;
+                        }
+                        try {
+                          new URL(partnerWebsite.trim());
+                        } catch {
+                          setPartnerWebsiteError("Please enter a valid URL");
+                          return;
+                        }
+                        await createPartner({
+                          name: partnerName.trim(),
+                          logo_key: partnerLogoKey || null,
+                          description: partnerDescription || null,
+                          linkedin: partnerLinkedin || null,
+                          github: partnerGithub || null,
+                          website: partnerWebsite.trim(),
+                          instagram: partnerInstagram || null,
+                        });
+                        setPartnerName("");
+                        setPartnerLogoKey("");
+                        setPartnerDescription("");
+                        setPartnerLinkedin("");
+                        setPartnerGithub("");
+                        setPartnerWebsite("");
+                        setPartnerInstagram("");
+                        setPartnerWebsiteError("");
+                      }}
+                    >
+                      {isCreating ? "Creating…" : "Add Partner"}
+                    </Button>
+                  </div>
+
+                  {/* Partners list */}
+                  {partnersLoading && (
+                    <p className="text-xs text-muted-foreground">
+                      Loading partners…
+                    </p>
+                  )}
+                  {!partnersLoading && partners.length === 0 && (
+                    <p className="text-xs text-muted-foreground italic">
+                      No community partners linked yet.
+                    </p>
+                  )}
+
+                  <div className="space-y-2">
+                    {partners.map((partner) =>
+                      editingPartnerId === partner.id ? (
+                        <div
+                          key={partner.id}
+                          className="rounded-xl border border-primary/40 bg-primary/5 p-3 space-y-2"
+                        >
+                          <Input
+                            value={editPartnerDraft.name}
+                            onChange={(e) =>
+                              setEditPartnerDraft((d) => ({
+                                ...d,
+                                name: e.target.value,
+                              }))
+                            }
+                            placeholder="Partner name *"
+                          />
+                          <Input
+                            value={editPartnerDraft.logo_key ?? ""}
+                            onChange={(e) =>
+                              setEditPartnerDraft((d) => ({
+                                ...d,
+                                logo_key: e.target.value,
+                              }))
+                            }
+                            placeholder="Logo URL"
+                          />
+                          <Textarea
+                            value={editPartnerDraft.description ?? ""}
+                            onChange={(e) =>
+                              setEditPartnerDraft((d) => ({
+                                ...d,
+                                description: e.target.value,
+                              }))
+                            }
+                            placeholder="Description"
+                            className="min-h-16"
+                          />
+                          <div className="grid grid-cols-2 gap-2">
+                            <Input
+                              value={editPartnerDraft.linkedin ?? ""}
+                              onChange={(e) =>
+                                setEditPartnerDraft((d) => ({
+                                  ...d,
+                                  linkedin: e.target.value,
+                                }))
+                              }
+                              placeholder="LinkedIn URL"
+                            />
+                            <Input
+                              value={editPartnerDraft.github ?? ""}
+                              onChange={(e) =>
+                                setEditPartnerDraft((d) => ({
+                                  ...d,
+                                  github: e.target.value,
+                                }))
+                              }
+                              placeholder="GitHub URL"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <Input
+                              value={editPartnerDraft.website ?? ""}
+                              onChange={(e) => {
+                                setEditPartnerDraft((d) => ({
+                                  ...d,
+                                  website: e.target.value,
+                                }));
+                                if (editWebsiteError) setEditWebsiteError("");
+                              }}
+                              placeholder="Website URL *"
+                              className={
+                                editWebsiteError ? "border-destructive" : ""
+                              }
+                            />
+                            <Input
+                              value={editPartnerDraft.instagram ?? ""}
+                              onChange={(e) =>
+                                setEditPartnerDraft((d) => ({
+                                  ...d,
+                                  instagram: e.target.value,
+                                }))
+                              }
+                              placeholder="Instagram URL"
+                            />
+                          </div>
+                          {editWebsiteError && (
+                            <p className="text-xs text-destructive">
+                              {editWebsiteError}
+                            </p>
+                          )}
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              disabled={
+                                !editPartnerDraft.name.trim() || isUpdating
+                              }
+                              onClick={() => {
+                                if (!editPartnerDraft.website?.trim()) {
+                                  setEditWebsiteError(
+                                    "Website URL is required",
+                                  );
+                                  return;
+                                }
+                                try {
+                                  new URL(editPartnerDraft.website.trim());
+                                } catch {
+                                  setEditWebsiteError(
+                                    "Please enter a valid URL",
+                                  );
+                                  return;
+                                }
+                                updatePartner({
+                                  id: partner.id,
+                                  data: editPartnerDraft,
+                                });
+                              }}
+                            >
+                              <Check className="h-3 w-3" />
+                              {isUpdating ? "Saving…" : "Save"}
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setEditingPartnerId(null)}
+                            >
+                              <X className="h-3 w-3" />
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          key={partner.id}
+                          className="flex items-start gap-3 rounded-xl border border-border/50 bg-muted/20 p-3"
+                        >
+                          {partner.logo_key ? (
+                            <Image
+                              src={partner.logo_key}
+                              alt={partner.name}
+                              width={36}
+                              height={36}
+                              unoptimized
+                              className="h-9 w-9 shrink-0 rounded-lg object-contain border border-border/60 bg-background p-0.5"
+                            />
+                          ) : (
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold text-sm">
+                              {partner.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-foreground truncate">
+                              {partner.name}
+                            </p>
+                            {partner.description && (
+                              <p className="text-xs text-muted-foreground line-clamp-1">
+                                {partner.description}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-1.5 mt-1">
+                              {partner.website && (
+                                <Globe className="h-3 w-3 text-muted-foreground" />
+                              )}
+                              {partner.linkedin && (
+                                <Linkedin className="h-3 w-3 text-muted-foreground" />
+                              )}
+                              {partner.github && (
+                                <GithubIcon className="h-3 w-3 text-muted-foreground" />
+                              )}
+                              {partner.instagram && (
+                                <Instagram className="h-3 w-3 text-muted-foreground" />
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex shrink-0 gap-1">
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7"
+                              aria-label={`Edit ${partner.name}`}
+                              onClick={() => {
+                                setEditingPartnerId(partner.id);
+                                setEditPartnerDraft({
+                                  name: partner.name,
+                                  logo_key: partner.logo_key ?? "",
+                                  description: partner.description ?? "",
+                                  linkedin: partner.linkedin ?? "",
+                                  github: partner.github ?? "",
+                                  website: partner.website ?? "",
+                                  instagram: partner.instagram ?? "",
+                                });
+                              }}
+                            >
+                              <Pencil className="h-3.5 w-3.5 text-foreground" />
+                            </Button>
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 text-destructive hover:text-destructive"
+                              aria-label={`Delete ${partner.name}`}
+                              onClick={() => deletePartner(partner.id)}
+                              disabled={isDeleting}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                </section>
+              ) : null}
+
+              {/* Step 5: Review */}
+              {currentStep === 5 ? (
                 <section className="space-y-6">
                   <h3 className="text-base font-semibold text-foreground">
                     Review your interest group

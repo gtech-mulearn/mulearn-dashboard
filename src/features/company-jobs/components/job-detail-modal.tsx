@@ -96,8 +96,9 @@ export function JobDetailModal({
   const existingApp = appsResponse?.applications.find(
     (app) => app.job.id === job?.id,
   );
-  const isRejected = existingApp?.status === "rejected";
-  const isAlreadyApplied = existingApp && !isRejected;
+  const canResubmit =
+    existingApp?.status === "rejected" || existingApp?.status === "withdrawn";
+  const isAlreadyApplied = existingApp && !canResubmit;
   const isPending = isApplying || isResubmitting;
   const isSuccess = applySuccess || resubmitSuccess;
   // A job that is not Active (e.g. Closed) no longer accepts applications.
@@ -124,7 +125,7 @@ export function JobDetailModal({
       },
     };
 
-    if (isRejected && existingApp) {
+    if (canResubmit && existingApp) {
       resubmit(
         {
           appId: existingApp.id,
@@ -415,10 +416,10 @@ export function JobDetailModal({
               {isAlreadyApplied
                 ? "Already Applied"
                 : isPending
-                  ? isRejected
+                  ? canResubmit
                     ? "Resubmitting…"
                     : "Applying…"
-                  : isRejected
+                  : canResubmit
                     ? "Resubmit Application"
                     : "Apply Now"}
             </Button>

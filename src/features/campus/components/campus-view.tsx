@@ -4,7 +4,6 @@ import {
   Facebook,
   Github,
   Globe,
-  GraduationCap,
   Instagram,
   Link2,
   Linkedin,
@@ -17,7 +16,15 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCampusInfo, useWeeklyKarma } from "../hooks";
 import type { CampusDashboardProps } from "../types";
-import { StatsCards, WeeklyKarmaCard } from ".";
+import {
+  ActiveIgChaptersCard,
+  CampusLeadCard,
+  ExecomCard,
+  KarmaByClusterCard,
+  StatsCards,
+  TopLeaderboardCard,
+  WeeklyKarmaCard,
+} from ".";
 
 const SOCIAL_PLATFORMS = [
   {
@@ -141,10 +148,6 @@ export const CampusView = ({ id }: CampusDashboardProps) => {
                 <span className="font-medium">{info.campus_zone}</span>
               </div>
               <div className="flex items-center gap-1.5 rounded-full bg-muted/80 px-3 py-1.5 text-sm text-muted-foreground border border-border">
-                <GraduationCap className="size-4 text-brand-purple" />
-                <span className="font-medium">Level {info.campus_level}</span>
-              </div>
-              <div className="flex items-center gap-1.5 rounded-full bg-muted/80 px-3 py-1.5 text-sm text-muted-foreground border border-border">
                 <Zap className="size-4 text-warning" />
                 <span className="font-medium">{info.campus_code}</span>
               </div>
@@ -200,6 +203,25 @@ export const CampusView = ({ id }: CampusDashboardProps) => {
             value: d.value,
           }))}
         />
+
+        {(info.campus_lead ||
+          (info.execom && info.execom.length > 0) ||
+          (info.active_ig_chapters && info.active_ig_chapters.length > 0)) && (
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="flex h-full flex-col gap-4">
+              <CampusLeadCard lead={info.campus_lead} />
+              <div className="flex-1">
+                <ActiveIgChaptersCard chapters={info.active_ig_chapters} />
+              </div>
+            </div>
+            <ExecomCard execom={info.execom} />
+          </div>
+        )}
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <TopLeaderboardCard entries={info.top_10_campus_leaderboard} />
+          <KarmaByClusterCard clusters={info.karma_by_cluster} />
+        </div>
       </div>
     </div>
   );

@@ -10,7 +10,8 @@
 
 import { ArrowRight, Mail, Search } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,11 +28,23 @@ import { useActiveInvites, useCircles, useUserCircles } from "../hooks";
 import { CircleCard } from "./circle-card";
 
 export function CircleList() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const urlFilter = searchParams.get("filter") || "all";
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState(urlFilter);
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(searchQuery, 300);
   const isJoinedView = statusFilter === "joined";
+
+  useEffect(() => {
+    const f = searchParams.get("filter") || "all";
+    if (f !== statusFilter) {
+      setStatusFilter(f);
+    }
+  }, [searchParams, statusFilter]);
 
   const { activeInvitesCount } = useActiveInvites();
   const { data: userCircles, isLoading: userCirclesLoading } = useUserCircles();
@@ -48,6 +61,17 @@ export function CircleList() {
   const handleFilterChange = (value: string) => {
     setStatusFilter(value);
     setPage(1);
+
+    const params = new URLSearchParams(searchParams.toString());
+    if (value === "all") {
+      params.delete("filter");
+    } else {
+      params.set("filter", value);
+    }
+    const queryStr = params.toString();
+    router.replace(queryStr ? `${pathname}?${queryStr}` : pathname, {
+      scroll: false,
+    });
   };
 
   const filteredJoinedCircles = useMemo(() => {

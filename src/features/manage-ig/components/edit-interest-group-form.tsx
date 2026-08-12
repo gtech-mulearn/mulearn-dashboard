@@ -1,11 +1,23 @@
 "use client";
 
-import { Plus, Trash2, XCircle } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  Check,
+  Github as GithubIcon,
+  Globe,
+  Handshake,
+  Instagram,
+  Linkedin,
+  Pencil,
+  Plus,
+  Trash2,
+  X,
+  XCircle,
+} from "lucide-react";
 import { useCallback, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
@@ -27,11 +39,16 @@ import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
 import type { InterestGroupDetail } from "@/features/interest-groups/schemas";
 import {
-  IG_COVER_IMAGE_ASPECT,
-  IG_ICON_IMAGE_ASPECT,
-  IG_IMAGE_MAX_MB,
-} from "../constants/ig-images.constants";
+  createCommunityPartner,
+  deleteCommunityPartner,
+  fetchCommunityPartners,
+  updateCommunityPartner,
+} from "../api/community-partner.api";
 import { useEditInterestGroup } from "../hooks/use-edit-interest-group";
+import type {
+  CommunityPartner,
+  CommunityPartnerWrite,
+} from "../schemas/community-partner.schema";
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -94,8 +111,6 @@ export function EditInterestGroupForm({
     isPending,
     removeCoverImage,
     removeIconImage,
-    uploadCoverImage,
-    uploadIconImage,
     isRemovingCoverImage,
     isRemovingIconImage,
     isUploadingCoverImage,
@@ -112,10 +127,12 @@ export function EditInterestGroupForm({
 
   // ── Cover / icon images — replaced/removed via standalone endpoints,
   // never sent as part of the PATCH payload below ──────────
-  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
-  const [iconImageFile, setIconImageFile] = useState<File | null>(null);
-  const [coverImageUrl, setCoverImageUrl] = useState(group.cover_image ?? null);
-  const [iconImageUrl, setIconImageUrl] = useState(group.icon_image ?? null);
+  const [_coverImageFile, setCoverImageFile] = useState<File | null>(null);
+  const [_iconImageFile, setIconImageFile] = useState<File | null>(null);
+  const [_coverImageUrl, setCoverImageUrl] = useState(
+    group.cover_image ?? null,
+  );
+  const [_iconImageUrl, setIconImageUrl] = useState(group.icon_image ?? null);
 
   // ── Array (tag) fields ─────────────────────────────────
   const [prerequisites, setPrerequisites] = useState<string[]>(
@@ -594,6 +611,9 @@ export function EditInterestGroupForm({
             placeholder="Search users by muid…"
           />
         </fieldset>
+
+        {/* ── Community Partners ── */}
+        <CommunityPartnersEditor igId={group.id} />
       </div>
 
       <SheetFooter className="border-t border-border/50 pt-4">
@@ -635,5 +655,362 @@ export function EditInterestGroupForm({
         onConfirm={confirmRemoveImage}
       />
     </form>
+  );
+}
+
+// ─── Community Partners sub-editor ──────────────────────────────────────────
+
+const EMPTY_PARTNER: CommunityPartnerWrite = {
+  name: "",
+  logo_key: "",
+  description: "",
+  linkedin: "",
+  github: "",
+  website: "",
+  instagram: "",
+};
+
+function CommunityPartnersEditor({ igId }: { igId: string }) {
+  const queryClient = useQueryClient();
+  const qKey = ["community-partners", igId];
+
+  // ── Fetch existing partners for this IG ──────────────────────
+  const { data, isLoading } = useQuery({
+    queryKey: qKey,
+    queryFn: () => fetchCommunityPartners({ ig_id: igId }),
+  });
+  const partners: CommunityPartner[] = data?.data ?? [];
+
+  // ── "New partner" form state ──────────────────────────────────
+  const [showAdd, setShowAdd] = useState(false);
+  const [newPartner, setNewPartner] =
+    useState<CommunityPartnerWrite>(EMPTY_PARTNER);
+
+  // ── Editing-in-place state ────────────────────────────────────
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState<Partial<CommunityPartnerWrite>>(
+    {},
+  );
+
+  // ── Delete confirm ────────────────────────────────────────────
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+
+  // ── CREATE mutation ───────────────────────────────────────────
+  const createMutation = useMutation({
+    mutationFn: (data: CommunityPartnerWrite) =>
+      createCommunityPartner({ ...data, interest_groups: [igId] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: qKey });
+      setShowAdd(false);
+      setNewPartner(EMPTY_PARTNER);
+    },
+  });
+
+  // ── PATCH mutation ────────────────────────────────────────────
+  const updateMutation = useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<CommunityPartnerWrite>;
+    }) => updateCommunityPartner(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: qKey });
+      setEditingId(null);
+      setEditDraft({});
+    },
+  });
+
+  // ── DELETE mutation ───────────────────────────────────────────
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteCommunityPartner(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: qKey });
+      setDeleteTargetId(null);
+    },
+  });
+
+  // ── Helpers ───────────────────────────────────────────────────
+  const startEdit = (partner: CommunityPartner) => {
+    setEditingId(partner.id);
+    setEditDraft({
+      name: partner.name,
+      logo_key: partner.logo_key ?? "",
+      description: partner.description ?? "",
+      linkedin: partner.linkedin ?? "",
+      github: partner.github ?? "",
+      website: partner.website ?? "",
+      instagram: partner.instagram ?? "",
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditDraft({});
+  };
+
+  const saveEdit = (id: string) => {
+    if (!editDraft.name?.trim()) return;
+    updateMutation.mutate({ id, data: editDraft });
+  };
+
+  return (
+    <fieldset className="space-y-4">
+      <div className="flex items-center justify-between">
+        <legend className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <Handshake className="h-4 w-4" />
+          Community Partners
+        </legend>
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={() => setShowAdd((v) => !v)}
+          aria-label={
+            showAdd ? "Cancel adding partner" : "Add community partner"
+          }
+        >
+          {showAdd ? <X className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+          {showAdd ? "Cancel" : "Add"}
+        </Button>
+      </div>
+
+      {/* ── Add new partner form ── */}
+      {showAdd && (
+        <div className="rounded-xl border border-dashed border-primary/40 bg-primary/5 p-3 space-y-2">
+          <p className="text-xs font-semibold text-primary mb-2">New Partner</p>
+          <Input
+            value={newPartner.name}
+            onChange={(e) =>
+              setNewPartner((p) => ({ ...p, name: e.target.value }))
+            }
+            placeholder="Partner name *"
+          />
+          <Input
+            value={newPartner.logo_key ?? ""}
+            onChange={(e) =>
+              setNewPartner((p) => ({ ...p, logo_key: e.target.value }))
+            }
+            placeholder="Logo URL"
+          />
+          <Textarea
+            value={newPartner.description ?? ""}
+            onChange={(e) =>
+              setNewPartner((p) => ({ ...p, description: e.target.value }))
+            }
+            placeholder="Description"
+            className="min-h-16"
+          />
+          <Input
+            value={newPartner.linkedin ?? ""}
+            onChange={(e) =>
+              setNewPartner((p) => ({ ...p, linkedin: e.target.value }))
+            }
+            placeholder="LinkedIn URL"
+          />
+          <Input
+            value={newPartner.github ?? ""}
+            onChange={(e) =>
+              setNewPartner((p) => ({ ...p, github: e.target.value }))
+            }
+            placeholder="GitHub URL"
+          />
+          <Input
+            value={newPartner.website ?? ""}
+            onChange={(e) =>
+              setNewPartner((p) => ({ ...p, website: e.target.value }))
+            }
+            placeholder="Website URL"
+          />
+          <Input
+            value={newPartner.instagram ?? ""}
+            onChange={(e) =>
+              setNewPartner((p) => ({ ...p, instagram: e.target.value }))
+            }
+            placeholder="Instagram URL"
+          />
+          <Button
+            type="button"
+            size="sm"
+            disabled={!newPartner.name.trim() || createMutation.isPending}
+            onClick={() => createMutation.mutate(newPartner)}
+          >
+            {createMutation.isPending ? "Creating…" : "Create Partner"}
+          </Button>
+        </div>
+      )}
+
+      {/* ── Existing partners list ── */}
+      {isLoading && (
+        <p className="text-xs text-muted-foreground">Loading partners…</p>
+      )}
+      {!isLoading && partners.length === 0 && !showAdd && (
+        <p className="text-xs text-muted-foreground">
+          No community partners linked yet.
+        </p>
+      )}
+
+      <div className="space-y-2">
+        {partners.map((partner) =>
+          editingId === partner.id ? (
+            // ── Inline edit form ──
+            <div
+              key={partner.id}
+              className="rounded-xl border border-primary/40 bg-primary/5 p-3 space-y-2"
+            >
+              <Input
+                value={editDraft.name ?? ""}
+                onChange={(e) =>
+                  setEditDraft((d) => ({ ...d, name: e.target.value }))
+                }
+                placeholder="Partner name *"
+              />
+              <Input
+                value={editDraft.logo_key ?? ""}
+                onChange={(e) =>
+                  setEditDraft((d) => ({ ...d, logo_key: e.target.value }))
+                }
+                placeholder="Logo URL"
+              />
+              <Textarea
+                value={editDraft.description ?? ""}
+                onChange={(e) =>
+                  setEditDraft((d) => ({ ...d, description: e.target.value }))
+                }
+                placeholder="Description"
+                className="min-h-16"
+              />
+              <Input
+                value={editDraft.linkedin ?? ""}
+                onChange={(e) =>
+                  setEditDraft((d) => ({ ...d, linkedin: e.target.value }))
+                }
+                placeholder="LinkedIn URL"
+              />
+              <Input
+                value={editDraft.github ?? ""}
+                onChange={(e) =>
+                  setEditDraft((d) => ({ ...d, github: e.target.value }))
+                }
+                placeholder="GitHub URL"
+              />
+              <Input
+                value={editDraft.website ?? ""}
+                onChange={(e) =>
+                  setEditDraft((d) => ({ ...d, website: e.target.value }))
+                }
+                placeholder="Website URL"
+              />
+              <Input
+                value={editDraft.instagram ?? ""}
+                onChange={(e) =>
+                  setEditDraft((d) => ({ ...d, instagram: e.target.value }))
+                }
+                placeholder="Instagram URL"
+              />
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={!editDraft.name?.trim() || updateMutation.isPending}
+                  onClick={() => saveEdit(partner.id)}
+                >
+                  <Check className="h-3 w-3" />
+                  {updateMutation.isPending ? "Saving…" : "Save"}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={cancelEdit}
+                >
+                  <X className="h-3 w-3" />
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            // ── Read-only partner card ──
+            <div
+              key={partner.id}
+              className="flex items-start gap-3 rounded-xl border border-border/50 bg-muted/20 p-3"
+            >
+              {partner.logo_key ? (
+                // biome-ignore lint/performance/noImgElement: External logo source
+                <img
+                  src={partner.logo_key}
+                  alt={partner.name}
+                  className="h-9 w-9 shrink-0 rounded-lg object-contain border border-border/60 bg-background p-0.5"
+                />
+              ) : (
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold text-sm">
+                  {partner.name.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-foreground truncate">
+                  {partner.name}
+                </p>
+                {partner.description && (
+                  <p className="text-xs text-muted-foreground line-clamp-1">
+                    {partner.description}
+                  </p>
+                )}
+                <div className="flex items-center gap-1.5 mt-1">
+                  {partner.website && (
+                    <Globe className="h-3 w-3 text-muted-foreground" />
+                  )}
+                  {partner.linkedin && (
+                    <Linkedin className="h-3 w-3 text-muted-foreground" />
+                  )}
+                  {partner.github && (
+                    <GithubIcon className="h-3 w-3 text-muted-foreground" />
+                  )}
+                  {partner.instagram && (
+                    <Instagram className="h-3 w-3 text-muted-foreground" />
+                  )}
+                </div>
+              </div>
+              <div className="flex shrink-0 gap-1">
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7"
+                  aria-label={`Edit ${partner.name}`}
+                  onClick={() => startEdit(partner)}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7 text-destructive hover:text-destructive"
+                  aria-label={`Delete ${partner.name}`}
+                  onClick={() => setDeleteTargetId(partner.id)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+          ),
+        )}
+      </div>
+
+      {/* Delete confirm dialog */}
+      <ConfirmDialog
+        open={deleteTargetId !== null}
+        onOpenChange={(open) => !open && setDeleteTargetId(null)}
+        title="Remove community partner?"
+        description="This will unlink the partner from this interest group. The partner record itself is deleted."
+        confirmLabel="Delete"
+        isPending={deleteMutation.isPending}
+        onConfirm={() =>
+          deleteTargetId && deleteMutation.mutate(deleteTargetId)
+        }
+      />
+    </fieldset>
   );
 }

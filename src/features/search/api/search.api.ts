@@ -17,6 +17,11 @@ interface SearchParams {
 
 interface CampusSearchParams extends SearchParams {
   searchType?: SearchType;
+  zoneId?: string;
+  stateId?: string;
+  countryId?: string;
+  affiliationId?: string;
+  sortBy?: string;
 }
 
 export async function searchUsers(
@@ -62,6 +67,12 @@ export async function searchCampuses(
     pageIndex: String(params.pageIndex ?? 1),
     perPage: String(params.perPage ?? 30),
   });
+  if (params.zoneId) searchParams.set("zone_id", params.zoneId);
+  if (params.stateId) searchParams.set("state_id", params.stateId);
+  if (params.countryId) searchParams.set("country_id", params.countryId);
+  if (params.affiliationId)
+    searchParams.set("affiliation_id", params.affiliationId);
+  if (params.sortBy) searchParams.set("sortBy", params.sortBy);
 
   try {
     // Always fetch both college and school results in parallel

@@ -12,6 +12,7 @@
 import {
   BarChart3,
   Blocks,
+  Clock,
   Cloud,
   Code2,
   Cpu,
@@ -25,7 +26,7 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { useJoinCircle } from "../hooks";
+import { useIsCirclePendingJoin, useJoinCircle } from "../hooks";
 import type { LearningCircle } from "../schemas";
 
 /* ─── Category theme system — bold, visible backgrounds ─── */
@@ -221,8 +222,20 @@ export function CircleCard({ circle, hideJoin = false }: CircleCardProps) {
   const theme = getTheme(circle.ig);
   const CategoryIcon = theme.icon;
   const joinCircle = useJoinCircle();
+  const isPendingJoinHook = useIsCirclePendingJoin(circle.id);
+
+  const statusStr = (circle.status || "").toLowerCase();
+  const isJoined =
+    statusStr === "joined" ||
+    statusStr === "lead" ||
+    statusStr === "owner" ||
+    circle.is_joined ||
+    circle.is_creator;
+  const isPendingJoin =
+    !isJoined && (statusStr === "pending" || isPendingJoinHook);
+  const canJoin = !hideJoin && !isJoined && !isPendingJoin;
+
   const memberCount = circle.total_members || circle.attendees?.length || 0;
-  const canJoin = !hideJoin && !circle.is_joined && !circle.is_creator;
 
   const handleJoin = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -262,7 +275,7 @@ export function CircleCard({ circle, hideJoin = false }: CircleCardProps) {
         </div>
 
         <div className="relative p-5 pb-5">
-          {/* Header: Category pill + Join button */}
+          {/* Header: Category pill + Join button / Status badge */}
           <div className="flex items-center justify-between">
             <span
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold tracking-wide uppercase shadow-sm ${theme.pillBg} ${theme.pillText}`}
@@ -271,7 +284,12 @@ export function CircleCard({ circle, hideJoin = false }: CircleCardProps) {
               {circle.ig}
             </span>
 
-            {canJoin && (
+            {isPendingJoin ? (
+              <span className="relative z-10 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold tracking-wide uppercase shadow-sm bg-card/80 dark:bg-white/10 backdrop-blur-sm text-warning">
+                <Clock className="h-3 w-3" />
+                Requested
+              </span>
+            ) : canJoin ? (
               <button
                 type="button"
                 onClick={handleJoin}
@@ -292,7 +310,7 @@ export function CircleCard({ circle, hideJoin = false }: CircleCardProps) {
                   <Plus className="h-4 w-4" strokeWidth={2.5} />
                 )}
               </button>
-            )}
+            ) : null}
           </div>
 
           {/* Circle name — large, bold */}

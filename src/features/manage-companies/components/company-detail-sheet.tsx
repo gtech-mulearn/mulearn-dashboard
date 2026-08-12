@@ -309,64 +309,75 @@ export function CompanyDetailSheet({
               <Separator />
 
               {/* Culture & Tech */}
-              {details?.culture_text ||
-              details?.tech_stack?.length ||
-              details?.perks?.length ? (
-                <>
-                  <section className="space-y-3">
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Culture & Tech
-                    </h3>
-                    <div className="space-y-3">
-                      {details.culture_text && (
-                        <div className="space-y-1">
-                          <p className="text-xs font-medium text-muted-foreground">
-                            Culture
-                          </p>
-                          <p className="text-sm text-foreground">
-                            {details.culture_text}
-                          </p>
-                        </div>
-                      )}
-                      {details.tech_stack && details.tech_stack.length > 0 && (
-                        <div className="space-y-1">
-                          <p className="text-xs font-medium text-muted-foreground">
-                            Tech Stack
-                          </p>
-                          <div className="flex flex-wrap gap-1">
-                            {details.tech_stack.map((t) => (
-                              <Badge
-                                key={t}
-                                className={`text-xs font-normal ${chipColor(t)}`}
-                              >
-                                {t}
-                              </Badge>
-                            ))}
+              {(() => {
+                const techStackArray = details?.tech_stack || [];
+                const perksArray = details?.perks || [];
+
+                if (
+                  !details?.culture_text &&
+                  techStackArray.length === 0 &&
+                  perksArray.length === 0
+                ) {
+                  return null;
+                }
+
+                return (
+                  <>
+                    <section className="space-y-3">
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Culture & Tech
+                      </h3>
+                      <div className="space-y-3">
+                        {details?.culture_text && (
+                          <div className="space-y-1">
+                            <p className="text-xs font-medium text-muted-foreground">
+                              Culture
+                            </p>
+                            <p className="text-sm text-foreground">
+                              {details.culture_text}
+                            </p>
                           </div>
-                        </div>
-                      )}
-                      {details.perks && details.perks.length > 0 && (
-                        <div className="space-y-1">
-                          <p className="text-xs font-medium text-muted-foreground">
-                            Perks
-                          </p>
-                          <div className="flex flex-wrap gap-1">
-                            {details.perks.map((p) => (
-                              <Badge
-                                key={p}
-                                className={`text-xs font-normal ${chipColor(p)}`}
-                              >
-                                {p}
-                              </Badge>
-                            ))}
+                        )}
+                        {techStackArray.length > 0 && (
+                          <div className="space-y-1">
+                            <p className="text-xs font-medium text-muted-foreground">
+                              Tech Stack
+                            </p>
+                            <div className="flex flex-wrap gap-1">
+                              {techStackArray.map((t) => (
+                                <Badge
+                                  key={t}
+                                  className={`text-xs font-normal ${chipColor(t)}`}
+                                >
+                                  {t}
+                                </Badge>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  </section>
-                  <Separator />
-                </>
-              ) : null}
+                        )}
+                        {perksArray.length > 0 && (
+                          <div className="space-y-1">
+                            <p className="text-xs font-medium text-muted-foreground">
+                              Perks
+                            </p>
+                            <div className="flex flex-wrap gap-1">
+                              {perksArray.map((p) => (
+                                <Badge
+                                  key={p}
+                                  className={`text-xs font-normal ${chipColor(p)}`}
+                                >
+                                  {p}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </section>
+                    <Separator />
+                  </>
+                );
+              })()}
 
               {/* Verification Timeline */}
               <section className="space-y-3">

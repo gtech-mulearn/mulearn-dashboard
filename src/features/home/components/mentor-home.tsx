@@ -8,12 +8,15 @@ import {
   Loader2,
   XCircle,
 } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import {
   AvailabilitySlotPicker,
   scheduleHasOverlap,
@@ -29,6 +32,7 @@ import {
   useMentorApplication,
   useMentorProfile,
 } from "@/features/mentor/onboarding/hooks/use-onboarding";
+import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
 import type { WeeklySchedule } from "@/features/mentor/types";
 import { useDashboardCalendar, useMentorSessions } from "../hooks";
 import { flattenDashboardCalendar } from "../utils";
@@ -54,13 +58,23 @@ export function MentorHome() {
     error: appError,
   } = useMentorApplication();
 
+  // Read mentor prefill params forwarded from the registration flow via URL.
+  // Must be called unconditionally at the top level (Rules of Hooks).
+  const searchParams = useSearchParams();
+  const prefillData = {
+    mentor_tier: searchParams.get("mentor_tier") ?? undefined,
+    company: searchParams.get("mentor_company") ?? undefined,
+    org: searchParams.get("mentor_org_id") ?? undefined,
+  };
+
   const onboardingState = deriveOnboardingState(
     application,
     appError as Error | null,
   );
 
   const { data: mentorProfile, isLoading: profileLoading } = useMentorProfile(
-    onboardingState === "rejected",
+    onboardingState === "rejected" ||
+      onboardingState === "pending_verification",
   );
 
   const {
@@ -86,6 +100,7 @@ export function MentorHome() {
 
   const [localSchedule, setLocalSchedule] = useState<WeeklySchedule>([]);
   const [savedSchedule, setSavedSchedule] = useState<WeeklySchedule>([]);
+  const [isEditingApplication, setIsEditingApplication] = useState(false);
 
   useEffect(() => {
     if (serverSchedule) {
@@ -98,7 +113,12 @@ export function MentorHome() {
   const hasOverlap = scheduleHasOverlap(localSchedule);
 
   // Step 1: wait for application to load
-  if (appLoading || (onboardingState === "rejected" && profileLoading)) {
+  if (
+    appLoading ||
+    ((onboardingState === "rejected" ||
+      onboardingState === "pending_verification") &&
+      profileLoading)
+  ) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-32 w-full" />
@@ -111,7 +131,7 @@ export function MentorHome() {
   if (onboardingState === "not_applied") {
     return (
       <div className="mx-auto max-w-2xl py-8">
-        <MentorOnboardingForm />
+        <MentorOnboardingForm prefillData={prefillData} />
       </div>
     );
   }
@@ -172,7 +192,7 @@ export function MentorHome() {
   // (Rejected applications already returned above with the rejection banner + reapply form.)
   if (!isVerified) {
     return (
-      <div className="mx-auto max-w-2xl py-8">
+      <div className="mx-auto max-w-2xl py-8 space-y-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -180,13 +200,26 @@ export function MentorHome() {
               Application submitted
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm text-muted-foreground">
-            {application?.organization && (
+          <CardContent className="space-y-4 text-sm text-muted-foreground">
+            {application?.mentor_tier && (
               <p>
                 Applying as{" "}
                 <span className="font-medium text-foreground">
-                  {application.organization}
+                  {application.mentor_tier === "IG_MENTOR"
+                    ? "IG Mentor"
+                    : application.mentor_tier === "COMPANY_MENTOR"
+                      ? "Company Mentor"
+                      : application.mentor_tier}
                 </span>
+                {application.organization ? (
+                  <>
+                    {" "}
+                    on behalf of{" "}
+                    <span className="font-medium text-foreground">
+                      {application.organization}
+                    </span>
+                  </>
+                ) : null}
                 .
               </p>
             )}
@@ -195,8 +228,44 @@ export function MentorHome() {
               decision is made. You can keep using μLearn as a learner in the
               meantime.
             </p>
+
+            <div className="flex items-center justify-between rounded-lg border p-4 mt-4">
+              <div className="space-y-0.5">
+                <label
+                  htmlFor="modify-application-switch"
+                  className="text-sm font-medium text-foreground"
+                >
+                  Do you want to modify your application?
+                </label>
+                <p className="text-[13px] text-muted-foreground">
+                  Enable this to edit your submitted details.
+                </p>
+              </div>
+              <Switch
+                id="modify-application-switch"
+                checked={isEditingApplication}
+                onCheckedChange={setIsEditingApplication}
+              />
+            </div>
           </CardContent>
         </Card>
+
+        {isEditingApplication && (
+          <MentorOnboardingForm
+            existing={
+              {
+                ...(mentorProfile || {}),
+                id:
+                  mentorProfile?.id ??
+                  application?.id ??
+                  application?.mentor_id ??
+                  "",
+              } as MentorApplication
+            }
+            isEdit
+            isPendingEdit
+          />
+        )}
       </div>
     );
   }
@@ -238,7 +307,7 @@ export function MentorHome() {
   const statCards = [
     {
       key: "active_mentees",
-      label: "Active Mentees",
+      label: "Active Learners",
       value: activeLearners,
       delta: 0,
       delta_type: "neutral" as const,
@@ -326,32 +395,39 @@ export function MentorHome() {
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         {/* Task Requests */}
-        <Card className="rounded-2xl border bg-card shadow-sm">
-          <CardHeader className="px-5 py-4">
-            <div className="flex flex-row items-center gap-2.5">
-              <div className="flex size-9 items-center justify-center rounded-xl bg-warning/10">
-                <BookOpen className="size-4 text-warning" />
-              </div>
-              <CardTitle className="text-base font-bold text-foreground">
-                Task Requests
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="px-5 pb-5 pt-0">
-            {overviewLoading ? (
-              <Skeleton className="h-12 w-full rounded-lg" />
-            ) : (
-              <div className="flex gap-4 text-sm">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-warning">—</p>
-                  <p className="text-[11px] text-muted-foreground uppercase tracking-wide">
-                    Pending
-                  </p>
+        <Link
+          href="/dashboard/mentor/task-requests"
+          className="block outline-none hover:opacity-90 transition-opacity"
+        >
+          <Card className="rounded-2xl border bg-card shadow-sm h-full hover:border-primary/50 transition-colors">
+            <CardHeader className="px-5 py-4">
+              <div className="flex flex-row items-center gap-2.5">
+                <div className="flex size-9 items-center justify-center rounded-xl bg-warning/10">
+                  <BookOpen className="size-4 text-warning" />
                 </div>
+                <CardTitle className="text-base font-bold text-foreground">
+                  Task Requests
+                </CardTitle>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent className="px-5 pb-5 pt-0">
+              {overviewLoading ? (
+                <Skeleton className="h-12 w-full rounded-lg" />
+              ) : (
+                <div className="flex gap-4 text-sm">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-warning">
+                      {pendingReviews}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-wide">
+                      Pending
+                    </p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </Link>
         <EventCalendarCard
           events={flattenDashboardCalendar(calendarData)}
           isLoading={loadingCalendar}
@@ -411,7 +487,7 @@ export function MentorHome() {
         <CardContent className="px-5 pb-5 pt-0">
           {schedLoading ? (
             <div className="grid grid-cols-2 gap-2 md:grid-cols-7">
-              {["sun", "mon", "tue", "wed", "thu", "fri", "sat"].map(
+              {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map(
                 (d, index) => (
                   <div
                     key={d}

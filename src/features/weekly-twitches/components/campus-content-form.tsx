@@ -212,13 +212,20 @@ export function CampusContentForm({
           </div>
 
           <div className="space-y-1">
-            <p className="text-sm font-medium text-foreground">Description</p>
+            <p className="text-sm font-medium text-foreground">
+              Description <span className="text-destructive">*</span>
+            </p>
             <Textarea
               className="rounded-xl border-border bg-background"
               placeholder="Episode description..."
               rows={3}
               {...register("description")}
             />
+            {errors.description && (
+              <p className="text-xs text-destructive">
+                {errors.description.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-1">

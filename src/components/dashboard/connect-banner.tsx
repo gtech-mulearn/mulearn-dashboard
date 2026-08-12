@@ -1,6 +1,5 @@
 "use client";
 
-import { X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -8,19 +7,13 @@ import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useUserInfo } from "@/features/auth";
 import { cn } from "@/lib/utils";
-import { useUIStore } from "@/stores/ui-store";
 import { Spinner } from "../ui/spinner";
 
 export function ConnectAccountsBanner() {
   const pathname = usePathname();
   const { state: sidebarState } = useSidebar();
   const isSidebarExpanded = sidebarState === "expanded";
-  const isConnectBannerDismissed = useUIStore(
-    (state) => state.isConnectBannerDismissed,
-  );
-  const dismissConnectBanner = useUIStore(
-    (state) => state.dismissConnectBanner,
-  );
+
   const user = useUserInfo();
   const [mounted, setMounted] = useState(false);
 
@@ -32,7 +25,6 @@ export function ConnectAccountsBanner() {
   const isCompanyRoute = pathname.startsWith("/dashboard/company");
   const isAllowedRoute = ALLOWED_ROUTES.includes(pathname) && !isCompanyRoute;
   if (!mounted || !isAllowedRoute) return null;
-  if (isConnectBannerDismissed) return null;
   if (user.isLoading) {
     return <Spinner className="h-8 w-8" />;
   }
@@ -69,15 +61,6 @@ export function ConnectAccountsBanner() {
               <Link href="/dashboard/connect-discord">Connect Discord</Link>
             </Button>
           )}
-          <Button
-            variant="link"
-            size="icon"
-            onClick={() => dismissConnectBanner()}
-            className="absolute right-3 top-3 h-8 w-8 md:static md:ml-1"
-            aria-label="Dismiss"
-          >
-            <X className="h-4 w-4" />
-          </Button>
         </div>
       </div>
     </div>

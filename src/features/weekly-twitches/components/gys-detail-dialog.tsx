@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { formatTime } from "../lib/format-time";
 import type { GysItem } from "../schemas";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -63,7 +64,9 @@ export function GysDetailDialog({ item, onClose }: Props) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Date">{item.date}</Field>
-            <Field label="Time">{item.time ?? "—"}</Field>
+            <Field label="Time">
+              {item.time ? formatTime(item.time) : "—"}
+            </Field>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">

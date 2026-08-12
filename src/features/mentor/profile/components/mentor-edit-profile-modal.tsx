@@ -18,6 +18,7 @@ import { type Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import {
   Dialog,
   DialogContent,
@@ -39,19 +40,16 @@ import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useInterestGroupsList } from "@/features/home/hooks";
-import { useMentorOverview } from "@/features/mentor/hooks";
-import { useUpdateMentorProfile } from "@/features/mentor/onboarding/hooks/use-onboarding";
+import {
+  useChangeCompany,
+  useUpdateMentorProfile,
+} from "@/features/mentor/onboarding/hooks/use-onboarding";
 import type {
   MentorApplication,
   MentorProfileWrite,
 } from "@/features/mentor/onboarding/schemas";
+import { useCompanies } from "@/features/onboarding/hooks";
 import { useUpdateProfile, useUpdateProfileImage } from "@/features/profile";
 import type { UserProfile } from "@/features/profile/schemas";
 import {
@@ -59,7 +57,7 @@ import {
   validateImageFile,
 } from "@/lib/constants/upload";
 
-const MentorEditSchema = z.object({
+const baseMentorEditSchema = z.object({
   full_name: z.string().trim().min(1, "Name is required"),
   about: z.string().trim().optional(),
   // Edit form: expertise is optional and must NOT hard-block saving other
@@ -73,10 +71,31 @@ const MentorEditSchema = z.object({
     .array(z.string())
     .min(1, "You must mentor at least one Interest Group"),
   org: z.string().optional(),
+  org_reason: z.string().trim().optional(),
+  linkedin: z
+    .string()
+    .trim()
+    .regex(
+      /^https?:\/\/(www\.)?linkedin\.com\/.*$/,
+      "Enter a valid LinkedIn URL",
+    )
+    .optional()
+    .or(z.literal("")),
   profile_pic: z.instanceof(File).optional(),
 });
 
-type MentorEditValues = z.infer<typeof MentorEditSchema>;
+const getMentorEditSchema = (originalOrg: string | undefined | null) =>
+  baseMentorEditSchema.superRefine((data, ctx) => {
+    if (data.org && data.org !== (originalOrg ?? "") && !data.org_reason) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please provide a reason for changing your company.",
+        path: ["org_reason"],
+      });
+    }
+  });
+
+type MentorEditValues = z.infer<typeof baseMentorEditSchema>;
 
 interface MentorEditProfileModalProps {
   open: boolean;
@@ -99,17 +118,23 @@ export function MentorEditProfileModal({
   const updateProfileMutation = useUpdateProfile();
   const updateProfileImageMutation = useUpdateProfileImage();
   const updateMentorProfileMutation = useUpdateMentorProfile();
+  const changeCompanyMutation = useChangeCompany();
 
   const isPending =
     updateProfileMutation.isPending ||
     updateProfileImageMutation.isPending ||
-    updateMentorProfileMutation.isPending;
+    updateMentorProfileMutation.isPending ||
+    changeCompanyMutation.isPending;
 
   const { data: igList = [] } = useInterestGroupsList();
   const igOptions = igList.map((ig) => ({ value: ig.id, label: ig.name }));
+  const { data: companies = [] } = useCompanies();
+  const companyOptions = companies.map((c) => ({ id: c.id, title: c.title }));
 
   const form = useForm<MentorEditValues>({
-    resolver: zodResolver(MentorEditSchema) as Resolver<MentorEditValues>,
+    resolver: zodResolver(
+      getMentorEditSchema(mentorProfile.org),
+    ) as Resolver<MentorEditValues>,
     defaultValues: {
       full_name: userProfile.full_name ?? "",
       about: mentorProfile.about ?? "",
@@ -121,6 +146,8 @@ export function MentorEditProfileModal({
         : [],
       preferred_ig_ids: mentorProfile.preferred_ig_ids ?? [],
       org: mentorProfile.org ?? "",
+      org_reason: "",
+      linkedin: mentorProfile.linkedin ?? mentorProfile.linkedin_url ?? "",
       profile_pic: undefined,
     },
   });
@@ -139,6 +166,8 @@ export function MentorEditProfileModal({
           : [],
         preferred_ig_ids: mentorProfile.preferred_ig_ids ?? [],
         org: mentorProfile.org ?? "",
+        org_reason: "",
+        linkedin: mentorProfile.linkedin ?? mentorProfile.linkedin_url ?? "",
         profile_pic: undefined,
       });
       setPreviewUrl(null);
@@ -150,6 +179,8 @@ export function MentorEditProfileModal({
     mentorProfile.expertise,
     mentorProfile.preferred_ig_ids,
     mentorProfile.org,
+    mentorProfile.linkedin,
+    mentorProfile.linkedin_url,
     form,
   ]);
 
@@ -168,13 +199,6 @@ export function MentorEditProfileModal({
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
   };
-
-  // Resolve the org's display name (the profile only carries the org UUID).
-  const { data: overview } = useMentorOverview();
-  const orgName = overview?.scopes?.find(
-    (s) =>
-      s.scope_type === "COMPANY_MENTOR" || s.scope_type === "CAMPUS_MENTOR",
-  )?.scope_name;
 
   const handleSubmit = async (values: MentorEditValues) => {
     // IG selection is open to every tier (org and IG scopes coexist). The
@@ -196,17 +220,38 @@ export function MentorEditProfileModal({
       const isIgsChanged =
         JSON.stringify(values.preferred_ig_ids ?? []) !==
         JSON.stringify(mentorProfile.preferred_ig_ids ?? []);
+      const isLinkedinChanged =
+        values.linkedin !==
+        (mentorProfile.linkedin ?? mentorProfile.linkedin_url ?? "");
 
-      if (isAboutChanged || isExpertiseChanged || isIgsChanged) {
+      if (
+        isAboutChanged ||
+        isExpertiseChanged ||
+        isIgsChanged ||
+        isLinkedinChanged
+      ) {
         const payload: Partial<MentorProfileWrite> = {};
         if (isAboutChanged) payload.about = values.about ?? "";
         if (isExpertiseChanged) payload.expertise = newExpertise;
         if (isIgsChanged) payload.preferred_ig_ids = values.preferred_ig_ids;
+        if (isLinkedinChanged) payload.linkedin = values.linkedin ?? "";
 
         await updateMentorProfileMutation.mutateAsync(payload);
       }
 
-      // 3. Update profile photo if changed
+      // 3. Request company affiliation change if org changed
+      const isOrgChanged =
+        values.org && values.org !== (mentorProfile.org ?? "");
+      if (isOrgChanged) {
+        await changeCompanyMutation.mutateAsync({
+          org_id: values.org as string,
+          ...(values.org_reason?.trim()
+            ? { reason: values.org_reason.trim() }
+            : {}),
+        });
+      }
+
+      // 4. Update profile photo if changed
       if (values.profile_pic instanceof File) {
         await updateProfileImageMutation.mutateAsync({
           profilePic: values.profile_pic,
@@ -313,6 +358,24 @@ export function MentorEditProfileModal({
                 )}
               />
 
+              {/* LinkedIn */}
+              <FormField
+                control={form.control}
+                name="linkedin"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>LinkedIn</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="https://www.linkedin.com/in/username"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               {/* Bio */}
               <FormField
                 control={form.control}
@@ -373,28 +436,42 @@ export function MentorEditProfileModal({
                 </p>
               </div>
 
-              {/* Affiliation */}
+              {/* Affiliation — editable via mentor/change-company/ */}
               <div className="space-y-2">
                 <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Company / Campus Affiliation
+                  Company
                 </div>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div>
-                        <Input
-                          value={orgName ?? form.watch("org") ?? ""}
-                          placeholder="Affiliation"
-                          disabled
-                          className="cursor-not-allowed"
-                        />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Affiliation editing coming soon.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <Combobox
+                  options={companyOptions}
+                  value={form.watch("org") ?? ""}
+                  onValueChange={(val: string) => {
+                    form.setValue("org", val, { shouldDirty: true });
+                  }}
+                  placeholder="Select your company…"
+                />
+                {/* Show reason field only when org has been changed */}
+                {form.watch("org") &&
+                  form.watch("org") !== (mentorProfile.org ?? "") && (
+                    <FormField
+                      control={form.control}
+                      name="org_reason"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Reason for change</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="e.g. Relocating to a new employer"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormDescription className="text-xs">
+                            This request will be pending admin approval.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
               </div>
 
               {/* Read-only: Tier */}

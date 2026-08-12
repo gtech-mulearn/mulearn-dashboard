@@ -11,11 +11,12 @@ import {
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface FetchCompanyVerificationParams {
-  pageIndex: number;
-  perPage: number;
+  page: number;
+  per_page: number;
   search?: string;
-  sortBy?: string;
+  sort_by?: string;
   status?: string;
+  industry_sector?: string;
   dateFrom?: string;
   dateTo?: string;
 }
@@ -24,19 +25,21 @@ export interface FetchCompanyVerificationParams {
 
 /**
  * Admin: List companies in the verification queue.
- * Supports filtering by status, date range, search, and pagination.
+ * Supports filtering by status, industry_sector, search, sort, and pagination.
  */
 export async function fetchCompanyVerificationRequests(
   params: FetchCompanyVerificationParams,
 ): Promise<CompanyVerificationListData> {
   const query = new URLSearchParams({
-    perPage: String(params.perPage),
-    pageIndex: String(params.pageIndex),
+    page: String(params.page),
+    per_page: String(params.per_page),
   });
 
   if (params.search?.trim()) query.set("search", params.search.trim());
-  if (params.sortBy?.trim()) query.set("sortBy", params.sortBy.trim());
+  if (params.sort_by?.trim()) query.set("sort_by", params.sort_by.trim());
   if (params.status) query.set("status", params.status);
+  if (params.industry_sector)
+    query.set("industry_sector", params.industry_sector);
   if (params.dateFrom) query.set("dateFrom", params.dateFrom);
   if (params.dateTo) query.set("dateTo", params.dateTo);
 
@@ -95,4 +98,28 @@ export async function fetchCompanyDetails(
     }
     throw error;
   }
+}
+
+/**
+ * Admin: Deactivate a company.
+ */
+export async function deactivateCompanyAdmin(companyId: string) {
+  const res = await apiClient.post(
+    endpoints.company.deactivateAdmin(companyId),
+    undefined,
+    GenericMutationResponseSchema,
+  );
+  return res.response;
+}
+
+/**
+ * Admin: Reactivate a deactivated company.
+ */
+export async function reactivateCompanyAdmin(companyId: string) {
+  const res = await apiClient.post(
+    endpoints.company.reactivateAdmin(companyId),
+    undefined,
+    GenericMutationResponseSchema,
+  );
+  return res.response;
 }

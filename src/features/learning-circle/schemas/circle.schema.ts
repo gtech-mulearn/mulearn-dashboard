@@ -61,6 +61,7 @@ export const LearningCircleSchema = z
       attendees: z.array(z.unknown()).nullable().optional(),
       is_joined: z.boolean().nullable().optional(),
       is_creator: z.boolean().nullable().optional(),
+      status: z.string().nullable().optional(),
     }),
   )
   .transform((val) => {
@@ -74,8 +75,10 @@ export const LearningCircleSchema = z
       org: val.org ?? null,
       total_members: val.total_members ?? null,
       attendees: val.attendees ?? null,
-      is_joined: val.is_joined ?? false,
-      is_creator: val.is_creator ?? false,
+      is_joined: val.is_joined ?? val.status === "joined",
+      is_creator:
+        val.is_creator ?? (val.status === "lead" || val.status === "owner"),
+      status: val.status ?? (val.is_joined ? "joined" : "not_joined"),
     };
   });
 
