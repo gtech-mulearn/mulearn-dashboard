@@ -137,7 +137,6 @@ export function CreateTaskModal({
         karma: Number(karma),
         type_id: type.trim() || undefined,
         description: description.trim(),
-        usage_count: usageCount ? Number(usageCount) : undefined,
         level_id: level.trim() || undefined,
         skill_ids: skills.length > 0 ? skills : undefined,
       };
@@ -282,7 +281,7 @@ export function CreateTaskModal({
                   placeholder="1"
                   value={usageCount}
                   onChange={(e) => setUsageCount(e.target.value)}
-                  disabled={isPending}
+                  disabled={isPending || !!taskToEdit}
                 />
               </div>
               <div className="space-y-2">

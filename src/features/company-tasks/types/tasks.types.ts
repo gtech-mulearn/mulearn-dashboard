@@ -70,7 +70,6 @@ export interface CreateCompanyTaskPayload {
 export interface UpdateCompanyTaskPayload {
   title?: string;
   karma?: number;
-  usage_count?: number;
   description?: string;
   type_id?: string;
   level_id?: string;
