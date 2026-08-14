@@ -6,7 +6,8 @@ import { mentorKeys } from "@/features/mentor/hooks/query-keys";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   addParticipant,
-  createSession,
+  completeSession,
+  createSession as apiCreateSession,
   deleteSession,
   fetchAdminSessions,
   fetchAvailableSessions,
@@ -101,7 +102,7 @@ export const usePendingSessions = (enabled = true) =>
 export function useCreateSession() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: SessionFormValues) => createSession(data),
+    mutationFn: (data: SessionFormValues) => apiCreateSession(data),
     onSuccess: () => {
       toast.success("Session created.");
       void qc.invalidateQueries({ queryKey: mentorKeys.sessions.all });
@@ -141,6 +142,22 @@ export function useDeleteSession() {
     onError: (error) =>
       toast.error(
         getApiResponseError(error, { fallback: "Failed to delete session" }),
+      ),
+  });
+}
+
+// ─── POST /session/complete/<id>/ ───────────────────────────────────────────
+export function useCompleteSession() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (sessionId: string) => completeSession(sessionId),
+    onSuccess: () => {
+      toast.success("Session marked as completed.");
+      void qc.invalidateQueries({ queryKey: mentorKeys.sessions.all });
+    },
+    onError: (error) =>
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to complete session" }),
       ),
   });
 }

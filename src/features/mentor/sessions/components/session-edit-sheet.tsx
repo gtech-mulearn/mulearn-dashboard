@@ -32,6 +32,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { utcIsoToLocalInput } from "@/lib/datetime";
 import { useSessionDetail, useUpdateSession } from "../hooks/use-sessions";
+import { Checkbox } from "@/components/ui/checkbox";
+import { AlertCircle } from "lucide-react";
 import type { Session } from "../schemas";
 
 const EditSchema = z
@@ -47,6 +49,7 @@ const EditSchema = z
       .optional()
       .or(z.literal("")),
     venue: z.string().optional(),
+    apply_to_series: z.boolean().optional().default(false),
   })
   .refine((v) => new Date(v.ends_at) > new Date(v.starts_at), {
     message: "End time must be after start time",
@@ -68,6 +71,9 @@ export function SessionEditSheet({
   const { data: detail } = useSessionDetail(session?.id ?? "", open);
   const currentSession = detail ?? session;
 
+  const status = currentSession?.status ?? "SCHEDULED";
+  const isReadOnly = ["COMPLETED", "CANCELLED", "REJECTED"].includes(status);
+
   const { mutate: update, isPending } = useUpdateSession(
     currentSession?.id ?? "",
   );
@@ -82,6 +88,7 @@ export function SessionEditSheet({
       mode: "ONLINE",
       meeting_link: "",
       venue: "",
+      apply_to_series: false,
     },
   });
 
@@ -99,6 +106,7 @@ export function SessionEditSheet({
           "ONLINE",
         meeting_link: currentSession.meeting_link ?? "",
         venue: currentSession.venue ?? "",
+        apply_to_series: false,
       });
     }
   }, [currentSession, open, form]);
@@ -119,132 +127,174 @@ export function SessionEditSheet({
           <SheetTitle className="text-xl">Edit Session</SheetTitle>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto px-6 py-6">
+          {isReadOnly && (
+            <div className="mb-4 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>
+                Cannot edit a session that is <strong>{status}</strong>.
+              </span>
+            </div>
+          )}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+              <fieldset disabled={isReadOnly} className="space-y-5">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Title</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea rows={3} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="starts_at"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Starts At</FormLabel>
+                        <FormControl>
+                          <CustomDateTimePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="ends_at"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ends At</FormLabel>
+                        <FormControl>
+                          <CustomDateTimePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="mode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mode</FormLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select mode" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="ONLINE">Online</SelectItem>
+                          <SelectItem value="OFFLINE">Offline</SelectItem>
+                          <SelectItem value="HYBRID">Hybrid</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {(mode === "ONLINE" || mode === "HYBRID") && (
+                  <FormField
+                    control={form.control}
+                    name="meeting_link"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Meeting Link</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="url"
+                            placeholder="https://..."
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 )}
-              />
 
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea rows={3} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                {(mode === "OFFLINE" || mode === "HYBRID") && (
+                  <FormField
+                    control={form.control}
+                    name="venue"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Location (Google Maps link)</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="https://maps.google.com/..."
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 )}
-              />
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="starts_at"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Starts At</FormLabel>
-                      <FormControl>
-                        <CustomDateTimePicker
-                          value={field.value}
-                          onChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="ends_at"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Ends At</FormLabel>
-                      <FormControl>
-                        <CustomDateTimePicker
-                          value={field.value}
-                          onChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="mode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Mode</FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select mode" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="ONLINE">Online</SelectItem>
-                        <SelectItem value="OFFLINE">Offline</SelectItem>
-                        <SelectItem value="HYBRID">Hybrid</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
+                {currentSession?.is_recurring && (
+                  <FormField
+                    control={form.control}
+                    name="apply_to_series"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-muted/20">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="cursor-pointer">
+                            Apply changes to all upcoming sessions in this
+                            series
+                          </FormLabel>
+                          <p className="text-xs text-muted-foreground">
+                            Logistical fields (title, description, mode, venue,
+                            meeting link) will propagate to scheduled sibling
+                            sessions. Individual start/end times remain
+                            unchanged.
+                          </p>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
                 )}
-              />
-
-              {(mode === "ONLINE" || mode === "HYBRID") && (
-                <FormField
-                  control={form.control}
-                  name="meeting_link"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Meeting Link</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="url"
-                          placeholder="https://..."
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
-
-              {(mode === "OFFLINE" || mode === "HYBRID") && (
-                <FormField
-                  control={form.control}
-                  name="venue"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Location (Google Maps link)</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="https://maps.google.com/..."
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
+              </fieldset>
 
               <Separator />
               <div className="flex justify-end gap-3 pt-2 pb-2">
@@ -258,7 +308,7 @@ export function SessionEditSheet({
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isPending}
+                  disabled={isPending || isReadOnly}
                   className="rounded-full px-6"
                 >
                   {isPending ? "Saving..." : "Save Changes"}
