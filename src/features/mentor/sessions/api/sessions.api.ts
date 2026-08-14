@@ -1,6 +1,7 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import { localInputToUtcIso } from "@/lib/datetime";
+import { ApiResponseSchema } from "@/lib/schemas/api-response";
 import type {
   AddParticipantFormValues,
   AdminVerifySessionValues,
@@ -13,6 +14,7 @@ import type {
 import {
   GenericResponseSchema,
   ParticipantsListResponseSchema,
+  SessionParticipantSchema,
   SessionsListResponseSchema,
   SingleSessionResponseSchema,
 } from "../schemas";
@@ -57,7 +59,7 @@ function toBackendPayload(data: Partial<SessionFormValues>) {
 
   // Every session is scoped to the selected Interest Group.
   if (ig_id?.trim()) {
-    payload.entity_id = ig_id;
+    payload.entity_id = ig_id.trim();
     payload.session_type = "IG_SESSION";
   }
 
@@ -126,7 +128,7 @@ function toUpdatePayload(data: Partial<SessionFormValues>) {
   const payload: Record<string, unknown> = { ...rest };
 
   if (ig_id?.trim()) {
-    payload.entity_id = ig_id;
+    payload.entity_id = ig_id.trim();
     payload.session_type = "IG_SESSION";
   }
 
@@ -310,11 +312,10 @@ export async function joinSession(
   const res = await apiClient.post(
     endpoints.mentor.sessionJoin(sessionId),
     {},
-    SingleSessionResponseSchema,
+    ApiResponseSchema(SessionParticipantSchema),
     OPT,
   );
-  // Response shape: { hasError, statusCode, message, response: { ...participant fields } }
-  return res.response as unknown as SessionParticipant;
+  return res.response;
 }
 
 // ─── #19 GET /session/participant/history/ ───────────────────────────────────
@@ -388,7 +389,7 @@ export async function submitFeedback(
 ): Promise<void> {
   await apiClient.patch(
     endpoints.mentor.sessionParticipantFeedback(sessionId),
-    data,
+    { feedback: data.feedback.trim() },
     GenericResponseSchema,
     OPT,
   );

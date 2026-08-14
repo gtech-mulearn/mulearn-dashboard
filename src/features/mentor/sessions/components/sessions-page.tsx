@@ -521,6 +521,7 @@ export function SessionsPage() {
           description={`Are you sure you want to mark "${completeTarget?.title}" as completed? This will update attendance and contributed minutes.`}
           confirmLabel="Mark Complete"
           cancelLabel="Cancel"
+          variant="success"
           isPending={isCompleting}
           onConfirm={() => {
             if (completeTarget) {

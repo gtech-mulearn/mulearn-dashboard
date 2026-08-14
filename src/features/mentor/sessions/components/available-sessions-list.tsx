@@ -62,14 +62,14 @@ function SessionCard({
         <div className="space-y-1.5">
           <div className="flex flex-col items-start gap-2">
             <p className="font-semibold text-foreground">{session.title}</p>
-            {session.entity_name && (
+            {(session.ig_name || session.entity_name) && (
               <span
                 className={cn(
                   "rounded-full px-2 py-0.5 text-[11px] font-medium",
-                  chipColor(session.entity_name),
+                  chipColor(session.ig_name ?? session.entity_name ?? ""),
                 )}
               >
-                {session.entity_name}
+                {session.ig_name ?? session.entity_name}
               </span>
             )}
           </div>
@@ -131,6 +131,7 @@ function SessionCard({
             mode={session.mode}
             meetingLink={session.meeting_link}
             venue={session.venue}
+            status={session.status}
           />
         </div>
       </CardContent>

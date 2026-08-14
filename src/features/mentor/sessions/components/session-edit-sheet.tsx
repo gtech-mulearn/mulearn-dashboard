@@ -1,10 +1,12 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertCircle } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { CustomDateTimePicker } from "@/components/ui/custom-datetime-picker";
 import {
   Form,
@@ -32,8 +34,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { utcIsoToLocalInput } from "@/lib/datetime";
 import { useSessionDetail, useUpdateSession } from "../hooks/use-sessions";
-import { Checkbox } from "@/components/ui/checkbox";
-import { AlertCircle } from "lucide-react";
 import type { Session } from "../schemas";
 
 const EditSchema = z

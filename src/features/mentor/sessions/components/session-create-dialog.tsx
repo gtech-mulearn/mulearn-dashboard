@@ -3,9 +3,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 
-import { type Resolver, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { CustomDateTimePicker } from "@/components/ui/custom-datetime-picker";
 import {
   Dialog,
@@ -30,8 +32,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "sonner";
 import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import { useCreateSession } from "../hooks/use-sessions";
 import { SessionFormSchema, type SessionFormValues } from "../schemas";
@@ -362,7 +362,7 @@ export function SessionCreateDialog({
                               value={field.value ?? 1}
                               onChange={(e) =>
                                 field.onChange(
-                                  Number.parseInt(e.target.value) || 1,
+                                  Number.parseInt(e.target.value, 10) || 1,
                                 )
                               }
                             />
