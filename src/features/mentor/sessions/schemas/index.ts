@@ -66,6 +66,7 @@ export const SessionParticipantSchema = z.object({
   attendance_status: z.enum(ATTENDANCE_STATUSES).nullable().optional(),
   progress_note: z.string().nullable().optional(),
   feedback: z.string().nullable().optional(),
+  rating: z.number().nullable().optional(),
   contributed_minutes: z.number().nullable().optional(),
   created_at: z.string().optional(),
   // Session details — populated by the participant-history endpoint so a
@@ -241,7 +242,11 @@ export type AdminVerifySessionValues = z.infer<typeof AdminVerifySessionSchema>;
 export const UpdateParticipantSchema = z.object({
   attendance_status: z.enum(ATTENDANCE_STATUSES).optional(),
   progress_note: z.string().max(500).nullable().optional(),
-  contributed_minutes: z.number().positive().nullable().optional(),
+  contributed_minutes: z
+    .number()
+    .positive("Contributed minutes must be greater than zero.")
+    .nullable()
+    .optional(),
 });
 export type UpdateParticipantValues = z.infer<typeof UpdateParticipantSchema>;
 

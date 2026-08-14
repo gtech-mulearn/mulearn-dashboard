@@ -61,11 +61,11 @@ export async function fetchMentees(): Promise<{
 
 export async function submitSessionFeedback(
   sessionId: string,
-  feedback: string | null,
+  feedback: string,
 ) {
   return apiClient.patch(
     endpoints.mentor.sessionParticipantFeedback(sessionId),
-    { feedback },
+    { feedback: feedback.trim() },
     SessionFeedbackResponseSchema,
   );
 }

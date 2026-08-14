@@ -58,20 +58,33 @@ function openExternal(url: string) {
  * Card-style access buttons: "Join meeting" for online sessions, "View
  * location" for offline ones (both can show for hybrid). Renders nothing when
  * neither a meeting link nor a venue is available.
+ * Disables access for terminal session statuses (COMPLETED, CANCELLED, REJECTED).
  */
 export function SessionAccessButtons({
   mode,
   meetingLink,
   venue,
+  status,
+  disabled,
   className,
 }: {
   mode?: string | null;
   meetingLink?: string | null;
   venue?: string | null;
+  status?: string | null;
+  disabled?: boolean;
   className?: string;
 }) {
   const { meetingUrl, mapUrl } = getSessionAccess(mode, meetingLink, venue);
   if (!meetingUrl && !mapUrl) return null;
+
+  const normalizedStatus = (status ?? "").toUpperCase();
+  const isTerminalStatus =
+    normalizedStatus === "COMPLETED" ||
+    normalizedStatus === "CANCELLED" ||
+    normalizedStatus === "REJECTED";
+
+  const isDisabled = Boolean(disabled || isTerminalStatus);
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
@@ -80,7 +93,11 @@ export function SessionAccessButtons({
           type="button"
           size="sm"
           className="flex-1"
-          onClick={() => openExternal(meetingUrl)}
+          disabled={isDisabled}
+          onClick={() => !isDisabled && openExternal(meetingUrl)}
+          title={
+            isTerminalStatus ? "This session is no longer active." : undefined
+          }
         >
           <Video className="mr-1.5 size-4" />
           Join meeting
@@ -92,7 +109,11 @@ export function SessionAccessButtons({
           size="sm"
           variant={meetingUrl ? "outline" : "default"}
           className="flex-1"
-          onClick={() => openExternal(mapUrl)}
+          disabled={isDisabled}
+          onClick={() => !isDisabled && openExternal(mapUrl)}
+          title={
+            isTerminalStatus ? "This session is no longer active." : undefined
+          }
         >
           <MapPin className="mr-1.5 size-4" />
           View location

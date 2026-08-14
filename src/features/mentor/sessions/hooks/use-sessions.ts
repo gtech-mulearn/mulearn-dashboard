@@ -7,7 +7,7 @@ import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   addParticipant,
   completeSession,
-  createSession as apiCreateSession,
+  createSession,
   deleteSession,
   fetchAdminSessions,
   fetchAvailableSessions,
@@ -102,7 +102,7 @@ export const usePendingSessions = (enabled = true) =>
 export function useCreateSession() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: SessionFormValues) => apiCreateSession(data),
+    mutationFn: (data: SessionFormValues) => createSession(data),
     onSuccess: () => {
       toast.success("Session created.");
       void qc.invalidateQueries({ queryKey: mentorKeys.sessions.all });

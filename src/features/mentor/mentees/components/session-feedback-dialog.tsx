@@ -33,8 +33,16 @@ export function SessionFeedbackDialog({
   const { mutate, isPending } = useSubmitFeedback();
 
   function handleSubmit() {
+    if (!feedback.trim()) {
+      toast.error("Please enter your feedback before submitting.");
+      return;
+    }
+
     mutate(
-      { sessionId, feedback: feedback.trim() || null },
+      {
+        sessionId,
+        feedback: feedback.trim(),
+      },
       {
         onSuccess: () => {
           toast.success("Feedback submitted successfully!");
@@ -73,7 +81,7 @@ export function SessionFeedbackDialog({
 
         <div className="space-y-3 py-2">
           <Label htmlFor="session-feedback" className="text-sm font-medium">
-            Your feedback
+            Your Feedback
           </Label>
           <Textarea
             id="session-feedback"
@@ -101,7 +109,7 @@ export function SessionFeedbackDialog({
           <Button
             type="button"
             onClick={handleSubmit}
-            disabled={isPending}
+            disabled={isPending || !feedback.trim()}
             className="min-w-[120px]"
           >
             {isPending ? (
