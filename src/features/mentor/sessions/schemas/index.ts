@@ -159,6 +159,7 @@ export const SessionFormBaseSchema = z.object({
   recurrence_type: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).optional(),
   recurrence_interval: z.number().min(1).optional(),
   recurrence_end_date: z.string().optional(),
+  apply_to_series: z.boolean().optional().default(false),
 });
 
 export type SessionFormValues = z.infer<typeof SessionFormBaseSchema>;
@@ -170,6 +171,28 @@ export const SessionFormSchema = SessionFormBaseSchema.superRefine((v, ctx) => {
       code: z.ZodIssueCode.custom,
       message: "End time must be after start time",
       path: ["ends_at"],
+    });
+  }
+
+  // Mode requirements
+  if (
+    (v.mode === "ONLINE" || v.mode === "HYBRID") &&
+    (!v.meeting_link || v.meeting_link.trim() === "")
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Meeting link is required for Online/Hybrid sessions",
+      path: ["meeting_link"],
+    });
+  }
+  if (
+    (v.mode === "OFFLINE" || v.mode === "HYBRID") &&
+    (!v.venue || v.venue.trim() === "")
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Venue / location is required for Offline/Hybrid sessions",
+      path: ["venue"],
     });
   }
 

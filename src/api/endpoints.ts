@@ -284,6 +284,10 @@ export const endpoints = {
     sessionUpdate: (sessionId: string) =>
       `/api/v1/dashboard/mentor/session/update/${sessionId}/`,
 
+    /** POST - Mark a session as complete */
+    sessionComplete: (sessionId: string) =>
+      `/api/v1/dashboard/mentor/session/complete/${sessionId}/`,
+
     // ── #15 GET  session/available/ ──────────────────────────────────────────
     /** GET - Learner: list SCHEDULED sessions for the user's IGs */
     sessionAvailable: "/api/v1/dashboard/mentor/session/available/",

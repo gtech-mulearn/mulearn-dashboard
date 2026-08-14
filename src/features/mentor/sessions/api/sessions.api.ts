@@ -49,28 +49,39 @@ function toBackendPayload(data: Partial<SessionFormValues>) {
     recurrence_type,
     recurrence_interval,
     recurrence_end_date,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    apply_to_series: _apply_to_series,
     ...rest
   } = data;
   const payload: Record<string, unknown> = { ...rest, is_recurring };
 
   // Every session is scoped to the selected Interest Group.
   if (ig_id?.trim()) {
-    payload.ig = ig_id;
     payload.entity_id = ig_id;
-    payload.session_type = "ig_session";
+    payload.session_type = "IG_SESSION";
   }
 
   // Normalise datetime strings to full ISO-8601
   if (starts_at !== undefined) payload.starts_at = toISO(starts_at);
   if (ends_at !== undefined) payload.ends_at = toISO(ends_at);
 
-  // Only include optional text/URL fields when they have actual content
-  if (meeting_link && meeting_link.trim() !== "")
-    payload.meeting_link = meeting_link.trim();
+  // Mode-specific field handling: clear irrelevant fields on mode switch
+  if (data.mode === "ONLINE") {
+    payload.venue = "";
+    if (meeting_link && meeting_link.trim() !== "")
+      payload.meeting_link = meeting_link.trim();
+  } else if (data.mode === "OFFLINE") {
+    payload.meeting_link = "";
+    if (venue && (venue as string).trim() !== "")
+      payload.venue = (venue as string).trim();
+  } else {
+    if (meeting_link && meeting_link.trim() !== "")
+      payload.meeting_link = meeting_link.trim();
+    if (venue && (venue as string).trim() !== "")
+      payload.venue = (venue as string).trim();
+  }
   if (description && description.trim() !== "")
     payload.description = description.trim();
-  if (venue && (venue as string).trim() !== "")
-    payload.venue = (venue as string).trim();
 
   if (is_recurring) {
     payload.recurrence_type = recurrence_type;
@@ -107,26 +118,37 @@ function toUpdatePayload(data: Partial<SessionFormValues>) {
     recurrence_interval: _recurrence_interval,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     recurrence_end_date: _recurrence_end_date,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    apply_to_series: _apply_to_series,
     ...rest
   } = data;
 
   const payload: Record<string, unknown> = { ...rest };
 
   if (ig_id?.trim()) {
-    payload.ig = ig_id;
     payload.entity_id = ig_id;
-    payload.session_type = "ig_session";
+    payload.session_type = "IG_SESSION";
   }
 
   if (starts_at !== undefined) payload.starts_at = toISO(starts_at);
   if (ends_at !== undefined) payload.ends_at = toISO(ends_at);
 
-  if (meeting_link && meeting_link.trim() !== "")
-    payload.meeting_link = meeting_link.trim();
+  if (data.mode === "ONLINE") {
+    payload.venue = "";
+    if (meeting_link && meeting_link.trim() !== "")
+      payload.meeting_link = meeting_link.trim();
+  } else if (data.mode === "OFFLINE") {
+    payload.meeting_link = "";
+    if (venue && (venue as string).trim() !== "")
+      payload.venue = (venue as string).trim();
+  } else {
+    if (meeting_link && meeting_link.trim() !== "")
+      payload.meeting_link = meeting_link.trim();
+    if (venue && (venue as string).trim() !== "")
+      payload.venue = (venue as string).trim();
+  }
   if (description && description.trim() !== "")
     payload.description = description.trim();
-  if (venue && (venue as string).trim() !== "")
-    payload.venue = (venue as string).trim();
 
   return payload;
 }
@@ -195,6 +217,16 @@ export async function deleteSession(id: string): Promise<void> {
   await apiClient.delete(
     endpoints.mentor.sessionUpdate(id),
     undefined,
+    GenericResponseSchema,
+    OPT,
+  );
+}
+
+// ─── POST /session/complete/<session_id>/ ───────────────────────────────────
+export async function completeSession(sessionId: string): Promise<void> {
+  await apiClient.post(
+    endpoints.mentor.sessionComplete(sessionId),
+    {},
     GenericResponseSchema,
     OPT,
   );

@@ -30,6 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
 import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import { useCreateSession } from "../hooks/use-sessions";
 import { SessionFormSchema, type SessionFormValues } from "../schemas";
@@ -80,6 +82,7 @@ export function SessionCreateDialog({
 
   const mode = form.watch("mode");
   const startsAt = form.watch("starts_at");
+  const isRecurring = form.watch("is_recurring");
 
   useEffect(() => {
     if (open) {
@@ -105,7 +108,12 @@ export function SessionCreateDialog({
 
   function onSubmit(values: SessionFormValues) {
     create(values, {
-      onSuccess: () => {
+      onSuccess: (res) => {
+        if (res?.recurrence_truncated) {
+          toast.info(
+            "Session created! Recurrence capped at 50 occurrences limit.",
+          );
+        }
         onOpenChange(false);
         form.reset();
       },
@@ -295,9 +303,99 @@ export function SessionCreateDialog({
                 />
               )}
 
-              {/* Recurring sessions are temporarily disabled — the recurrence
-                  flow has open bugs. Sessions are created as one-off; the
-                  is_recurring default (false) is still sent in the payload. */}
+              <FormField
+                control={form.control}
+                name="is_recurring"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-3">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="cursor-pointer">
+                        Repeat session
+                      </FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {isRecurring && (
+                <div className="space-y-4 rounded-md border p-3 bg-muted/30">
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField
+                      control={form.control}
+                      name="recurrence_type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Frequency</FormLabel>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select frequency" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="DAILY">Daily</SelectItem>
+                              <SelectItem value="WEEKLY">Weekly</SelectItem>
+                              <SelectItem value="MONTHLY">Monthly</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="recurrence_interval"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Interval</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min={1}
+                              value={field.value ?? 1}
+                              onChange={(e) =>
+                                field.onChange(
+                                  Number.parseInt(e.target.value) || 1,
+                                )
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="recurrence_end_date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>End Date</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="date"
+                            value={field.value ?? ""}
+                            onChange={field.onChange}
+                            min={startsAt ? startsAt.split("T")[0] : undefined}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="shrink-0 flex justify-end gap-2 px-6 py-4 border-t border-border">
