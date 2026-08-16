@@ -56,6 +56,7 @@ import { getSessionAccess } from "./session-access";
 import { SessionCreateDialog } from "./session-create-dialog";
 import { SessionEditSheet } from "./session-edit-sheet";
 import { SessionParticipantsDialog } from "./session-participants-dialog";
+import Pagination from "@/components/dashboard/table/pagination";
 
 const STATUS_STYLES: Record<string, string> = {
   SCHEDULED:
@@ -326,6 +327,10 @@ function SessionTable({
   sessions,
   isLoading,
   isAdmin,
+  pageIndex,
+  totalPages,
+  totalCount,
+  onPageChange,
   onEdit,
   onParticipants,
   onComplete,
@@ -336,6 +341,10 @@ function SessionTable({
   sessions: Session[] | undefined;
   isLoading: boolean;
   isAdmin: boolean;
+  pageIndex?: number;
+  totalPages?: number;
+  totalCount?: number;
+  onPageChange?: (page: number) => void;
   onEdit: (s: Session) => void;
   onParticipants: (s: Session) => void;
   onComplete: (s: Session) => void;
@@ -358,32 +367,47 @@ function SessionTable({
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Title</TableHead>
-          <TableHead>IG</TableHead>
-          <TableHead>Starts At</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {sessions.map((s) => (
-          <SessionRow
-            key={s.id}
-            session={s}
-            isAdmin={isAdmin}
-            onEdit={onEdit}
-            onParticipants={onParticipants}
-            onComplete={onComplete}
-            onApprove={onApprove}
-            onKarma={onKarma}
-            onDelete={onDelete}
+    <div className="space-y-4">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Title</TableHead>
+            <TableHead>IG</TableHead>
+            <TableHead>Starts At</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {sessions.map((s) => (
+            <SessionRow
+              key={s.id}
+              session={s}
+              isAdmin={isAdmin}
+              onEdit={onEdit}
+              onParticipants={onParticipants}
+              onComplete={onComplete}
+              onApprove={onApprove}
+              onKarma={onKarma}
+              onDelete={onDelete}
+            />
+          ))}
+        </TableBody>
+      </Table>
+      {onPageChange &&
+        pageIndex !== undefined &&
+        totalPages !== undefined &&
+        totalPages > 1 && (
+          <Pagination
+            currentPage={pageIndex}
+            totalPages={totalPages}
+            handleNextClick={() => onPageChange(pageIndex + 1)}
+            handlePreviousClick={() => onPageChange(pageIndex - 1)}
+            perPage={10}
+            totalCount={totalCount}
           />
-        ))}
-      </TableBody>
-    </Table>
+        )}
+    </div>
   );
 }
 
@@ -392,6 +416,10 @@ export function SessionsPage() {
   const isAdmin = hasRole(MANAGEMENT_ROLES);
   const searchParams = useSearchParams();
   const defaultTab = searchParams.get("tab") || "upcoming";
+
+  const [upcomingPage, setUpcomingPage] = useState(1);
+  const [allPage, setAllPage] = useState(1);
+  const perPage = 10;
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editSession, setEditSession] = useState<Session | null>(null);
@@ -405,10 +433,19 @@ export function SessionsPage() {
   const [karmaSession, setKarmaSession] = useState<Session | null>(null);
   const [deleteSessionId, setDeleteSessionId] = useState<string | null>(null);
 
-  const { data: all, isLoading: allLoading } = useSessions({});
-  const upcomingSessions = all?.data?.filter(
-    (s) => s.status === "SCHEDULED" || s.status === "PENDING_APPROVAL",
-  );
+  // Server-side status filter for Upcoming tab (SCHEDULED)
+  const { data: upcomingResult, isLoading: upcomingLoading } = useSessions({
+    status: "SCHEDULED",
+    page: upcomingPage,
+    perPage,
+  });
+
+  // Server-side paginated query for All Sessions tab
+  const { data: allResult, isLoading: allLoading } = useSessions({
+    page: allPage,
+    perPage,
+  });
+
   const { data: pendingResult, isLoading: pendingLoading } =
     usePendingSessions(isAdmin);
   const pending = pendingResult?.data;
@@ -460,18 +497,26 @@ export function SessionsPage() {
 
           <TabsContent value="upcoming" className="mt-4">
             <SessionTable
-              sessions={upcomingSessions}
-              isLoading={allLoading}
+              sessions={upcomingResult?.data}
+              isLoading={upcomingLoading}
               isAdmin={isAdmin}
+              pageIndex={upcomingPage}
+              totalPages={upcomingResult?.totalPages}
+              totalCount={upcomingResult?.totalCount}
+              onPageChange={setUpcomingPage}
               {...sharedHandlers}
             />
           </TabsContent>
 
           <TabsContent value="all" className="mt-4">
             <SessionTable
-              sessions={all?.data}
+              sessions={allResult?.data}
               isLoading={allLoading}
               isAdmin={isAdmin}
+              pageIndex={allPage}
+              totalPages={allResult?.totalPages}
+              totalCount={allResult?.totalCount}
+              onPageChange={setAllPage}
               {...sharedHandlers}
             />
           </TabsContent>

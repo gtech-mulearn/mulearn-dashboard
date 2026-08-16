@@ -51,11 +51,12 @@ interface UseSessionsParams {
 
 // ─── #12 GET /session/list/ — Mentor's own sessions ──────────────────────────
 export function useSessions(params: UseSessionsParams = {}) {
+  const mergedParams = { sortBy: "-created_at", ...params };
   return useQuery({
-    queryKey: mentorKeys.sessions.list(params as Record<string, unknown>),
-    queryFn: () => fetchSessions(params),
+    queryKey: mentorKeys.sessions.list(mergedParams as Record<string, unknown>),
+    queryFn: () => fetchSessions(mergedParams),
     retry: no403Retry,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 0,
   });
 }
 
@@ -72,11 +73,14 @@ export function useSessionDetail(sessionId: string, enabled = true) {
 
 // ─── #15 GET /session/available/ — Learner session discovery ─────────────────
 export function useAvailableSessions(params: UseSessionsParams = {}) {
+  const mergedParams = { sortBy: "-created_at", ...params };
   return useQuery({
-    queryKey: mentorKeys.sessions.available(params as Record<string, unknown>),
-    queryFn: () => fetchAvailableSessions(params),
+    queryKey: mentorKeys.sessions.available(
+      mergedParams as Record<string, unknown>,
+    ),
+    queryFn: () => fetchAvailableSessions(mergedParams),
     retry: no403Retry,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 0,
   });
 }
 
@@ -210,14 +214,15 @@ export function useParticipantHistory(
   params: UseSessionsParams = {},
   enabled = true,
 ) {
+  const mergedParams = { sortBy: "-created_at", ...params };
   return useQuery({
     queryKey: mentorKeys.sessions.participantHistory(
-      params as Record<string, unknown>,
+      mergedParams as Record<string, unknown>,
     ),
-    queryFn: () => fetchParticipantHistory(params),
+    queryFn: () => fetchParticipantHistory(mergedParams),
     retry: no403Retry,
     enabled,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 0,
   });
 }
 

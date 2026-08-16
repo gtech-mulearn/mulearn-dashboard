@@ -2,6 +2,7 @@
 
 import { CalendarClock, MapPin, MessageSquarePlus, Video } from "lucide-react";
 import { useState } from "react";
+import Pagination from "@/components/dashboard/table/pagination";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -166,8 +167,14 @@ function InviteCard({
 }
 
 export function MyInvitedSessionsList() {
-  const { data, isLoading } = useParticipantHistory();
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useParticipantHistory({
+    pageIndex: page,
+    perPage: 10,
+  });
   const participants = data?.data ?? [];
+  const totalPages = data?.totalPages ?? 1;
+  const totalCount = data?.totalCount;
 
   const [feedbackParticipant, setFeedbackParticipant] =
     useState<SessionParticipant | null>(null);
@@ -195,7 +202,7 @@ export function MyInvitedSessionsList() {
   }
 
   return (
-    <>
+    <div className="space-y-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {participants.map((participant) => (
           <InviteCard
@@ -206,6 +213,17 @@ export function MyInvitedSessionsList() {
         ))}
       </div>
 
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          handleNextClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+          handlePreviousClick={() => setPage((p) => Math.max(p - 1, 1))}
+          perPage={10}
+          totalCount={totalCount}
+        />
+      )}
+
       {feedbackParticipant && (
         <SessionFeedbackDialog
           open={!!feedbackParticipant}
@@ -214,6 +232,6 @@ export function MyInvitedSessionsList() {
           sessionTitle={feedbackParticipant.session_title ?? "Session"}
         />
       )}
-    </>
+    </div>
   );
 }

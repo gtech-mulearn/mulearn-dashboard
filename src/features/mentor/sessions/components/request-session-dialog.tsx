@@ -67,7 +67,7 @@ export function RequestSessionDialog({
       description: "",
       // All sessions are Interest-Group scoped — campus/company requests are
       // no longer supported by the backend.
-      session_type: "ig_session",
+      session_type: "IG_SESSION",
       entity_id: "",
       mode: "ONLINE",
       starts_at: "",

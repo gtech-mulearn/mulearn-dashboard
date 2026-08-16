@@ -170,6 +170,7 @@ export async function createSession(data: SessionFormValues): Promise<Session> {
 export async function fetchSessions(params: ListParams = {}): Promise<{
   data: Session[];
   totalPages: number;
+  totalCount: number;
 }> {
   const q = new URLSearchParams();
   if (params.status) q.set("status", params.status);
@@ -188,6 +189,7 @@ export async function fetchSessions(params: ListParams = {}): Promise<{
   return {
     data: res.response.data,
     totalPages: res.response.pagination?.totalPages ?? 1,
+    totalCount: res.response.pagination?.count ?? 0,
   };
 }
 
@@ -237,7 +239,7 @@ export async function completeSession(sessionId: string): Promise<void> {
 // ─── #15 GET /session/available/ ─────────────────────────────────────────────
 export async function fetchAvailableSessions(
   params: ListParams = {},
-): Promise<{ data: Session[]; totalPages: number }> {
+): Promise<{ data: Session[]; totalPages: number; totalCount: number }> {
   const q = new URLSearchParams();
   if (params.pageIndex) q.set("pageIndex", String(params.pageIndex));
   if (params.perPage) q.set("perPage", String(params.perPage));
@@ -252,6 +254,7 @@ export async function fetchAvailableSessions(
   return {
     data: res.response.data,
     totalPages: res.response.pagination?.totalPages ?? 1,
+    totalCount: res.response.pagination?.count ?? 0,
   };
 }
 
@@ -321,10 +324,15 @@ export async function joinSession(
 // ─── #19 GET /session/participant/history/ ───────────────────────────────────
 export async function fetchParticipantHistory(
   params: ListParams = {},
-): Promise<{ data: SessionParticipant[]; totalPages: number }> {
+): Promise<{
+  data: SessionParticipant[];
+  totalPages: number;
+  totalCount: number;
+}> {
   const q = new URLSearchParams();
   if (params.pageIndex) q.set("pageIndex", String(params.pageIndex));
   if (params.perPage) q.set("perPage", String(params.perPage));
+  if (params.sortBy) q.set("sortBy", params.sortBy);
 
   const res = await apiClient.get(
     `${endpoints.mentor.sessionParticipantHistory}?${q}`,
@@ -334,6 +342,7 @@ export async function fetchParticipantHistory(
   return {
     data: res.response.data,
     totalPages: res.response.pagination?.totalPages ?? 1,
+    totalCount: res.response.pagination?.count ?? 0,
   };
 }
 
