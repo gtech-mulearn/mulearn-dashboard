@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import Pagination from "@/components/dashboard/table/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -55,7 +56,6 @@ import { getSessionAccess } from "./session-access";
 import { SessionCreateDialog } from "./session-create-dialog";
 import { SessionEditSheet } from "./session-edit-sheet";
 import { SessionParticipantsDialog } from "./session-participants-dialog";
-import Pagination from "@/components/dashboard/table/pagination";
 
 const STATUS_STYLES: Record<string, string> = {
   SCHEDULED:
