@@ -1,6 +1,8 @@
 "use client";
 
 import { format } from "date-fns";
+import { useState } from "react";
+import Pagination from "@/components/dashboard/table/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -34,14 +36,17 @@ function formatMode(mode: string | null | undefined) {
 
 function formatSessionType(type: string | undefined) {
   if (!type) return "Global";
-  if (type === "campus_session") return "Campus";
-  if (type === "company_session") return "Company";
-  if (type === "ig_session") return "Interest Group (IG)";
+  if (type === "campus_session" || type === "CAMPUS_SESSION") return "Campus";
+  if (type === "company_session" || type === "COMPANY_SESSION")
+    return "Company";
+  if (type === "ig_session" || type === "IG_SESSION")
+    return "Interest Group (IG)";
   return type;
 }
 
 export function MyRequestsList() {
-  const { data, isLoading } = useMyRequests({});
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useMyRequests({ pageIndex: page, perPage: 10 });
 
   if (isLoading) {
     return (
@@ -55,6 +60,8 @@ export function MyRequestsList() {
   }
 
   const requests = data?.data ?? [];
+  const totalPages = data?.totalPages ?? 1;
+  const totalCount = data?.totalCount;
 
   if (requests.length === 0) {
     return (
@@ -65,68 +72,81 @@ export function MyRequestsList() {
   }
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Title</TableHead>
-            <TableHead>Entity</TableHead>
-            <TableHead>Mode</TableHead>
-            <TableHead>Proposed Time</TableHead>
-            <TableHead>Status</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {requests.map((req) => (
-            <TableRow key={req.id}>
-              <TableCell className="font-medium">
-                {req.title}
-                {req.description && (
-                  <p className="text-xs text-muted-foreground truncate max-w-xs mt-1">
-                    {req.description}
-                  </p>
-                )}
-              </TableCell>
-              <TableCell>
-                {req.entity_name ? (
-                  req.entity_name
-                ) : (
-                  <span className="text-muted-foreground">Global</span>
-                )}
-                <div className="text-xs text-muted-foreground mt-0.5">
-                  {formatSessionType(req.session_type)}
-                </div>
-              </TableCell>
-              <TableCell>
-                <Badge variant="outline">{formatMode(req.mode)}</Badge>
-              </TableCell>
-              <TableCell>
-                <div className="text-sm">
-                  {format(new Date(req.starts_at), "MMM d, yyyy h:mm a")}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  to {format(new Date(req.ends_at), "h:mm a")}
-                </div>
-              </TableCell>
-              <TableCell>
-                <Badge variant={getStatusColor(req.status ?? "Pending")}>
-                  {req.status}
-                </Badge>
-                {req.status === "REJECTED" && (
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Declined by the mentors.
-                  </p>
-                )}
-                {req.status === "SCHEDULED" && (
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Approved! your session is live.
-                  </p>
-                )}
-              </TableCell>
+    <div className="space-y-4">
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Title</TableHead>
+              <TableHead>Entity</TableHead>
+              <TableHead>Mode</TableHead>
+              <TableHead>Proposed Time</TableHead>
+              <TableHead>Status</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {requests.map((req) => (
+              <TableRow key={req.id}>
+                <TableCell className="font-medium">
+                  {req.title}
+                  {req.description && (
+                    <p className="text-xs text-muted-foreground truncate max-w-xs mt-1">
+                      {req.description}
+                    </p>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {req.entity_name ? (
+                    req.entity_name
+                  ) : (
+                    <span className="text-muted-foreground">Global</span>
+                  )}
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    {formatSessionType(req.session_type)}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline">{formatMode(req.mode)}</Badge>
+                </TableCell>
+                <TableCell>
+                  <div className="text-sm">
+                    {format(new Date(req.starts_at), "MMM d, yyyy h:mm a")}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    to {format(new Date(req.ends_at), "h:mm a")}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={getStatusColor(req.status ?? "Pending")}>
+                    {req.status}
+                  </Badge>
+                  {req.status === "REJECTED" && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Declined by the mentors.
+                    </p>
+                  )}
+                  {req.status === "SCHEDULED" && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Approved! your session is live.
+                    </p>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          handleNextClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+          handlePreviousClick={() => setPage((p) => Math.max(p - 1, 1))}
+          perPage={10}
+          totalCount={totalCount}
+        />
+      )}
     </div>
   );
 }
