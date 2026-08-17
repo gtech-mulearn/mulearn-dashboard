@@ -2,7 +2,6 @@
 
 import { Users } from "lucide-react";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
@@ -54,9 +53,13 @@ export function MyIgsCard() {
         ) : (
           <div className="flex flex-wrap gap-2">
             {igRoles.map((r) => (
-              <Badge key={r.id} variant="outline" className="text-sm">
+              <Link
+                key={r.id}
+                href={`/dashboard/interest-groups/${r.id}`}
+                className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 cursor-pointer shadow-sm"
+              >
                 {r.name}
-              </Badge>
+              </Link>
             ))}
           </div>
         )}

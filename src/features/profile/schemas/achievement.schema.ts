@@ -50,21 +50,25 @@ export const UserAchievementsResponseSchema = ApiResponseSchema(
 // VC Issuance Schemas
 // ============================================
 
-/** Subject info for VC issuance */
+/**
+ * Subject info for VC issuance — must match the backend's SubjectInfoSerializer
+ * (api/integrations/qseverse/serializers.py) field-for-field. The backend
+ * globally rejects any unrecognized key on a serializer (see
+ * mulearnbackend/__init__.py's strict_to_internal_value patch), so extra or
+ * misnamed fields here fail with a 400 "Unknown field." error.
+ */
 export const VCSubjectInfoSchema = z.object({
   type: z.enum(["Badge", "Certificate", "Recognition"]),
   did: z.string(),
-  name: z.string(),
+  full_name: z.string(),
   email: z.string().optional(),
 });
 
 export type VCSubjectInfo = z.infer<typeof VCSubjectInfoSchema>;
 
-/** Credential info for VC issuance */
+/** Credential info for VC issuance — matches CredentialInfoSerializer exactly. */
 export const VCCredentialInfoSchema = z.object({
-  course_name: z.string(),
   name: z.string(),
-  tags: z.array(z.string()),
   description: z.string(),
 });
 

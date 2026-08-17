@@ -314,6 +314,9 @@ export const BulkIssueFailedRowSchema = z.object({
 
 export const BulkIssueResponseDataSchema = z.object({
   success_count: z.number(),
+  // Rows for has_vc achievements: granted eligibility (AchievementEligibilityGrant),
+  // not issued directly — the user must claim it themselves via /eligible/ + /claim/.
+  eligibility_granted_count: z.number().default(0),
   failed_count: z.number(),
   failed_rows: z.array(BulkIssueFailedRowSchema).default([]),
 });
@@ -376,6 +379,31 @@ export const IssueVCRequestSchema = z.object({
 export type IssueVCRequest = z.infer<typeof IssueVCRequestSchema>;
 
 // ==========================================
+// QSeverse Template Schema
+// Templates come from the external QSeverse system (via GetQSCredentialsView,
+// which just proxies their raw JSON) and are used to autofill the achievement
+// creation form. The upstream shape isn't ours to control, so fields are kept
+// optional/lenient rather than strictly required.
+// ==========================================
+
+export const QseverseTemplateSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().nullable().optional(),
+  template_type: z.string().nullable().optional(),
+  tags: z.array(z.string()).optional().default([]),
+  banner_image_url: z.string().nullable().optional(),
+});
+
+export type QseverseTemplate = z.infer<typeof QseverseTemplateSchema>;
+
+export const QseverseTemplateListResponseSchema = DjangoResponseSchema(
+  z.object({
+    credentials: z.array(QseverseTemplateSchema).default([]),
+  }),
+);
+
+// ==========================================
 
 export const AchievementFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -384,7 +412,7 @@ export const AchievementFormSchema = z.object({
   level_id: z.string().nullable().optional(),
   has_vc: z.boolean(),
   is_active: z.boolean().optional(),
-  tags: z.string(),
+  tags: z.array(z.string()),
   type: z.string().min(1, "Type is required"),
   icon_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   template_id: z.string().optional(),

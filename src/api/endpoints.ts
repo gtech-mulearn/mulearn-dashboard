@@ -842,6 +842,8 @@ export const endpoints = {
     /** GET - Get connected DIDs for user */
     connectedUsers: (muid: string) =>
       `/api/v1/integrations/qseverse/connected-users/search?key=muid&value=${muid}`,
+    /** GET - List QSeverse credential templates (used to autofill achievement creation) */
+    getCredentials: "/api/v1/integrations/qseverse/qs-credentials/",
   },
 
   // ============================================

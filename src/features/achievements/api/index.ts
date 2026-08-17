@@ -14,6 +14,7 @@ export {
   fetchAuditLogs,
   fetchEligibleAchievements,
   fetchIssuedLogs,
+  fetchQseverseTemplates,
   fetchRules,
   fetchSingleRule,
   fetchUserAchievements,

@@ -20,6 +20,7 @@ export const MentorApplicationSchema = z.object({
   preferred_ig_ids: z.array(z.string()).optional().default([]),
   org: z.string().nullable().optional(),
   company: z.string().nullable().optional(),
+  linkedin: z.string().nullable().optional(),
   linkedin_url: z.string().nullable().optional(),
   verified_by: z.string().nullable().optional(),
   verified_at: z.string().nullable().optional(),
@@ -59,6 +60,7 @@ function normaliseMentorStatus(raw: unknown): MentorStatusData {
       rejection_reason:
         typeof obj.rejection_reason === "string" ? obj.rejection_reason : null,
       mentor_id: typeof obj.mentor_id === "string" ? obj.mentor_id : null,
+      id: typeof obj.id === "string" ? obj.id : null,
       organization:
         typeof obj.organization === "string" ? obj.organization : null,
       mentor_tier: typeof obj.mentor_tier === "string" ? obj.mentor_tier : null,
@@ -71,6 +73,7 @@ function normaliseMentorStatus(raw: unknown): MentorStatusData {
     verification_note: null,
     rejection_reason: null,
     mentor_id: null,
+    id: null,
     organization: null,
     mentor_tier: null,
   };
@@ -84,6 +87,7 @@ export type MentorStatusData = {
   verification_note?: string | null;
   rejection_reason?: string | null;
   mentor_id?: string | null;
+  id?: string | null;
   // Mentor's affiliated organization, shown in the mentor profile sidebar. Same
   // `GET /mentor/status/` response previously read via a separate `useMentorStatus`
   // hook; consolidated onto this canonical hook/key.
@@ -95,7 +99,27 @@ export type MentorStatusData = {
 
 // ─── GET/PATCH /profile/ and POST/PATCH /register/ response wrapper ───────────
 export const MentorApplicationResponseSchema = ApiResponseSchema(
-  MentorApplicationSchema,
+  z.preprocess((val: unknown) => {
+    if (
+      val &&
+      typeof val === "object" &&
+      "applications" in val &&
+      Array.isArray((val as Record<string, unknown>).applications) &&
+      (val as Record<string, unknown[]>).applications.length > 0
+    ) {
+      const v = val as Record<string, unknown>;
+      const apps = v.applications as Record<string, unknown>[];
+      // The backend creates new applications on updates. The array is chronologically
+      // ordered, so the LAST item is always the latest, most up-to-date application.
+      const app = apps[apps.length - 1];
+      return {
+        ...v,
+        ...app,
+        id: app.id, // Ensure the application ID overrides the profile ID
+      };
+    }
+    return val;
+  }, MentorApplicationSchema),
 );
 
 // ─── Form values for POST/PATCH /register/ ───────────────────────────────────

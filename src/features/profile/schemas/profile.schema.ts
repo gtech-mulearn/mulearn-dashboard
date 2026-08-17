@@ -120,6 +120,7 @@ export const UserProfileSchema = z.object({
   level: z.string().nullable(),
   karma: z.coerce.number().nullable(),
   rank: z.coerce.number().nullable(),
+  grit: z.coerce.number().nullable().optional(),
   percentile: z.coerce.number().nullable(),
   joined: z.string(),
   is_public: z.boolean().nullable(),

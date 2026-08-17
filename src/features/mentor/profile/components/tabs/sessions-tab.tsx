@@ -63,7 +63,7 @@ export function SessionsTab({ sessions, isLoading }: SessionsTabProps) {
             ))}
           </div>
         ) : !sessions || sessions.length === 0 ? (
-          <div className="flex min-h-[100px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed text-muted-foreground">
+          <div className="flex py-10 flex-col items-center justify-center gap-2 rounded-xl border border-dashed text-muted-foreground">
             <CalendarDays className="h-8 w-8 opacity-30" />
             <p className="text-sm">No sessions yet.</p>
             <Button asChild size="sm" variant="outline">

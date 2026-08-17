@@ -9,7 +9,7 @@
 
 "use client";
 
-import { Check, ExternalLink, RefreshCw } from "lucide-react";
+import { Check, ExternalLink, Maximize2, RefreshCw } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -58,8 +58,9 @@ export function IssueVCModal({
   const issueVCMutation = useIssueVCMutation();
 
   const [overrideDID, setOverrideDID] = useState<string | null>(null);
+  const [expandedImageSrc, setExpandedImageSrc] = useState<string | null>(null);
 
-  const { achievement: achievementData, is_issued, vc_url } = achievement;
+  const { achievement: achievementData, vc_url } = achievement;
   const availableDIDs = didsData?.dids || [];
   const selectedDID = overrideDID ?? availableDIDs[0] ?? "";
   const issuedCredential =
@@ -73,14 +74,12 @@ export function IssueVCModal({
     const subjectInfo: VCSubjectInfo = {
       type: "Badge",
       did: selectedDID,
-      name: userName,
+      full_name: userName,
       email: userEmail,
     };
 
     const credentialInfo: VCCredentialInfo = {
-      course_name: achievementData.achievement_name,
       name: achievementData.achievement_name,
-      tags: achievementData.tags,
       description: achievementData.description || "",
     };
 
@@ -91,7 +90,8 @@ export function IssueVCModal({
         subjectInfo,
         credentialInfo,
         templateId,
-        achievementId: achievement.id,
+
+        achievementId: achievementData.id,
       },
       { onSuccess: () => onSuccess?.() },
     );
@@ -99,7 +99,7 @@ export function IssueVCModal({
 
   const renderContent = () => {
     // Viewing already issued VC
-    if (is_issued && vc_url && !issuedCredential) {
+    if (vc_url && !issuedCredential) {
       return (
         <div className="space-y-4">
           <div className="rounded-lg bg-success/10 p-4 text-center">
@@ -113,14 +113,29 @@ export function IssueVCModal({
           </div>
 
           <div className="flex justify-center">
-            <Image
-              src={vc_url}
-              alt="Verifiable Credential QR"
-              width={250}
-              height={250}
-              className="rounded-lg border"
-            />
+            <button
+              type="button"
+              onClick={() => setExpandedImageSrc(vc_url)}
+              className="group relative overflow-hidden rounded-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label="Enlarge credential image"
+            >
+              <Image
+                src={vc_url}
+                alt="Verifiable Credential QR"
+                width={250}
+                height={250}
+              />
+              <span className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all group-hover:bg-black/40 group-hover:opacity-100">
+                <Maximize2 className="h-6 w-6 text-white" />
+              </span>
+            </button>
           </div>
+
+          {achievementData.description && (
+            <p className="text-center text-sm text-muted-foreground leading-relaxed">
+              {achievementData.description}
+            </p>
+          )}
 
           <div className="flex flex-wrap justify-center gap-2">
             <span className="rounded-full bg-brand-blue/10 px-3 py-1 text-xs font-medium text-brand-blue">
@@ -156,14 +171,29 @@ export function IssueVCModal({
           </div>
 
           <div className="flex justify-center">
-            <Image
-              src={issuedCredential.message}
-              alt="Verifiable Credential QR"
-              width={250}
-              height={250}
-              className="rounded-lg border"
-            />
+            <button
+              type="button"
+              onClick={() => setExpandedImageSrc(issuedCredential.message)}
+              className="group relative overflow-hidden rounded-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label="Enlarge credential image"
+            >
+              <Image
+                src={issuedCredential.message}
+                alt="Verifiable Credential QR"
+                width={250}
+                height={250}
+              />
+              <span className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all group-hover:bg-black/40 group-hover:opacity-100">
+                <Maximize2 className="h-6 w-6 text-white" />
+              </span>
+            </button>
           </div>
+
+          {achievementData.description && (
+            <p className="text-center text-sm text-muted-foreground leading-relaxed">
+              {achievementData.description}
+            </p>
+          )}
 
           <div className="flex flex-wrap justify-center gap-2">
             <span className="rounded-full bg-brand-blue/10 px-3 py-1 text-xs font-medium text-brand-blue">
@@ -308,7 +338,7 @@ export function IssueVCModal({
 
   const renderFooter = () => {
     // Already issued or just issued - show close button
-    if (is_issued || issuedCredential) {
+    if (vc_url || issuedCredential) {
       return (
         <Button variant="secondary" onClick={() => handleOpenChange(false)}>
           Close
@@ -343,7 +373,7 @@ export function IssueVCModal({
   };
 
   const getTitle = () => {
-    if (is_issued && !issuedCredential) return "View Credential";
+    if (vc_url && !issuedCredential) return "View Credential";
     if (issuedCredential) return "Credential Issued";
     if (availableDIDs.length === 0) return "Link Your DID";
     return "Issue Verifiable Credential";
@@ -358,21 +388,47 @@ export function IssueVCModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-md">
-        <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
-          <DialogTitle>{getTitle()}</DialogTitle>
-          <DialogDescription className="sr-only">
-            Issue or view Verifiable Credentials for achievements.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-md">
+          <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
+            <DialogTitle>{getTitle()}</DialogTitle>
+            <DialogDescription className="sr-only">
+              Issue or view Verifiable Credentials for achievements.
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="overflow-y-auto px-6 py-4">{renderContent()}</div>
+          <div className="overflow-y-auto px-6 py-4">{renderContent()}</div>
 
-        <div className="shrink-0 flex justify-end gap-2 px-6 py-4 border-t border-border">
-          {renderFooter()}
-        </div>
-      </DialogContent>
-    </Dialog>
+          <div className="shrink-0 flex justify-end gap-2 px-6 py-4 border-t border-border">
+            {renderFooter()}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!expandedImageSrc}
+        onOpenChange={(next) => !next && setExpandedImageSrc(null)}
+      >
+        <DialogContent className="max-w-[90vw] gap-0 border-none bg-transparent p-0 shadow-none sm:max-w-lg">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Enlarged credential image</DialogTitle>
+            <DialogDescription>
+              Full-size view of the verifiable credential so the QR code can be
+              scanned.
+            </DialogDescription>
+          </DialogHeader>
+          {expandedImageSrc && (
+            <Image
+              src={expandedImageSrc}
+              alt="Verifiable Credential — enlarged"
+              width={800}
+              height={800}
+              className="h-auto w-full rounded-lg"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

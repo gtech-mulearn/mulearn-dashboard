@@ -18,7 +18,6 @@ import { useCallback, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
@@ -45,11 +44,6 @@ import {
   fetchCommunityPartners,
   updateCommunityPartner,
 } from "../api/community-partner.api";
-import {
-  IG_COVER_IMAGE_ASPECT,
-  IG_ICON_IMAGE_ASPECT,
-  IG_IMAGE_MAX_MB,
-} from "../constants/ig-images.constants";
 import { useEditInterestGroup } from "../hooks/use-edit-interest-group";
 import type {
   CommunityPartner,
@@ -117,8 +111,6 @@ export function EditInterestGroupForm({
     isPending,
     removeCoverImage,
     removeIconImage,
-    uploadCoverImage,
-    uploadIconImage,
     isRemovingCoverImage,
     isRemovingIconImage,
     isUploadingCoverImage,
@@ -135,10 +127,12 @@ export function EditInterestGroupForm({
 
   // ── Cover / icon images — replaced/removed via standalone endpoints,
   // never sent as part of the PATCH payload below ──────────
-  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
-  const [iconImageFile, setIconImageFile] = useState<File | null>(null);
-  const [coverImageUrl, setCoverImageUrl] = useState(group.cover_image ?? null);
-  const [iconImageUrl, setIconImageUrl] = useState(group.icon_image ?? null);
+  const [_coverImageFile, setCoverImageFile] = useState<File | null>(null);
+  const [_iconImageFile, setIconImageFile] = useState<File | null>(null);
+  const [_coverImageUrl, setCoverImageUrl] = useState(
+    group.cover_image ?? null,
+  );
+  const [_iconImageUrl, setIconImageUrl] = useState(group.icon_image ?? null);
 
   // ── Array (tag) fields ─────────────────────────────────
   const [prerequisites, setPrerequisites] = useState<string[]>(
@@ -943,6 +937,7 @@ function CommunityPartnersEditor({ igId }: { igId: string }) {
               className="flex items-start gap-3 rounded-xl border border-border/50 bg-muted/20 p-3"
             >
               {partner.logo_key ? (
+                // biome-ignore lint/performance/noImgElement: External logo source
                 <img
                   src={partner.logo_key}
                   alt={partner.name}

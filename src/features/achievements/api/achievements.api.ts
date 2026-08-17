@@ -7,6 +7,7 @@ import type {
   CreateRuleRequest,
   IssuedLog,
   ManualIssueRequest,
+  QseverseTemplate,
   RevokeRequest,
   RuleMutationResponseData,
   SimulationResult,
@@ -27,6 +28,7 @@ import {
   EligibleAchievementListResponseSchema,
   GenericSuccessResponseSchema,
   IssuedLogListResponseSchema,
+  QseverseTemplateListResponseSchema,
   RuleMutationResponseSchema,
   SimulationListResponseSchema,
   UserAchievementListResponseSchema,
@@ -76,6 +78,18 @@ export async function deleteAchievement(id: string): Promise<void> {
     endpoints.achievements.delete(id),
     GenericSuccessResponseSchema,
   );
+}
+
+// ==========================================
+// QSeverse Templates (used to autofill achievement creation)
+// ==========================================
+
+export async function fetchQseverseTemplates(): Promise<QseverseTemplate[]> {
+  const res = await apiClient.get(
+    endpoints.qseverse.getCredentials,
+    QseverseTemplateListResponseSchema,
+  );
+  return res.response.credentials;
 }
 
 // ==========================================

@@ -57,7 +57,7 @@ export function EventsTab({
     filteredTasks.forEach((task) => {
       const key = task.level ?? "General";
       if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(task);
+      map.get(key)?.push(task);
     });
     return Array.from(map.entries()).map(([name, levelTasks]) => ({
       name,
