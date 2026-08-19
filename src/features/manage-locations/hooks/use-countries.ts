@@ -40,6 +40,7 @@ export const useAddCountry = () => {
         queryKey: ["country-dropdown"],
         exact: false,
       });
+      toast.success("Country added successfully");
     },
     onError: (error) => {
       toast.error(
@@ -60,6 +61,7 @@ export const useUpdateCountry = () => {
         queryKey: ["country-dropdown"],
         exact: false,
       });
+      toast.success("Country updated successfully");
     },
     onError: (error) => {
       toast.error(
@@ -80,6 +82,7 @@ export const useDeleteCountry = () => {
         queryKey: ["country-dropdown"],
         exact: false,
       });
+      toast.success("Country deleted successfully");
     },
     onError: (error) => {
       toast.error(

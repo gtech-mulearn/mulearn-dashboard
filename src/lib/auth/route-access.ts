@@ -101,6 +101,9 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   "/dashboard/management/notifications": {
     roles: [ROLES.ADMIN],
   },
+  "/dashboard/management/homepage": {
+    roles: [ROLES.ADMIN, ROLES.ASSOCIATE],
+  },
   "/dashboard/management/manage-users": {
     roles: [ROLES.ADMIN],
   },
