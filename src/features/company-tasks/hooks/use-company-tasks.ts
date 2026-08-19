@@ -14,10 +14,14 @@ import {
   fetchTaskLevels,
   updateCompanyTask,
   updateTaskType,
+  fetchTaskTemplates,
+  createTaskTemplate,
+  deleteTaskTemplate,
 } from "../api/tasks.api";
 import type {
   CreateCompanyTaskPayload,
   UpdateCompanyTaskPayload,
+  TaskTemplate,
 } from "../types/tasks.types";
 
 export const COMPANY_TASKS_KEYS = {
@@ -29,6 +33,7 @@ export const COMPANY_TASKS_KEYS = {
   types: () => [...COMPANY_TASKS_KEYS.all, "types"] as const,
   levels: () => [...COMPANY_TASKS_KEYS.all, "levels"] as const,
   publicList: () => ["public-tasks-list"] as const,
+  templates: () => [...COMPANY_TASKS_KEYS.all, "templates"] as const,
 };
 
 export function useCompanyTasks(params?: FetchCompanyTasksParams) {
@@ -177,6 +182,54 @@ export function useDeleteTaskType() {
     onError: (error) => {
       toast.error(
         getApiResponseError(error, { fallback: "Failed to delete task type." }),
+      );
+    },
+  });
+}
+
+export function useTaskTemplates() {
+  return useQuery({
+    queryKey: COMPANY_TASKS_KEYS.templates(),
+    queryFn: fetchTaskTemplates,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useCreateTaskTemplate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: Partial<TaskTemplate>) => createTaskTemplate(payload),
+    onSuccess: () => {
+      toast.success("Task template created");
+      queryClient.invalidateQueries({
+        queryKey: COMPANY_TASKS_KEYS.templates(),
+      });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to create task template",
+        }),
+      );
+    },
+  });
+}
+
+export function useDeleteTaskTemplate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (templateId: string) => deleteTaskTemplate(templateId),
+    onSuccess: () => {
+      toast.success("Task template deleted");
+      queryClient.invalidateQueries({
+        queryKey: COMPANY_TASKS_KEYS.templates(),
+      });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to delete task template",
+        }),
       );
     },
   });

@@ -1447,47 +1447,6 @@ export const TalentPoolInsightsResponseSchema = DjangoResponse(
   TalentPoolInsightsSchema,
 );
 
-// ─── Task Templates ──────────────────────────────────────────
-
-export const TaskTemplateSchema = z
-  .object({
-    id: z.string(),
-    title: z.string(),
-    description: z.string().optional().nullable().default(""),
-    hashtag_prefix: z.string().optional().nullable(),
-    hashtag: z.string().optional().nullable(),
-    karma: z.coerce.number().default(0),
-    type_id: z.string().optional().nullable(),
-    type_title: z.string().optional().nullable(),
-    type: z.string().optional().nullable(),
-    skills: z.array(z.string()).optional().default([]),
-    created_at: z.string().optional().nullable(),
-  })
-  .passthrough();
-
-export const TaskTemplatesListResponseSchema = z.union([
-  DjangoResponse(
-    z.object({
-      data: z.array(TaskTemplateSchema),
-    }),
-  ),
-  DjangoResponse(z.array(TaskTemplateSchema)),
-  z.object({
-    response: z.object({
-      data: z.array(TaskTemplateSchema),
-    }),
-  }),
-  z.object({
-    data: z.array(TaskTemplateSchema),
-  }),
-]);
-
-export const TaskTemplateDetailResponseSchema = z.union([
-  DjangoResponse(TaskTemplateSchema),
-  DjangoResponse(z.object({ id: z.string() }).passthrough()),
-  DjangoResponse(z.object({}).passthrough()),
-]);
-
 // ─── Company Feedback ────────────────────────────────────────
 
 export const CompanyFeedbackSchema = z.object({

@@ -83,3 +83,13 @@ export interface CompanyTaskMutationResult {
   task_id?: string;
   deleted_at?: string;
 }
+
+export interface TaskTemplate {
+  id: string;
+  title: string;
+  description?: string | null;
+  hashtag_prefix?: string | null;
+  karma: number;
+  type_id?: string | null;
+  type_title?: string | null;
+}

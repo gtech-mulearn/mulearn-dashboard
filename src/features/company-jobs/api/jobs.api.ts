@@ -40,8 +40,6 @@ import {
   TalentPoolAnalyticsResponseSchema,
   TalentPoolInsightsResponseSchema,
   TasksAnalyticsResponseSchema,
-  TaskTemplateDetailResponseSchema,
-  TaskTemplatesListResponseSchema,
   TrackJobViewResponseSchema,
   UpdateApplicantStatusResponseSchema,
   UpdateCompanyProfileResponseSchema,
@@ -81,7 +79,6 @@ import type {
   TalentPoolAnalyticsParams,
   TalentPoolInsights,
   TasksAnalytics,
-  TaskTemplate,
   UpdateApplicantStatusResponse,
   UpdateJobPayload,
   UpdateJobResponse,
@@ -862,48 +859,6 @@ export async function downloadTalentPoolInsightsCSV(params?: {
   link.click();
   link.remove();
   window.URL.revokeObjectURL(url);
-}
-
-export async function fetchTaskTemplates(): Promise<TaskTemplate[]> {
-  const res = await apiClient.get(
-    endpoints.company.taskTemplates,
-    TaskTemplatesListResponseSchema,
-  );
-  if ("response" in res && res.response) {
-    if (Array.isArray(res.response)) return res.response;
-    if ("data" in res.response && Array.isArray(res.response.data)) {
-      return res.response.data;
-    }
-  }
-  if ("data" in res && Array.isArray(res.data)) {
-    return res.data;
-  }
-  if (Array.isArray(res)) {
-    return res;
-  }
-  return [];
-}
-
-export async function createTaskTemplate(
-  payload: Partial<TaskTemplate>,
-): Promise<TaskTemplate> {
-  const res = await apiClient.post(
-    endpoints.company.taskTemplates,
-    payload,
-    TaskTemplateDetailResponseSchema,
-  );
-  if ("response" in res && res.response) {
-    return res.response as TaskTemplate;
-  }
-  return res as unknown as TaskTemplate;
-}
-
-export async function deleteTaskTemplate(templateId: string): Promise<void> {
-  await apiClient.delete(
-    endpoints.company.taskTemplateDetail(templateId),
-    undefined,
-    GenericResponseSchema,
-  );
 }
 
 // ─── Feedback & Impact Reports (§8) ─────────────────────────

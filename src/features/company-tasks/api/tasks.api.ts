@@ -4,6 +4,8 @@ import {
   CompanyTaskDetailResponseSchema,
   CompanyTasksResponseSchema,
   GenericResponseSchema,
+  TaskTemplateDetailResponseSchema,
+  TaskTemplatesListResponseSchema,
 } from "../schemas/tasks.schema";
 import type {
   CompanyTask,
@@ -11,6 +13,7 @@ import type {
   CompanyTasksResponse,
   CreateCompanyTaskPayload,
   UpdateCompanyTaskPayload,
+  TaskTemplate,
 } from "../types/tasks.types";
 
 export interface FetchCompanyTasksParams {
@@ -143,8 +146,46 @@ export async function updateCompanyTask({
 }
 
 export async function deleteCompanyTask(taskId: string): Promise<void> {
+  await apiClient.delete(endpoints.company.taskDetail(taskId), undefined);
+}
+
+export async function fetchTaskTemplates(): Promise<TaskTemplate[]> {
+  const res = await apiClient.get(
+    endpoints.company.taskTemplates,
+    TaskTemplatesListResponseSchema,
+  );
+  if ("response" in res && res.response) {
+    if (Array.isArray(res.response)) return res.response;
+    if ("data" in res.response && Array.isArray(res.response.data)) {
+      return res.response.data;
+    }
+  }
+  if ("data" in res && Array.isArray(res.data)) {
+    return res.data;
+  }
+  if (Array.isArray(res)) {
+    return res;
+  }
+  return [];
+}
+
+export async function createTaskTemplate(
+  payload: Partial<TaskTemplate>,
+): Promise<TaskTemplate> {
+  const res = await apiClient.post(
+    endpoints.company.taskTemplates,
+    payload,
+    TaskTemplateDetailResponseSchema,
+  );
+  if ("response" in res && res.response) {
+    return res.response as TaskTemplate;
+  }
+  return res as unknown as TaskTemplate;
+}
+
+export async function deleteTaskTemplate(templateId: string): Promise<void> {
   await apiClient.delete(
-    endpoints.company.taskDetail(taskId),
+    endpoints.company.taskTemplateDetail(templateId),
     undefined,
     GenericResponseSchema,
   );

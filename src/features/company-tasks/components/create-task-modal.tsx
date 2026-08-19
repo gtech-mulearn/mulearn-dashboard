@@ -26,19 +26,21 @@ import {
   useTaskLevels,
   useUpdateCompanyTask,
 } from "../hooks/use-company-tasks";
-import type { CompanyTask } from "../types/tasks.types";
+import type { CompanyTask, TaskTemplate } from "../types/tasks.types";
 import { ProjectSkillPicker } from "@/features/projects/components/project-skill-picker";
 
 interface CreateTaskModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   taskToEdit?: CompanyTask | null;
+  templateToUse?: TaskTemplate | null;
 }
 
 export function CreateTaskModal({
   open,
   onOpenChange,
   taskToEdit,
+  templateToUse,
 }: CreateTaskModalProps) {
   const { data: taskTypesResponse } = useTaskTypes();
   const { data: taskLevelsResponse } = useTaskLevels();
@@ -107,6 +109,15 @@ export function CreateTaskModal({
         setUsageCount(taskToEdit.usage_count?.toString() || "1");
         setSkills(taskToEdit.skills?.map((s) => s.id) || []);
         setDescription(taskToEdit.description || "");
+      } else if (templateToUse) {
+        setTitle(templateToUse.title || "");
+        setHashtag(templateToUse.hashtag_prefix || "");
+        setKarma(templateToUse.karma?.toString() || "");
+        setType(templateToUse.type_id || "");
+        setDescription(templateToUse.description || "");
+        setUsageCount("1");
+        setLevel("");
+        setSkills([]);
       } else {
         setTitle("");
         setHashtag("");
@@ -118,7 +129,7 @@ export function CreateTaskModal({
         setSkills([]);
       }
     }
-  }, [open, taskToEdit, taskTypes, taskLevels]);
+  }, [open, taskToEdit, templateToUse, taskTypes, taskLevels]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
