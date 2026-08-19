@@ -108,6 +108,7 @@ export const SessionSchema = z.object({
   status: z.string().nullable().optional().default("PENDING_APPROVAL"),
   meeting_link: z.string().nullable().optional(),
   venue: z.string().nullable().optional(),
+  apply_to_series: z.boolean().nullable().optional().default(false),
   max_participants: z.coerce.number().nullable().optional(),
   created_by_id: z.string().nullable().optional(),
   created_by_name: z.string().nullable().optional(),

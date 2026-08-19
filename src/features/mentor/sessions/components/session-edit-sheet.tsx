@@ -49,7 +49,7 @@ const EditSchema = z
       .optional()
       .or(z.literal("")),
     venue: z.string().optional(),
-    apply_to_series: z.boolean().optional().default(false),
+    apply_to_series: z.boolean().default(false),
   })
   .refine((v) => new Date(v.ends_at) > new Date(v.starts_at), {
     message: "End time must be after start time",
@@ -78,7 +78,7 @@ export function SessionEditSheet({
     currentSession?.id ?? "",
   );
 
-  const form = useForm<EditFormValues>({
+  const form = useForm<z.input<typeof EditSchema>, any, EditFormValues>({
     resolver: zodResolver(EditSchema),
     defaultValues: {
       title: "",
@@ -106,7 +106,7 @@ export function SessionEditSheet({
           "ONLINE",
         meeting_link: currentSession.meeting_link ?? "",
         venue: currentSession.venue ?? "",
-        apply_to_series: false,
+        apply_to_series: currentSession.apply_to_series ?? false,
       });
     }
   }, [currentSession, open, form]);

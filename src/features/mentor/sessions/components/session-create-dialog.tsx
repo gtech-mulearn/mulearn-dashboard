@@ -60,10 +60,12 @@ export function SessionCreateDialog({
 
   const { mutate: create, isPending } = useCreateSession();
 
-  const form = useForm<SessionFormValues>({
-    resolver: zodResolver(
-      CreateSessionFormSchema,
-    ) as Resolver<SessionFormValues>,
+  const form = useForm<
+    z.input<typeof CreateSessionFormSchema>,
+    any,
+    SessionFormValues
+  >({
+    resolver: zodResolver(CreateSessionFormSchema),
     defaultValues: {
       title: "",
       description: "",
@@ -108,12 +110,7 @@ export function SessionCreateDialog({
 
   function onSubmit(values: SessionFormValues) {
     create(values, {
-      onSuccess: (res) => {
-        if (res?.recurrence_truncated) {
-          toast.info(
-            "Session created! Recurrence capped at 50 occurrences limit.",
-          );
-        }
+      onSuccess: () => {
         onOpenChange(false);
         form.reset();
       },
