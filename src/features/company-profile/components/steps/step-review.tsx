@@ -48,12 +48,14 @@ function ReviewSection({
 }
 
 function TagList({ items }: { items: string[] | null | undefined }) {
-  if (!items || items.length === 0) {
+  const list = items || [];
+
+  if (!list.length)
     return <span className="italic text-muted-foreground text-sm">—</span>;
-  }
+
   return (
     <div className="flex flex-wrap gap-1.5">
-      {items.map((item) => (
+      {list.map((item) => (
         <Badge key={item} variant="secondary">
           {item}
         </Badge>

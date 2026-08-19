@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { StudentsSearchClient } from "@/features/search";
 
 export const metadata: Metadata = {
@@ -9,7 +10,9 @@ export const metadata: Metadata = {
 export default function StudentsSearchPage() {
   return (
     <div className="space-y-6">
-      <StudentsSearchClient />
+      <Suspense>
+        <StudentsSearchClient />
+      </Suspense>
     </div>
   );
 }

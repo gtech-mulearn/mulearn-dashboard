@@ -1,6 +1,6 @@
 # μLearn Dashboard
 
-A modern, comprehensive dashboard and community management platform for the **μLearn** foundation. Built with a focus on visual excellence, performance, and developer experience using the latest Next.js and React ecosystems.
+A modern, comprehensive dashboard and community management platform for the **μLearn** foundation. Built with a focus on visual excellence, performance, and developer experience using the latest Next.js and React ecosystems
 
 ## 🚀 Quick Start
 
@@ -8,7 +8,6 @@ A modern, comprehensive dashboard and community management platform for the **μ
 
 - Node.js 22+
 - Bun
-
 ### Installation
 
 1. Clone the repository:=

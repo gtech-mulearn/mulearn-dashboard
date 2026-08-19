@@ -24,7 +24,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreateCircle } from "../hooks";
+import { getApiResponseError } from "@/hooks/use-get-error";
+import { useCircles, useCreateCircle, useUserCircles } from "../hooks";
 import {
   type CreateCircleRequest,
   CreateCircleRequestSchema,
@@ -45,11 +46,14 @@ export function CreateCircleModal({
 }: CreateCircleModalProps) {
   const [open, setOpen] = useState(false);
   const { mutate: createCircle, isPending } = useCreateCircle();
+  const { data: existingCircles } = useCircles();
+  const { data: userCircles } = useUserCircles();
 
   const {
     register,
     handleSubmit,
     reset,
+    setError,
     formState: { errors },
   } = useForm<CreateCircleRequest>({
     resolver: zodResolver(CreateCircleRequestSchema),
@@ -68,11 +72,39 @@ export function CreateCircleModal({
   }, [open, reset]);
 
   const onSubmit = (data: CreateCircleRequest) => {
+    const trimmedTitle = data.title.trim().toLowerCase();
+
+    // Combine circles from public list and user circles list
+    const circlesList = [
+      ...(existingCircles?.circles ?? []),
+      ...(userCircles ?? []),
+    ];
+
+    // Validate duplicate circle title case-insensitively
+    const isDuplicate = circlesList.some(
+      (c) => c.title && c.title.trim().toLowerCase() === trimmedTitle,
+    );
+
+    if (isDuplicate) {
+      setError("title", {
+        type: "manual",
+        message: "A learning circle with this name already exists.",
+      });
+      return;
+    }
+
     createCircle(data, {
       onSuccess: (circleId) => {
         setOpen(false);
         reset();
         onSuccess?.(circleId);
+      },
+      onError: (error) => {
+        const errMsg = getApiResponseError(error, { fallback: "" });
+        setError("title", {
+          type: "manual",
+          message: errMsg || "A learning circle with this name already exists.",
+        });
       },
     });
   };

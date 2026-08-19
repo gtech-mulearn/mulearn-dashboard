@@ -31,7 +31,7 @@ import {
   useLearnerApplications,
   usePublicJobs,
 } from "@/features/company-jobs/hooks";
-import type { PublicJob } from "@/features/company-jobs/types";
+import type { JobSortValue, PublicJob } from "@/features/company-jobs/types";
 import { useDebounce } from "@/hooks/use-debounce";
 
 // ─── Skeleton helpers ─────────────────────────────────────────────────────────
@@ -96,7 +96,7 @@ export function LearnerJobsPageClient() {
   const [search, setSearch] = useState("");
   const [jobPageIndex, setJobPageIndex] = useState(1);
   const [pageIndex, setPageIndex] = useState(1);
-  const [jobSortBy, setJobSortBy] = useState<string>("-created_at");
+  const [jobSortBy, setJobSortBy] = useState<JobSortValue>("-created_at");
   const [appSortBy, setAppSortBy] = useState<string>("-appliedAt");
   const [selectedJob, setSelectedJob] = useState<PublicJob | null>(null);
   const debouncedSearch = useDebounce(search, 300);
@@ -191,7 +191,7 @@ export function LearnerJobsPageClient() {
                   <DropdownMenuRadioGroup
                     value={jobSortBy}
                     onValueChange={(v) => {
-                      setJobSortBy(v);
+                      setJobSortBy(v as JobSortValue);
                       setJobPageIndex(1);
                     }}
                   >

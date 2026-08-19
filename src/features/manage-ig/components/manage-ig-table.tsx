@@ -11,6 +11,7 @@ import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Switch } from "@/components/ui/switch";
 import { useInterestGroupsAdmin } from "../hooks/use-manage-ig";
 import type { InterestGroup } from "../schemas";
 import { IGDetailPanel } from "./ig-detail-panel";
@@ -28,6 +29,8 @@ export function ManageIGTable() {
     setSearch,
     setSortBy,
     deleteInterestGroup,
+    activateInterestGroup,
+    deactivateInterestGroup,
     exportCSV,
   } = useInterestGroupsAdmin();
 
@@ -36,6 +39,7 @@ export function ManageIGTable() {
   const [selectedIG, setSelectedIG] = useState<InterestGroup | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<InterestGroup | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const handleSortChange = (column: string) => {
     setPage(1);
@@ -53,6 +57,7 @@ export function ManageIGTable() {
     { column: "category", Label: "Category", isSortable: true },
     { column: "members", Label: "Members", isSortable: true },
     { column: "status", Label: "Status", isSortable: true },
+    { column: "active", Label: "Active", isSortable: false },
     { column: "created_by", Label: "Created By", isSortable: true },
     { column: "updated_by", Label: "Updated By", isSortable: true },
     { column: "created_at", Label: "Created On", isSortable: true },
@@ -87,9 +92,12 @@ export function ManageIGTable() {
       );
     }
     if (column === "status") {
-      const status = String(row.status || "");
+      const status = String(row.status || "")
+        .trim()
+        .toLowerCase();
       const statusClasses: Record<string, string> = {
         active: "bg-primary/10 text-primary border-primary/20",
+        inactive: "bg-muted text-muted-foreground border-border",
         requested: "bg-chart-4/15 text-chart-4 border-chart-4/30",
         rejected: "bg-destructive/10 text-destructive border-destructive/20",
         cancelled: "bg-destructive/10 text-destructive border-destructive/20",
@@ -101,6 +109,21 @@ export function ManageIGTable() {
         >
           {status || "unknown"}
         </Badge>
+      );
+    }
+    if (column === "active") {
+      const ig = row as unknown as InterestGroup;
+      const status = String(ig.status || "")
+        .trim()
+        .toLowerCase();
+      if (status !== "active" && status !== "inactive") return null;
+      return (
+        <Switch
+          checked={status === "active"}
+          disabled={togglingId === ig.id}
+          onCheckedChange={() => handleToggleActive(ig)}
+          aria-label={status === "active" ? "Deactivate" : "Activate"}
+        />
       );
     }
     if (column === "members") {
@@ -158,6 +181,23 @@ export function ManageIGTable() {
   const handleCreate = () => {
     setSelectedIG(null);
     setIsFormOpen(true);
+  };
+
+  const handleToggleActive = async (row: InterestGroup) => {
+    setTogglingId(row.id);
+    try {
+      if (
+        String(row.status || "")
+          .trim()
+          .toLowerCase() === "active"
+      ) {
+        await deactivateInterestGroup(row.id);
+      } else {
+        await activateInterestGroup(row.id);
+      }
+    } finally {
+      setTogglingId(null);
+    }
   };
 
   return (

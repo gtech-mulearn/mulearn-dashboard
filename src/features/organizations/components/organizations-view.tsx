@@ -548,7 +548,9 @@ function OrgFormDialog({
       >
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? `Edit ${org?.org_type}` : `Add ${selectedOrgType}`}
+            {isEditing
+              ? `Edit ${org?.org_type || defaultOrgType}`
+              : `Add ${selectedOrgType}`}
           </DialogTitle>
         </DialogHeader>
 

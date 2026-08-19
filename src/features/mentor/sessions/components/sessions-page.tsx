@@ -10,6 +10,7 @@ import {
   Users,
   Video,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -366,6 +367,8 @@ function SessionTable({
 export function SessionsPage() {
   const { hasRole } = usePermissions();
   const isAdmin = hasRole(MANAGEMENT_ROLES);
+  const searchParams = useSearchParams();
+  const defaultTab = searchParams.get("tab") || "upcoming";
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editSession, setEditSession] = useState<Session | null>(null);
@@ -408,7 +411,7 @@ export function SessionsPage() {
           </Button>
         </div>
 
-        <Tabs defaultValue="upcoming">
+        <Tabs defaultValue={defaultTab}>
           <TabsList>
             <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
             <TabsTrigger value="all">All Sessions</TabsTrigger>

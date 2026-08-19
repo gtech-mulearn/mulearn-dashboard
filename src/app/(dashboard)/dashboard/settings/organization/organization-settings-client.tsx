@@ -67,12 +67,8 @@ export function ChangeOrganizationPageClient() {
                   onValueChange={field.onChange}
                   onSearchChange={setCollegeSearch}
                   loading={collegeSearchQuery.isFetching}
-                  placeholder="Search organization"
-                  emptyText={
-                    collegeSearch.trim().length < 2
-                      ? "Type your college to search"
-                      : "No organizations found."
-                  }
+                  placeholder="Search College"
+                  emptyText="No organizations found."
                 />
               )}
             />
@@ -94,11 +90,7 @@ export function ChangeOrganizationPageClient() {
                   onSearchChange={setDepartmentSearch}
                   loading={departmentSearchQuery.isFetching}
                   placeholder="Search department"
-                  emptyText={
-                    departmentSearch.trim().length < 2
-                      ? "Type your department to search"
-                      : "No departments found."
-                  }
+                  emptyText="No departments found."
                 />
               )}
             />

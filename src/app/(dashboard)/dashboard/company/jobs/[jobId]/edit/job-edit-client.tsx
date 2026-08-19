@@ -16,6 +16,7 @@ import {
   JobStepper,
 } from "@/features/company-jobs/components";
 import { useJobDetail, useUpdateJob } from "@/features/company-jobs/hooks";
+import { buildUpdateJobPayload } from "@/features/company-jobs/lib";
 import type { JobFormValues } from "@/features/company-jobs/schemas";
 import type { JobRule } from "@/features/company-jobs/types";
 
@@ -38,26 +39,7 @@ export function EditJobPageClient({ jobId }: EditJobPageClientProps) {
       try {
         await updateJobMutation.mutateAsync({
           jobId,
-          payload: {
-            title: values.title,
-            experience: values.experience,
-            job_description: values.job_description,
-            location: values.location,
-            job_type: values.job_type,
-            salary_range: values.salary_range || null,
-            certificate_provided: values.certificate_provided ?? false,
-            duration_value:
-              values.duration_value != null
-                ? Number(values.duration_value)
-                : null,
-            duration_unit: values.duration_unit || null,
-            hourly_rate: values.hourly_rate || null,
-            stipend: values.stipend || null,
-            deliverables:
-              values.deliverables && values.deliverables.length > 0
-                ? values.deliverables
-                : null,
-          },
+          payload: buildUpdateJobPayload(values),
         });
 
         router.push(`/dashboard/company/jobs/${jobId}`);

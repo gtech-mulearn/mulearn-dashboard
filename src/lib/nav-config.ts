@@ -22,7 +22,10 @@ import {
   FileText,
   Folder,
   Globe,
+  Handshake,
+  HeartHandshake,
   Home,
+  Layers,
   LayoutDashboard,
   LineChart,
   Link,
@@ -33,10 +36,12 @@ import {
   Search,
   Settings,
   Shield,
+  ShieldCheck,
   Trophy,
   User,
   UserCheck,
   Users,
+  Zap,
 } from "lucide-react";
 import type { Permission } from "@/lib/auth/permissions";
 import {
@@ -291,6 +296,46 @@ export const NAV_ITEMS: readonly NavItem[] = [
     roles: [ROLES.COMPANY],
   },
   {
+    id: "company-admins",
+    title: "Co-Administrators",
+    href: "/dashboard/company/admin",
+    icon: ShieldCheck,
+    section: "management",
+    roles: [ROLES.COMPANY],
+  },
+  {
+    id: "company-feedback",
+    title: "Impact & Feedback",
+    href: "/dashboard/company/feedback",
+    icon: HeartHandshake,
+    section: "management",
+    roles: [ROLES.COMPANY],
+  },
+  {
+    id: "company-collaborations",
+    title: "Collaborations",
+    href: "/dashboard/company/collaborations",
+    icon: Handshake,
+    section: "management",
+    roles: [ROLES.COMPANY],
+  },
+  {
+    id: "company-ig-sponsorship",
+    title: "IG Sponsorships",
+    href: "/dashboard/company/ig-sponsorship",
+    icon: Zap,
+    section: "management",
+    roles: [ROLES.COMPANY],
+  },
+  {
+    id: "company-templates",
+    title: "Templates",
+    href: "/dashboard/company/event-templates",
+    icon: Layers,
+    section: "management",
+    roles: [ROLES.COMPANY],
+  },
+  {
     id: "campus-manage",
     title: "Campus",
     href: "/dashboard/campus/manage",
@@ -329,14 +374,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
       IG_ROLES.some((role) => userRoles.includes(role)) ||
       hasIgLeadRole(userRoles),
   },
-  {
-    id: "mentor-verification",
-    title: "Mentor Verification",
-    href: "/dashboard/management/mentor-verification",
-    icon: UserCheck,
-    section: "management",
-    roles: MANAGEMENT_ROLES,
-  },
+
   {
     id: "management",
     title: "Management",

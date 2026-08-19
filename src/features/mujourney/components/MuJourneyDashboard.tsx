@@ -1,72 +1,84 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+/**
+ * MuJourney Dashboard Component
+ *
+ * 📍 src/features/mujourney/components/MuJourneyDashboard.tsx
+ *
+ * Orchestrates the three journey tabs using the redesigned unified task list API.
+ * IG pill selection triggers a full refetch of the task list with ?ig_id=<uuid>,
+ * which replaces the become_expert section with only that IG's tasks.
+ */
+
 import { useState } from "react";
-import {
-  BecomeExpertTab,
-  EventsTab,
-  JourneyHeader,
-  JourneyTabs,
-  StartLearningTab,
-  useInterestGroups,
-  useStartLearning,
-} from "@/features/mujourney";
-import type { GetUserLevelsResponse } from "@/features/mujourney/schemas";
+import { useInterestGroups } from "../hooks/useInterestGroups";
+import { useTaskList } from "../hooks/useTaskList";
+import { BecomeExpertTab } from "./BecomeExpertTab";
+import { EventsTab } from "./EventsTab";
+import { JourneyHeader } from "./JourneyHeader";
+import { JourneyTabs } from "./JourneyTabs";
+import { StartLearningTab } from "./StartLearningTab";
 
-// ─── Props ──────────────────────────────────────────────────────────────────
+// ─── Component ───────────────────────────────────────────────────────────────
 
-interface MuJourneyDashboardProps {
-  initialLevels: GetUserLevelsResponse | null;
-  isAuthenticated: boolean;
-}
-
-// ─── Component ──────────────────────────────────────────────────────────────
-
-export function MuJourneyDashboard({
-  initialLevels,
-  isAuthenticated,
-}: MuJourneyDashboardProps) {
+export function MuJourneyDashboard() {
   const [activeTab, setActiveTab] = useState("start-learning");
   const [filter, setFilter] = useState("all");
+  const [selectedIG, setSelectedIG] = useState<string | null>(null);
 
+  // ── Unified task list query ─────────────────────────────────────────────
   const {
-    data: levelsData,
-    isLoading: levelsLoading,
-    error: levelsError,
-  } = useStartLearning(initialLevels);
+    data: taskListData,
+    isLoading: taskListLoading,
+    error: taskListError,
+    isFetching: taskListFetching,
+  } = useTaskList({
+    igId: selectedIG ?? undefined,
+  });
 
-  const {
-    data: igData,
-    isLoading: igLoading,
-    error: igError,
-  } = useInterestGroups();
+  // ── Interest Groups query (for pill labels + edit modal) ────────────────
+  const { data: igData, isLoading: igLoading } = useInterestGroups();
 
+  // ── Extract sections from the API response ──────────────────────────────
+  const startJourneyTasks = taskListData?.response?.start_journey ?? [];
+  const becomeExpertTasks = taskListData?.response?.become_expert ?? [];
+  const eventsTasks = taskListData?.response?.events ?? [];
+
+  const interestGroups = igData?.response?.aois ?? [];
+
+  // ── IG pill toggle handler ──────────────────────────────────────────────
+  const handleIGToggle = (igId: string) => {
+    const newIG = selectedIG === igId ? null : igId;
+    setSelectedIG(newIG);
+  };
+
+  // ── Tabs ────────────────────────────────────────────────────────────────
   const tabs = [
     { id: "start-learning", label: "Start Journey" },
     { id: "become-expert", label: "Become Expert" },
     { id: "events", label: "Events" },
   ];
 
+  const isLoading = taskListLoading;
+  const isBgFetching = !taskListLoading && taskListFetching;
+
   return (
     <div className="space-y-8">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <JourneyHeader
-          title="µJourney"
-          subtitle="Your Learning Path - Complete tasks, earn karma, level up"
-        />
-      </motion.div>
+      <JourneyHeader
+        title="µJourney"
+        subtitle="Your Learning Path — Complete tasks, earn karma, level up"
+      />
 
-      {/* Tab Navigation & Right-side controls */}
+      {/* Tab navigation + Filter dropdown */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <JourneyTabs
           tabs={tabs}
           defaultTab="start-learning"
-          onTabChange={setActiveTab}
+          onTabChange={(tab) => {
+            setActiveTab(tab);
+            setFilter("all");
+          }}
         />
 
         {/* Filter by: dropdown — shown for Start Journey & Become Expert */}
@@ -80,71 +92,47 @@ export function MuJourneyDashboard({
               onChange={(e) => setFilter(e.target.value)}
               className="px-5 py-2.5 border border-border rounded-lg bg-card text-base font-medium text-card-foreground cursor-pointer hover:border-ring transition-colors [&>option]:cursor-pointer outline-none focus:ring-2 focus:ring-ring"
             >
-              <option value="all" className="cursor-pointer">
-                All
-              </option>
-              <option value="completed" className="cursor-pointer">
-                Completed
-              </option>
-              <option value="incomplete" className="cursor-pointer">
-                Incomplete
-              </option>
+              <option value="all">All</option>
+              <option value="completed">Completed</option>
+              <option value="incomplete">Incomplete</option>
             </select>
           </div>
         )}
       </div>
 
-      {/* Tab Content with Animations */}
+      {/* Tab Content */}
       <div className="mt-8 relative min-h-[400px]">
-        <AnimatePresence mode="wait">
-          {activeTab === "start-learning" && (
-            <motion.div
-              key="start-learning"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <StartLearningTab
-                filter={filter}
-                levelsData={levelsData}
-                isLoading={levelsLoading}
-                error={levelsError}
-              />
-            </motion.div>
-          )}
+        {activeTab === "start-learning" && (
+          <StartLearningTab
+            filter={filter}
+            tasks={startJourneyTasks}
+            isLoading={isLoading}
+            isFetching={isBgFetching}
+            error={taskListError}
+          />
+        )}
 
-          {activeTab === "become-expert" && (
-            <motion.div
-              key="become-expert"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <BecomeExpertTab
-                filter={filter}
-                levelsData={levelsData}
-                igData={igData}
-                isLoading={levelsLoading || igLoading}
-                error={levelsError || igError}
-                isAuthenticated={isAuthenticated}
-              />
-            </motion.div>
-          )}
+        {activeTab === "become-expert" && (
+          <BecomeExpertTab
+            filter={filter}
+            tasks={becomeExpertTasks}
+            isLoading={isLoading}
+            error={taskListError}
+            selectedIG={selectedIG}
+            interestGroups={interestGroups}
+            igLoading={igLoading}
+            onIGToggle={handleIGToggle}
+          />
+        )}
 
-          {activeTab === "events" && (
-            <motion.div
-              key="events"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <EventsTab />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {activeTab === "events" && (
+          <EventsTab
+            tasks={eventsTasks}
+            isLoading={isLoading}
+            isFetching={isBgFetching}
+            error={taskListError}
+          />
+        )}
       </div>
     </div>
   );

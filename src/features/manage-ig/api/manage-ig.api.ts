@@ -119,6 +119,14 @@ export async function deleteInterestGroup(id: string): Promise<void> {
   return apiClient.delete(endpoints.admin.interestGroups.delete(id));
 }
 
+export async function activateInterestGroup(id: string): Promise<void> {
+  return apiClient.post(endpoints.admin.interestGroups.activate(id), {});
+}
+
+export async function deactivateInterestGroup(id: string): Promise<void> {
+  return apiClient.post(endpoints.admin.interestGroups.deactivate(id), {});
+}
+
 export async function exportIgCSV(): Promise<Blob> {
   return apiClient.get(endpoints.admin.interestGroups.csv, undefined, {
     responseType: "blob",

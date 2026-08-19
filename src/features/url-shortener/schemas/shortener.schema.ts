@@ -15,6 +15,8 @@ export const ShortUrlItemSchema = z.object({
   long_url: z.string().nullable().optional().default(""),
   created_at: z.string().nullable().optional(),
   updated_at: z.string().nullable().optional(),
+  created_by: z.string().nullable().optional().default(""),
+  updated_by: z.string().nullable().optional().default(""),
   click_count: z
     .union([z.number(), z.string(), z.null(), z.undefined()])
     .transform((v) => (v == null ? 0 : Number(v) || 0))

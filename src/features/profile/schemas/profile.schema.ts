@@ -55,30 +55,42 @@ export const InterestGroupsListResponseSchema = ApiResponseSchema(
   InterestGroupsListDataSchema,
 );
 
-/** Karma distribution by task type */
+/** Nested karma distribution from the API's karma_distribution split fields */
 export const KarmaDistributionSchema = z.object({
-  task_type: z.string(),
-  karma: z.number(),
+  events: z.array(
+    z.object({
+      event_id: z.string(),
+      event_title: z.string(),
+      event_type: z.string(),
+      karma: z.number(),
+    }),
+  ),
+  ig: z.array(
+    z.object({
+      ig_id: z.string(),
+      ig_name: z.string(),
+      ig_code: z.string().optional(),
+      karma: z.number(),
+    }),
+  ),
+  intern: z.object({
+    karma: z.number(),
+  }),
+  general: z.array(
+    z.object({
+      category: z.string(),
+      karma: z.number(),
+    }),
+  ),
+  level: z.array(
+    z.object({
+      level_id: z.string(),
+      level_name: z.string(),
+      karma: z.number(),
+    }),
+  ),
 });
 export type KarmaDistribution = z.infer<typeof KarmaDistributionSchema>;
-
-/** Per-interest-group karma split (from org_ig_karma_split) */
-export const OrgIgKarmaSplitSchema = z.object({
-  ig_id: z.string(),
-  ig_name: z.string(),
-  ig_code: z.string().optional(),
-  karma: z.number(),
-});
-export type OrgIgKarmaSplit = z.infer<typeof OrgIgKarmaSplitSchema>;
-
-/** Per-event karma split (from event_karma_split) */
-export const EventKarmaSplitSchema = z
-  .object({
-    event_name: z.string().optional(),
-    karma: z.number(),
-  })
-  .passthrough();
-export type EventKarmaSplit = z.infer<typeof EventKarmaSplitSchema>;
 
 /** Full user profile response - matches UserProfileSerializer */
 export const UserProfileSchema = z.object({
@@ -108,6 +120,7 @@ export const UserProfileSchema = z.object({
   level: z.string().nullable(),
   karma: z.coerce.number().nullable(),
   rank: z.coerce.number().nullable(),
+  grit: z.coerce.number().nullable().optional(),
   percentile: z.coerce.number().nullable(),
   joined: z.string(),
   is_public: z.boolean().nullable(),
@@ -123,11 +136,7 @@ export const UserProfileSchema = z.object({
   interest_groups: z
     .array(InterestGroupSchema)
     .transform((igs) => igs.filter((ig) => ig.selected !== false)),
-  karma_distribution: z.array(KarmaDistributionSchema),
-  general_enablement_karma: z.number().default(0),
-  org_ig_karma_split: z.array(OrgIgKarmaSplitSchema).default([]),
-  event_karma_split: z.array(EventKarmaSplitSchema).default([]),
-  intern_karma: z.number().default(0),
+  karma_distribution: KarmaDistributionSchema,
 });
 export type UserProfile = z.infer<typeof UserProfileSchema>;
 

@@ -236,3 +236,28 @@ export const EVENT_FORM_DEFAULT_VALUES: CreateEventSchema = {
   tags: [],
   is_featured: false,
 };
+
+// ─── Event list sorting ─────────────────────────────────────────────────────
+// Backend sort_fields, all now mapping 'created_at' -> 'created_at':
+//   manage  → api/dashboard/events/manage_views.py
+//   admin   → api/dashboard/events/admin_views.py
+//   public  → api/dashboard/events/public_views.py (_PUBLIC_EVENT_SORT_FIELDS)
+//
+// CommonUtils.get_paginated_queryset reads a single camelCase `sortBy` and takes
+// direction from a leading '-'. It re-applies that '-' to the *mapped* value, so
+// a mapping whose value already starts with '-' yields order_by('--field') and a
+// 500. Only add options here whose mapped value is a plain field name.
+//
+// Deliberately NOT offered: 'interest_count' is mapped as '-interest_count' on
+// the admin and public lists, so '-interest_count' would 500; and no events
+// endpoint declares a 'title' sort field.
+
+export const EVENT_SORT_DEFAULT = "-created_at";
+
+export const EVENT_SORT_OPTIONS: readonly {
+  value: string;
+  label: string;
+}[] = [
+  { value: "-created_at", label: "Newest first" },
+  { value: "created_at", label: "Oldest first" },
+] as const;

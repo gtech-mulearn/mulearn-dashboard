@@ -23,6 +23,8 @@ export {
   requestPasswordReset,
   resetPassword,
   updateCompanyRegistration,
+  uploadCompanyAsset,
+  uploadVerificationDocument,
   validateRegistrationData,
   verifyResetToken,
 } from "./api";

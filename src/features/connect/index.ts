@@ -1,5 +1,5 @@
-export { fetchQseverseInfo } from "./api";
-export { DiscordConnectDialog, QseverseConnectDialog } from "./components";
+export { connectDiscord, fetchQseverseInfo } from "./api";
+export { QseverseConnectDialog } from "./components";
 export { connectKeys, useQseverseInfo } from "./hooks";
 export {
   ApiResponseSchema,

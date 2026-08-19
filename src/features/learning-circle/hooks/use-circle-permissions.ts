@@ -56,8 +56,13 @@ function deriveRole(
 ): CircleRole {
   if (!circle || !userMuid) return null;
 
-  // Check ownership
-  if (circle.created_by?.muid === userMuid) return "owner";
+  // Check ownership (via members owner or fallback to created_by)
+  if (
+    (membersData?.owner?.muid && membersData.owner.muid === userMuid) ||
+    circle.created_by?.muid === userMuid
+  ) {
+    return "owner";
+  }
 
   // Check if user is in members list
   if (!membersData) return null;
@@ -104,7 +109,7 @@ export function useCirclePermissions(
       canEditCircle: isOwner,
       canDeleteCircle: isOwner,
       canManageMembers: isOwner,
-      canSendInvites: isOwner,
+      canSendInvites: isOwnerOrLead,
       canTransferLead: isOwner,
 
       // Any accepted member (incl. lead/owner) can create a meeting — mirrors

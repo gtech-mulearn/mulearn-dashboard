@@ -47,9 +47,12 @@ export function OrganizationClient({ redirectUri }: OrganizationClientProps) {
 
       toast.success("Organization saved!");
 
-      // Navigate to interests/pathway selection
+      // Navigate to interests/pathway selection.
+      // encodeURIComponent is required: a ruri can carry its own query string
+      // (e.g. dashboard/connect-discord?code=…) which would otherwise be
+      // parsed as sibling params here and lost.
       const nextPath = redirectUri
-        ? `/onboarding/interests?ruri=${redirectUri}`
+        ? `/onboarding/interests?ruri=${encodeURIComponent(redirectUri)}`
         : "/onboarding/interests";
       router.push(nextPath);
     } catch {

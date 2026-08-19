@@ -14,7 +14,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
@@ -44,9 +44,11 @@ import {
   joinCircle,
   joinMeeting,
   leaveMeeting,
+  removeRsvpMeeting,
   respondToInvite,
   respondToInviteByLink,
   respondToJoinRequest,
+  revokeInvite,
   rsvpMeeting,
   sendInvite,
   submitAttendeeReport,
@@ -61,6 +63,7 @@ import type {
   EditCircleRequest,
   InviteResponseRequest,
   JoinMeetingRequest,
+  Meeting,
   MeetingReportRequest,
   RespondJoinRequest,
   SendInviteRequest,
@@ -318,6 +321,9 @@ export function useRespondToJoinRequest(circleId: string) {
         queryKey: learningCircleKeys.joinRequests(circleId),
       });
       queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.sentInvites(circleId),
+      });
+      queryClient.invalidateQueries({
         queryKey: learningCircleKeys.circleMembers(circleId),
       });
       queryClient.invalidateQueries({
@@ -326,7 +332,7 @@ export function useRespondToJoinRequest(circleId: string) {
       toast.success(
         variables.action === "accept"
           ? "Join request accepted"
-          : "Join request rejected",
+          : "Request / invitation updated",
       );
     },
     onError: (error) => {
@@ -367,12 +373,40 @@ export function useTransferLead(circleId: string) {
 // Join & Invite
 // ============================================
 
+// Local session cache/store for tracking pending join requests
+const pendingJoinCircleIds = new Set<string>();
+const pendingJoinListeners = new Set<() => void>();
+
+export function markCircleAsRequested(circleId: string) {
+  pendingJoinCircleIds.add(circleId);
+  pendingJoinListeners.forEach((listener) => {
+    listener();
+  });
+}
+
+export function useIsCirclePendingJoin(circleId: string) {
+  const [isPending, setIsPending] = useState(() =>
+    pendingJoinCircleIds.has(circleId),
+  );
+
+  useEffect(() => {
+    const update = () => setIsPending(pendingJoinCircleIds.has(circleId));
+    pendingJoinListeners.add(update);
+    return () => {
+      pendingJoinListeners.delete(update);
+    };
+  }, [circleId]);
+
+  return isPending;
+}
+
 export function useJoinCircle() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (circleId: string) => joinCircle(circleId),
     onSuccess: (_, circleId) => {
+      markCircleAsRequested(circleId);
       queryClient.invalidateQueries({
         queryKey: learningCircleKeys.circleDetail(circleId),
       });
@@ -381,10 +415,21 @@ export function useJoinCircle() {
       });
       toast.success("Join request sent!");
     },
-    onError: (error) => {
-      toast.error(
-        getApiResponseError(error, { fallback: "Failed to send join request" }),
-      );
+    onError: (error, circleId) => {
+      const errMsg = getApiResponseError(error, {
+        fallback: "Failed to send join request",
+      });
+      const lowerMsg = errMsg.toLowerCase();
+
+      if (
+        lowerMsg.includes("already sent") ||
+        lowerMsg.includes("waiting for lead approval")
+      ) {
+        markCircleAsRequested(circleId);
+        toast.warning(errMsg);
+      } else {
+        toast.error(errMsg);
+      }
     },
   });
 }
@@ -414,6 +459,28 @@ export function useSentInvites(circleId: string) {
     queryFn: () => getSentInvites(circleId),
     staleTime: STALE_TIME,
     enabled: !!circleId,
+  });
+}
+
+export function useRevokeInvite(circleId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (linkId: string) => revokeInvite(circleId, linkId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.sentInvites(circleId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.circleMembers(circleId),
+      });
+      toast.success("Invitation revoked successfully");
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to revoke invitation" }),
+      );
+    },
   });
 }
 
@@ -607,6 +674,24 @@ export function useRsvpMeeting() {
 
   return useMutation({
     mutationFn: (meetingId: string) => rsvpMeeting(meetingId),
+    onMutate: async (meetingId) => {
+      // Optimistically update every cached meeting list to flip is_rsvp immediately.
+      // This ensures the UI reflects the change without waiting for the API refetch.
+      const caches = queryClient.getQueriesData<Meeting[]>({
+        queryKey: learningCircleKeys.meetings(),
+      });
+      for (const [key, meetings] of caches) {
+        if (!Array.isArray(meetings)) continue;
+        queryClient.setQueryData<Meeting[]>(
+          key,
+          meetings.map((m) =>
+            m.id === meetingId
+              ? { ...m, is_rsvp: true, can_remove_rsvp: true }
+              : m,
+          ),
+        );
+      }
+    },
     onSuccess: (_, meetingId) => {
       queryClient.invalidateQueries({
         queryKey: learningCircleKeys.meetingDetail(meetingId),
@@ -616,9 +701,110 @@ export function useRsvpMeeting() {
       });
       toast.success("Successfully RSVP'd to meeting!");
     },
-    onError: (error) => {
+    onError: (error, meetingId) => {
+      const msg = getApiResponseError(error, { fallback: "" }).toLowerCase();
+      const alreadyRsvpd = msg.includes("already") && msg.includes("rsvp");
+
+      if (alreadyRsvpd) {
+        // The user IS already RSVP'd but the list API has stale data returning
+        // is_rsvp: false. Keep our optimistic is_rsvp: true in the cache —
+        // do NOT invalidate the list (that would fetch the stale false value back).
+        // Only refresh the meeting detail so the attendees array stays accurate.
+        queryClient.invalidateQueries({
+          queryKey: learningCircleKeys.meetingDetail(meetingId),
+        });
+        // Ensure all list caches explicitly have is_rsvp: true persisted
+        const caches = queryClient.getQueriesData<Meeting[]>({
+          queryKey: learningCircleKeys.meetings(),
+        });
+        for (const [key, meetings] of caches) {
+          if (!Array.isArray(meetings)) continue;
+          queryClient.setQueryData<Meeting[]>(
+            key,
+            meetings.map((m) =>
+              m.id === meetingId
+                ? { ...m, is_rsvp: true, can_remove_rsvp: true }
+                : m,
+            ),
+          );
+        }
+        return;
+      }
+
+      // For genuine errors, roll back optimistic update
+      const caches = queryClient.getQueriesData<Meeting[]>({
+        queryKey: learningCircleKeys.meetings(),
+      });
+      for (const [key, meetings] of caches) {
+        if (!Array.isArray(meetings)) continue;
+        queryClient.setQueryData<Meeting[]>(
+          key,
+          meetings.map((m) =>
+            m.id === meetingId
+              ? { ...m, is_rsvp: false, can_remove_rsvp: undefined }
+              : m,
+          ),
+        );
+      }
       toast.error(
         getApiResponseError(error, { fallback: "Failed to RSVP to meeting" }),
+      );
+    },
+  });
+}
+
+export function useRemoveRsvpMeeting() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (meetingId: string) => removeRsvpMeeting(meetingId),
+    onMutate: async (meetingId) => {
+      // Optimistically update every cached meeting list to clear is_rsvp immediately.
+      const caches = queryClient.getQueriesData<Meeting[]>({
+        queryKey: learningCircleKeys.meetings(),
+      });
+      for (const [key, meetings] of caches) {
+        if (!Array.isArray(meetings)) continue;
+        queryClient.setQueryData<Meeting[]>(
+          key,
+          meetings.map((m) =>
+            m.id === meetingId
+              ? { ...m, is_rsvp: false, can_remove_rsvp: false }
+              : m,
+          ),
+        );
+      }
+    },
+    onSuccess: (_, meetingId) => {
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.meetingDetail(meetingId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.meetingsUser(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...learningCircleKeys.all, "meetings"],
+      });
+      toast.success("RSVP removed successfully!");
+    },
+    onError: (error, meetingId) => {
+      // Rollback optimistic update on error
+      const caches = queryClient.getQueriesData<Meeting[]>({
+        queryKey: learningCircleKeys.meetings(),
+      });
+      for (const [key, meetings] of caches) {
+        if (!Array.isArray(meetings)) continue;
+        queryClient.setQueryData<Meeting[]>(
+          key,
+          meetings.map((m) =>
+            m.id === meetingId
+              ? { ...m, is_rsvp: true, can_remove_rsvp: true }
+              : m,
+          ),
+        );
+      }
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to remove RSVP" }),
       );
     },
   });

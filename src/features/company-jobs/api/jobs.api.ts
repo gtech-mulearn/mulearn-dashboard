@@ -7,14 +7,24 @@ import type { PublicCompanyProfile, PublicJobsBySlugData } from "../schemas";
 import {
   AdminSummaryResponseSchema,
   ApplyJobResponseSchema,
+  CampusAnalyticsResponseSchema,
+  CampusTrendResponseSchema,
+  CompanyAdminLinkListResponseSchema,
+  CompanyAdminLinkResponseSchema,
+  CompanyCollaborationListResponseSchema,
+  CompanyCollaborationResponseSchema,
   CompanyDashboardSummaryResponseSchema,
+  CompanyFeedbackListResponseSchema,
+  CompanyFeedbackResponseSchema,
   CompanyProfileResponseSchema,
   CreateJobResponseSchema,
-  CreateRuleResponseSchema,
   DeleteJobResponseSchema,
-  DeleteRuleResponseSchema,
+  EventTemplateDetailResponseSchema,
+  EventTemplatesListResponseSchema,
   GenericResponseSchema,
   GigAnalyticsResponseSchema,
+  IgSponsorshipMetricsResponseSchema,
+  ImpactReportResponseSchema,
   JobApplicantsResponseSchema,
   JobDetailResponseSchema,
   JobEngagementAnalyticsResponseSchema,
@@ -24,15 +34,28 @@ import {
   PublicCompanyProfileResponseSchema,
   PublicJobsBySlugResponseSchema,
   PublicJobsResponseSchema,
+  ResubmitApplicationResponseSchema,
+  ShortlistListResponseSchema,
+  ShortlistMutationResponseSchema,
   TalentPoolAnalyticsResponseSchema,
+  TalentPoolInsightsResponseSchema,
+  TasksAnalyticsResponseSchema,
+  TaskTemplateDetailResponseSchema,
+  TaskTemplatesListResponseSchema,
   TrackJobViewResponseSchema,
   UpdateApplicantStatusResponseSchema,
+  UpdateCompanyProfileResponseSchema,
   UpdateJobResponseSchema,
-  UpdateRuleResponseSchema,
+  UserCompanyStatusResponseSchema,
 } from "../schemas";
 import type {
   AdminSummary,
+  CampusAnalytics,
+  CampusTrend,
+  CompanyAdminLink,
+  CompanyCollaboration,
   CompanyDashboardSummary,
+  CompanyFeedback,
   CompanyProfile,
   CreateJobPayload,
   CreateJobResponse,
@@ -40,7 +63,10 @@ import type {
   CreateRuleResponse,
   DeleteJobResponse,
   DeleteRuleResponse,
+  EventTemplate,
   GigAnalytics,
+  IgSponsorshipMetrics,
+  ImpactReport,
   Job,
   JobApplicantsResponse,
   JobEngagementAnalytics,
@@ -50,16 +76,21 @@ import type {
   LearnerDiscoveryParams,
   LearnerDiscoveryResponse,
   PublicJobsResponse,
+  ShortlistedLearner,
   TalentPoolAnalytics,
   TalentPoolAnalyticsParams,
+  TalentPoolInsights,
+  TasksAnalytics,
+  TaskTemplate,
   UpdateApplicantStatusResponse,
   UpdateJobPayload,
   UpdateJobResponse,
   UpdateRulePayload,
   UpdateRuleResponse,
+  UserCompanyStatus,
 } from "../types";
 
-// ─── Company Profile ────────────────────────────────────────
+// ─── Company Profile (§2) ───────────────────────────────────
 
 export async function fetchCompanyProfile(): Promise<CompanyProfile> {
   // Check verification status first
@@ -95,25 +126,52 @@ export async function fetchCompanyProfile(): Promise<CompanyProfile> {
   };
 }
 
-// ─── Jobs CRUD ──────────────────────────────────────────────
+/**
+ * PATCH company/profile/ (owner only)
+ * Update company profile fields (short_pitch, tech_stack, etc.)
+ */
+export async function updateCompanyProfile(
+  payload: Partial<CompanyProfile>,
+): Promise<{
+  data: Partial<CompanyProfile>;
+  message: string;
+}> {
+  const res = await apiClient.patch(
+    endpoints.company.profile,
+    payload,
+    UpdateCompanyProfileResponseSchema,
+  );
+  return {
+    data: res.response as Partial<CompanyProfile>,
+    message:
+      res.general_message ||
+      (res as { message?: { general?: string[] } }).message?.general?.[0] ||
+      "Company profile updated successfully.",
+  };
+}
+
+export const patchCompanyProfile = updateCompanyProfile;
+
+// ─── Jobs CRUD (§4) ─────────────────────────────────────────
 
 export async function fetchJobs(
   params?: JobsListParams,
 ): Promise<JobsListResponse> {
   const query = new URLSearchParams();
 
-  const page = params?.pageIndex ?? params?.page;
-  if (page !== undefined) query.set("pageIndex", String(page));
-
-  const perPage = params?.perPage ?? params?.per_page;
-  if (perPage !== undefined) {
-    query.set("perPage", String(perPage));
-    query.set("per_page", String(perPage));
+  const page = params?.page ?? params?.pageIndex;
+  if (page !== undefined) {
+    query.set("page", String(page));
+    query.set("pageIndex", String(page));
   }
+
+  const perPage = params?.per_page ?? params?.perPage;
+  if (perPage !== undefined) query.set("per_page", String(perPage));
+
   if (params?.search?.trim()) query.set("search", params.search.trim());
-  if (params?.sortBy || params?.sort_by)
-    query.set("sort_by", (params.sort_by ?? params.sortBy) as string);
-  if (params?.sort_order) query.set("sort_order", params.sort_order);
+  const sortBy = params?.sort_by ?? params?.sortBy;
+  if (sortBy) query.set("sortBy", sortBy);
+  if (params?.job_type) query.set("job_type", params.job_type);
 
   const queryString = query.toString();
   const url = queryString
@@ -175,18 +233,47 @@ export async function deleteJob(jobId: string): Promise<DeleteJobResponse> {
   return res.response as DeleteJobResponse;
 }
 
-// ─── Job Rules CRUD ─────────────────────────────────────────
+// ─── Job Rules Management (via PATCH Job) ───────────────────
 
 export async function createJobRule(
   jobId: string,
   payload: CreateRulePayload,
 ): Promise<CreateRuleResponse> {
-  const res = await apiClient.post(
-    endpoints.company.createJobRule(jobId),
-    payload,
-    CreateRuleResponseSchema,
-  );
-  return res.response;
+  const currentJob = await fetchJobDetail(jobId);
+  const existingRules = currentJob.rules || [];
+  const newRules = [
+    ...existingRules.map((r) => ({
+      rule_type: r.rule_type,
+      rule_value: r.rule_value,
+    })),
+    { rule_type: payload.rule_type, rule_value: payload.rule_value },
+  ];
+  const updated = await updateJob(jobId, { rules: newRules });
+  const rulesList =
+    updated && "rules" in updated && Array.isArray(updated.rules)
+      ? updated.rules
+      : [];
+  const addedRule = rulesList.find(
+    (r: { rule_type?: string; rule_value?: string | number; id?: string }) =>
+      r.rule_type === payload.rule_type &&
+      String(r.rule_value) === String(payload.rule_value),
+  ) || {
+    id: `rule-${Date.now()}`,
+    job_id: jobId,
+    rule_type: payload.rule_type,
+    rule_value: payload.rule_value,
+    created_at: new Date().toISOString(),
+  };
+
+  return {
+    job_rule: {
+      id: addedRule.id || `rule-${Date.now()}`,
+      job_id: jobId,
+      rule_type: payload.rule_type,
+      rule_value: payload.rule_value,
+      created_at: new Date().toISOString(),
+    },
+  };
 }
 
 export async function updateJobRule(
@@ -194,24 +281,38 @@ export async function updateJobRule(
   ruleId: string,
   payload: UpdateRulePayload,
 ): Promise<UpdateRuleResponse> {
-  const res = await apiClient.patch(
-    endpoints.company.updateJobRule(jobId, ruleId),
-    payload,
-    UpdateRuleResponseSchema,
+  const currentJob = await fetchJobDetail(jobId);
+  const existingRules = currentJob.rules || [];
+  const newRules = existingRules.map((r) =>
+    r.id === ruleId
+      ? {
+          rule_type: payload.rule_type || r.rule_type,
+          rule_value: payload.rule_value,
+        }
+      : { rule_type: r.rule_type, rule_value: r.rule_value },
   );
-  return res.response;
+  await updateJob(jobId, { rules: newRules });
+  return {
+    rule_id: ruleId,
+    updated_value: payload.rule_value,
+  };
 }
 
 export async function deleteJobRule(
   jobId: string,
   ruleId: string,
 ): Promise<DeleteRuleResponse> {
-  const res = await apiClient.delete(
-    endpoints.company.deleteJobRule(jobId, ruleId),
-    undefined,
-    DeleteRuleResponseSchema,
-  );
-  return res.response;
+  const currentJob = await fetchJobDetail(jobId);
+  const existingRules = currentJob.rules || [];
+  const newRules = existingRules
+    .filter((r) => r.id !== ruleId)
+    .map((r) => ({ rule_type: r.rule_type, rule_value: r.rule_value }));
+  await updateJob(jobId, { rules: newRules });
+  return {
+    rule_id: ruleId,
+    job_id: jobId,
+    deleted_at: new Date().toISOString(),
+  };
 }
 
 // ─── Public Company Profile & Jobs ──────────────────────────
@@ -255,10 +356,17 @@ export async function fetchPublicJobs(
 ): Promise<PublicJobsResponse> {
   const query = new URLSearchParams();
 
-  if (params?.pageIndex) query.set("pageIndex", String(params.pageIndex));
-  if (params?.perPage) query.set("perPage", String(params.perPage));
+  const page = params?.page ?? params?.pageIndex;
+  if (page !== undefined) {
+    query.set("page", String(page));
+    query.set("pageIndex", String(page));
+  }
+  const perPage = params?.per_page ?? params?.perPage;
+  if (perPage !== undefined) query.set("per_page", String(perPage));
   if (params?.search?.trim()) query.set("search", params.search.trim());
-  if (params?.sortBy) query.set("sortBy", params.sortBy);
+  const sortBy = params?.sort_by ?? params?.sortBy;
+  if (sortBy) query.set("sortBy", sortBy);
+  if (params?.job_type) query.set("job_type", params.job_type);
 
   const queryString = query.toString();
   const url = queryString
@@ -272,15 +380,24 @@ export async function fetchPublicJobs(
 export async function fetchLearnerApplications(params?: {
   search?: string;
   sortBy?: string;
+  sort_by?: string;
   pageIndex?: number;
+  page?: number;
   perPage?: number;
+  per_page?: number;
 }): Promise<LearnerApplicationsResponse> {
   const query = new URLSearchParams();
 
-  if (params?.pageIndex) query.set("pageIndex", String(params.pageIndex));
-  if (params?.perPage) query.set("perPage", String(params.perPage));
+  const page = params?.page ?? params?.pageIndex;
+  if (page !== undefined) {
+    query.set("page", String(page));
+    query.set("pageIndex", String(page));
+  }
+  const perPage = params?.per_page ?? params?.perPage;
+  if (perPage !== undefined) query.set("per_page", String(perPage));
   if (params?.search?.trim()) query.set("search", params.search.trim());
-  if (params?.sortBy) query.set("sortBy", params.sortBy);
+  const sortBy = params?.sort_by ?? params?.sortBy;
+  if (sortBy) query.set("sortBy", sortBy);
 
   const queryString = query.toString();
   const url = queryString
@@ -305,6 +422,7 @@ export async function applyToJob(
 export async function withdrawApplication(appId: string): Promise<void> {
   await apiClient.delete(
     endpoints.company.applicationWithdraw(appId),
+    undefined,
     GenericResponseSchema,
   );
 }
@@ -312,12 +430,13 @@ export async function withdrawApplication(appId: string): Promise<void> {
 export async function resubmitApplication(
   appId: string,
   payload: { resume_link?: string; cover_letter?: string },
-): Promise<void> {
-  await apiClient.patch(
+): Promise<{ status?: string } | undefined> {
+  const res = await apiClient.patch(
     endpoints.company.applicationResubmit(appId),
     payload,
-    GenericResponseSchema,
+    ResubmitApplicationResponseSchema,
   );
+  return res.response as { status?: string } | undefined;
 }
 
 // ─── Company Applicant Management & Talent Pool ──────────────
@@ -327,9 +446,7 @@ export async function fetchJobApplicants(
   params?: {
     status?: string;
     search?: string;
-    sortBy?: string;
-    pageIndex?: number;
-    perPage?: number;
+    sort_by?: string;
     page?: number;
     per_page?: number;
   },
@@ -337,18 +454,14 @@ export async function fetchJobApplicants(
   const query = new URLSearchParams();
 
   if (params?.status) query.set("status", params.status);
-  const p = params?.pageIndex ?? params?.page;
-  if (p !== undefined) {
-    query.set("pageIndex", String(p));
-    query.set("page", String(p));
+  if (params?.page !== undefined) {
+    query.set("page", String(params.page));
+    query.set("pageIndex", String(params.page));
   }
-  const pp = params?.perPage ?? params?.per_page;
-  if (pp !== undefined) {
-    query.set("perPage", String(pp));
-    query.set("per_page", String(pp));
-  }
+  if (params?.per_page !== undefined)
+    query.set("per_page", String(params.per_page));
   if (params?.search?.trim()) query.set("search", params.search.trim());
-  if (params?.sortBy) query.set("sortBy", params.sortBy);
+  if (params?.sort_by) query.set("sort_by", params.sort_by);
 
   const queryString = query.toString();
   const url = queryString
@@ -395,10 +508,9 @@ export async function fetchLearnerDiscovery(
   if (params?.achievement) query.set("achievement", params.achievement);
   if (params?.task) query.set("task", params.task);
   if (params?.search?.trim()) query.set("search", params.search.trim());
-  if (params?.sort_by) query.set("sort_by", params.sort_by);
+  if (params?.sort_by) query.set("sortBy", params.sort_by);
   if (params?.sort_order) query.set("sort_order", params.sort_order);
 
-  // Support both page/per_page and pageIndex/perPage query params
   const page = params?.page ?? params?.pageIndex;
   const perPage = params?.per_page ?? params?.perPage;
 
@@ -420,7 +532,7 @@ export async function fetchLearnerDiscovery(
   return res.response;
 }
 
-// ─── Analytics & Summaries ──────────────────────────────────
+// ─── Analytics & Summaries (§5, §13) ─────────────────────────
 
 export async function fetchGigAnalytics(): Promise<GigAnalytics> {
   const res = await apiClient.get(
@@ -524,4 +636,422 @@ export async function fetchAdminSummary(): Promise<AdminSummary> {
     AdminSummaryResponseSchema,
   );
   return res.response;
+}
+
+// ─── Company Admin Links & Co-Admins (§2) ───────────────────
+
+export async function inviteCompanyAdmin(
+  email: string,
+): Promise<CompanyAdminLink> {
+  const res = await apiClient.post(
+    endpoints.company.adminLink,
+    { email },
+    CompanyAdminLinkResponseSchema,
+  );
+  return res.response;
+}
+
+export async function respondCompanyAdminInvitation(
+  linkId: string,
+  accept: boolean,
+): Promise<CompanyAdminLink> {
+  const res = await apiClient.post(
+    endpoints.company.adminLinkRespond(linkId),
+    { accept },
+    CompanyAdminLinkResponseSchema,
+  );
+  return res.response;
+}
+
+export async function removeCompanyAdmin(linkId: string): Promise<void> {
+  await apiClient.delete(
+    endpoints.company.adminLinkRemove(linkId),
+    undefined,
+    GenericResponseSchema,
+  );
+}
+
+export async function leaveCompanyAdmin(linkId: string): Promise<void> {
+  await apiClient.delete(
+    endpoints.company.adminLinkLeave(linkId),
+    undefined,
+    GenericResponseSchema,
+  );
+}
+
+export async function fetchCompanyAdminLinks(): Promise<CompanyAdminLink[]> {
+  const res = await apiClient.get(
+    endpoints.company.adminLinkList,
+    CompanyAdminLinkListResponseSchema,
+  );
+  return res.response ?? [];
+}
+
+export async function fetchUserCompanyStatus(): Promise<UserCompanyStatus> {
+  const res = await apiClient.get(
+    endpoints.company.userStatus,
+    UserCompanyStatusResponseSchema,
+  );
+  return res.response;
+}
+
+export async function deactivateCompanySelf(): Promise<void> {
+  await apiClient.post(
+    endpoints.company.deactivateSelf,
+    undefined,
+    GenericResponseSchema,
+  );
+}
+
+// ─── Admin Job Review (§4) ──────────────────────────────────
+
+export async function fetchPendingJobs(
+  params?: JobsListParams,
+): Promise<JobsListResponse> {
+  const query = new URLSearchParams();
+  const page = params?.page ?? params?.pageIndex;
+  if (page !== undefined) {
+    query.set("page", String(page));
+    query.set("pageIndex", String(page));
+  }
+  const perPage = params?.per_page ?? params?.perPage;
+  if (perPage !== undefined) query.set("per_page", String(perPage));
+  if (params?.search?.trim()) query.set("search", params.search.trim());
+  const sortBy = params?.sort_by ?? params?.sortBy;
+  if (sortBy) query.set("sortBy", sortBy);
+  if (params?.job_type) query.set("job_type", params.job_type);
+
+  const qs = query.toString();
+  const url = qs
+    ? `${endpoints.company.jobsPending}?${qs}`
+    : endpoints.company.jobsPending;
+
+  const res = await apiClient.get(url, JobsListResponseSchema);
+  return res.response;
+}
+
+export async function approveJob(jobId: string): Promise<void> {
+  await apiClient.post(
+    endpoints.company.jobApprove(jobId),
+    undefined,
+    GenericResponseSchema,
+  );
+}
+
+export async function rejectJob(jobId: string, reason: string): Promise<void> {
+  await apiClient.post(
+    endpoints.company.jobReject(jobId),
+    { reason },
+    GenericResponseSchema,
+  );
+}
+
+export async function requestJobChanges(
+  jobId: string,
+  note: string,
+): Promise<void> {
+  await apiClient.post(
+    endpoints.company.jobRequestChanges(jobId),
+    { note },
+    GenericResponseSchema,
+  );
+}
+
+// ─── Extended Analytics (§5) ────────────────────────────────
+
+export async function fetchCampusAnalytics(): Promise<CampusAnalytics> {
+  const res = await apiClient.get(
+    endpoints.company.analyticsCampus,
+    CampusAnalyticsResponseSchema,
+  );
+  return res.response;
+}
+
+export async function fetchCampusQuarterTrend(params: {
+  campus_id: string;
+  quarters?: number;
+}): Promise<CampusTrend> {
+  const query = new URLSearchParams();
+  if (params.campus_id) query.set("campus_id", params.campus_id);
+  if (params.quarters !== undefined)
+    query.set("quarters", String(params.quarters));
+
+  const queryString = query.toString();
+  const url = queryString
+    ? `${endpoints.company.analyticsCampusTrend}?${queryString}`
+    : endpoints.company.analyticsCampusTrend;
+
+  const res = await apiClient.get(url, CampusTrendResponseSchema);
+  return res.response;
+}
+
+export async function fetchTasksAnalytics(): Promise<TasksAnalytics> {
+  const res = await apiClient.get(
+    endpoints.company.analyticsTasks,
+    TasksAnalyticsResponseSchema,
+  );
+  return res.response;
+}
+
+// ─── Talent Pool Shortlist & Insights (§6) ──────────────────
+
+export async function fetchShortlistedLearners(): Promise<
+  ShortlistedLearner[]
+> {
+  const res = await apiClient.get(
+    endpoints.company.shortlist,
+    ShortlistListResponseSchema,
+  );
+  return res.response ?? [];
+}
+
+export async function addLearnerToShortlist(
+  userId: string,
+  note?: string,
+): Promise<ShortlistedLearner> {
+  const res = await apiClient.post(
+    endpoints.company.shortlistAdd,
+    { user_id: userId, note },
+    ShortlistMutationResponseSchema,
+  );
+  return res.response;
+}
+
+export async function removeLearnerFromShortlist(
+  userId: string,
+): Promise<void> {
+  await apiClient.delete(
+    endpoints.company.shortlistRemove(userId),
+    undefined,
+    GenericResponseSchema,
+  );
+}
+
+export async function fetchTalentPoolInsights(): Promise<TalentPoolInsights> {
+  const res = await apiClient.get(
+    endpoints.company.talentPoolInsights,
+    TalentPoolInsightsResponseSchema,
+  );
+  return res.response;
+}
+
+export async function fetchTaskTemplates(): Promise<TaskTemplate[]> {
+  const res = await apiClient.get(
+    endpoints.company.taskTemplates,
+    TaskTemplatesListResponseSchema,
+  );
+  if ("response" in res && res.response) {
+    if (Array.isArray(res.response)) return res.response;
+    if ("data" in res.response && Array.isArray(res.response.data)) {
+      return res.response.data;
+    }
+  }
+  if ("data" in res && Array.isArray(res.data)) {
+    return res.data;
+  }
+  if (Array.isArray(res)) {
+    return res;
+  }
+  return [];
+}
+
+export async function createTaskTemplate(
+  payload: Partial<TaskTemplate>,
+): Promise<TaskTemplate> {
+  const res = await apiClient.post(
+    endpoints.company.taskTemplates,
+    payload,
+    TaskTemplateDetailResponseSchema,
+  );
+  if ("response" in res && res.response) {
+    return res.response as TaskTemplate;
+  }
+  return res as unknown as TaskTemplate;
+}
+
+export async function deleteTaskTemplate(templateId: string): Promise<void> {
+  await apiClient.delete(
+    endpoints.company.taskTemplateDetail(templateId),
+    undefined,
+    GenericResponseSchema,
+  );
+}
+
+// ─── Feedback & Impact Reports (§8) ─────────────────────────
+
+export async function submitCompanyFeedback(payload: {
+  to_user_id?: string;
+  rating: number;
+  feedback_type: string;
+  comments: string;
+}): Promise<CompanyFeedback> {
+  const res = await apiClient.post(
+    endpoints.company.feedback,
+    payload,
+    CompanyFeedbackResponseSchema,
+  );
+  return res.response;
+}
+
+export async function fetchCompanyFeedbackList(): Promise<CompanyFeedback[]> {
+  const res = await apiClient.get(
+    endpoints.company.feedbackList,
+    CompanyFeedbackListResponseSchema,
+  );
+  return res.response ?? [];
+}
+
+export async function fetchCompanyImpactReport(): Promise<ImpactReport> {
+  const res = await apiClient.get(
+    endpoints.company.impactReport,
+    ImpactReportResponseSchema,
+  );
+  return res.response;
+}
+
+export async function togglePublishImpactReport(
+  isPublished: boolean,
+): Promise<ImpactReport> {
+  const res = await apiClient.patch(
+    endpoints.company.impactReportPublish,
+    { is_published: isPublished },
+    ImpactReportResponseSchema,
+  );
+  return res.response;
+}
+
+// ─── Inter-Company Collaboration (§9) ───────────────────────
+
+export async function fetchCollaborations(): Promise<CompanyCollaboration[]> {
+  const res = await apiClient.get(
+    endpoints.company.collaborations,
+    CompanyCollaborationListResponseSchema,
+  );
+  return res.response ?? [];
+}
+
+export async function createCollaboration(payload: {
+  title: string;
+  description: string;
+  collaboration_type: string;
+  partner_company_id?: string;
+}): Promise<CompanyCollaboration> {
+  const res = await apiClient.post(
+    endpoints.company.collaborations,
+    payload,
+    CompanyCollaborationResponseSchema,
+  );
+  return res.response;
+}
+
+export async function discoverCollaborations(): Promise<
+  CompanyCollaboration[]
+> {
+  const res = await apiClient.get(
+    endpoints.company.collaborationsDiscover,
+    CompanyCollaborationListResponseSchema,
+  );
+  return res.response ?? [];
+}
+
+export async function respondCollaboration(
+  id: string,
+  accept: boolean,
+): Promise<CompanyCollaboration> {
+  const res = await apiClient.post(
+    endpoints.company.collaborationRespond(id),
+    { accept },
+    CompanyCollaborationResponseSchema,
+  );
+  return res.response;
+}
+
+export async function cancelCollaboration(id: string): Promise<void> {
+  await apiClient.delete(
+    endpoints.company.collaborationDetail(id),
+    undefined,
+    GenericResponseSchema,
+  );
+}
+
+// ─── Interest Group Sponsorships (§10) ──────────────────────
+
+export async function submitIgSponsorship(
+  igId: string,
+  payload: { proposal: string; budget?: number; duration_months?: number },
+): Promise<void> {
+  await apiClient.post(
+    endpoints.company.igSponsorship(igId),
+    payload,
+    GenericResponseSchema,
+  );
+}
+
+export async function reviewIgSponsorship(
+  igId: string,
+  payload: { action: "APPROVE" | "REJECT"; comments?: string },
+): Promise<void> {
+  await apiClient.patch(
+    endpoints.company.igSponsorshipReview(igId),
+    payload,
+    GenericResponseSchema,
+  );
+}
+
+export async function fetchIgSponsorshipMetrics(
+  igId: string,
+): Promise<IgSponsorshipMetrics> {
+  const res = await apiClient.get(
+    endpoints.company.igSponsorshipMetrics(igId),
+    IgSponsorshipMetricsResponseSchema,
+  );
+  return res.response;
+}
+
+// ─── Event Templates (§11) ──────────────────────────────────
+
+export async function fetchEventTemplates(): Promise<EventTemplate[]> {
+  const res = await apiClient.get(
+    endpoints.company.eventTemplates,
+    EventTemplatesListResponseSchema,
+  );
+  if ("response" in res && res.response) {
+    if (Array.isArray(res.response)) return res.response;
+    if ("data" in res.response && Array.isArray(res.response.data)) {
+      return res.response.data;
+    }
+  }
+  if ("data" in res && Array.isArray(res.data)) {
+    return res.data;
+  }
+  if (Array.isArray(res)) {
+    return res;
+  }
+  return [];
+}
+
+export async function createEventTemplate(payload: {
+  title: string;
+  description?: string;
+  event_type: string;
+  default_duration_minutes?: number;
+  mode?: string;
+}): Promise<EventTemplate> {
+  const res = await apiClient.post(
+    endpoints.company.eventTemplates,
+    payload,
+    EventTemplateDetailResponseSchema,
+  );
+  if ("response" in res && res.response) {
+    return res.response as EventTemplate;
+  }
+  return res as unknown as EventTemplate;
+}
+
+export async function deleteEventTemplate(templateId: string): Promise<void> {
+  await apiClient.delete(
+    endpoints.company.eventTemplateDetail(templateId),
+    undefined,
+    GenericResponseSchema,
+  );
 }

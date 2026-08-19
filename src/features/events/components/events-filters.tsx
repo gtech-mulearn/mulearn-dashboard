@@ -17,6 +17,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import {
+  EVENT_SORT_DEFAULT,
+  EVENT_SORT_OPTIONS,
+} from "../constants/events.constants";
 
 interface ClusterOption {
   label: string;
@@ -70,6 +74,9 @@ interface EventsFiltersProps {
   onTabChange?: (tab: string) => void;
   onCategoryChange?: (category: string) => void;
   selectedCategory?: string;
+  /** Current `sortBy` value. Omit `onSortChange` to hide the sort control. */
+  sortBy?: string;
+  onSortChange?: (value: string) => void;
 }
 
 export function EventsFilters({
@@ -82,6 +89,8 @@ export function EventsFilters({
   isLoadingClusters = false,
   eventTypes = [],
   isLoadingEventTypes = false,
+  sortBy = EVENT_SORT_DEFAULT,
+  onSortChange,
 }: EventsFiltersProps) {
   const selectedClusterOption =
     clusters.find((c) => c.value === selectedCluster) ?? clusters[0];
@@ -197,6 +206,26 @@ export function EventsFilters({
             )}
           </SelectContent>
         </Select>
+
+        {/* Sort dropdown */}
+        {onSortChange && (
+          <Select value={sortBy} onValueChange={onSortChange}>
+            <SelectTrigger
+              className="w-full md:w-44 rounded-full"
+              id="event-sort-filter"
+              aria-label="Sort events"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {EVENT_SORT_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
     </div>
   );

@@ -17,6 +17,7 @@ import {
   JobStepper,
 } from "@/features/company-jobs/components";
 import { useCreateJob } from "@/features/company-jobs/hooks";
+import { buildCreateJobPayload } from "@/features/company-jobs/lib";
 import type { JobFormValues } from "@/features/company-jobs/schemas";
 import type { JobRule } from "@/features/company-jobs/types";
 
@@ -31,30 +32,9 @@ export function CreateJobPageClient() {
   const handleSubmit = useCallback(
     async (values: JobFormValues, rules: JobRule[]) => {
       try {
-        const result = await createJobMutation.mutateAsync({
-          title: values.title,
-          experience: values.experience,
-          job_description: values.job_description,
-          location: values.location,
-          job_type: values.job_type,
-          salary_range: values.salary_range || undefined,
-          certificate_provided: values.certificate_provided ?? false,
-          duration_value:
-            values.duration_value != null
-              ? Number(values.duration_value)
-              : undefined,
-          duration_unit: values.duration_unit || undefined,
-          hourly_rate: values.hourly_rate || undefined,
-          stipend: values.stipend || undefined,
-          deliverables:
-            values.deliverables && values.deliverables.length > 0
-              ? values.deliverables
-              : undefined,
-          rules: rules.map((r) => ({
-            rule_type: r.rule_type,
-            rule_value: r.rule_value,
-          })),
-        });
+        const result = await createJobMutation.mutateAsync(
+          buildCreateJobPayload(values, rules),
+        );
 
         const jobId = result.id;
         router.push(`/dashboard/company/jobs/${jobId}`);

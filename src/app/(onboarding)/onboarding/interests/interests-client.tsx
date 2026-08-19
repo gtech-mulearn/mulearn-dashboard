@@ -22,14 +22,24 @@ import {
   useSelectDomains,
   useSelectEndgoals,
 } from "@/features/onboarding";
-import { getRoleHomePath } from "@/lib/auth";
+import { getRoleHomePath, sanitizeReturnPath } from "@/lib/auth";
 
 interface InterestsClientProps {
   redirectUri?: string;
   mode?: "quiz" | "direct";
+  /** Mentor registration prefill — forwarded from register-client via URL params */
+  mentorTier?: string;
+  mentorCompany?: string;
+  mentorOrgId?: string;
 }
 
-export function InterestsClient({ redirectUri, mode }: InterestsClientProps) {
+export function InterestsClient({
+  redirectUri,
+  mode,
+  mentorTier,
+  mentorCompany,
+  mentorOrgId,
+}: InterestsClientProps) {
   const router = useRouter();
   const [selectedMode, setSelectedMode] = useState<"quiz" | "direct" | null>(
     mode || null,
@@ -50,13 +60,24 @@ export function InterestsClient({ redirectUri, mode }: InterestsClientProps) {
     }
   }, [user, isLoadingUser, router, isSubmitting]);
 
+  // `ruri` arrives from the URL, so it is attacker-controllable — sanitize
+  // before redirecting. The sanitizer keeps the query string, which is what
+  // carries an OAuth `?code=` through to its destination.
+  //
+  // Mentor prefill params (tier, company, org_id) are relayed through here to
+  // the final dashboard redirect so MentorOnboardingForm can prefill them.
   const getRedirectPath = () => {
-    if (redirectUri && redirectUri !== "noredirect") {
-      return `/${redirectUri}`;
-    }
-    // Route to the role-specific home dashboard after onboarding completes.
-    // Falls back to "/dashboard" for standard member roles.
-    return getRoleHomePath(user?.roles ?? []);
+    const base =
+      redirectUri && redirectUri !== "noredirect"
+        ? `/${sanitizeReturnPath(redirectUri)}`
+        : getRoleHomePath(user?.roles ?? []);
+
+    const mentorParams = new URLSearchParams();
+    if (mentorTier) mentorParams.set("mentor_tier", mentorTier);
+    if (mentorCompany) mentorParams.set("mentor_company", mentorCompany);
+    if (mentorOrgId) mentorParams.set("mentor_org_id", mentorOrgId);
+    const qs = mentorParams.toString();
+    return qs ? `${base}?${qs}` : base;
   };
 
   const handleQuizComplete = async (pathways: string[]) => {

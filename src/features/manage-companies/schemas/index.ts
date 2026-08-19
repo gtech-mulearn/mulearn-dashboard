@@ -16,21 +16,24 @@ export const GenericMutationResponseSchema = ApiResponseSchema(
 
 export const PaginationSchema = z
   .object({
-    count: z.number().optional(),
+    // Backend list response: { page, per_page, total }
+    page: z.number().optional(),
+    per_page: z.number().optional(),
     total: z.number().optional(),
+    // Extended / alternate field names
+    count: z.number().optional(),
+    total_pages: z.number().optional(),
+    current_page: z.number().optional(),
     totalPages: z.number().optional(),
     isNext: z.boolean().optional(),
     isPrev: z.boolean().optional(),
-    nextPage: z.union([z.string(), z.number()]).nullable().optional(),
-    total_pages: z.number().optional(),
-    current_page: z.number().optional(),
     next: z.union([z.string(), z.number()]).nullable().optional(),
     previous: z.union([z.string(), z.number()]).nullable().optional(),
-    page: z.number().optional(),
+    nextPage: z.union([z.string(), z.number()]).nullable().optional(),
     perPage: z.number().optional(),
-    per_page: z.number().optional(),
   })
   .transform((val) => {
+    const count = val.count ?? val.total;
     const totalPages = val.totalPages ?? val.total_pages ?? 1;
     const currentPage = val.page ?? val.current_page ?? 1;
     const nextPage =
@@ -39,13 +42,7 @@ export const PaginationSchema = z
     const isNext = val.isNext ?? !!val.next;
     const isPrev = val.isPrev ?? !!val.previous;
 
-    return {
-      count: val.count ?? val.total,
-      totalPages,
-      isNext,
-      isPrev,
-      nextPage,
-    };
+    return { count, totalPages, isNext, isPrev, nextPage, currentPage };
   });
 
 // ─── Company Status ───────────────────────────────────────────────────────────
@@ -70,6 +67,7 @@ export const CompanyVerificationItemSchema = z
     // Admin list fields
     company_user_id: z.string().nullable().optional(),
     company_user_name: z.string().nullable().optional(),
+    company_user_email: z.string().nullable().optional(),
     // Legacy / detail fields
     poc_name: z.string().nullable().optional(),
     poc_email: z.string().nullable().optional(),

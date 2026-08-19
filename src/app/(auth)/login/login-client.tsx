@@ -19,6 +19,7 @@ import {
   useLoginWithPassword,
   useRequestOTP,
 } from "@/features/auth";
+import { sanitizeReturnPath } from "@/lib/auth/return-path";
 
 interface LoginClientProps {
   redirectUri?: string;
@@ -32,9 +33,13 @@ export function LoginClient({ redirectUri }: LoginClientProps) {
   const loginWithOTP = useLoginWithOTP();
   const requestOTP = useRequestOTP();
 
+  // `ruri` arrives from the URL, so it is attacker-controllable — sanitize
+  // before redirecting. The sanitizer keeps the query string, which is what
+  // carries an OAuth `?code=` back to /dashboard/connect-discord after a
+  // login detour.
   const getRedirectPath = () => {
     if (redirectUri && redirectUri !== "noredirect") {
-      return `/${redirectUri}`;
+      return `/${sanitizeReturnPath(redirectUri)}`;
     }
     return "/dashboard";
   };

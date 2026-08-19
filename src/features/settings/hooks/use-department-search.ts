@@ -13,7 +13,8 @@ import { settingsKeys } from "./query-key";
 
 /**
  * Hook for server-side searching departments by name.
- * Debounces the query and only hits the API once 2+ chars are typed.
+ * Debounces the query; fetches immediately (even with an empty search) so
+ * the combobox shows suggestions as soon as it opens.
  */
 export function useDepartmentSearch(search: string) {
   const debouncedSearch = useDebounce(search, 300);
@@ -24,7 +25,6 @@ export function useDepartmentSearch(search: string) {
       const res = await searchDepartments(debouncedSearch);
       return res.response.departments;
     },
-    enabled: debouncedSearch.trim().length >= 2,
     staleTime: 10 * 60 * 1000,
   });
 }

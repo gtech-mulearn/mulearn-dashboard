@@ -78,6 +78,12 @@ export const campusSearchResultSchema = z.object({
     if (typeof val === "number") return val;
     return null;
   }, z.number().nullable()),
+  total_karma: z.preprocess((val) => {
+    if (val === null || val === undefined) return 0;
+    if (typeof val === "string") return parseFloat(val) || 0;
+    if (typeof val === "number") return val;
+    return 0;
+  }, z.number()),
 });
 
 export const campusSearchDataSchema = z.object({
@@ -107,3 +113,5 @@ export type CampusSearchData = z.infer<typeof campusSearchDataSchema>;
 export type CampusSearchResponse = z.infer<typeof campusSearchResponseSchema>;
 
 export type SearchType = "name" | "code" | "zone" | "school" | "college";
+
+export type CampusSortBy = "karma" | "-karma" | "user_count" | "-user_count";

@@ -5,6 +5,7 @@ import { useCallback, useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { EventListItem } from "@/features/events";
 import {
+  EVENT_SORT_DEFAULT,
   EventsFilters,
   EventsGrid,
   EventsPagination,
@@ -32,6 +33,7 @@ export function EventsPageClient() {
   const debouncedSearch = useDebounce(search, 300);
   const [selectedCluster, setSelectedCluster] = useState<string>("all");
   const [selectedEventType, setSelectedEventType] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>(EVENT_SORT_DEFAULT);
 
   // ── Types and Scopes API ──────────────────────────────────────────────────
   const { data: typeScopeData, isLoading: isLoadingTypeScope } =
@@ -92,7 +94,7 @@ export function EventsPageClient() {
     pageIndex: currentPage,
     search: debouncedSearch || undefined,
     status: "published",
-    sortBy: "-created_at",
+    sortBy,
     perPage: 12,
   });
 
@@ -170,6 +172,10 @@ export function EventsPageClient() {
     setSearch(value);
     if (currentPage !== 1) setCurrentPage(1);
   };
+  const handleSortChange = (value: string) => {
+    setSortBy(value);
+    setCurrentPage(1);
+  };
   const handleClusterChange = (value: string) => {
     setSelectedCluster(value);
     setCurrentPage(1);
@@ -203,6 +209,8 @@ export function EventsPageClient() {
             isLoadingClusters={isLoadingTypeScope}
             eventTypes={eventTypeOptions}
             isLoadingEventTypes={isLoadingTypeScope}
+            sortBy={sortBy}
+            onSortChange={handleSortChange}
           />
         </div>
 

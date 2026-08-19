@@ -1,6 +1,7 @@
 import {
   ArrowRight,
   Building,
+  Home,
   ListTodo,
   type LucideIcon,
   Settings2,
@@ -84,6 +85,13 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
       "Manage karma point vouchers, error log reports, and dynamic types.",
     path: "/dashboard/management/system",
     color: "bg-chart-5/10 text-chart-5",
+  },
+  {
+    icon: Home,
+    title: "Homepage",
+    description: "Manage content sections shown on the public homepage.",
+    path: "/dashboard/management/homepage",
+    color: "bg-chart-2/10 text-chart-2",
   },
 ];
 

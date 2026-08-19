@@ -361,11 +361,7 @@ function SingleTab({ role }: { role: Role }) {
                     loading={isLoadingColleges}
                     placeholder="Search college..."
                     searchPlaceholder="Search colleges..."
-                    emptyText={
-                      collegeSearch.trim().length < 2
-                        ? "Type your college to search"
-                        : "No colleges found."
-                    }
+                    emptyText="No colleges found."
                     disabled={assignMutation.isPending}
                   />
                 </div>
@@ -664,11 +660,7 @@ function BulkAddTab({ role }: { role: Role }) {
                     loading={isLoadingColleges}
                     placeholder="Search college..."
                     searchPlaceholder="Search colleges..."
-                    emptyText={
-                      collegeSearch.trim().length < 2
-                        ? "Type your college to search"
-                        : "No colleges found."
-                    }
+                    emptyText="No colleges found."
                     disabled={bulkAssign.isPending}
                   />
                 </div>

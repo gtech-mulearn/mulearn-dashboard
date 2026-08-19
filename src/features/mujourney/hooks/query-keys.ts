@@ -9,20 +9,27 @@
 export const mujourneyKeys = {
   all: ["mujourney"] as const,
 
-  // Start Learning tab
-  userLevels: () => [...mujourneyKeys.all, "user-levels"] as const,
-  publicLevels: () => [...mujourneyKeys.all, "public-levels"] as const,
+  // Unified task list (redesigned API)
+  // authenticated is part of the key so an authed "no IG selected" fetch never
+  // shares a cache slot with an actual unauthenticated visitor's fetch.
+  taskList: (igId?: string, authenticated?: boolean) =>
+    [
+      ...mujourneyKeys.all,
+      "task-list",
+      authenticated ? "auth" : "public",
+      igId ?? "all",
+    ] as const,
 
-  // Become Expert tab
-  igTasks: (igId: string) => [...mujourneyKeys.all, "ig-tasks", igId] as const,
+  // Prefix key matching ALL task-list queries regardless of igId/auth — use for invalidation
+  taskListAll: () => [...mujourneyKeys.all, "task-list"] as const,
 
-  // Public journey
+  // Public journey (for [muid] page)
   publicUserJourney: (muid: string) =>
     [...mujourneyKeys.all, "public-journey", muid] as const,
 
-  // Interest groups
+  // Interest groups (for IG pill labels)
   interestGroups: () => [...mujourneyKeys.all, "interest-groups"] as const,
 
-  // User feed
+  // User level feed (for progress bar)
   userLevelFeed: () => [...mujourneyKeys.all, "user-level-feed"] as const,
 } as const;

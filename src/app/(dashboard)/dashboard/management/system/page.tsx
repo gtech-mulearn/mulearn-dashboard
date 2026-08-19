@@ -5,6 +5,7 @@ import {
   type LucideIcon,
   Settings2,
   Ticket,
+  ToggleRight,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -25,6 +26,13 @@ interface SystemItem {
 }
 
 const SYSTEM_ITEMS: SystemItem[] = [
+  {
+    title: "Features",
+    description: "Manage system feature flags and toggles.",
+    href: "/dashboard/management/system/features",
+    icon: ToggleRight,
+    iconBg: "bg-emerald-500/15 text-emerald-500",
+  },
   {
     title: "Karma Voucher",
     description: "Manage karma point vouchers and distribution.",

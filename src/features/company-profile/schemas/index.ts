@@ -114,14 +114,8 @@ export const CultureStepSchema = z.object({
     .string()
     .nullish()
     .transform((v) => v ?? null),
-  tech_stack: z
-    .array(z.string().min(1).max(100))
-    .max(30, "Max 30 items")
-    .default([]),
-  perks: z
-    .array(z.string().min(1).max(100))
-    .max(30, "Max 30 items")
-    .default([]),
+  tech_stack: z.array(z.string().min(1).max(100)).optional().default([]),
+  perks: z.array(z.string().min(1).max(100)).optional().default([]),
 });
 
 // ─── Combined form schema ─────────────────────────────────────

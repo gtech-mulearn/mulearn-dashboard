@@ -122,7 +122,8 @@ export function ApplicationRow({ application }: ApplicationRowProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {application.status === "rejected" && (
+              {(application.status === "rejected" ||
+                application.status === "withdrawn") && (
                 <DropdownMenuItem
                   onClick={() => setResubmitOpen(true)}
                   className="gap-2"
@@ -130,12 +131,14 @@ export function ApplicationRow({ application }: ApplicationRowProps) {
                   <RefreshCcw className="h-4 w-4" /> Resubmit Application
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem
-                onClick={() => setWithdrawOpen(true)}
-                className="text-destructive focus:bg-destructive/10 focus:text-destructive gap-2"
-              >
-                <Trash2 className="h-4 w-4" /> Withdraw
-              </DropdownMenuItem>
+              {application.status !== "withdrawn" && (
+                <DropdownMenuItem
+                  onClick={() => setWithdrawOpen(true)}
+                  className="text-destructive focus:bg-destructive/10 focus:text-destructive gap-2"
+                >
+                  <Trash2 className="h-4 w-4" /> Withdraw
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         )}

@@ -1,5 +1,4 @@
 import {
-  Briefcase,
   Building,
   Building2,
   CheckCircle,
@@ -63,13 +62,6 @@ const ORG_ITEMS: OrgItem[] = [
     href: "/dashboard/management/organizations/verify",
     icon: CheckCircle,
     iconBg: "bg-destructive/15 text-destructive",
-  },
-  {
-    title: "Company Verification",
-    description: "Review and verify company registration requests.",
-    href: "/dashboard/management/manage-companies",
-    icon: Briefcase,
-    iconBg: "bg-slate-500/15 text-slate-600 dark:text-slate-400",
   },
 ];
 

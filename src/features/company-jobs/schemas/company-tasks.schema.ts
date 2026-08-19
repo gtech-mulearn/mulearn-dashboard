@@ -16,8 +16,11 @@ import { ApiResponseSchema } from "@/lib/schemas/api-response";
 // ─── Shared Pagination ────────────────────────────────────────────────────────
 
 export const CompanyTaskPaginationSchema = z.object({
+  page: z.coerce.number().optional().default(1),
+  per_page: z.coerce.number().optional().default(10),
+  total: z.coerce.number().optional().default(0),
   count: z.number().optional(),
-  totalPages: z.coerce.number().default(1),
+  totalPages: z.coerce.number().optional().default(1),
   isNext: z.boolean().optional(),
   isPrev: z.boolean().optional(),
   nextPage: z.number().nullable().optional(),
@@ -29,6 +32,7 @@ export const COMPANY_TASK_APPROVAL_STATUSES = [
   "pending",
   "approved",
   "rejected",
+  "changes_requested",
 ] as const;
 export type CompanyTaskApprovalStatus =
   (typeof COMPANY_TASK_APPROVAL_STATUSES)[number];

@@ -19,4 +19,10 @@ export const weeklyTwitchesKeys = {
   isList: (params: ListParams) =>
     [...weeklyTwitchesKeys.is(), "list", params] as const,
   isDetail: (id: string) => [...weeklyTwitchesKeys.is(), "detail", id] as const,
+
+  gys: () => [...weeklyTwitchesKeys.all, "grab-your-superpowers"] as const,
+  gysList: (params: ListParams) =>
+    [...weeklyTwitchesKeys.gys(), "list", params] as const,
+  gysDetail: (id: string) =>
+    [...weeklyTwitchesKeys.gys(), "detail", id] as const,
 };

@@ -18,6 +18,7 @@ import { type Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import {
   Dialog,
   DialogContent,
@@ -47,17 +48,16 @@ import {
 
 import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
-
 import { useInterestGroupsList } from "@/features/home/hooks";
-import { useCompanies } from "@/features/onboarding/hooks";
 import {
-  useRequestMentorCompanyChange,
+  useChangeCompany,
   useUpdateMentorProfile,
 } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import type {
   MentorApplication,
   MentorProfileWrite,
 } from "@/features/mentor/onboarding/schemas";
+import { useCompanies } from "@/features/onboarding/hooks";
 import { useUpdateProfile, useUpdateProfileImage } from "@/features/profile";
 import type { UserProfile } from "@/features/profile/schemas";
 import {
@@ -65,7 +65,7 @@ import {
   validateImageFile,
 } from "@/lib/constants/upload";
 
-const MentorEditSchema = z.object({
+const baseMentorEditSchema = z.object({
   full_name: z.string().trim().min(1, "Name is required"),
   about: z.string().trim().optional(),
   // Edit form: expertise is optional and must NOT hard-block saving other
@@ -79,16 +79,31 @@ const MentorEditSchema = z.object({
     .array(z.string())
     .min(1, "You must mentor at least one Interest Group"),
   org: z.string().optional(),
-  // Union tries "" first so an empty field never triggers the url() validator.
-  // The previous .optional().or(z.literal("")) order ran url() on "" and failed,
-  // silently aborting the entire form submission.
+  org_reason: z.string().trim().optional(),
   linkedin: z
-    .union([z.literal(""), z.string().url("Please enter a valid URL")])
-    .optional(),
+    .string()
+    .trim()
+    .regex(
+      /^https?:\/\/(www\.)?linkedin\.com\/.*$/,
+      "Enter a valid LinkedIn URL",
+    )
+    .optional()
+    .or(z.literal("")),
   profile_pic: z.instanceof(File).optional(),
 });
 
-type MentorEditValues = z.infer<typeof MentorEditSchema>;
+const getMentorEditSchema = (originalOrg: string | undefined | null) =>
+  baseMentorEditSchema.superRefine((data, ctx) => {
+    if (data.org && data.org !== (originalOrg ?? "") && !data.org_reason) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please provide a reason for changing your company.",
+        path: ["org_reason"],
+      });
+    }
+  });
+
+type MentorEditValues = z.infer<typeof baseMentorEditSchema>;
 
 interface MentorEditProfileModalProps {
   open: boolean;
@@ -114,19 +129,23 @@ export function MentorEditProfileModal({
   const updateProfileMutation = useUpdateProfile();
   const updateProfileImageMutation = useUpdateProfileImage();
   const updateMentorProfileMutation = useUpdateMentorProfile();
-  const companyChangeMutation = useRequestMentorCompanyChange();
+  const changeCompanyMutation = useChangeCompany();
 
   const isPending =
     updateProfileMutation.isPending ||
     updateProfileImageMutation.isPending ||
     updateMentorProfileMutation.isPending ||
-    companyChangeMutation.isPending;
+    changeCompanyMutation.isPending;
 
   const { data: igList = [] } = useInterestGroupsList();
   const igOptions = igList.map((ig) => ({ value: ig.id, label: ig.name }));
+  const { data: companies = [] } = useCompanies();
+  const companyOptions = companies.map((c) => ({ id: c.id, title: c.title }));
 
   const form = useForm<MentorEditValues>({
-    resolver: zodResolver(MentorEditSchema) as Resolver<MentorEditValues>,
+    resolver: zodResolver(
+      getMentorEditSchema(mentorProfile.org),
+    ) as Resolver<MentorEditValues>,
     defaultValues: {
       full_name: userProfile.full_name ?? "",
       about: mentorProfile.about ?? "",
@@ -138,7 +157,8 @@ export function MentorEditProfileModal({
         : [],
       preferred_ig_ids: mentorProfile.preferred_ig_ids ?? [],
       org: mentorProfile.org ?? "",
-      linkedin: mentorProfile.linkedin ?? "",
+      org_reason: "",
+      linkedin: mentorProfile.linkedin ?? mentorProfile.linkedin_url ?? "",
       profile_pic: undefined,
     },
   });
@@ -157,7 +177,8 @@ export function MentorEditProfileModal({
           : [],
         preferred_ig_ids: mentorProfile.preferred_ig_ids ?? [],
         org: mentorProfile.org ?? "",
-        linkedin: mentorProfile.linkedin ?? "",
+        org_reason: "",
+        linkedin: mentorProfile.linkedin ?? mentorProfile.linkedin_url ?? "",
         profile_pic: undefined,
       });
       setPreviewUrl(null);
@@ -173,6 +194,7 @@ export function MentorEditProfileModal({
     mentorProfile.preferred_ig_ids,
     mentorProfile.org,
     mentorProfile.linkedin,
+    mentorProfile.linkedin_url,
     form,
   ]);
 
@@ -191,9 +213,6 @@ export function MentorEditProfileModal({
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
   };
-
-  // Companies list for the change-company select
-  const { data: companiesList = [] } = useCompanies();
 
   const handleSubmit = async (values: MentorEditValues) => {
     // Validate company change before attempting any other mutations
@@ -224,7 +243,8 @@ export function MentorEditProfileModal({
         JSON.stringify(values.preferred_ig_ids ?? []) !==
         JSON.stringify(mentorProfile.preferred_ig_ids ?? []);
       const isLinkedinChanged =
-        values.linkedin !== (mentorProfile.linkedin ?? "");
+        values.linkedin !==
+        (mentorProfile.linkedin ?? mentorProfile.linkedin_url ?? "");
 
       if (
         isAboutChanged ||
@@ -236,12 +256,24 @@ export function MentorEditProfileModal({
         if (isAboutChanged) payload.about = values.about ?? "";
         if (isExpertiseChanged) payload.expertise = newExpertise;
         if (isIgsChanged) payload.preferred_ig_ids = values.preferred_ig_ids;
-        if (isLinkedinChanged) payload.linkedin = values.linkedin;
+        if (isLinkedinChanged) payload.linkedin = values.linkedin ?? "";
 
         await updateMentorProfileMutation.mutateAsync(payload);
       }
 
-      // 3. Update profile photo if changed
+      // 3. Request company affiliation change if org changed
+      const isOrgChanged =
+        values.org && values.org !== (mentorProfile.org ?? "");
+      if (isOrgChanged) {
+        await changeCompanyMutation.mutateAsync({
+          org_id: values.org as string,
+          ...(values.org_reason?.trim()
+            ? { reason: values.org_reason.trim() }
+            : {}),
+        });
+      }
+
+      // 4. Update profile photo if changed
       if (values.profile_pic instanceof File) {
         await updateProfileImageMutation.mutateAsync({
           profilePic: values.profile_pic,
@@ -356,6 +388,24 @@ export function MentorEditProfileModal({
                 )}
               />
 
+              {/* LinkedIn */}
+              <FormField
+                control={form.control}
+                name="linkedin"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>LinkedIn</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="https://www.linkedin.com/in/username"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               {/* Bio */}
               <FormField
                 control={form.control}
@@ -425,92 +475,42 @@ export function MentorEditProfileModal({
                 </p>
               </div>
 
-              {/* LinkedIn */}
-              <FormField
-                control={form.control}
-                name="linkedin"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>LinkedIn Profile</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder={
-                          mentorProfile.linkedin
-                            ? `Current: ${mentorProfile.linkedin} ↗`
-                            : "https://linkedin.com/in/your-profile"
-                        }
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription className="text-xs">
-                      Changing your LinkedIn URL submits it for admin
-                      verification. Your current URL stays live until approved.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Affiliation */}
+              {/* Affiliation — editable via mentor/change-company/ */}
               <div className="space-y-2">
-                <div className="text-sm font-medium leading-none">
-                  Company Affiliation
+                <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Company
                 </div>
-
-                {/* Inline change form — only shown/required when a new company is selected */}
-                <div className="space-y-3 pt-1">
-                  {/* Company select */}
-                  <div className="space-y-1">
-                    <Select
-                      value={selectedCompanyId}
-                      onValueChange={(val) => setSelectedCompanyId(val)}
-                    >
-                      <SelectTrigger id="company-select" className="w-full">
-                        <SelectValue
-                          placeholder={
-                            mentorProfile.company
-                              ? `Current: ${mentorProfile.company}`
-                              : "Select a new company…"
-                          }
-                        />
-                      </SelectTrigger>
-                      <SelectContent
-                        position="popper"
-                        className="max-h-[300px]"
-                      >
-                        {companiesList.map((c) => (
-                          <SelectItem key={c.id} value={c.id}>
-                            {c.title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Reason textarea — only required when a company is selected */}
-                  {selectedCompanyId && (
-                    <div className="space-y-1">
-                      <label
-                        htmlFor="company-reason"
-                        className="text-xs font-medium text-foreground"
-                      >
-                        Reason <span className="text-destructive">*</span>
-                      </label>
-                      <Textarea
-                        id="company-reason"
-                        placeholder="Why are you changing your company affiliation?"
-                        rows={3}
-                        className="resize-none text-sm"
-                        value={changeReason}
-                        onChange={(e) => setChangeReason(e.target.value)}
-                      />
-                      <p className="text-[0.8rem] text-muted-foreground">
-                        Company change requests require admin approval. Your
-                        current affiliation stays live until approved.
-                      </p>
-                    </div>
+                <Combobox
+                  options={companyOptions}
+                  value={form.watch("org") ?? ""}
+                  onValueChange={(val: string) => {
+                    form.setValue("org", val, { shouldDirty: true });
+                  }}
+                  placeholder="Select your company…"
+                />
+                {/* Show reason field only when org has been changed */}
+                {form.watch("org") &&
+                  form.watch("org") !== (mentorProfile.org ?? "") && (
+                    <FormField
+                      control={form.control}
+                      name="org_reason"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Reason for change</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="e.g. Relocating to a new employer"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormDescription className="text-xs">
+                            This request will be pending admin approval.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   )}
-                </div>
               </div>
 
               {/* Read-only: Tier */}

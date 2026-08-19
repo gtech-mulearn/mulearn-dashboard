@@ -1,9 +1,10 @@
 /**
- * User Journey Hook
+ * usePublicUserJourney Hook
  *
- * 📍 src/features/mujourney/hooks/useUserJourney.ts
+ * 📍 src/features/mujourney/hooks/usePublicUserJourney.ts
  *
- * Hook for public user journey view
+ * Hook for fetching a public user's journey by MUID.
+ * Uses publicApiClient so unauthenticated requests do not send a Bearer token.
  */
 
 "use client";
@@ -16,7 +17,7 @@ import { mujourneyKeys } from "./query-keys";
  * Hook for fetching public user journey by MUID
  * @param muid - User's MUID
  */
-export function useUserJourney(muid: string) {
+export function usePublicUserJourney(muid: string) {
   return useQuery({
     queryKey: mujourneyKeys.publicUserJourney(muid),
     queryFn: () => fetchPublicUserJourney(muid),

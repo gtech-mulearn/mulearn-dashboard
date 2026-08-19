@@ -6,7 +6,9 @@ import { toast } from "sonner";
 import { igKeys } from "@/features/interest-groups";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
+  activateInterestGroup as apiActivateIG,
   createInterestGroup as apiCreateIG,
+  deactivateInterestGroup as apiDeactivateIG,
   deleteInterestGroup as apiDeleteIG,
   exportIgCSV as apiExportCSV,
   partialUpdateInterestGroup as apiPartialUpdateIG,
@@ -178,6 +180,40 @@ export function useInterestGroupsAdmin() {
     },
   });
 
+  const activateMutation = useMutation({
+    mutationFn: (id: string) => apiActivateIG(id),
+    onSuccess: (_, id) => {
+      toast.success("Interest Group activated");
+      queryClient.invalidateQueries({ queryKey: ["admin-interest-groups"] });
+      queryClient.invalidateQueries({ queryKey: igKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: igKeys.all });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to activate interest group",
+        }),
+      );
+    },
+  });
+
+  const deactivateMutation = useMutation({
+    mutationFn: (id: string) => apiDeactivateIG(id),
+    onSuccess: (_, id) => {
+      toast.success("Interest Group deactivated");
+      queryClient.invalidateQueries({ queryKey: ["admin-interest-groups"] });
+      queryClient.invalidateQueries({ queryKey: igKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: igKeys.all });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to deactivate interest group",
+        }),
+      );
+    },
+  });
+
   const exportCSV = async () => {
     try {
       const blob = await apiExportCSV();
@@ -220,6 +256,10 @@ export function useInterestGroupsAdmin() {
       data: Partial<InterestGroupUpdate>,
     ) => partialUpdateMutation.mutateAsync({ id, data }),
     deleteInterestGroup: deleteMutation.mutateAsync,
+    activateInterestGroup: activateMutation.mutateAsync,
+    deactivateInterestGroup: deactivateMutation.mutateAsync,
+    isActivating: activateMutation.isPending,
+    isDeactivating: deactivateMutation.isPending,
     uploadCoverImage: (id: string, file: File, opts?: { silent?: boolean }) =>
       uploadCoverImageMutation.mutateAsync({ id, file, silent: opts?.silent }),
     removeCoverImage: (id: string, opts?: { silent?: boolean }) =>

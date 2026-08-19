@@ -116,7 +116,8 @@ export function ShareProfileModal({
               <p className="font-medium">Your profile is private</p>
               <p className="mt-1 text-xs text-warning/80">
                 Others won't be able to view your profile until you make it
-                public in settings.
+                public. Scroll down to the "Profile Settings" section on this
+                page to change visibility.
               </p>
             </div>
           )}

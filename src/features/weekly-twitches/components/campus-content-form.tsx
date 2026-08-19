@@ -44,10 +44,16 @@ const DEFAULTS: CampusContentWrite = {
   topic: "",
   campus: "",
   date: "",
+  time: "",
   zone: undefined,
   description: "",
   link: "",
 };
+
+function toTimeInput(time?: string | null): string {
+  if (!time) return "";
+  return time.slice(0, 5);
+}
 
 export function CampusContentForm({
   isOpen,
@@ -78,6 +84,7 @@ export function CampusContentForm({
         topic: initialData.topic,
         campus: initialData.campus,
         date: initialData.date,
+        time: toTimeInput(initialData.time),
         zone: initialData.zone ?? undefined,
         description: initialData.description ?? "",
         link: initialData.link ?? "",
@@ -170,33 +177,60 @@ export function CampusContentForm({
             </div>
           </div>
 
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-foreground">
-              Date <span className="text-destructive">*</span>
-            </p>
-            <Input
-              type="date"
-              className="rounded-xl border-border bg-background"
-              {...register("date")}
-            />
-            {errors.date && (
-              <p className="text-xs text-destructive">{errors.date.message}</p>
-            )}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-foreground">
+                Date <span className="text-destructive">*</span>
+              </p>
+              <Input
+                type="date"
+                className="rounded-xl border-border bg-background"
+                {...register("date")}
+              />
+              {errors.date && (
+                <p className="text-xs text-destructive">
+                  {errors.date.message}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-foreground">
+                Time <span className="text-destructive">*</span>
+              </p>
+              <Input
+                type="time"
+                className="rounded-xl border-border bg-background"
+                {...register("time")}
+              />
+              {errors.time && (
+                <p className="text-xs text-destructive">
+                  {errors.time.message}
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="space-y-1">
-            <p className="text-sm font-medium text-foreground">Description</p>
+            <p className="text-sm font-medium text-foreground">
+              Description <span className="text-destructive">*</span>
+            </p>
             <Textarea
               className="rounded-xl border-border bg-background"
               placeholder="Episode description..."
               rows={3}
               {...register("description")}
             />
+            {errors.description && (
+              <p className="text-xs text-destructive">
+                {errors.description.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-1">
             <p className="text-sm font-medium text-foreground">
-              Streaming Link
+              Streaming Link <span className="text-destructive">*</span>
             </p>
             <Input
               className="rounded-xl border-border bg-background"

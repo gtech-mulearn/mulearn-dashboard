@@ -3,239 +3,160 @@
  *
  * 📍 src/features/mujourney/components/TaskDetailPanel.tsx
  *
- * Side panel that displays detailed task information with markdown support
+ * Side panel with full task details using TaskListPublic from the redesigned API.
+ * Discord submit opens the task's submission channel (discord_id).
  */
 
-"use client";
-
-import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
-import { useEffect } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetFooter,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useUserInfo } from "@/features/auth";
 import { chipColor } from "@/lib/chip-colors";
-import type { Task } from "../schemas";
+import type { TaskListPublic } from "../schemas";
 import { MarkdownRenderer } from "../utils/markdown";
 
-// Extended Task type to include optional backend fields
-interface ExtendedTask extends Task {
-  skills?: string[];
-  organization?: {
-    title?: string;
-  };
-  prerequisites?: string;
+interface TaskDetailPanelProps {
+  task: TaskListPublic | null;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const DISCORD_GUILD_ID = "771670169691881483";
 const DEFAULT_DISCORD_CHANNEL_ID = "782353185552465951";
-
-interface TaskDetailPanelProps {
-  task: Task | null;
-  isOpen: boolean;
-  onClose: () => void;
-}
 
 export function TaskDetailPanel({
   task,
   isOpen,
   onClose,
 }: TaskDetailPanelProps) {
-  const extendedTask = task as ExtendedTask | null;
   const userInfo = useUserInfo();
   const discordConnected = userInfo.data?.exist_in_guild === true;
 
-  // Prevent body scroll and manage focus when panel is open
-  useEffect(() => {
-    if (isOpen) {
-      // Save current scroll position
-      const scrollY = window.scrollY;
+  if (!task) return null;
 
-      // Disable body scroll
-      document.body.style.overflow = "hidden";
-      document.body.style.position = "fixed";
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = "100%";
-
-      // Focus management: simple focus trap
-      // In a production app, use @radix-ui/react-dialog or react-focus-lock
-      const panel = document.getElementById("task-detail-panel");
-      panel?.focus();
-
-      return () => {
-        // Re-enable body scroll
-        document.body.style.overflow = "";
-        document.body.style.position = "";
-        document.body.style.top = "";
-        document.body.style.width = "";
-
-        // Restore scroll position
-        window.scrollTo(0, scrollY);
-      };
+  const handleSubmit = () => {
+    if (!discordConnected) {
+      toast.error(
+        "Please connect your Discord account first to submit proof of work.",
+      );
+      return;
     }
-  }, [isOpen]);
-
-  const handleClose = () => {
-    onClose();
+    const channelId = task.discord_id ?? DEFAULT_DISCORD_CHANNEL_ID;
+    window.open(
+      `https://discord.com/channels/${DISCORD_GUILD_ID}/${channelId}`,
+      "_blank",
+    );
   };
 
-  const handleBackdropKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape" || e.key === "Enter") {
-      onClose();
-    }
-  };
+  const publishedBy = task.company_name ?? "μLearn Foundation";
 
   return (
-    <AnimatePresence>
-      {isOpen && task && (
-        <>
-          {/* Backdrop - Covers entire screen including sidebar */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-foreground/50 z-100"
-            onClick={handleClose}
-            onKeyDown={handleBackdropKeyDown}
-            role="button"
-            tabIndex={0}
-            aria-label="Close panel"
-          />
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent
+        side="right"
+        showCloseButton={false}
+        className="!bg-card !z-[101] !shadow-2xl !w-full md:!min-w-[75%] !sm:max-w-none !outline-none !gap-0 !border-border"
+      >
+        <SheetTitle className="sr-only">Task Details</SheetTitle>
+        <div className="flex-1 overflow-y-auto p-8 space-y-6">
+          {/* Close Button */}
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              size="icon"
+              onClick={onClose}
+              aria-label="Close panel"
+            >
+              <X className="w-6 h-6" />
+            </Button>
+          </div>
 
-          {/* Side Panel - 75% width */}
-          <motion.div
-            id="task-detail-panel"
-            tabIndex={-1}
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-full md:w-[75%] bg-card border-l border-border z-101 shadow-2xl overflow-y-auto outline-none"
-          >
-            <div className="p-8 space-y-6">
-              {/* Close Button */}
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                  aria-label="Close panel"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
+          {/* Task Title */}
+          <div className="text-3xl font-bold text-foreground">
+            <MarkdownRenderer content={task.title} className="*:mb-0" />
+          </div>
 
-              {/* Task Title - with Markdown */}
-              <div className="text-3xl font-bold text-foreground">
-                <MarkdownRenderer content={task.task_name} className="*:mb-0" />
-              </div>
+          {/* Task Description */}
+          {task.description && (
+            <div className="text-base text-foreground prose prose-sm dark:prose-invert max-w-none">
+              <MarkdownRenderer content={task.description} />
+            </div>
+          )}
 
-              {/* Task Description/Steps - with Markdown */}
-              {task.task_description && (
-                <div className="text-base text-muted-foreground prose prose-sm dark:prose-invert max-w-none">
-                  <MarkdownRenderer content={task.task_description} />
+          {/* Metadata */}
+          <div className="space-y-6 pt-4">
+            {/* Interest Group + Hashtag */}
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold text-foreground">
+                Interest Group
+              </h3>
+              <p className="text-base text-muted-foreground">
+                {task.ig ?? "General Task"}
+              </p>
+              {task.hashtag && (
+                <div className="pt-1">
+                  <span className="text-sm font-bold text-foreground">
+                    Hashtag:{" "}
+                  </span>
+                  <span className="inline-block px-3 py-1 bg-muted text-muted-foreground rounded-full font-mono text-sm">
+                    {task.hashtag}
+                  </span>
                 </div>
               )}
+            </div>
 
-              {/* Metadata Sections */}
-              <div className="space-y-6 pt-4">
-                {/* Interest Group */}
-                <div className="space-y-2">
-                  <h3 className="text-lg font-bold text-foreground">
-                    Interest Group
-                  </h3>
-                  <p className="text-base text-muted-foreground">
-                    {task.interest_group?.name || "General Tasks"}
-                  </p>
-                  {task.hashtag && (
-                    <div className="pt-1">
-                      <span className="text-sm font-bold text-foreground">
-                        Hashtag:
-                      </span>{" "}
-                      <span className="inline-block px-3 py-1 bg-muted text-muted-foreground rounded-full font-mono text-sm">
-                        {task.hashtag}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Skills */}
-                {extendedTask?.skills &&
-                  Array.isArray(extendedTask.skills) &&
-                  extendedTask.skills.length > 0 && (
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-bold text-foreground">
-                        Skills:
-                      </h3>
-                      <div className="flex flex-wrap gap-2">
-                        {extendedTask.skills.map((skill: string) => (
-                          <span
-                            key={skill}
-                            className={`px-3 py-1 rounded-full text-sm font-medium ${chipColor(skill)}`}
-                          >
-                            <MarkdownRenderer
-                              content={skill}
-                              className="*:inline *:mb-0"
-                            />
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                {/* Published Info */}
-                <div className="space-y-2">
-                  <h3 className="text-lg font-bold text-foreground">
-                    Published Info
-                  </h3>
-                  <p className="text-base text-muted-foreground">
-                    <span className="font-bold text-foreground">By:</span>{" "}
-                    {extendedTask?.organization?.title || "μLearn Foundation"}
-                  </p>
-                </div>
-
-                {/* Prerequisites - with Markdown */}
-                {extendedTask?.prerequisites && (
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-bold text-foreground">
-                      Prerequisites
-                    </h3>
-                    <div className="text-base text-muted-foreground">
-                      <MarkdownRenderer content={extendedTask.prerequisites} />
-                    </div>
-                  </div>
+            {/* Task Type */}
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold text-foreground">Task Type</h3>
+              <div className="flex flex-wrap gap-2">
+                {task.type && (
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${chipColor(task.type)}`}
+                  >
+                    {task.type}
+                  </span>
                 )}
               </div>
-
-              {/* Submit Proof of Work Button */}
-              <div className="pt-6">
-                <Button
-                  variant="default"
-                  className="h-11 rounded-lg text-base font-semibold px-8"
-                  onClick={() => {
-                    if (!discordConnected) {
-                      toast.error(
-                        "Please connect your Discord account first to submit proof of work.",
-                      );
-                      return;
-                    }
-                    const channelId =
-                      task.submission_channel?.discord_id ||
-                      DEFAULT_DISCORD_CHANNEL_ID;
-                    window.open(
-                      `https://discord.com/channels/${DISCORD_GUILD_ID}/${channelId}`,
-                      "_blank",
-                    );
-                  }}
-                >
-                  Submit Proof of Work
-                </Button>
-              </div>
             </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+
+            {/* Event */}
+            {task.event && (
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-foreground">Event</h3>
+                <p className="text-base text-muted-foreground">{task.event}</p>
+              </div>
+            )}
+
+            {/* Published Info */}
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold text-foreground">
+                Published Info
+              </h3>
+              <p className="text-base text-muted-foreground">
+                <span className="font-bold text-foreground">By:</span>{" "}
+                {publishedBy}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Submit Proof of Work */}
+        <SheetFooter className="pt-6">
+          <Button
+            variant="default"
+            className="font-semibold px-8"
+            onClick={handleSubmit}
+          >
+            Submit Proof of Work
+          </Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }

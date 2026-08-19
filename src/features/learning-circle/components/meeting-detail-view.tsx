@@ -9,11 +9,12 @@
 
 "use client";
 
-import { format } from "date-fns";
+import { addMinutes, format, formatDistanceToNow, isFuture } from "date-fns";
 import {
   AlertCircle,
   ArrowLeft,
   Calendar,
+  Check,
   CheckCircle2,
   Clock,
   Download,
@@ -28,6 +29,7 @@ import {
   UserRound,
   Users,
   Video,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -52,6 +54,7 @@ import {
   useCirclePermissions,
   useLeaveMeeting,
   useMeetingDetail,
+  useRemoveRsvpMeeting,
   useRsvpMeeting,
 } from "../hooks";
 import { AttendeeReportView } from "./attendee-report-view";
@@ -73,17 +76,54 @@ const STATUS_CONFIG = {
     label: "Upcoming",
     dot: false,
   },
+  recurring: {
+    gradient: "from-[#7C3AED] via-[#8B5CF6] to-[#A78BFA]",
+    label: "Recurring",
+    dot: false,
+  },
   ended: {
     gradient: "from-[#6B7280] via-[#9CA3AF] to-[#D1D5DB]",
     label: "Ended",
     dot: false,
   },
-  recurring: {
-    gradient: "from-[#8B5CF6] via-[#A855F7] to-[#C084FC]",
-    label: "Recurring",
-    dot: false,
-  },
 } as const;
+
+function formatMeetingDuration(duration?: number): string {
+  if (!duration || duration <= 0) return "1h";
+  if (duration > 24) {
+    const hours = Math.floor(duration / 60);
+    const mins = duration % 60;
+    if (hours > 0 && mins > 0) return `${hours}h ${mins}m`;
+    if (hours > 0) return `${hours}h`;
+    return `${mins}m`;
+  }
+  const hours = Math.floor(duration);
+  const mins = Math.round((duration - hours) * 60);
+  if (hours > 0 && mins > 0) return `${hours}h ${mins}m`;
+  if (hours > 0) return `${hours}h`;
+  return `${mins}m`;
+}
+
+function getMeetingEndTime(meetTime: Date, duration?: number): Date {
+  if (!duration || duration <= 0) return addMinutes(meetTime, 60);
+  if (duration > 24) {
+    return addMinutes(meetTime, duration);
+  }
+  return addMinutes(meetTime, Math.round(duration * 60));
+}
+
+function getTimeTillMeeting(
+  meetTime: Date,
+  isStarted?: boolean,
+  isEnded?: boolean,
+): string {
+  if (isEnded) return "Ended";
+  if (isStarted) return "Live now";
+  if (isFuture(meetTime)) {
+    return `Starts ${formatDistanceToNow(meetTime, { addSuffix: true })}`;
+  }
+  return "Started";
+}
 
 function getStatus(meeting: {
   is_ended: boolean;
@@ -149,6 +189,7 @@ export function MeetingDetailView({
   const { data: members } = useCircleMembers(circleId);
   const { data: circleMeetings } = useCircleMeetings(circleId);
   const rsvpMeeting = useRsvpMeeting();
+  const removeRsvpMeeting = useRemoveRsvpMeeting();
   const { data: userInfo } = useUserInfo();
   const leaveMeeting = useLeaveMeeting();
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
@@ -200,8 +241,19 @@ export function MeetingDetailView({
     permissions.canDeleteMeeting ||
     (userInfo?.muid != null && userInfo.muid === creatorMuid);
 
+  const canEditThisMeeting =
+    permissions.canEditMeeting ||
+    (userInfo?.muid != null && userInfo.muid === creatorMuid);
+
+  const currentMember = members?.members?.find(
+    (m) => m.muid === userInfo?.muid,
+  );
   const currentUserAttendee = userInfo
-    ? meeting?.attendees.find((a) => a.user_id === userInfo.muid)
+    ? meeting?.attendees.find(
+        (a) =>
+          a.user_id === userInfo.muid ||
+          (currentMember != null && a.user_id === currentMember.id),
+      )
     : undefined;
   const hasAttendeeRecord = Boolean(currentUserAttendee);
   const hasJoined = currentUserAttendee?.is_joined ?? false;
@@ -261,15 +313,39 @@ export function MeetingDetailView({
   }
 
   const meetTime = parseLocalTime(meeting.meet_time);
+  const endTime = getMeetingEndTime(meetTime, meeting.duration);
+  const timeTillMeeting = getTimeTillMeeting(
+    meetTime,
+    meeting.is_started,
+    meeting.is_ended,
+  );
   const isOnline = meeting.mode === "online";
   // A meeting occurrence is active only until it ends — being recurring does NOT
   // keep an ended occurrence active (RSVP/join/leave must close once it ends).
   const isActive = !meeting.is_ended;
   // RSVP is only meaningful before the meeting starts; once it's live the
   // only action is Join — hide RSVP to avoid confusion.
+  // is_rsvp and can_remove_rsvp are only returned by CircleMeetupMinSerializer
+  // (the list endpoint). CircleMeetupInfoSerializer (the detail endpoint) does
+  // NOT expose is_rsvp — but the attendees array includes RSVP'd users
+  // (is_joined: false means RSVP'd, is_joined: true means joined).
+  // Use hasAttendeeRecord as primary signal; listMeetingInfo?.is_rsvp as backup.
+  const isRsvpd = Boolean(hasAttendeeRecord || listMeetingInfo?.is_rsvp);
   const canRsvp =
-    isActive && !meeting.is_started && !hasAttendeeRecord && meeting.is_member;
-  const canCancelAttendance = hasAttendeeRecord && !hasJoined && isActive;
+    isActive && !meeting.is_started && !isRsvpd && meeting.is_member;
+  // For canRemoveRsvp:
+  // - Primary: user is in attendees (RSVP'd) and has NOT joined
+  // - Backend enforces the 30-min cutoff; can_remove_rsvp from the list is used
+  //   when available, otherwise default to true (can_remove_rsvp !== false)
+  const canRemoveRsvp =
+    isActive &&
+    !meeting.is_started &&
+    isRsvpd &&
+    !hasJoined &&
+    meeting.is_member &&
+    (listMeetingInfo !== undefined
+      ? listMeetingInfo.can_remove_rsvp !== false
+      : true);
   const canLeave = hasJoined && isActive;
   const status = getStatus(meeting);
 
@@ -347,16 +423,18 @@ export function MeetingDetailView({
           </div>
 
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 sm:shrink-0">
-            {permissions.canEditMeeting && !meeting.is_ended && (
+            {canEditThisMeeting && !meeting.is_ended && (
               <Button
                 type="button"
-                variant="ghost"
-                size="icon"
+                variant="outline"
+                size="sm"
                 onClick={() => setShowEditModal(true)}
+                className="gap-1.5"
                 title="Edit Meeting"
                 aria-label="Edit Meeting"
               >
-                <Edit2 className="h-4 w-4" />
+                <Edit2 className="h-3.5 w-3.5" />
+                Edit Meeting
               </Button>
             )}
             {canDeleteThisMeeting && (
@@ -370,12 +448,39 @@ export function MeetingDetailView({
             {canRsvp && (
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 onClick={() => rsvpMeeting.mutate(meetingId)}
                 disabled={rsvpMeeting.isPending}
+                className="text-xs font-bold uppercase tracking-wide"
               >
-                RSVP
+                {rsvpMeeting.isPending ? (
+                  <Spinner className="h-3.5 w-3.5" />
+                ) : (
+                  "RSVP"
+                )}
               </Button>
+            )}
+            {canRemoveRsvp && (
+              <button
+                type="button"
+                onClick={() => removeRsvpMeeting.mutate(meetingId)}
+                disabled={removeRsvpMeeting.isPending}
+                className="text-xs font-bold text-success bg-success/15 border border-success/30 hover:bg-destructive/15 hover:text-destructive hover:border-destructive/30 transition-all uppercase tracking-wide px-3 py-1.5 rounded-lg flex items-center gap-1.5 group/rsvp cursor-pointer"
+                title="Click to remove RSVP"
+              >
+                {removeRsvpMeeting.isPending ? (
+                  <Spinner className="h-3.5 w-3.5" />
+                ) : (
+                  <>
+                    <Check className="h-3.5 w-3.5 group-hover/rsvp:hidden text-success" />
+                    <X className="h-3.5 w-3.5 hidden group-hover/rsvp:inline text-destructive" />
+                    <span className="group-hover/rsvp:hidden">RSVP'd</span>
+                    <span className="hidden group-hover/rsvp:inline">
+                      Remove RSVP
+                    </span>
+                  </>
+                )}
+              </button>
             )}
             {canJoin && (
               <Button
@@ -396,16 +501,7 @@ export function MeetingDetailView({
                 Join opens at start
               </Button>
             )}
-            {canCancelAttendance && (
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={() => setShowLeaveConfirm(true)}
-              >
-                <LogOut className="h-3.5 w-3.5" />
-                Cancel RSVP
-              </Button>
-            )}
+
             {canLeave && (
               <Button
                 type="button"
@@ -437,7 +533,10 @@ export function MeetingDetailView({
               <span className="text-[13px] font-medium">Time</span>
             </div>
             <span className="text-[15px] font-semibold text-foreground">
-              {format(meetTime, "h:mm a")} ({meeting.duration}h)
+              {format(meetTime, "h:mm a")} – {format(endTime, "h:mm a")}
+            </span>
+            <span className="text-[12px] font-medium text-muted-foreground mt-0.5">
+              {formatMeetingDuration(meeting.duration)} • {timeTillMeeting}
             </span>
           </div>
 
@@ -494,7 +593,7 @@ export function MeetingDetailView({
             </span>
             {pendingJoinAttendees.length > 0 && (
               <span className="mt-0.5 text-[12px] font-medium text-muted-foreground">
-                {pendingJoinAttendees.length} not joined
+                {pendingJoinAttendees.length} RSVP'd
               </span>
             )}
           </div>
@@ -568,7 +667,7 @@ export function MeetingDetailView({
             <span className="text-sm font-medium text-muted-foreground">
               ({joinedAttendees.length} joined
               {pendingJoinAttendees.length > 0
-                ? `, ${pendingJoinAttendees.length} not joined`
+                ? `, ${pendingJoinAttendees.length} RSVP'd`
                 : ""}
               )
             </span>
@@ -632,7 +731,7 @@ export function MeetingDetailView({
                     )}
                     {!attendee.is_joined && (
                       <span className="rounded-full bg-warning/10 px-2 py-1 text-[10px] font-bold text-warning">
-                        Not joined
+                        RSVP'd
                       </span>
                     )}
                     {attendee.is_report_submitted && (

@@ -276,13 +276,12 @@ async function fetchListWithStatusFallback(
   endpoint: string,
   params?: EventListQueryParams,
 ): Promise<EventListData> {
-  // Strip sortBy parameter for management/admin lists since the backend endpoints
-  // /api/v1/dashboard/events/manage/ and /api/v1/dashboard/events/admin/ do not support
-  // the sortBy parameter and return a 500 Internal Server Error when it is provided.
-  const safeParams = params ? { ...params } : undefined;
-  if (safeParams) {
-    delete safeParams.sortBy;
-  }
+  // Both /events/manage/ and /events/admin/ do support sortBy. The previous 500
+  // came from the value, not the parameter: manage mapped 'created_at' to
+  // '-created_at', and the backend re-applies the '-' from the request, producing
+  // order_by('--created_at'). manage_views.py now maps to the plain field name, so
+  // manage, admin and public all accept the same values (see EVENT_SORT_OPTIONS).
+  const safeParams = params;
 
   const qs = buildQueryString(safeParams);
   let response = await apiClient.get<EventListData>(`${endpoint}${qs}`);

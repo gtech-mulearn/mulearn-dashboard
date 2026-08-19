@@ -7,6 +7,7 @@ import { Controller, type Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CustomDateTimePicker } from "@/components/ui/custom-datetime-picker";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -591,32 +592,49 @@ export function EventInlineEditForm({
             <p className="text-sm font-medium text-foreground">
               Start datetime <span className="text-destructive">*</span>
             </p>
-            <Input
-              className="rounded-xl border-border bg-background text-foreground"
-              type="datetime-local"
-              {...register("start_datetime")}
+
+            <Controller
+              control={control}
+              name="start_datetime"
+              render={({ field }) => (
+                <CustomDateTimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              )}
             />
-            {errors.start_datetime?.message ? (
+
+            {errors.start_datetime?.message && (
               <p className="mt-1 text-xs text-destructive">
                 {errors.start_datetime.message}
               </p>
-            ) : null}
+            )}
           </div>
+
           <div className="space-y-1">
             <p className="text-sm font-medium text-foreground">
               End datetime <span className="text-destructive">*</span>
             </p>
-            <Input
-              className="rounded-xl border-border bg-background text-foreground"
-              type="datetime-local"
-              min={minEndDatetime}
-              {...register("end_datetime")}
+
+            <Controller
+              control={control}
+              name="end_datetime"
+              render={({ field }) => (
+                <CustomDateTimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  minDate={
+                    minEndDatetime ? new Date(minEndDatetime) : undefined
+                  }
+                />
+              )}
             />
-            {errors.end_datetime?.message ? (
+
+            {errors.end_datetime?.message && (
               <p className="mt-1 text-xs text-destructive">
                 {errors.end_datetime.message}
               </p>
-            ) : null}
+            )}
           </div>
         </div>
       </section>

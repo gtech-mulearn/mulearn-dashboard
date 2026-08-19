@@ -25,5 +25,7 @@ export {
   companySignup,
   registerUser,
   updateCompanyRegistration,
+  uploadCompanyAsset,
+  uploadVerificationDocument,
   validateRegistrationData,
 } from "./register.api";

@@ -2,6 +2,7 @@
 
 import { Calendar } from "lucide-react";
 import Image from "next/image";
+import { formatTime } from "../lib/format-time";
 import type { ContentStatus } from "../schemas";
 
 const STATUS_CLASSES: Record<ContentStatus, string> = {
@@ -40,6 +41,7 @@ export interface MediaCardProps {
   title: string;
   subtitle?: string;
   date: string;
+  time?: string | null;
   status: ContentStatus;
   imageSrc?: string | null;
   onClick: () => void;
@@ -50,6 +52,7 @@ export function MediaCard({
   title,
   subtitle,
   date,
+  time,
   status,
   imageSrc,
   onClick,
@@ -94,6 +97,7 @@ export function MediaCard({
           <div className="mb-1 flex items-center gap-1 text-[11px] opacity-75">
             <Calendar className="h-3 w-3" />
             <span>{formatDate(date)}</span>
+            {time && <span>· {formatTime(time)}</span>}
           </div>
           <h3 className="line-clamp-2 text-sm font-semibold leading-snug">
             {title}

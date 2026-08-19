@@ -10,7 +10,7 @@
  * dialogs). Purely presentational — the parent owns the current step + config.
  */
 
-import { Check } from "lucide-react";
+import { AlertCircle, Check } from "lucide-react";
 import { Fragment } from "react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -28,6 +28,12 @@ interface StepperHeaderProps {
   onStepClick: (index: number) => void;
   /** Accessible label for the progress nav. */
   ariaLabel?: string;
+  /**
+   * Indices of steps holding validation errors. Marks them so a problem left
+   * behind on an earlier step stays visible from anywhere in the flow.
+   * Optional — flows that don't track per-step validity simply omit it.
+   */
+  invalidSteps?: Set<number>;
 }
 
 export function StepperHeader({
@@ -35,6 +41,7 @@ export function StepperHeader({
   currentStepIndex,
   onStepClick,
   ariaLabel = "Progress",
+  invalidSteps,
 }: StepperHeaderProps) {
   const current = steps[currentStepIndex];
 
@@ -45,17 +52,30 @@ export function StepperHeader({
         {steps.map((step, index) => {
           const isActive = index === currentStepIndex;
           const isCompleted = index < currentStepIndex;
+          const isInvalid = invalidSteps?.has(index) ?? false;
 
           return (
             <Fragment key={step.id}>
               <button
                 type="button"
-                aria-label={`Go to step ${index + 1}: ${step.label}`}
+                aria-label={`Go to step ${index + 1}: ${step.label}${
+                  isInvalid ? " (has errors)" : ""
+                }`}
                 aria-current={isActive ? "step" : undefined}
                 onClick={() => onStepClick(index)}
                 className="group flex cursor-pointer items-center gap-3 rounded-lg text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                {isActive ? (
+                {isInvalid ? (
+                  <span
+                    className={cn(
+                      buttonVariants({ variant: "secondary", size: "icon-sm" }),
+                      "pointer-events-none border border-destructive/40 bg-destructive/10 text-xs text-destructive",
+                      isActive && "ring-2 ring-destructive ring-offset-2",
+                    )}
+                  >
+                    <AlertCircle className="h-4 w-4" />
+                  </span>
+                ) : isActive ? (
                   <span
                     className={cn(
                       buttonVariants({ variant: "default", size: "icon-sm" }),
@@ -87,9 +107,11 @@ export function StepperHeader({
                   <p
                     className={cn(
                       "text-xs whitespace-nowrap leading-none transition-colors",
-                      isActive
-                        ? "font-medium text-foreground"
-                        : "text-muted-foreground group-hover:text-foreground",
+                      isInvalid
+                        ? "font-medium text-destructive"
+                        : isActive
+                          ? "font-medium text-foreground"
+                          : "text-muted-foreground group-hover:text-foreground",
                     )}
                   >
                     {step.label}
@@ -119,23 +141,34 @@ export function StepperHeader({
           {steps.map((step, index) => {
             const isActive = index === currentStepIndex;
             const isCompleted = index < currentStepIndex;
+            const isInvalid = invalidSteps?.has(index) ?? false;
 
             return (
               <button
                 key={step.id}
                 type="button"
                 onClick={() => onStepClick(index)}
-                aria-label={`Go to step ${index + 1}: ${step.label}`}
+                aria-label={`Go to step ${index + 1}: ${step.label}${
+                  isInvalid ? " (has errors)" : ""
+                }`}
                 className={cn(
                   "flex items-center gap-1 shrink-0 rounded-full px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer",
-                  isActive
-                    ? "bg-primary text-primary-foreground font-semibold"
-                    : isCompleted
-                      ? "bg-primary/10 text-primary hover:bg-primary/20"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80",
+                  isInvalid
+                    ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
+                    : isActive
+                      ? "bg-primary text-primary-foreground font-semibold"
+                      : isCompleted
+                        ? "bg-primary/10 text-primary hover:bg-primary/20"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80",
                 )}
               >
-                {isCompleted ? <Check className="h-3 w-3" /> : index + 1}
+                {isInvalid ? (
+                  <AlertCircle className="h-3 w-3" />
+                ) : isCompleted ? (
+                  <Check className="h-3 w-3" />
+                ) : (
+                  index + 1
+                )}
                 <span>{step.label}</span>
               </button>
             );

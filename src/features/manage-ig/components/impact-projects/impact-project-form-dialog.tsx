@@ -386,13 +386,13 @@ export function ImpactProjectFormDialog({
                     ].map(([label, value]) => (
                       <div
                         key={label}
-                        className="flex items-start justify-between gap-4 px-4 py-3"
+                        className="flex items-start justify-between gap-3 px-4 py-3 sm:gap-4"
                       >
                         <p className="w-32 shrink-0 text-xs font-medium text-muted-foreground">
                           {label}
                         </p>
                         <p
-                          className={`flex-1 text-right text-sm ${
+                          className={`min-w-0 flex-1 whitespace-pre-wrap text-right text-sm break-words [overflow-wrap:anywhere] ${
                             value === "Not set"
                               ? "italic text-muted-foreground/60"
                               : "text-foreground"

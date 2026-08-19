@@ -74,6 +74,20 @@ function isAuthenticated(request: NextRequest): boolean {
 }
 
 /**
+ * The route the user was trying to reach, formatted as a `ruri` value:
+ * pathname without its leading slash, WITH the query string kept.
+ *
+ * Keeping the query is load-bearing for OAuth returns. Discord sends the user
+ * to /dashboard/connect-discord?code=… and that page is worthless without
+ * `code` — if a detour through login/refresh drops it, the page renders its
+ * idle state and the connection silently never happens. Codes are single-use
+ * and short-lived, so a dropped one cannot be replayed.
+ */
+function returnUriFor(request: NextRequest): string {
+  return `${request.nextUrl.pathname.slice(1)}${request.nextUrl.search}`;
+}
+
+/**
  * Decode a JWT payload without verification.
  * Safe for edge runtime — no crypto needed.
  * Returns the parsed payload object, or null on failure.
@@ -169,7 +183,7 @@ export function proxy(request: NextRequest) {
   if (isProtectedRoute(pathname)) {
     if (!isLoggedIn) {
       const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set("ruri", pathname.replace("/", ""));
+      loginUrl.searchParams.set("ruri", returnUriFor(request));
       return NextResponse.redirect(loginUrl);
     }
 
@@ -191,7 +205,7 @@ export function proxy(request: NextRequest) {
     const accessToken = request.cookies.get("accessToken")?.value;
     if (!accessToken || isAccessTokenExpired(accessToken)) {
       const refreshUrl = new URL("/api/auth/refresh", request.url);
-      refreshUrl.searchParams.set("ruri", pathname.slice(1));
+      refreshUrl.searchParams.set("ruri", returnUriFor(request));
       return NextResponse.redirect(refreshUrl);
     }
 

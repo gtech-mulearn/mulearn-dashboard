@@ -19,3 +19,7 @@ export const fetchQseverseInfo = async (
   }
   return res.response as QseverseInfo;
 };
+
+export const connectDiscord = async (code: string): Promise<void> => {
+  await apiClient.get(`${endpoints.register.connectDiscord}?code=${code}`);
+};

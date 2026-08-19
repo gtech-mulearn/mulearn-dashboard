@@ -24,9 +24,12 @@ export const RoleVerificationItemSchema = z.object({
   gender: z.string().nullable().optional(),
   dob: z.string().nullable().optional(),
   joined: z.string().nullable().optional(),
-  district: z.string().nullable().optional(),
-  state: z.string().nullable().optional(),
-  country: z.string().nullable().optional(),
+  district: z
+    .object({ id: z.string(), name: z.string() })
+    .nullable()
+    .optional(),
+  state: z.object({ id: z.string(), name: z.string() }).nullable().optional(),
+  country: z.object({ id: z.string(), name: z.string() }).nullable().optional(),
   organizations: z
     .array(RoleVerificationOrganizationSchema)
     .nullable()

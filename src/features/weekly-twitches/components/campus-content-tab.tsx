@@ -21,6 +21,7 @@ import {
   useSmtList,
   useSmtMutations,
 } from "../hooks";
+import { formatTime } from "../lib/format-time";
 import type { CampusContentItem, CampusContentType } from "../schemas";
 import { CampusContentDetailDialog } from "./campus-content-detail-dialog";
 import { CampusContentForm } from "./campus-content-form";
@@ -36,6 +37,7 @@ const COLUMNS = [
   { column: "campus", Label: "Campus", isSortable: false, width: "w-40" },
   { column: "zone", Label: "Zone", isSortable: false, width: "w-24" },
   { column: "date", Label: "Date", isSortable: false, width: "w-28" },
+  { column: "time", Label: "Time", isSortable: false, width: "w-20" },
   { column: "status", Label: "Status", isSortable: false, width: "w-28" },
 ];
 
@@ -82,7 +84,10 @@ export function CampusContentTab({ contentType }: Props) {
   const totalPages = data?.pagination.totalPages ?? 0;
   const totalCount = data?.pagination.count;
 
-  const tableRows: Data[] = rows.map((r) => ({ ...r }));
+  const tableRows: Data[] = rows.map((r) => ({
+    ...r,
+    time: formatTime(r.time),
+  }));
 
   const handleSearch = (val: string) => {
     setPage(1);
@@ -179,6 +184,14 @@ export function CampusContentTab({ contentType }: Props) {
         columnOrder={COLUMNS}
         id={["id"]}
         customCellRender={(column, row) => {
+          if (column === "time") {
+            const t = String(row.time ?? "");
+            return t ? (
+              <span>{t}</span>
+            ) : (
+              <span className="text-muted-foreground">—</span>
+            );
+          }
           if (column === "status") {
             const s = String(row.status ?? "");
             return (

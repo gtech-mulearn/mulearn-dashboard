@@ -1,110 +1,81 @@
+"use client";
+
 /**
  * Start Learning Tab Component
  *
  * 📍 src/features/mujourney/components/StartLearningTab.tsx
  *
- * Shows foundational tasks across 7 levels
+ * Displays foundational tasks from the start_journey section of the task list API.
+ * Tasks are already API-filtered (no IG tasks, no event tasks, no intern tasks).
+ * Client groups them by level.name for LevelCard display.
+ * Includes client-side search filtering.
  */
 
-"use client";
-
-import { useMemo } from "react";
+import { Loader2, Search, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { StateDisplay } from "@/components/ui/state-display";
-import { useAllPublicTasks } from "@/features/tasks/hooks";
-import type { GetUserLevelsResponse, Task, UserLevelData } from "../schemas";
+import { useDebounce } from "@/hooks/use-debounce";
+import type { TaskListPublic } from "../schemas";
 import { LevelCard } from "./LevelCard";
 
 interface StartLearningTabProps {
   filter?: string;
-  levelsData?: GetUserLevelsResponse | null;
+  tasks?: TaskListPublic[];
   isLoading?: boolean;
+  isFetching?: boolean;
   error?: Error | null;
 }
 
 export function StartLearningTab({
   filter = "all",
-  levelsData,
+  tasks = [],
   isLoading,
+  isFetching,
   error,
 }: StartLearningTabProps) {
-  const data = levelsData;
-  const levels = data?.response ?? [];
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebounce(searchInput, 400);
 
-  // The user's own completion state, keyed by hashtag, so tasks merged in
-  // below from the public catalog (which carries no per-user completion)
-  // can be reconciled against what the user has actually completed.
-  const completionByHashtag = useMemo(() => {
-    const map = new Map<string, boolean>();
-    levels.forEach((level: UserLevelData) => {
-      (level.tasks || []).forEach((task: Task) => {
-        if (task.hashtag) map.set(task.hashtag, Boolean(task.completed));
-      });
+  // ── Client-side search filtering ──────────────────────────────────
+  const filteredTasks = useMemo(() => {
+    const byCompletion = tasks.filter((task) => {
+      if (filter === "completed") return task.completed;
+      if (filter === "incomplete") return !task.completed;
+      return true;
     });
-    return map;
-  }, [levels]);
 
-  const { data: companyData } = useAllPublicTasks({ task_source: "company" });
-  const { data: campusData } = useAllPublicTasks({
-    task_source: "campus_mentor",
-  });
+    if (!debouncedSearch) return byCompletion;
+    const q = debouncedSearch.toLowerCase();
+    return byCompletion.filter(
+      (task) =>
+        task.title.toLowerCase().includes(q) ||
+        task.hashtag?.toLowerCase().includes(q) ||
+        task.type?.toLowerCase().includes(q) ||
+        task.ig?.toLowerCase().includes(q) ||
+        task.channel?.toLowerCase().includes(q) ||
+        task.level?.toLowerCase().includes(q),
+    );
+  }, [tasks, filter, debouncedSearch]);
 
-  const generalTasks = useMemo<Task[]>(() => {
-    const raw = [...(companyData ?? []), ...(campusData ?? [])];
-    return raw.map((task) => ({
-      task_id: task.id,
-      task_name: task.title,
-      task_description: task.description ?? "",
-      karma: task.karma,
-      hashtag: task.hashtag,
-      completed: completionByHashtag.get(task.hashtag) ?? false,
-      active: task.active,
-      discord_link: task.discord_link,
-      level: task.level,
-      interest_group: task.ig ? { name: task.ig } : undefined,
-      submission_channel: task.channel ? { name: task.channel } : undefined,
+  // Group tasks by level.name (e.g. "Explorer", "Intermediate") preserving API order.
+  // API already orders by level.level_order then title.
+  const groupedLevels = useMemo(() => {
+    const map = new Map<string, TaskListPublic[]>();
+    filteredTasks.forEach((task) => {
+      const key = task.level ?? "General";
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)?.push(task);
+    });
+
+    return Array.from(map.entries()).map(([name, levelTasks]) => ({
+      name,
+      tasks: levelTasks,
     }));
-  }, [companyData, campusData, completionByHashtag]);
+  }, [filteredTasks]);
 
-  // Filter out tasks with #cl- (expert/Interest Group) or #evn (event) hashtags
-  // Start Learning Tab: EXCLUDE tasks containing #cl- or starting with #evn
-  const foundationLevels = useMemo(() => {
-    const map = new Map<string, UserLevelData>();
-
-    const addTask = (task: Task, levelHint?: string | null) => {
-      const hashtag = task.hashtag || "";
-      const isFoundationTask =
-        !hashtag.includes("#cl-") && !hashtag.startsWith("#evn");
-      if (!isFoundationTask) return;
-
-      if (filter === "completed" && !task.completed) return;
-      if (filter === "incomplete" && task.completed) return;
-
-      const levelNumber = (levelHint || "").match(/\d+/)?.[0] ?? "1";
-      const levelKey = `Lvl ${levelNumber}`;
-
-      const existing = map.get(levelKey);
-      if (existing) {
-        existing.tasks = [...(existing.tasks || []), task];
-      } else {
-        map.set(levelKey, { name: levelKey, karma: 0, tasks: [task] });
-      }
-    };
-
-    levels.forEach((level: UserLevelData) => {
-      (level.tasks || []).forEach((task: Task) => {
-        addTask(task, level.name);
-      });
-    });
-    generalTasks.forEach((task) => {
-      addTask(task, (task as { level?: string | null }).level);
-    });
-
-    return Array.from(map.values()).sort((a, b) => {
-      const numA = parseInt(a.name.match(/\d+/)?.[0] ?? "0", 10);
-      const numB = parseInt(b.name.match(/\d+/)?.[0] ?? "0", 10);
-      return numA - numB;
-    });
-  }, [levels, filter, generalTasks]);
+  const clearSearch = () => setSearchInput("");
 
   if (isLoading) {
     return (
@@ -121,7 +92,7 @@ export function StartLearningTab({
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center space-y-4">
-          <p className="text-destructive">Failed to load levels</p>
+          <p className="text-destructive">Failed to load tasks</p>
           {process.env.NODE_ENV === "development" && (
             <p className="text-sm text-muted-foreground">{error.message}</p>
           )}
@@ -130,28 +101,65 @@ export function StartLearningTab({
     );
   }
 
-  if (!data?.response && generalTasks.length === 0) {
-    return <StateDisplay variant="no-tasks" />;
-  }
-
   return (
     <div className="space-y-10">
-      {foundationLevels.map((level, index) => {
-        // All levels are always unlocked - no locking logic needed
-        // Tasks show completed status via task.completed field
+      {/* Search — always visible, even when no tasks */}
+      <div className="relative w-full">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+        <Input
+          id="start-learning-search"
+          placeholder="Search by title, hashtag, type, IG, channel, level..."
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          className="pl-9 pr-8 h-9 text-sm"
+        />
+        {searchInput && (
+          <button
+            type="button"
+            onClick={clearSearch}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Clear search"
+          >
+            <X className="size-3.5" />
+          </button>
+        )}
+      </div>
 
-        // Use level name and index for unique key
-        const uniqueKey = `${level.name}-${index}`;
+      {/* Background-refetch spinner */}
+      {isFetching && !isLoading && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Refreshing tasks...
+        </div>
+      )}
 
-        return <LevelCard key={uniqueKey} level={level} isLocked={false} />;
-      })}
-
-      {foundationLevels.length === 0 &&
-        (filter === "completed" || filter === "incomplete" ? (
+      {/* Empty states */}
+      {groupedLevels.length === 0 &&
+        (searchInput ? (
+          <StateDisplay
+            variant="no-results"
+            description={`No start journey tasks match "${searchInput}". Try a different search.`}
+            action={
+              <Button variant="outline" size="sm" onClick={clearSearch}>
+                Clear search
+              </Button>
+            }
+          />
+        ) : filter !== "all" ? (
           <StateDisplay variant="no-results" />
         ) : (
           <StateDisplay variant="no-tasks" />
         ))}
+
+      {/* Task levels */}
+      {groupedLevels.map((level) => (
+        <LevelCard
+          key={level.name}
+          name={level.name}
+          tasks={level.tasks}
+          isLocked={false}
+        />
+      ))}
     </div>
   );
 }

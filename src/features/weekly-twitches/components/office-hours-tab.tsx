@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useOfficeHoursList, useOfficeHoursMutations } from "../hooks";
+import { formatTime } from "../lib/format-time";
 import type { OfficeHoursItem } from "../schemas";
 import { OfficeHoursDetailDialog } from "./office-hours-detail-dialog";
 import { OfficeHoursForm } from "./office-hours-form";
@@ -31,6 +32,7 @@ const COLUMNS = [
   { column: "title", Label: "Title", isSortable: false, width: "w-52" },
   { column: "performer", Label: "Performer", isSortable: false, width: "w-36" },
   { column: "date", Label: "Date", isSortable: false, width: "w-28" },
+  { column: "time", Label: "Time", isSortable: false, width: "w-20" },
   { column: "status", Label: "Status", isSortable: false, width: "w-28" },
   {
     column: "interest_groups",
@@ -67,6 +69,7 @@ export function OfficeHoursTab() {
 
   const tableRows: Data[] = rows.map((r) => ({
     ...r,
+    time: formatTime(r.time),
     interest_groups: (r.interest_groups ?? []).join(", "),
   }));
 
@@ -150,6 +153,14 @@ export function OfficeHoursTab() {
         columnOrder={COLUMNS}
         id={["id"]}
         customCellRender={(column, row) => {
+          if (column === "time") {
+            const t = String(row.time ?? "");
+            return t ? (
+              <span>{t}</span>
+            ) : (
+              <span className="text-muted-foreground">—</span>
+            );
+          }
           if (column === "status") {
             const s = String(row.status ?? "");
             return (

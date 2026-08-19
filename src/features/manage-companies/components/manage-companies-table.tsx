@@ -216,10 +216,10 @@ export default function ManageCompaniesTable() {
 
   // ── Data ──────────────────────────────────────────────────────
   const { data, isLoading } = useCompanyVerificationList({
-    pageIndex: currentPage,
-    perPage,
+    page: currentPage,
+    per_page: perPage,
     search,
-    sortBy: sort,
+    sort_by: sort,
     status: statusFilter,
   });
 

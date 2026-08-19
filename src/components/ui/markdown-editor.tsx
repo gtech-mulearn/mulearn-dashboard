@@ -250,45 +250,49 @@ export function MarkdownEditor({
   return (
     <div className={cn("rounded-lg border bg-background", className)}>
       {/* Tab bar + toolbar */}
-      <div className="flex items-center gap-1 border-b px-2 py-1.5">
+      <div className="flex items-center gap-1 border-b px-2 py-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <button
           type="button"
           onClick={() => setTab("write")}
+          aria-label="Write"
+          aria-pressed={tab === "write"}
           className={cn(
-            "inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+            "inline-flex h-7 w-7 shrink-0 items-center justify-center gap-1 rounded-md px-0 text-xs font-medium transition-colors md:w-auto md:px-2.5",
             tab === "write"
               ? "bg-muted text-foreground"
               : "text-muted-foreground hover:text-foreground",
           )}
         >
-          <Pencil className="h-3 w-3" />
-          Write
+          <Pencil className="h-3.5 w-3.5" />
+          <span className="hidden md:inline">Write</span>
         </button>
         <button
           type="button"
           onClick={() => setTab("preview")}
+          aria-label="Preview"
+          aria-pressed={tab === "preview"}
           className={cn(
-            "inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+            "inline-flex h-7 w-7 shrink-0 items-center justify-center gap-1 rounded-md px-0 text-xs font-medium transition-colors md:w-auto md:px-2.5",
             tab === "preview"
               ? "bg-muted text-foreground"
               : "text-muted-foreground hover:text-foreground",
           )}
         >
-          <Eye className="h-3 w-3" />
-          Preview
+          <Eye className="h-3.5 w-3.5" />
+          <span className="hidden md:inline">Preview</span>
         </button>
 
         {tab === "write" && (
           <>
-            <div className="mx-1 h-4 w-px bg-border" />
-            <div className="flex items-center gap-0.5">
+            <div className="mx-1 h-4 w-px bg-border shrink-0" />
+            <div className="flex items-center gap-0.5 shrink-0">
               {TOOLBAR_ACTIONS.map((action) => (
                 <Button
                   key={action.label}
                   type="button"
                   variant="secondary"
                   size="icon"
-                  className="h-7 w-7"
+                  className="h-7 w-7 shrink-0"
                   title={action.label}
                   onClick={() => applyAction(action)}
                 >

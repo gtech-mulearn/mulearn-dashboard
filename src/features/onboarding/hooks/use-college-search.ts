@@ -13,7 +13,9 @@ import { onboardingKeys } from "./query-keys";
 
 /**
  * Hook for server-side searching colleges by name.
- * Debounces the query and only hits the API once 2+ chars are typed.
+ * Debounces the query; fetches immediately (even with an empty search) so
+ * the combobox shows suggestions as soon as it opens, matching the
+ * Organization Name combobox's behavior.
  */
 export function useCollegeSearch(search: string) {
   const debouncedSearch = useDebounce(search, 300);
@@ -24,7 +26,6 @@ export function useCollegeSearch(search: string) {
       const response = await searchColleges(debouncedSearch);
       return response.response.data;
     },
-    enabled: debouncedSearch.trim().length >= 2,
     staleTime: 60 * 1000,
   });
 }

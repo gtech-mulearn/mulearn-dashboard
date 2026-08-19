@@ -21,10 +21,12 @@ export async function POST() {
     }
   }
 
+  // Must mirror the attributes used when setting these cookies
+  // (lib/auth/token-store.ts) so the deletions actually match.
   const cookieOptions = {
     path: "/",
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict" as const,
+    sameSite: "lax" as const,
   };
   cookieStore.delete({ name: "accessToken", ...cookieOptions });
   cookieStore.delete({ name: "refreshToken", ...cookieOptions });

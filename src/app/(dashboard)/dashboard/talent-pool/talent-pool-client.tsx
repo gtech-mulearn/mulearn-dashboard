@@ -86,6 +86,7 @@ interface FiltersDropdownProps {
 }
 
 function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
+  const [open, setOpen] = useState(false);
   const activeCount = Object.values(filters).filter(Boolean).length;
 
   const { data: igResponse, isLoading: isLoadingIgs } = useQuery({
@@ -101,7 +102,7 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
     });
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2 h-9 text-sm">
           <Filter className="h-3.5 w-3.5" />
@@ -134,7 +135,10 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup
           value={filters.sortBy || "-karma"}
-          onValueChange={(v) => onChange({ ...filters, sortBy: v })}
+          onValueChange={(v) => {
+            onChange({ ...filters, sortBy: v });
+            setOpen(false);
+          }}
         >
           <DropdownMenuRadioItem value="-karma" className="text-xs">
             Karma (High to Low)
@@ -180,12 +184,13 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
         <div className="p-2">
           <Select
             value={filters.level ? String(filters.level) : "all"}
-            onValueChange={(val) =>
+            onValueChange={(val) => {
               onChange({
                 ...filters,
                 level: val === "all" ? undefined : parseInt(val, 10),
-              })
-            }
+              });
+              setOpen(false);
+            }}
           >
             <SelectTrigger className="w-full h-8 text-xs bg-transparent">
               <SelectValue placeholder="Min Level Order" />
@@ -227,12 +232,13 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
         <div className="p-2">
           <Select
             value={filters.ig || "all"}
-            onValueChange={(val) =>
+            onValueChange={(val) => {
               onChange({
                 ...filters,
                 ig: val === "all" ? undefined : val,
-              })
-            }
+              });
+              setOpen(false);
+            }}
           >
             <SelectTrigger className="w-full h-8 text-xs bg-transparent">
               <SelectValue placeholder="Interest Group Name" />
@@ -274,12 +280,13 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
         <div className="p-2">
           <Select
             value={filters.achievement || "all"}
-            onValueChange={(val) =>
+            onValueChange={(val) => {
               onChange({
                 ...filters,
                 achievement: val === "all" ? undefined : val,
-              })
-            }
+              });
+              setOpen(false);
+            }}
           >
             <SelectTrigger className="w-full h-8 text-xs bg-transparent">
               <SelectValue placeholder="Achievement UUID" />
@@ -340,7 +347,7 @@ export function TalentPoolPageClient() {
     skill: filters.skill,
     achievement: filters.achievement,
     task: filters.task,
-    sort_by: filters.sortBy,
+    sort_by: filters.sortBy || "-karma",
     page: pageIndex,
     per_page: 24,
   };

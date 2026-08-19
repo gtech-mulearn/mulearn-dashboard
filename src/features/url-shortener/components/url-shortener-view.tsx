@@ -21,8 +21,11 @@ import { UrlShortenerFormModal } from "./url-shortener-form-modal";
 const COLUMNS = [
   { column: "title", Label: "Title", isSortable: true },
   { column: "short_url", Label: "Short URL", isSortable: true },
-  { column: "long_url", Label: "Long URL", isSortable: true },
+  { column: "long_url", Label: "Long URL", isSortable: false },
+  { column: "created_by", Label: "Created By", isSortable: true },
+  { column: "updated_by", Label: "Updated By", isSortable: true },
   { column: "created_at", Label: "Created On", isSortable: true },
+  { column: "updated_at", Label: "Updated On", isSortable: true },
 ] as const;
 
 export default function UrlShortenerView() {

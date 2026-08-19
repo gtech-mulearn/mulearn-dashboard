@@ -6,10 +6,15 @@ import { requireRole } from "@/lib/auth/server";
 export const metadata: Metadata = {
   title: "Weekly Twitches — Manage",
   description:
-    "Manage Office Hours, Salt Mango Tree, and Inspiration Station content.",
+    "Manage Office Hours, Salt Mango Tree, Inspiration Station, and Grab Your Superpowers content.",
 };
 
 export default async function Page() {
-  await requireRole([...MANAGEMENT_ROLES, ROLES.IG_LEAD]);
+  await requireRole([
+    ...MANAGEMENT_ROLES,
+    ROLES.IG_LEAD,
+    ROLES.ZONAL_CAMPUS_LEAD,
+    ROLES.DISTRICT_CAMPUS_LEAD,
+  ]);
   return <WeeklyTwitchesView />;
 }

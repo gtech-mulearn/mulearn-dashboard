@@ -18,11 +18,12 @@ import { manageCompaniesKeys } from "./query-keys";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface UseCompanyVerificationListParams {
-  pageIndex: number;
-  perPage: number;
+  page: number;
+  per_page: number;
   search: string;
-  sortBy: string;
+  sort_by: string;
   status: string;
+  industry_sector?: string;
 }
 
 // ─── Queries ──────────────────────────────────────────────────────────────────

@@ -4,71 +4,49 @@
  * 📍 src/features/mujourney/api/mujourney.api.ts
  *
  * All MuJourney-related API calls with Zod validation.
+ * Uses the redesigned unified task list API: GET /api/v1/dashboard/task/list/
  */
 
-import { apiClient } from "@/api/client";
+import { apiClient, publicApiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
-  GetUserLevelsResponseSchema,
-  PublicListLevelsResponseSchema,
   PublicUserJourneyResponseSchema,
   TaskListResponseSchema,
   UserLevelFeedResponseSchema,
 } from "../schemas";
 
 // ============================================
-// Start Learning (Foundation Tasks)
+// Grouped Task List (Redesigned API)
 // ============================================
 
 /**
- * Fetch user's level progression with tasks (logged-in users)
- * Shows unlocked levels, completed tasks, karma progress
+ * Fetch the grouped task list from the redesigned unified endpoint.
+ * Returns { start_journey, become_expert, events }.
+ *
+ * - Unauthenticated: start_journey only; become_expert and events are []
+ * - Authenticated: all three sections
+ *
+ * @param igId - Optional IG UUID — overrides which IG's tasks appear in become_expert
  */
-export async function fetchUserLevels() {
-  return await apiClient.get(
-    endpoints.mujourney.getUserLevels,
-    GetUserLevelsResponseSchema,
-  );
-}
-
-/**
- * Fetch public levels/tasks (public users, no auth)
- * Shows all foundational tasks across 7 levels
- */
-export async function fetchPublicLevels() {
-  return await apiClient.get(
-    endpoints.mujourney.publicListLevels,
-    PublicListLevelsResponseSchema,
-  );
-}
-
-// ============================================
-// Become Expert (Interest Group Tasks)
-// ============================================
-
-/**
- * Fetch interest-group specific tasks (#cl- hashtags)
- * @param igId - Interest Group ID
- * @param perPage - Items per page (optional)
- */
-export async function fetchIGTasks(igId: string, perPage = 20) {
-  return await apiClient.get(
-    `${endpoints.mujourney.taskList}?ig_id=${igId}&perPage=${perPage}`,
+export async function fetchTaskList(igId?: string, authenticated?: boolean) {
+  const qs = igId ? `?ig_id=${igId}` : "";
+  const client = authenticated ? apiClient : publicApiClient;
+  return await client.get(
+    `${endpoints.mujourney.taskList}${qs}`,
     TaskListResponseSchema,
   );
 }
-
 // ============================================
 // Public Journey
 // ============================================
 
 /**
- * Fetch public user journey by MUID
- * Shows another user's level progression and completed tasks
+ * Fetch public user journey by MUID.
+ * Shows another user's level progression and completed tasks.
  * @param muid - User's MUID
  */
 export async function fetchPublicUserJourney(muid: string) {
-  return await apiClient.get(
+  return await publicApiClient.get(
     endpoints.mujourney.getPublicUserLevels(muid),
     PublicUserJourneyResponseSchema,
   );
@@ -79,7 +57,7 @@ export async function fetchPublicUserJourney(muid: string) {
 // ============================================
 
 /**
- * Fetch user's task completion history/feed
+ * Fetch user's task completion history/feed (for progress bar).
  */
 export async function fetchUserLevelFeed() {
   return await apiClient.get(

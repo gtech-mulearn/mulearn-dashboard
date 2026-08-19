@@ -402,10 +402,12 @@ export function IGRequestFormDialog() {
                       .map(([label, value]) => (
                         <div
                           key={label}
-                          className="grid grid-cols-3 gap-2 px-3 py-2"
+                          className="grid grid-cols-[minmax(7rem,0.8fr)_minmax(0,1fr)] gap-3 px-3 py-2 sm:grid-cols-3"
                         >
-                          <dt className="text-muted-foreground">{label}</dt>
-                          <dd className="col-span-2 wrap-break-word">
+                          <dt className="min-w-0 text-muted-foreground">
+                            {label}
+                          </dt>
+                          <dd className="min-w-0 whitespace-pre-wrap text-right break-words [overflow-wrap:anywhere] sm:col-span-2">
                             {String(value)}
                           </dd>
                         </div>

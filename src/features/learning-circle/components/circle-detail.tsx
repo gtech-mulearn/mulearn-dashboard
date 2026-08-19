@@ -13,6 +13,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Clock,
   Crown,
   Edit,
   Loader2,
@@ -23,7 +24,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -31,13 +32,17 @@ import {
   useCircleMeetings,
   useCircleMembers,
   useCirclePermissions,
+  useIsCirclePendingJoin,
   useJoinCircle,
+  useLeaveMeeting,
+  useRemoveRsvpMeeting,
   useRsvpMeeting,
+  useUserMeetings,
 } from "../hooks";
 import { CreateMeetingModal } from "./create-meeting-modal";
 import { DeleteCircleButton } from "./delete-circle-button";
 import { EditCircleModal } from "./edit-circle-modal";
-import { InviteMemberForm, SentInvitesCard } from "./invite-section";
+import { InviteManagerCard } from "./invite-section";
 import { MeetingCard } from "./meeting-card";
 import { MemberList } from "./member-list";
 import { TransferLeadModal } from "./transfer-lead-modal";
@@ -47,38 +52,51 @@ interface CircleDetailProps {
 }
 
 // TODO: no semantic token — avatar palette colors need design decision; using chart/semantic approximations
-const AVATAR_COLORS = [
-  "bg-success text-primary-foreground",
-  "bg-primary text-primary-foreground",
-  "bg-warning text-primary-foreground",
-  "bg-chart-5 text-primary-foreground",
-  "bg-brand-purple text-primary-foreground",
-  "bg-brand-blue text-primary-foreground",
-  "bg-warning text-primary-foreground",
-  "bg-destructive text-primary-foreground",
-];
-
 function getAvatarColor(name: string) {
+  const colors = [
+    "bg-chart-1 text-primary-foreground",
+    "bg-[#10B981] text-primary-foreground",
+    "bg-warning text-primary-foreground",
+    "bg-destructive text-primary-foreground",
+    "bg-brand-purple text-primary-foreground",
+    "bg-[#06B6D4] text-primary-foreground",
+  ];
   const hash = name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
+  return colors[hash % colors.length];
 }
 
 export function CircleDetail({ circleId }: CircleDetailProps) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCreateMeetingModal, setShowCreateMeetingModal] = useState(false);
   const [showTransferLeadModal, setShowTransferLeadModal] = useState(false);
-  const [showInviteForm, setShowInviteForm] = useState(false);
+  const [_showInviteForm, _setShowInviteForm] = useState(false);
 
   const { data: circle, isLoading } = useCircleDetail(circleId);
   const { data: members } = useCircleMembers(circleId);
   const { data: meetings } = useCircleMeetings(circleId);
+  const { data: userSavedMeetings } = useUserMeetings({ saved: true });
   const rsvpMeeting = useRsvpMeeting();
+  const removeRsvpMeeting = useRemoveRsvpMeeting();
+  const _leaveMeeting = useLeaveMeeting();
   const joinCircle = useJoinCircle();
+  const isPendingJoinHook = useIsCirclePendingJoin(circleId);
 
   const permissions = useCirclePermissions(circle ?? undefined, members);
+  const statusStr = (
+    (circle as { status?: string })?.status || ""
+  ).toLowerCase();
+  const isPendingJoin = statusStr === "pending" || isPendingJoinHook;
+
+  const rsvpdMeetingIds = useMemo(() => {
+    return new Set(userSavedMeetings?.map((m) => m.id) ?? []);
+  }, [userSavedMeetings]);
 
   const handleJoin = () => joinCircle.mutate(circleId);
   const handleRsvp = (meetingId: string) => rsvpMeeting.mutate(meetingId);
+  const handleRemoveRsvp = (meetingId: string) =>
+    removeRsvpMeeting.mutate(meetingId);
+  const handleCancelRsvp = (meetingId: string) =>
+    removeRsvpMeeting.mutate(meetingId);
 
   if (isLoading || !circle) {
     return (
@@ -90,6 +108,19 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
 
   const hasDescription =
     circle.description && circle.description !== circle.title;
+
+  const circleLead =
+    members?.owner ||
+    members?.members?.find((m) => m.is_leader) ||
+    circle.created_by;
+
+  const handleFocusInviteInput = () => {
+    const inputEl = document.getElementById("send-muid");
+    if (inputEl) {
+      inputEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      inputEl.focus();
+    }
+  };
 
   return (
     <div className="w-full pb-12">
@@ -125,6 +156,11 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
                   <span className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-[13px] font-semibold text-foreground">
                     <Check className="h-4 w-4 text-success" />
                     {`Joined as ${permissions.role === "lead" ? "Lead" : "Member"}`}
+                  </span>
+                ) : isPendingJoin ? (
+                  <span className="inline-flex items-center gap-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-1.5 text-[13px] font-semibold text-warning">
+                    <Clock className="h-4 w-4 text-warning" />
+                    Requested
                   </span>
                 ) : (
                   <Button
@@ -182,27 +218,30 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
                 <span className="w-32 shrink-0 text-[14px] text-muted-foreground">
                   Circle Lead
                 </span>
-                <div className="flex min-w-0 -space-x-1.5">
+                <Link
+                  href={circleLead.muid ? `/profile/${circleLead.muid}` : "#"}
+                  className="flex min-w-0 -space-x-1.5 hover:opacity-80 transition-opacity cursor-pointer"
+                >
                   <div className="relative h-7 w-7 rounded-full border-2 border-card bg-muted overflow-hidden">
-                    {circle.created_by.profile_pic ? (
+                    {circleLead.profile_pic ? (
                       <Image
-                        src={circle.created_by.profile_pic}
-                        alt=""
+                        src={circleLead.profile_pic}
+                        alt={circleLead.full_name}
                         fill
                         className="object-cover"
                       />
                     ) : (
                       <div
-                        className={`flex h-full w-full items-center justify-center text-[10px] font-bold ${getAvatarColor(circle.created_by.full_name)}`}
+                        className={`flex h-full w-full items-center justify-center text-[10px] font-bold ${getAvatarColor(circleLead.full_name)}`}
                       >
-                        {circle.created_by.full_name.charAt(0)}
+                        {circleLead.full_name.charAt(0)}
                       </div>
                     )}
                   </div>
-                  <span className="ml-3 min-w-0 truncate text-[14px] font-semibold text-foreground self-center">
-                    {circle.created_by.full_name}
+                  <span className="ml-3 min-w-0 truncate text-[14px] font-semibold text-foreground self-center hover:text-primary transition-colors">
+                    {circleLead.full_name}
                   </span>
-                </div>
+                </Link>
               </div>
 
               {/* Tags / Metrics */}
@@ -289,14 +328,25 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
 
               {meetings && meetings.length > 0 ? (
                 <div className="space-y-4">
-                  {meetings.map((meeting) => (
-                    <MeetingCard
-                      key={meeting.id}
-                      meeting={meeting}
-                      onRsvp={handleRsvp}
-                      isRsvpLoading={rsvpMeeting.isPending}
-                    />
-                  ))}
+                  {meetings.map((meeting) => {
+                    const isRsvpd = Boolean(
+                      meeting.is_rsvp || rsvpdMeetingIds.has(meeting.id),
+                    );
+                    const meetingWithRsvp = { ...meeting, is_rsvp: isRsvpd };
+
+                    return (
+                      <MeetingCard
+                        key={meeting.id}
+                        meeting={meetingWithRsvp}
+                        onRsvp={handleRsvp}
+                        onRemoveRsvp={handleRemoveRsvp}
+                        onCancelRsvp={handleCancelRsvp}
+                        isRsvpLoading={
+                          rsvpMeeting.isPending || removeRsvpMeeting.isPending
+                        }
+                      />
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center rounded-xl bg-muted border border-border border-dashed px-6 py-10 text-center">
@@ -333,34 +383,16 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
               Members
             </h3>
 
-            {/* Hidden-by-default Invite Form */}
-            {permissions.canSendInvites && (
-              <div
-                className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                  showInviteForm
-                    ? "max-h-40 opacity-100 mb-4"
-                    : "max-h-0 opacity-0 mb-0"
-                }`}
-              >
-                <div className="border border-border rounded-xl p-3 bg-muted/50 mb-2">
-                  <InviteMemberForm
-                    circleId={circleId}
-                    onSent={() => setShowInviteForm(false)}
-                  />
-                </div>
-              </div>
-            )}
-
             <MemberList
               circleId={circleId}
               permissions={permissions}
-              onInviteClick={() => setShowInviteForm(!showInviteForm)}
+              onInviteClick={handleFocusInviteInput}
             />
           </div>
 
-          {/* ── Sent Invites Card (Team Goal style) ── */}
+          {/* ── Single Unified Invitations & Requests Manager Card ── */}
           {permissions.canSendInvites && (
-            <SentInvitesCard circleId={circleId} />
+            <InviteManagerCard circleId={circleId} permissions={permissions} />
           )}
 
           {/* ── Admin Actions ── */}

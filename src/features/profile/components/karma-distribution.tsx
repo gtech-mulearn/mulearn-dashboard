@@ -3,14 +3,17 @@
  *
  * 📍 src/features/profile/components/karma-distribution.tsx
  *
- * Donut chart of karma broken down straight from the API's split fields —
- * no derived buckets, just what `org_ig_karma_split`, `event_karma_split`,
- * `intern_karma`, and `general_enablement_karma` already report.
+ * Donut chart of karma broken down from the API's nested
+ * `karma_distribution` object — events, ig, intern, general,
+ * and level slices. No derived buckets, just what the API reports.
  *
  * Layout: chart left / legend right on desktop, chart above legend on
  * mobile. Total karma sits fixed in the donut's center. On desktop only,
  * hovering either the ring or a legend row brightens that slice — mobile
  * gets no touch interaction, just a static readable chart + legend.
+ *
+ * Desktop legend is a vertical list with scroll when items exceed 9.
+ * Mobile legend is a scrollable vertical list.
  */
 
 "use client";
@@ -26,8 +29,8 @@ interface KarmaDistributionProps {
 
 /**
  * The shared --chart-1..5 tokens only give 5 distinct hues, but this chart
- * commonly has 6 slices (up to 5 IGs collapsed + event/intern/general). Add
- * --success as a 6th, already-themed color not otherwise used in charts.
+ * commonly has more slices. Add --success as a 6th, already-themed color
+ * not otherwise used in charts.
  */
 const SLICE_COLORS = [...CHART_SERIES.map((c) => c.token), "var(--success)"];
 const sliceColor = (index: number) =>
@@ -48,23 +51,32 @@ function useIsDesktop() {
   return isDesktop;
 }
 
+/** Match browser-breakdown pattern: scroll when legend items exceed this count. */
+const LEGEND_SCROLL_THRESHOLD = 9;
+
 export function KarmaDistribution({ profile }: KarmaDistributionProps) {
   const isDesktop = useIsDesktop();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const chartData = useMemo(() => {
+    const kd = profile.karma_distribution;
+
     const slices = [
-      ...profile.org_ig_karma_split.map((ig) => ({
+      ...kd.ig.map((ig) => ({
         name: ig.ig_name,
         value: ig.karma,
       })),
-      ...profile.event_karma_split.map((event) => ({
-        name: event.event_name ?? "Event Task",
+      ...kd.events.map((event) => ({
+        name: event.event_title,
         value: event.karma,
       })),
-      { name: "Intern Task", value: profile.intern_karma },
-      { name: "General Enablement", value: profile.general_enablement_karma },
+      { name: "Intern Task", value: kd.intern.karma },
+      ...kd.general.map((g) => ({
+        name: g.category,
+        value: g.karma,
+      })),
     ];
+
     const seen = new Map<string, number>();
     return slices
       .filter((slice) => slice.value > 0)
@@ -175,33 +187,49 @@ export function KarmaDistribution({ profile }: KarmaDistributionProps) {
           </div>
         </div>
 
-        {/* Legend */}
-        <ul className="w-full min-w-0 space-y-1 sm:max-w-[13rem] max-h-40 overflow-y-auto sm:max-h-none sm:overflow-visible">
-          {chartData.map((entry, index) => (
-            <li key={entry.id}>
-              <button
-                type="button"
-                disabled={!isDesktop}
-                onMouseEnter={() => isDesktop && setActiveIndex(index)}
-                onMouseLeave={() => isDesktop && setActiveIndex(null)}
-                className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors ${
-                  isDesktop ? "hover:bg-muted" : ""
-                } ${activeIndex === index ? "bg-muted" : ""}`}
+        {/* Legend — vertical list with scroll on both desktop and mobile */}
+        {(() => {
+          const scrollable = chartData.length > LEGEND_SCROLL_THRESHOLD;
+          return (
+            <div className="w-full min-w-0 max-w-[13rem]">
+              <ul
+                className={`w-full min-w-0 space-y-1 overflow-y-auto ${
+                  scrollable ? "max-h-40" : ""
+                }`}
               >
-                <span
-                  className="size-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: sliceColor(index) }}
-                />
-                <span className="min-w-0 flex-1 truncate text-foreground">
-                  {entry.name}
-                </span>
-                <span className="shrink-0 font-semibold text-muted-foreground">
-                  {entry.value.toLocaleString()}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
+                {chartData.map((entry, index) => (
+                  <li key={entry.id}>
+                    <button
+                      type="button"
+                      disabled={!isDesktop}
+                      onMouseEnter={() => isDesktop && setActiveIndex(index)}
+                      onMouseLeave={() => isDesktop && setActiveIndex(null)}
+                      className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors ${
+                        isDesktop ? "hover:bg-muted" : ""
+                      } ${activeIndex === index ? "bg-muted" : ""}`}
+                    >
+                      <span
+                        className="size-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: sliceColor(index) }}
+                      />
+                      <span className="min-w-0 flex-1 truncate text-foreground">
+                        {entry.name}
+                      </span>
+                      <span className="shrink-0 font-semibold text-muted-foreground">
+                        {entry.value.toLocaleString()}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              {scrollable && (
+                <p className="mt-1 text-center text-[10px] text-muted-foreground">
+                  Scroll to see more
+                </p>
+              )}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

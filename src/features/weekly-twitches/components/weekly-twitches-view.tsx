@@ -10,14 +10,20 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CampusContentTab } from "./campus-content-tab";
+import { GysTab } from "./gys-tab";
 import { OfficeHoursTab } from "./office-hours-tab";
 
-type TabValue = "office-hours" | "salt-mango-tree" | "inspiration-station";
+type TabValue =
+  | "office-hours"
+  | "salt-mango-tree"
+  | "inspiration-station"
+  | "grab-your-superpowers";
 
 const TAB_OPTIONS: { value: TabValue; label: string }[] = [
   { value: "office-hours", label: "Office Hours" },
   { value: "salt-mango-tree", label: "Salt Mango Tree" },
   { value: "inspiration-station", label: "Inspiration Station Radio" },
+  { value: "grab-your-superpowers", label: "Grab Your Superpowers" },
 ];
 
 export function WeeklyTwitchesView() {
@@ -28,8 +34,8 @@ export function WeeklyTwitchesView() {
       <div>
         <h1 className="text-2xl font-bold text-foreground">Weekly Twitches</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Manage Office Hours, Salt Mango Tree, and Inspiration Station Radio
-          content.
+          Manage Office Hours, Salt Mango Tree, Inspiration Station Radio, and
+          Grab Your Superpowers content.
         </p>
       </div>
 
@@ -79,6 +85,10 @@ export function WeeklyTwitchesView() {
 
         <TabsContent value="inspiration-station" className="mt-4">
           <CampusContentTab contentType="isr" />
+        </TabsContent>
+
+        <TabsContent value="grab-your-superpowers" className="mt-4">
+          <GysTab />
         </TabsContent>
       </Tabs>
     </div>

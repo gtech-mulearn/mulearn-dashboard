@@ -260,14 +260,21 @@ export function useBulkIssue() {
       queryClient.invalidateQueries({
         queryKey: ACHIEVEMENT_KEYS.issuedLogsAll(),
       });
+
+      const parts: string[] = [];
+      if (data.success_count > 0) parts.push(`${data.success_count} issued`);
+      if (data.eligibility_granted_count > 0)
+        parts.push(
+          `${data.eligibility_granted_count} granted eligibility (pending claim)`,
+        );
+      const summary = parts.length > 0 ? parts.join(", ") : "Nothing to do";
+
       if (data.failed_count > 0) {
         toast.warning(
-          `Bulk issue processed: ${data.success_count} succeeded, ${data.failed_count} failed.`,
+          `Bulk issue processed: ${summary}, ${data.failed_count} failed.`,
         );
       } else {
-        toast.success(
-          `Successfully issued ${data.success_count} achievements!`,
-        );
+        toast.success(`Bulk issue complete: ${summary}.`);
       }
     },
     onError: (error) => {

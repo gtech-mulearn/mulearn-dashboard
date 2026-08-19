@@ -18,7 +18,10 @@
 import { useState } from "react";
 import Loader from "@/app/loading";
 import { useMentorSessions } from "@/features/home/hooks";
-import { useMentorOverview } from "@/features/mentor/hooks";
+import {
+  useMentorOverview,
+  useProfileCompletion,
+} from "@/features/mentor/hooks";
 import {
   useMentorApplicationStatus,
   useMentorProfile,
@@ -26,6 +29,10 @@ import {
 import { useUserProfile } from "@/features/profile";
 import { ShareProfileModal } from "@/features/profile/components/share-profile-modal";
 import { MentorEditProfileModal } from "./mentor-edit-profile-modal";
+import {
+  MentorProfileCompletion,
+  MentorProfileCompletionSkeleton,
+} from "./mentor-profile-completion";
 import { MentorProfileHeader } from "./mentor-profile-header";
 import { MentorProfileSidebar } from "./mentor-profile-sidebar";
 import {
@@ -73,6 +80,9 @@ export function MentorProfilePage({
   const { data: statusData, isLoading: loadingStatus } =
     useMentorApplicationStatus();
 
+  const { data: completionData, isLoading: loadingCompletion } =
+    useProfileCompletion();
+
   const isLoading =
     loadingUser || loadingMentor || loadingOverview || loadingStatus;
 
@@ -107,6 +117,19 @@ export function MentorProfilePage({
           onSwitchToLearner={onSwitchToLearner}
         />
       </div>
+
+      {/* Profile Completion — hidden once 100% complete */}
+      {loadingCompletion ? (
+        <MentorProfileCompletionSkeleton />
+      ) : (
+        completionData &&
+        completionData.percentage < 100 && (
+          <MentorProfileCompletion
+            data={completionData}
+            onEdit={() => setShowEdit(true)}
+          />
+        )
+      )}
 
       {/* Stats Row */}
       <MentorStatsRow

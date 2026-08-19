@@ -228,7 +228,7 @@ export function RoleVerificationActions({
                       Country
                     </h4>
                     <p className="text-sm font-medium break-words">
-                      {item.country || "N/A"}
+                      {item.country?.name || "N/A"}
                     </p>
                   </div>
                   <div>
@@ -236,7 +236,7 @@ export function RoleVerificationActions({
                       State
                     </h4>
                     <p className="text-sm font-medium break-words">
-                      {item.state || "N/A"}
+                      {item.state?.name || "N/A"}
                     </p>
                   </div>
                   <div>
@@ -244,7 +244,7 @@ export function RoleVerificationActions({
                       District
                     </h4>
                     <p className="text-sm font-medium break-words">
-                      {item.district || "N/A"}
+                      {item.district?.name || "N/A"}
                     </p>
                   </div>
                 </div>

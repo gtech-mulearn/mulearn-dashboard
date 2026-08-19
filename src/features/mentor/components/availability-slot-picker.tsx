@@ -8,13 +8,13 @@ import { cn } from "@/lib/utils";
 import type { TimeSlot, WeeklySchedule } from "../types";
 
 const DAYS: { label: string; short: string; num: number }[] = [
-  { label: "Sunday", short: "Sun", num: 0 },
   { label: "Monday", short: "Mon", num: 1 },
   { label: "Tuesday", short: "Tue", num: 2 },
   { label: "Wednesday", short: "Wed", num: 3 },
   { label: "Thursday", short: "Thu", num: 4 },
   { label: "Friday", short: "Fri", num: 5 },
   { label: "Saturday", short: "Sat", num: 6 },
+  { label: "Sunday", short: "Sun", num: 7 },
 ];
 
 const DEFAULT_SLOT: TimeSlot = { start: "09:00", end: "17:00" };
@@ -304,6 +304,7 @@ export function AvailabilitySlotPicker({ value, onChange, disabled }: Props) {
                                 value={slot.start}
                                 aria-label={`${label} slot ${idx + 1} start`}
                                 disabled={disabled}
+                                showSetButton={true}
                                 onChange={(val) =>
                                   onChange(
                                     updateSlot(value, num, idx, {
@@ -318,6 +319,7 @@ export function AvailabilitySlotPicker({ value, onChange, disabled }: Props) {
                                 value={slot.end}
                                 aria-label={`${label} slot ${idx + 1} end`}
                                 disabled={disabled}
+                                showSetButton={true}
                                 onChange={(val) =>
                                   onChange(
                                     updateSlot(value, num, idx, {
@@ -336,9 +338,9 @@ export function AvailabilitySlotPicker({ value, onChange, disabled }: Props) {
                               }
                               disabled={disabled}
                               aria-label="Remove time slot"
-                              className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full bg-destructive text-destructive-foreground opacity-0 shadow-sm transition-opacity group-hover:opacity-100 disabled:pointer-events-none"
+                              className="absolute -right-2 -top-2 flex size-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground opacity-0 shadow-sm transition-opacity group-hover:opacity-100 disabled:pointer-events-none cursor-pointer hover:bg-destructive/90"
                             >
-                              <Trash2 className="size-2" />
+                              <Trash2 className="size-3" />
                             </button>
                             {overlappingIdx.has(idx) && (
                               <p className="mt-1 text-[10px] font-medium text-destructive">

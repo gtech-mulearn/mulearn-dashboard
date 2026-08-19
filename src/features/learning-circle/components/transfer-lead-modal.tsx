@@ -34,17 +34,19 @@ export function TransferLeadModal({
 }: TransferLeadModalProps) {
   const { data: members } = useCircleMembers(circleId);
   const transferLead = useTransferLead(circleId);
-  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [selectedMemberMuid, setSelectedMemberMuid] = useState<string | null>(
+    null,
+  );
 
   const candidates = members?.members?.filter((m) => !m.is_leader) ?? [];
 
   const handleTransfer = () => {
-    if (!selectedMemberId) return;
+    if (!selectedMemberMuid) return;
     transferLead.mutate(
-      { muid: selectedMemberId },
+      { muid: selectedMemberMuid },
       {
         onSuccess: () => {
-          setSelectedMemberId(null);
+          setSelectedMemberMuid(null);
           onOpenChange(false);
         },
       },
@@ -84,10 +86,10 @@ export function TransferLeadModal({
               <button
                 key={member.id}
                 type="button"
-                onClick={() => setSelectedMemberId(member.id)}
+                onClick={() => setSelectedMemberMuid(member.muid)}
                 className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left transition-all duration-150
                   ${
-                    selectedMemberId === member.id
+                    selectedMemberMuid === member.muid
                       ? "bg-primary/5 ring-1 ring-primary/20"
                       : "bg-muted hover:bg-muted/80"
                   }`}
@@ -114,7 +116,7 @@ export function TransferLeadModal({
                     {(member.ig_karma ?? 0).toLocaleString()} karma
                   </p>
                 </div>
-                {selectedMemberId === member.id && (
+                {selectedMemberMuid === member.muid && (
                   <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary">
                     <svg
                       className="h-3 w-3 text-primary-foreground"
@@ -150,7 +152,7 @@ export function TransferLeadModal({
             type="button"
             variant="default"
             onClick={handleTransfer}
-            disabled={!selectedMemberId || transferLead.isPending}
+            disabled={!selectedMemberMuid || transferLead.isPending}
           >
             {transferLead.isPending && <Spinner className="h-3.5 w-3.5" />}
             Transfer Lead

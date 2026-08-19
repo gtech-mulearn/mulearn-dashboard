@@ -2,16 +2,17 @@ import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import { updateCompanyRegistration } from "@/features/auth/api/register.api";
 import type { CompanySignupRequest } from "@/features/auth/schemas";
-import { CompanyProfileResponseSchema } from "@/features/company-jobs/schemas";
+import { UpdateCompanyProfileResponseSchema } from "@/features/company-jobs/schemas";
 import type { CompanyProfile } from "@/features/company-jobs/types";
 import type { ProfileEditFormValues } from "../schemas";
 
 export async function updateCompanyProfile(
-  payload: Partial<ProfileEditFormValues>,
+  payload: Partial<ProfileEditFormValues> | Partial<CompanyProfile>,
   status?: string,
 ) {
   // Strip out non-editable fields to prevent API rejection
-  const { slug, verification_document_url, ...allowedPayload } = payload;
+  const { slug, verification_document_url, ...allowedPayload } =
+    payload as Record<string, unknown>;
 
   if (status === "pending" || status === "rejected") {
     // Strip out undefined/null/empty values to avoid validation errors
@@ -34,12 +35,15 @@ export async function updateCompanyProfile(
   const res = await apiClient.patch(
     endpoints.company.profile,
     allowedPayload,
-    CompanyProfileResponseSchema,
+    UpdateCompanyProfileResponseSchema,
   );
   return {
-    data: res.response,
+    data: res.response as unknown as CompanyProfile,
     message:
+      res.general_message ||
       (res as { message?: { general?: string[] } }).message?.general?.[0] ||
-      "Company profile updated successfully",
+      "Company profile updated successfully.",
   };
 }
+
+export const patchCompanyProfile = updateCompanyProfile;

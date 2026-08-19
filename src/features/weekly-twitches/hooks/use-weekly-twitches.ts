@@ -9,21 +9,29 @@ import {
 import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
+  createGys,
   createIs,
   createOfficeHours,
   createSmt,
+  deleteGys,
   deleteIs,
   deleteOfficeHours,
   deleteSmt,
+  fetchGysList,
   fetchIsList,
   fetchOfficeHoursList,
   fetchSmtList,
   type ListParams,
+  updateGys,
   updateIs,
   updateOfficeHours,
   updateSmt,
 } from "../api";
-import type { CampusContentWrite, OfficeHoursWrite } from "../schemas";
+import type {
+  CampusContentWrite,
+  GysWrite,
+  OfficeHoursWrite,
+} from "../schemas";
 import { weeklyTwitchesKeys } from "./query-keys";
 
 // ─── Office Hours ─────────────────────────────────────────────
@@ -244,6 +252,73 @@ export function useIsMutations() {
       toast.error(
         getApiResponseError(error, {
           fallback: "Failed to delete Inspiration Station episode.",
+        }),
+      );
+    },
+  });
+
+  return { create, update, remove };
+}
+
+// ─── Grab Your Superpowers ──────────────────────────────────────
+
+export function useGysList(params: ListParams) {
+  return useQuery({
+    queryKey: weeklyTwitchesKeys.gysList(params),
+    queryFn: () => fetchGysList(params),
+    placeholderData: keepPreviousData,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useGysMutations() {
+  const qc = useQueryClient();
+  const invalidate = () =>
+    qc.invalidateQueries({ queryKey: weeklyTwitchesKeys.gys() });
+
+  const create = useMutation({
+    mutationFn: (payload: GysWrite) => createGys(payload),
+    onSuccess: () => {
+      toast.success("Grab Your Superpowers session created.");
+      invalidate();
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to create Grab Your Superpowers session.",
+        }),
+      );
+    },
+  });
+
+  const update = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<GysWrite> }) =>
+      updateGys(id, data),
+    onSuccess: () => {
+      toast.success("Grab Your Superpowers session updated.");
+      invalidate();
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to update Grab Your Superpowers session.",
+        }),
+      );
+    },
+  });
+
+  const remove = useMutation({
+    mutationFn: (id: string) => deleteGys(id),
+    onSuccess: () => {
+      toast.success("Grab Your Superpowers session deleted.");
+      invalidate();
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to delete Grab Your Superpowers session.",
         }),
       );
     },

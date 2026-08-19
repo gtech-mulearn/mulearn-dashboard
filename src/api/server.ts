@@ -48,17 +48,19 @@ async function refreshAndSetToken(): Promise<string | null> {
 
     if (newAccessToken) {
       const isProduction = process.env.NODE_ENV === "production";
+      // "lax", not "strict" — see the rationale in lib/auth/token-store.ts.
+      // Re-setting these as Strict here would silently re-break OAuth returns.
       cookieStore.set("accessToken", newAccessToken, {
         httpOnly: true,
         expires: new Date(Date.now() + 86_400_000),
         secure: isProduction,
-        sameSite: "strict",
+        sameSite: "lax",
         path: "/",
       });
       cookieStore.set("isAuthenticated", "true", {
         expires: new Date(Date.now() + 86_400_000),
         secure: isProduction,
-        sameSite: "strict",
+        sameSite: "lax",
         path: "/",
       });
       return newAccessToken;

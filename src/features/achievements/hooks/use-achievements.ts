@@ -6,6 +6,7 @@ import {
   fetchAchievements,
   fetchAllAchievementsForUser,
   fetchEligibleAchievements,
+  fetchQseverseTemplates,
   fetchRules,
   fetchSingleRule,
   fetchUserAchievements,
@@ -45,6 +46,8 @@ export const ACHIEVEMENT_KEYS = {
     [...ACHIEVEMENT_KEYS.all, "all-for-user", userId] as const,
   singleRule: (ruleId: string) =>
     [...ACHIEVEMENT_KEYS.all, "rule", ruleId] as const,
+  qseverseTemplates: () =>
+    [...ACHIEVEMENT_KEYS.all, "qseverse-templates"] as const,
 } as const;
 
 // ==========================================
@@ -168,6 +171,23 @@ export function useAchievementProgress() {
   return useQuery({
     queryKey: ACHIEVEMENT_KEYS.progress(),
     queryFn: fetchAchievementProgress,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+// ==========================================
+// useQseverseTemplates
+// Only fetched when the admin opts into QSeverse-templated creation, so pass
+// `enabled` explicitly (e.g. the "Use QSeverse Template" switch state).
+// ==========================================
+
+export function useQseverseTemplates(enabled: boolean) {
+  return useQuery({
+    queryKey: ACHIEVEMENT_KEYS.qseverseTemplates(),
+    queryFn: fetchQseverseTemplates,
+    enabled,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
     refetchOnWindowFocus: false,

@@ -5,123 +5,89 @@
  *
  * 📍 src/features/mujourney/components/EventsTab.tsx
  *
- * Shows event-based tasks — either linked to an event (event/event_id set)
- * or using the #evn hashtag convention — paginated client-side.
+ * Displays event-linked tasks from the events section of the task list API.
+ * No pagination (API returns full list). Client-side search + level grouping.
  */
 
-import { Calendar, Search, X } from "lucide-react";
+import { Calendar, Loader2, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StateDisplay } from "@/components/ui/state-display";
-import { LevelCard } from "@/features/mujourney/components/LevelCard";
-import type { Task, UserLevelData } from "@/features/mujourney/schemas";
-import { useAllPublicTasks } from "@/features/tasks/hooks";
 import { useDebounce } from "@/hooks/use-debounce";
+import type { TaskListPublic } from "../schemas";
+import { LevelCard } from "./LevelCard";
 
-// ─── Component ─────────────────────────────────────────────────────────
+interface EventsTabProps {
+  tasks?: TaskListPublic[];
+  isLoading?: boolean;
+  isFetching?: boolean;
+  error?: Error | null;
+}
 
-const PAGE_SIZE = 20;
-
-export function EventsTab() {
-  const [currentPage, setCurrentPage] = useState(1);
+export function EventsTab({
+  tasks = [],
+  isLoading,
+  isFetching,
+  error,
+}: EventsTabProps) {
   const [searchInput, setSearchInput] = useState("");
-
   const debouncedSearch = useDebounce(searchInput, 400);
 
-  const { data: allTasks = [], isLoading } = useAllPublicTasks({
-    search: debouncedSearch,
-  });
-
-  const clearSearch = () => {
-    setSearchInput("");
-    setCurrentPage(1);
-  };
-
-  const handleSearch = (val: string) => {
-    setSearchInput(val);
-    setCurrentPage(1);
-  };
-
-  const eventTasks = useMemo(
-    () =>
-      allTasks.filter(
-        (task) =>
-          (task.hashtag || "").startsWith("#evn") ||
-          Boolean(task.event) ||
-          Boolean(task.event_id),
-      ),
-    [allTasks],
-  );
-
-  const totalPages = Math.max(1, Math.ceil(eventTasks.length / PAGE_SIZE));
-  const pageTasks = eventTasks.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
-  );
-
-  // ─── Group tasks by level ───────────────────────────────────────────
-
-  const groupedLevels = useMemo(() => {
-    const map = new Map<string, Task[]>();
-
-    pageTasks.forEach((task) => {
-      const levelNumber = task.level?.match(/\d+/)?.[0] ?? "1";
-      const levelKey = `Lvl ${levelNumber}`;
-
-      if (!map.has(levelKey)) {
-        map.set(levelKey, []);
-      }
-
-      map.get(levelKey)?.push({
-        task_id: task.id,
-        task_name: task.title,
-        task_description: task.description ?? "",
-        karma: task.karma,
-        hashtag: task.hashtag,
-        completed: false,
-        active: task.active,
-        discord_link: task.discord_link,
-        interest_group: task.ig ? { name: task.ig } : undefined,
-        submission_channel: task.channel ? { name: task.channel } : undefined,
-      });
-    });
-
-    const levels: UserLevelData[] = Array.from(map.entries()).map(
-      ([name, levelTasks]) => ({
-        name,
-        karma: 0,
-        tasks: levelTasks,
-      }),
+  // ── Client-side search filtering ──────────────────────────────────────────
+  const filteredTasks = useMemo(() => {
+    if (!debouncedSearch) return tasks;
+    const q = debouncedSearch.toLowerCase();
+    return tasks.filter(
+      (task) =>
+        task.title.toLowerCase().includes(q) ||
+        task.hashtag?.toLowerCase().includes(q) ||
+        task.type?.toLowerCase().includes(q) ||
+        task.ig?.toLowerCase().includes(q) ||
+        task.channel?.toLowerCase().includes(q) ||
+        task.level?.toLowerCase().includes(q) ||
+        task.event?.toLowerCase().includes(q),
     );
+  }, [tasks, debouncedSearch]);
 
-    levels.sort((a, b) => {
-      const numA = parseInt(a.name.match(/\d+/)?.[0] ?? "0", 10);
-      const numB = parseInt(b.name.match(/\d+/)?.[0] ?? "0", 10);
-      return numA - numB;
+  // ── Group by level.name for LevelCard display ─────────────────────────────
+  // API orders by event_fk__title then title; group preserves that order.
+  const groupedLevels = useMemo(() => {
+    const map = new Map<string, TaskListPublic[]>();
+    filteredTasks.forEach((task) => {
+      const key = task.level ?? "General";
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)?.push(task);
     });
+    return Array.from(map.entries()).map(([name, levelTasks]) => ({
+      name,
+      tasks: levelTasks,
+    }));
+  }, [filteredTasks]);
 
-    return levels;
-  }, [pageTasks]);
-
-  // ─── Render ────────────────────────────────────────────────────────
+  const clearSearch = () => setSearchInput("");
 
   return (
     <div className="space-y-5">
-      {/* ── Header ────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 mb-1">
-        <Calendar className="size-5 text-primary" />
-        <h2 className="text-lg font-semibold text-foreground">Event Tasks</h2>
+      {/* ── Header ─────────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between gap-2 mb-1">
+        <div className="flex items-center gap-2">
+          <Calendar className="size-5 text-primary" />
+          <h2 className="text-lg font-semibold text-foreground">Event Tasks</h2>
+        </div>
+        {isFetching && !isLoading && (
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        )}
       </div>
 
-      {/* ── Search ─────────────────────────────────────────────────── */}
+      {/* ── Search ────────────────────────────────────────────────────── */}
       <div className="relative w-full">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
         <Input
           id="event-task-search"
           placeholder="Search by title, hashtag, type, IG, channel, level..."
           value={searchInput}
-          onChange={(e) => handleSearch(e.target.value)}
+          onChange={(e) => setSearchInput(e.target.value)}
           className="pl-9 pr-8 h-9 text-sm"
         />
         {searchInput && (
@@ -136,7 +102,7 @@ export function EventsTab() {
         )}
       </div>
 
-      {/* ── Content ────────────────────────────────────────────────── */}
+      {/* ── Loading */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
           <div className="text-center space-y-4">
@@ -144,11 +110,15 @@ export function EventsTab() {
             <p className="text-muted-foreground">Loading event tasks...</p>
           </div>
         </div>
+      ) : error ? (
+        <div className="flex items-center justify-center py-12">
+          <p className="text-destructive">Failed to load event tasks</p>
+        </div>
       ) : groupedLevels.length === 0 ? (
         searchInput ? (
           <StateDisplay
             variant="no-results"
-            description={`No event tasks match "${searchInput}". Try a different path and keep exploring.`}
+            description={`No event tasks match "${searchInput}". Try a different search.`}
             action={
               <Button variant="outline" size="sm" onClick={clearSearch}>
                 Clear search
@@ -161,36 +131,13 @@ export function EventsTab() {
       ) : (
         <div className="space-y-10">
           {groupedLevels.map((level) => (
-            <LevelCard key={level.name} level={level} isLocked={false} />
+            <LevelCard
+              key={level.name}
+              name={level.name}
+              tasks={level.tasks}
+              isLocked={false}
+            />
           ))}
-        </div>
-      )}
-
-      {/* ── Pagination ─────────────────────────────────────────────── */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-2">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={currentPage <= 1}
-            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-          >
-            Previous
-          </Button>
-          <span className="text-sm text-muted-foreground px-2">
-            Page{" "}
-            <span className="font-semibold text-foreground">{currentPage}</span>{" "}
-            of{" "}
-            <span className="font-semibold text-foreground">{totalPages}</span>
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={currentPage >= totalPages}
-            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-          >
-            Next
-          </Button>
         </div>
       )}
     </div>

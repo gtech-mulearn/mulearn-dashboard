@@ -73,6 +73,8 @@ type LocationRow =
 
 type DropdownOption = { label: string; value: string };
 
+const EMPTY_OPTIONS: DropdownOption[] = [];
+
 type FormData = {
   label: string;
   country: string;
@@ -169,20 +171,28 @@ function LocationContent() {
 
   // ─── Dropdowns ─────────────────────────────────────────────────────────────
 
-  const showCountryField =
-    activeTab === "states" || (editingItem && activeTab !== "countries");
-  const showStateField =
-    activeTab === "zones" || (editingItem && activeTab === "districts");
+  const showCountryField = activeTab === "states";
+  const showStateField = activeTab === "zones";
+
+  const readOnlyCountry =
+    editingItem && (activeTab === "zones" || activeTab === "districts")
+      ? ((editingItem as LocationRow & { country?: string | null }).country ??
+        "—")
+      : null;
+  const readOnlyState =
+    editingItem && activeTab === "districts"
+      ? ((editingItem as LocationRow & { state?: string | null }).state ?? "—")
+      : null;
 
   const needsCountry = open && activeTab === "states";
   const needsState = open && activeTab === "zones";
   const needsZone = open && activeTab === "districts";
 
-  const { data: countryList = [], isLoading: countryListLoading } =
+  const { data: countryList = EMPTY_OPTIONS, isLoading: countryListLoading } =
     useCountryDropdown(needsCountry);
-  const { data: statesList = [], isLoading: statesListLoading } =
+  const { data: statesList = EMPTY_OPTIONS, isLoading: statesListLoading } =
     useStateDropdown(needsState);
-  const { data: zonesList = [], isLoading: zonesListLoading } =
+  const { data: zonesList = EMPTY_OPTIONS, isLoading: zonesListLoading } =
     useZoneDropdown(needsZone);
 
   // ─── Form ──────────────────────────────────────────────────────────────────
@@ -194,18 +204,46 @@ function LocationContent() {
   useEffect(() => {
     if (!open) return;
     if (editingItem) {
+      const item = editingItem as LocationRow & {
+        label?: string;
+        country?: string;
+        state?: string;
+        zone?: string;
+      };
+
+      const countryValue =
+        activeTab === "states"
+          ? ((countryList as DropdownOption[]).find(
+              (c) =>
+                c.label.toLowerCase() === (item.country ?? "").toLowerCase(),
+            )?.value ?? "")
+          : "";
+
+      const stateValue =
+        activeTab === "zones"
+          ? ((statesList as DropdownOption[]).find(
+              (s) => s.label.toLowerCase() === (item.state ?? "").toLowerCase(),
+            )?.value ?? "")
+          : "";
+
+      const zoneValue =
+        activeTab === "districts"
+          ? ((zonesList as DropdownOption[]).find(
+              (z) => z.label.toLowerCase() === (item.zone ?? "").toLowerCase(),
+            )?.value ?? "")
+          : "";
+
       reset({
-        label: (editingItem as LocationRow & { label?: string }).label ?? "",
-        country:
-          (editingItem as LocationRow & { country?: string }).country ?? "",
-        state: (editingItem as LocationRow & { state?: string }).state ?? "",
-        zone: (editingItem as LocationRow & { zone?: string }).zone ?? "",
+        label: item.label ?? "",
+        country: countryValue,
+        state: stateValue,
+        zone: zoneValue,
       });
     } else {
       reset({ label: "", country: "", state: "", zone: "" });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editingItem, open, reset]);
+  }, [editingItem, open, reset, activeTab, countryList, statesList, zonesList]);
 
   // ─── Submit ───────────────────────
 
@@ -215,50 +253,25 @@ function LocationContent() {
 
       if (editingItem) {
         const id = (editingItem as LocationRow & { value: string }).value;
-        const existingCountryLabel =
-          (editingItem as LocationRow & { country?: string }).country ?? "";
-        const existingStateLabel =
-          (editingItem as LocationRow & { state?: string }).state ?? "";
-        const existingZoneLabel =
-          (editingItem as LocationRow & { zone?: string }).zone ?? "";
 
-        const countryId =
-          (countryList as DropdownOption[]).find(
-            (c) => c.label.toLowerCase() === existingCountryLabel.toLowerCase(),
-          )?.value ?? "";
-
-        const stateId =
-          (statesList as DropdownOption[]).find(
-            (s) => s.label.toLowerCase() === existingStateLabel.toLowerCase(),
-          )?.value ?? "";
-
-        const zoneId =
-          (zonesList as DropdownOption[]).find(
-            (z) => z.label.toLowerCase() === existingZoneLabel.toLowerCase(),
-          )?.value ?? "";
-
-        if (activeTab === "states" && !countryId) {
+        if (activeTab === "states" && !country) {
           return;
         }
-        if (activeTab === "zones" && !stateId) {
+        if (activeTab === "zones" && !state) {
           return;
         }
-        if (activeTab === "districts" && !zoneId) {
+        if (activeTab === "districts" && !zone) {
           return;
         }
 
         if (activeTab === "countries") {
           await updateCountry({ id, label });
         } else if (activeTab === "states") {
-          await updateState({ id, label, country: countryId });
+          await updateState({ id, label, country });
         } else if (activeTab === "zones") {
-          await updateZone({ id, label, state: stateId });
+          await updateZone({ id, label, state });
         } else {
-          await updateDistrict({
-            id,
-            label,
-            zone: zoneId,
-          });
+          await updateDistrict({ id, label, zone });
         }
       } else {
         if (activeTab === "countries") {
@@ -510,6 +523,42 @@ function LocationContent() {
               />
             </div>
 
+            {/* Country (read-only context, derived from the parent chain) */}
+            {readOnlyCountry !== null && (
+              <div className="space-y-1">
+                <label
+                  htmlFor="location-country-readonly"
+                  className="text-sm text-muted-foreground"
+                >
+                  Country
+                </label>
+                <Input
+                  id="location-country-readonly"
+                  value={readOnlyCountry}
+                  disabled
+                  readOnly
+                />
+              </div>
+            )}
+
+            {/* State (read-only context, derived from the parent chain) */}
+            {readOnlyState !== null && (
+              <div className="space-y-1">
+                <label
+                  htmlFor="location-state-readonly"
+                  className="text-sm text-muted-foreground"
+                >
+                  State
+                </label>
+                <Input
+                  id="location-state-readonly"
+                  value={readOnlyState}
+                  disabled
+                  readOnly
+                />
+              </div>
+            )}
+
             {/* Country */}
             {showCountryField && (
               <div className="space-y-1">
@@ -519,41 +568,32 @@ function LocationContent() {
                 >
                   Country
                 </label>
-                {editingItem ? (
-                  <Input
-                    placeholder="Country"
-                    {...register("country")}
-                    readOnly
-                    className="bg-muted cursor-not-allowed opacity-60"
-                  />
-                ) : (
-                  <Controller
-                    name="country"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value ?? ""}
+                <Controller
+                  name="country"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? ""}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Country" />
+                      </SelectTrigger>
+                      <SelectContent
+                        position="popper"
+                        side="bottom"
+                        sideOffset={4}
+                        className="max-h-[200px] overflow-y-auto"
                       >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Country" />
-                        </SelectTrigger>
-                        <SelectContent
-                          position="popper"
-                          side="bottom"
-                          sideOffset={4}
-                          className="max-h-[200px] overflow-y-auto"
-                        >
-                          {(countryList as DropdownOption[]).map((c) => (
-                            <SelectItem key={c.value} value={c.value}>
-                              {c.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                )}
+                        {(countryList as DropdownOption[]).map((c) => (
+                          <SelectItem key={c.value} value={c.value}>
+                            {c.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
             )}
 
@@ -566,41 +606,32 @@ function LocationContent() {
                 >
                   State
                 </label>
-                {editingItem ? (
-                  <Input
-                    placeholder="State"
-                    {...register("state")}
-                    readOnly
-                    className="bg-muted cursor-not-allowed opacity-60"
-                  />
-                ) : (
-                  <Controller
-                    name="state"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value ?? ""}
+                <Controller
+                  name="state"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? ""}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select State" />
+                      </SelectTrigger>
+                      <SelectContent
+                        position="popper"
+                        side="bottom"
+                        sideOffset={4}
+                        className="max-h-[200px] overflow-y-auto"
                       >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select State" />
-                        </SelectTrigger>
-                        <SelectContent
-                          position="popper"
-                          side="bottom"
-                          sideOffset={4}
-                          className="max-h-[200px] overflow-y-auto"
-                        >
-                          {(statesList as DropdownOption[]).map((s) => (
-                            <SelectItem key={s.value} value={s.value}>
-                              {s.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                )}
+                        {(statesList as DropdownOption[]).map((s) => (
+                          <SelectItem key={s.value} value={s.value}>
+                            {s.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
             )}
 
@@ -613,41 +644,32 @@ function LocationContent() {
                 >
                   Zone
                 </label>
-                {editingItem ? (
-                  <Input
-                    placeholder="Zone"
-                    {...register("zone")}
-                    readOnly
-                    className="bg-muted cursor-not-allowed opacity-60"
-                  />
-                ) : (
-                  <Controller
-                    name="zone"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value ?? ""}
+                <Controller
+                  name="zone"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? ""}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Zone" />
+                      </SelectTrigger>
+                      <SelectContent
+                        position="popper"
+                        side="bottom"
+                        sideOffset={4}
+                        className="max-h-[200px] overflow-y-auto"
                       >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Zone" />
-                        </SelectTrigger>
-                        <SelectContent
-                          position="popper"
-                          side="bottom"
-                          sideOffset={4}
-                          className="max-h-[200px] overflow-y-auto"
-                        >
-                          {(zonesList as DropdownOption[]).map((z) => (
-                            <SelectItem key={z.value} value={z.value}>
-                              {z.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                )}
+                        {(zonesList as DropdownOption[]).map((z) => (
+                          <SelectItem key={z.value} value={z.value}>
+                            {z.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
             )}
 

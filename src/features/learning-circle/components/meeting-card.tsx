@@ -10,7 +10,7 @@
 "use client";
 
 import { format, isFuture } from "date-fns";
-import { CheckCircle2 } from "lucide-react";
+import { Check, CheckCircle2, X } from "lucide-react";
 import Link from "next/link";
 import type { Meeting } from "../schemas";
 
@@ -18,16 +18,24 @@ interface MeetingCardProps {
   meeting: Meeting;
   showCircleLink?: boolean;
   onRsvp?: (meetingId: string) => void;
+  onRemoveRsvp?: (meetingId: string) => void;
+  onCancelRsvp?: (meetingId: string) => void;
   isRsvpLoading?: boolean;
 }
 
 export function MeetingCard({
   meeting,
   onRsvp,
+  onRemoveRsvp,
+  onCancelRsvp,
   isRsvpLoading,
 }: MeetingCardProps) {
   const meetTime = new Date(meeting.meet_time);
   const isExpired = meeting.is_ended || !isFuture(meetTime);
+  // can_remove_rsvp is provided by CircleMeetupMinSerializer after backend update.
+  // undefined means not yet cached / old backend — default to showing the button
+  // (backend enforces the 30-min cutoff on DELETE).
+  const canRemove = meeting.can_remove_rsvp !== false;
 
   // Choose pill colors based on state
   let pillColor = "bg-primary";
@@ -59,7 +67,7 @@ export function MeetingCard({
         </Link>
       </div>
 
-      {/* ─── Footer (Avatar + Date) ─── */}
+      {/* ─── Footer (Avatar + Date + RSVP Actions) ─── */}
       <div className="flex items-center justify-between mt-1">
         <div className="flex items-center gap-2.5">
           <div className="relative flex h-6 w-6 items-center justify-center rounded-full bg-brand-purple/10 text-[10px] font-bold text-brand-purple overflow-hidden shrink-0">
@@ -70,17 +78,47 @@ export function MeetingCard({
           </span>
         </div>
 
-        {/* RSVP Action if needed */}
-        {onRsvp && !isExpired && !meeting.is_rsvp && !meeting.is_joined && (
-          <button
-            type="button"
-            onClick={() => onRsvp(meeting.id)}
-            disabled={isRsvpLoading}
-            className="relative z-10 text-[11px] font-bold text-primary hover:text-primary/80 transition-colors uppercase tracking-wide bg-primary/10 px-2 py-1 rounded"
-          >
-            RSVP
-          </button>
-        )}
+        {/* RSVP / Change RSVP Actions */}
+        {!isExpired &&
+          !meeting.is_joined &&
+          (meeting.is_rsvp ? (
+            canRemove ? (
+              <button
+                type="button"
+                onClick={() =>
+                  onRemoveRsvp
+                    ? onRemoveRsvp(meeting.id)
+                    : onCancelRsvp
+                      ? onCancelRsvp(meeting.id)
+                      : onRsvp?.(meeting.id)
+                }
+                disabled={isRsvpLoading}
+                className="relative z-10 text-[11px] font-bold text-success bg-success/15 border border-success/30 hover:bg-destructive/15 hover:text-destructive hover:border-destructive/30 transition-all uppercase tracking-wide px-2.5 py-1 rounded flex items-center gap-1 group/rsvp cursor-pointer"
+                title="Click to remove RSVP"
+              >
+                <Check className="h-3 w-3 group-hover/rsvp:hidden text-success" />
+                <X className="h-3 w-3 hidden group-hover/rsvp:inline text-destructive" />
+                <span className="group-hover/rsvp:hidden">RSVP'd</span>
+                <span className="hidden group-hover/rsvp:inline">
+                  Remove RSVP
+                </span>
+              </button>
+            ) : (
+              <span className="relative z-10 text-[11px] font-bold text-success bg-success/15 border border-success/30 px-2.5 py-1 rounded flex items-center gap-1">
+                <Check className="h-3 w-3 text-success" />
+                <span>RSVP'd</span>
+              </span>
+            )
+          ) : onRsvp ? (
+            <button
+              type="button"
+              onClick={() => onRsvp(meeting.id)}
+              disabled={isRsvpLoading}
+              className="relative z-10 text-[11px] font-bold text-muted-foreground bg-secondary hover:bg-secondary/80 hover:text-foreground border border-border transition-all uppercase tracking-wide px-2.5 py-1 rounded cursor-pointer"
+            >
+              RSVP
+            </button>
+          ) : null)}
       </div>
     </div>
   );

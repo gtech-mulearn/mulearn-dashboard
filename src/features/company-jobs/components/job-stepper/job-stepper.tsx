@@ -7,6 +7,11 @@
  *
  * Orchestrates the multi-step form: wires the stepper hook to step components,
  * manages local rules state, and handles final form submission.
+ *
+ * Submitting used to call `form.handleSubmit(...)`, which quietly does nothing
+ * when the form is invalid — and because Review renders no inputs, the error
+ * had nowhere to appear. Submission now goes through `submitAll`, which moves
+ * the user to the step at fault and leaves a summary of everything outstanding.
  */
 
 import { ArrowLeft, ArrowRight, Loader2, Send } from "lucide-react";
@@ -21,6 +26,7 @@ import { StepRequirements } from "./step-requirements";
 import { StepReview } from "./step-review";
 import { StepRules } from "./step-rules";
 import { StepperHeader } from "./stepper-header";
+import { ValidationSummary } from "./validation-summary";
 
 interface JobStepperProps {
   /** Pass an existing job to prefill for editing */
@@ -46,9 +52,12 @@ export function JobStepper({
     steps,
     isFirstStep,
     isLastStep,
+    fieldsByStep,
+    invalidSteps,
     goToStep,
     nextStep,
     prevStep,
+    submitAll,
     getFormValues,
     isEditing,
   } = useJobStepper({ initialJob });
@@ -57,6 +66,8 @@ export function JobStepper({
   const [localRules, setLocalRules] = useState<JobRule[]>(
     initialJob?.rules ?? [],
   );
+  // Only surface the full summary once the user has actually tried to submit.
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
   const handleAddRule = useCallback((values: RuleFormValues) => {
     const newRule: JobRule = {
@@ -71,10 +82,11 @@ export function JobStepper({
     setLocalRules((prev) => prev.filter((r) => r.id !== ruleId));
   }, []);
 
-  const handleFinalSubmit = useCallback(() => {
-    const values = getFormValues();
-    onSubmit(values, localRules);
-  }, [getFormValues, localRules, onSubmit]);
+  const handleFinalSubmit = useCallback(async () => {
+    setHasAttemptedSubmit(true);
+    if (!(await submitAll())) return;
+    onSubmit(getFormValues(), localRules);
+  }, [submitAll, getFormValues, localRules, onSubmit]);
 
   // Render the active step
   function renderStep() {
@@ -105,6 +117,8 @@ export function JobStepper({
     }
   }
 
+  const showSummary = hasAttemptedSubmit && invalidSteps.size > 0;
+
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 sm:space-y-8">
       {/* Stepper header */}
@@ -113,6 +127,7 @@ export function JobStepper({
         currentStepIndex={currentStepIndex}
         onStepClick={goToStep}
         ariaLabel="Job creation progress"
+        invalidSteps={invalidSteps}
       />
 
       {/* Step content */}
@@ -122,6 +137,16 @@ export function JobStepper({
           className="rounded-xl border border-border bg-card p-4 sm:p-6"
         >
           {renderStep()}
+
+          {showSummary && (
+            <div className="mt-6">
+              <ValidationSummary
+                errors={form.formState.errors}
+                fieldsByStep={fieldsByStep}
+                onJumpToStep={goToStep}
+              />
+            </div>
+          )}
 
           {/* Navigation buttons */}
           <div className="mt-8 flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
@@ -154,7 +179,7 @@ export function JobStepper({
                 <Button
                   type="button"
                   disabled={isSubmitting}
-                  onClick={() => form.handleSubmit(handleFinalSubmit)()}
+                  onClick={handleFinalSubmit}
                   className="w-full gap-2 sm:w-auto"
                 >
                   {isSubmitting ? (

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   Popover,
+  PopoverClose,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
@@ -468,12 +469,14 @@ export function ScrollableTimePicker({
   disabled,
   className,
   "aria-label": ariaLabel,
+  showSetButton,
 }: {
   value: string; // "HH:mm"
   onChange: (val: string) => void;
   disabled?: boolean;
   className?: string;
   "aria-label"?: string;
+  showSetButton?: boolean;
 }) {
   const [hourStr, minStr] = (value || "09:00").split(":");
   const selectedHour = hourStr || "09";
@@ -495,24 +498,35 @@ export function ScrollableTimePicker({
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="center">
-        <div className="flex justify-center gap-4 py-4 px-6 select-none bg-muted/50 rounded-md">
-          <TimeWheel
-            items={HOURS}
-            selectedValue={selectedHour}
-            onChange={(val) => {
-              onChange(`${val}:${selectedMinute}`);
-            }}
-          />
-          <div className="text-xl font-bold flex items-center justify-center -mt-8">
-            :
+        <div className="flex flex-col bg-muted/50 rounded-md">
+          <div className="flex justify-center gap-4 py-4 px-6 select-none">
+            <TimeWheel
+              items={HOURS}
+              selectedValue={selectedHour}
+              onChange={(val) => {
+                onChange(`${val}:${selectedMinute}`);
+              }}
+            />
+            <div className="text-xl font-bold flex items-center justify-center -mt-8">
+              :
+            </div>
+            <TimeWheel
+              items={MINUTES}
+              selectedValue={selectedMinute}
+              onChange={(val) => {
+                onChange(`${selectedHour}:${val}`);
+              }}
+            />
           </div>
-          <TimeWheel
-            items={MINUTES}
-            selectedValue={selectedMinute}
-            onChange={(val) => {
-              onChange(`${selectedHour}:${val}`);
-            }}
-          />
+          {showSetButton && (
+            <div className="flex justify-end p-2">
+              <PopoverClose asChild>
+                <Button type="button" size="sm" className="rounded-full px-4">
+                  Set
+                </Button>
+              </PopoverClose>
+            </div>
+          )}
         </div>
       </PopoverContent>
     </Popover>

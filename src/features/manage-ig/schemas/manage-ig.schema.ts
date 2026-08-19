@@ -137,7 +137,12 @@ export const InterestGroupSchema = z.object({
     "others",
     "hardware",
   ]),
-  status: z.enum(["active", "requested", "cancelled", "rejected"]),
+  status: z
+    .preprocess(
+      (val) => (typeof val === "string" ? val.trim().toLowerCase() : val),
+      z.enum(["active", "inactive", "requested", "cancelled", "rejected"]),
+    )
+    .catch("active"),
   members: z.number().optional().default(0),
   updated_by: z.string().optional(),
   updated_at: z.string().optional(),

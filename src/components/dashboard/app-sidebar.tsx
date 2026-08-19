@@ -34,7 +34,7 @@ import { useUIStore } from "@/stores/ui-store";
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { state, isMobile } = useSidebar();
+  const { state, isMobile, setOpenMobile } = useSidebar();
   const { resolvedTheme } = useTheme();
   const { mainItems, managementItems, bottomItems } = useFilteredNav();
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
@@ -62,11 +62,16 @@ export function AppSidebar() {
 
   const isActive = useCallback(
     (href: string) => {
-      if (href === "/dashboard") return pathname === "/dashboard";
-      return pathname.startsWith(href);
+      return pathname === href;
     },
     [pathname],
   );
+
+  const handleNavClick = useCallback(() => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  }, [isMobile, setOpenMobile]);
 
   const renderNavItem = (item: NavItem) => {
     const active = isActive(item.href);
@@ -103,7 +108,11 @@ export function AppSidebar() {
             isRestrictedCompanyFeature && "opacity-70",
           )}
         >
-          <Link href={item.linkHref ?? item.href} prefetch={false}>
+          <Link
+            href={item.linkHref ?? item.href}
+            prefetch={false}
+            onClick={handleNavClick}
+          >
             <Icon
               className={cn(
                 "w-5 h-5 shrink-0",

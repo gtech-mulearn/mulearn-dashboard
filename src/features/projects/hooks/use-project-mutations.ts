@@ -39,8 +39,10 @@ export function useCreateProject(muid: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (vars: SaveVars) => createProject(vars),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: projectsKeys.byMuid(muid) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: projectsKeys.byMuid(muid) });
+      qc.invalidateQueries({ queryKey: [...projectsKeys.all, "public"] });
+    },
     onError: onMutationError,
   });
 }

@@ -60,6 +60,7 @@ export const MeetingSchema = z.object({
   is_ended: z.boolean(),
   is_joined: z.boolean().optional(),
   is_rsvp: z.boolean().optional(),
+  can_remove_rsvp: z.boolean().optional(),
   attendees_count: z.number(),
   created_by: z.string(),
   created_by_id: z.string(),

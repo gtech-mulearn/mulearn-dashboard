@@ -21,6 +21,8 @@ export {
 } from "./permissions";
 // Public dashboard routes (used by middleware + client guard)
 export { isPublicDashboardRoute } from "./public-routes";
+// Return-path (`ruri`) sanitiser — used by the refresh route + login client
+export { sanitizeReturnPath } from "./return-path";
 // Role-Based Routing
 export { getRoleHomePath } from "./role-routing";
 // Roles

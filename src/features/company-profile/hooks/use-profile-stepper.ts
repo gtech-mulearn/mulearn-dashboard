@@ -61,8 +61,22 @@ export function useProfileStepper(profile: CompanyProfile) {
           | null
           | undefined) ?? null,
       culture_text: profile.culture_text ?? null,
-      tech_stack: profile.tech_stack ?? [],
-      perks: profile.perks ?? [],
+      tech_stack: Array.isArray(profile.tech_stack)
+        ? profile.tech_stack
+        : typeof profile.tech_stack === "string"
+          ? (profile.tech_stack as string)
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [],
+      perks: Array.isArray(profile.perks)
+        ? profile.perks
+        : typeof profile.perks === "string"
+          ? (profile.perks as string)
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [],
     },
     mode: "onTouched",
   });

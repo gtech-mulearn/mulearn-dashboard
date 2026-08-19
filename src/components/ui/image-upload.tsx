@@ -1,6 +1,6 @@
 "use client";
 
-import { ImageIcon, Upload, X } from "lucide-react";
+import { ImageIcon, Upload } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
 import { toast } from "sonner";
@@ -83,7 +83,7 @@ export function ImageUpload({
     if (file) handleFile(file);
   };
 
-  const handleRemove = () => {
+  const _handleRemove = () => {
     onChange(null);
     setPreviewUrl(currentUrl ?? null);
     if (inputRef.current) inputRef.current.value = "";

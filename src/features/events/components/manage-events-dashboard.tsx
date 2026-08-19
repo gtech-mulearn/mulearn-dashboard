@@ -18,7 +18,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useUserInfo } from "@/features/auth/hooks";
 import { ROLES } from "@/lib/auth/roles";
 import { eventsApi } from "../api";
-import { MANAGE_EVENT_STATUS_PILLS } from "../constants/events.constants";
+import {
+  EVENT_SORT_DEFAULT,
+  EVENT_SORT_OPTIONS,
+  MANAGE_EVENT_STATUS_PILLS,
+} from "../constants/events.constants";
 import { usePendingCollaboratorInvites } from "../hooks";
 import { eventKeys } from "../hooks/query-keys";
 import type { EventListQueryParams, EventStatus } from "../types";
@@ -43,6 +47,7 @@ export default function ManageEventsDashboard() {
   const searchParams = useSearchParams();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<string>(EVENT_SORT_DEFAULT);
   const [statusFilter, setStatusFilter] = useState<EventStatus | "all">("all");
   const [showWizard, setShowWizard] = useState(false);
   const [invitesOpen, setInvitesOpen] = useState(false);
@@ -117,7 +122,7 @@ export default function ManageEventsDashboard() {
     pageIndex: page,
     search: search || undefined,
     status: statusFilter === "all" ? undefined : statusFilter,
-    sortBy: "-created_at",
+    sortBy,
     perPage: 12,
   };
 
@@ -288,6 +293,28 @@ export default function ManageEventsDashboard() {
             {statusPills.map((pill) => (
               <SelectItem key={pill.value} value={pill.value}>
                 {pill.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={sortBy}
+          onValueChange={(value) => {
+            setSortBy(value);
+            setPage(1);
+          }}
+        >
+          <SelectTrigger
+            className="w-full rounded-full md:w-44"
+            aria-label="Sort events"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {EVENT_SORT_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
               </SelectItem>
             ))}
           </SelectContent>

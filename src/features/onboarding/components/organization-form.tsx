@@ -67,7 +67,6 @@ export function OrganizationForm({
   const [organization, setOrganization] = useState("");
   const [department, setDepartment] = useState("");
   const [graduationYear, setGraduationYear] = useState("");
-  const [collegeSearch, setCollegeSearch] = useState("");
   const [departmentSearch, setDepartmentSearch] = useState("");
 
   const currentYear = new Date().getFullYear();
@@ -158,17 +157,10 @@ export function OrganizationForm({
                   options={colleges}
                   value={organization}
                   onValueChange={setOrganization}
-                  onSearchChange={(value) => {
-                    setCollegeSearch(value);
-                    onCollegeSearchChange?.(value);
-                  }}
+                  onSearchChange={onCollegeSearchChange}
                   loading={isLoadingColleges}
                   placeholder="Search your college"
-                  emptyText={
-                    collegeSearch.trim().length < 2
-                      ? "Type your college to search"
-                      : "No colleges found."
-                  }
+                  emptyText="No colleges found."
                   disabled={isLoading}
                   className="h-12 rounded-xl border-border bg-muted/50 px-4"
                 />

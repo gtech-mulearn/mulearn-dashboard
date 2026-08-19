@@ -10,18 +10,23 @@
 // API functions (for direct use if needed)
 export type { ListParams } from "./api";
 export {
+  createGys,
   createIs,
   createOfficeHours,
   createSmt,
+  deleteGys,
   deleteIs,
   deleteOfficeHours,
   deleteSmt,
+  fetchGysDetail,
+  fetchGysList,
   fetchIsDetail,
   fetchIsList,
   fetchOfficeHoursDetail,
   fetchOfficeHoursList,
   fetchSmtDetail,
   fetchSmtList,
+  updateGys,
   updateIs,
   updateOfficeHours,
   updateSmt,
@@ -31,6 +36,8 @@ export {
 export {
   CampusContentCards,
   CampusContentDetailDialog,
+  GysCards,
+  GysDetailDialog,
   MediaCard,
   MediaCardSkeleton,
   OfficeHoursCards,
@@ -41,6 +48,8 @@ export {
 
 // Hooks (primary way to use the feature)
 export {
+  useGysList,
+  useGysMutations,
   useIsList,
   useIsMutations,
   useOfficeHoursList,
@@ -63,6 +72,14 @@ export {
   CampusContentWriteSchema,
   type ContentStatus,
   type ContentZone,
+  GysDetailResponseSchema,
+  type GysItem,
+  GysItemSchema,
+  type GysListData,
+  GysListDataSchema,
+  GysListResponseSchema,
+  type GysWrite,
+  GysWriteSchema,
   MutationResponseSchema,
   OfficeHoursDetailResponseSchema,
   type OfficeHoursItem,

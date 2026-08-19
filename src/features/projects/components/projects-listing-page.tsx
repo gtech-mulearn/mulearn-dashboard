@@ -1,7 +1,9 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import Pagination from "@/components/dashboard/table/pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,9 +11,11 @@ import { PageHeader } from "@/components/ui/page-header";
 import { StateDisplay } from "@/components/ui/state-display";
 import { useUserProfile } from "@/features/profile";
 import { useDebounce } from "@/hooks/use-debounce";
-import { usePublicProjects } from "../hooks";
+import { useCreateProject, usePublicProjects } from "../hooks";
+import type { ProjectFormValues } from "../schemas";
 import { ProjectCard } from "./project-card";
 import { ProjectDetailModal } from "./project-detail-modal";
+import { ProjectWizard } from "./project-wizard";
 
 export function ProjectsListingPage() {
   const router = useRouter();
@@ -23,11 +27,28 @@ export function ProjectsListingPage() {
     return p > 0 ? p : 1;
   });
   const [detailId, setDetailId] = useState<string | undefined>();
+  const [showWizard, setShowWizard] = useState(false);
 
   const debouncedSearch = useDebounce(search, 300);
 
   const { data: profile } = useUserProfile();
   const currentUserId = profile?.id ?? null;
+  const currentUserMuid = profile?.muid ?? "";
+
+  const create = useCreateProject(currentUserMuid);
+
+  const handleCreate = async (
+    values: ProjectFormValues,
+    files: { logo?: File; images?: File[] },
+  ) => {
+    const result = await create.mutateAsync({
+      values,
+      logo: files.logo,
+      images: files.images,
+    });
+    toast.success("Project created");
+    return result;
+  };
 
   // Sync URL without polluting history
   useEffect(() => {
@@ -62,24 +83,32 @@ export function ProjectsListingPage() {
       <div className="sticky top-0 z-30 border-b border-border bg-background/95 px-6 pb-4 pt-6 backdrop-blur-sm md:px-8 md:pt-8">
         <PageHeader
           title={
-            <>
+            <span className="inline-flex items-baseline whitespace-nowrap">
               Projects
               {pagination && (
                 <span className="ml-2 text-base font-normal text-muted-foreground">
                   ({pagination.count} total)
                 </span>
               )}
-            </>
+            </span>
           }
           action={
-            <div className="w-full sm:max-w-xs">
-              <Input
-                aria-label="Search projects"
-                placeholder="Search projects…"
-                value={search}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="h-9"
-              />
+            <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+              <div className="w-full sm:max-w-xs">
+                <Input
+                  aria-label="Search projects"
+                  placeholder="Search projects…"
+                  value={search}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="h-9"
+                />
+              </div>
+              {currentUserId && (
+                <Button onClick={() => setShowWizard(true)}>
+                  <Plus className="mr-1 h-4 w-4" />
+                  Add Project
+                </Button>
+              )}
             </div>
           }
         />
@@ -150,6 +179,15 @@ export function ProjectsListingPage() {
           projectId={detailId}
           currentUserId={currentUserId}
           canEdit={false}
+        />
+      )}
+
+      {currentUserMuid && (
+        <ProjectWizard
+          open={showWizard}
+          onOpenChange={setShowWizard}
+          ownerMuid={currentUserMuid}
+          onSubmit={handleCreate}
         />
       )}
     </main>

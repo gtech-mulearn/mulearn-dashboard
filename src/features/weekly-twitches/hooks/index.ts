@@ -10,6 +10,8 @@ export { weeklyTwitchesKeys } from "./query-keys";
 
 // Office Hours hooks
 export {
+  useGysList,
+  useGysMutations,
   useIsList,
   useIsMutations,
   useOfficeHoursList,

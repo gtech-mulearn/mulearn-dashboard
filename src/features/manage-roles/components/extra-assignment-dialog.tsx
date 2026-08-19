@@ -239,7 +239,7 @@ export function ExtraAssignmentDialog({
               {mentorTier === "CAMPUS_MENTOR" && (
                 <div className="space-y-2">
                   <Label className="text-sm font-semibold">
-                    Campus College <span className="text-destructive">*</span>
+                    Campus <span className="text-destructive">*</span>
                   </Label>
                   <Combobox
                     options={colleges}
@@ -249,11 +249,7 @@ export function ExtraAssignmentDialog({
                     loading={isLoadingColleges}
                     placeholder="Search college..."
                     searchPlaceholder="Search colleges..."
-                    emptyText={
-                      collegeSearch.trim().length < 2
-                        ? "Type your college to search"
-                        : "No colleges found."
-                    }
+                    emptyText="No colleges found."
                     disabled={isPending}
                   />
                 </div>

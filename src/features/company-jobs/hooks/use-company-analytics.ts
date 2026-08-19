@@ -5,10 +5,13 @@ import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   fetchAdminSummary,
+  fetchCampusAnalytics,
+  fetchCampusQuarterTrend,
   fetchCompanyDashboardSummary,
   fetchGigAnalytics,
   fetchJobEngagementAnalytics,
   fetchTalentPoolAnalytics,
+  fetchTasksAnalytics,
   trackJobView,
 } from "../api";
 import type { TalentPoolAnalyticsParams } from "../types";
@@ -23,6 +26,10 @@ export const COMPANY_ANALYTICS_KEYS = {
   talentPool: (params?: TalentPoolAnalyticsParams) =>
     [...COMPANY_ANALYTICS_KEYS.all, "talent-pool", params ?? {}] as const,
   adminSummary: () => [...COMPANY_ANALYTICS_KEYS.all, "admin-summary"] as const,
+  campus: () => [...COMPANY_ANALYTICS_KEYS.all, "campus"] as const,
+  campusTrend: (params?: { campus_id?: string; quarters?: number }) =>
+    [...COMPANY_ANALYTICS_KEYS.all, "campus-trend", params ?? {}] as const,
+  tasks: () => [...COMPANY_ANALYTICS_KEYS.all, "tasks"] as const,
 };
 
 export function useGigAnalytics() {
@@ -81,6 +88,42 @@ export function useAdminSummary() {
   return useQuery({
     queryKey: COMPANY_ANALYTICS_KEYS.adminSummary(),
     queryFn: fetchAdminSummary,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useCampusAnalytics() {
+  return useQuery({
+    queryKey: COMPANY_ANALYTICS_KEYS.campus(),
+    queryFn: fetchCampusAnalytics,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useCampusQuarterTrend(params?: {
+  campus_id?: string;
+  quarters?: number;
+}) {
+  return useQuery({
+    queryKey: COMPANY_ANALYTICS_KEYS.campusTrend(params),
+    queryFn: () => {
+      if (!params?.campus_id) {
+        throw new Error("campus_id is required");
+      }
+      return fetchCampusQuarterTrend({
+        campus_id: params.campus_id,
+        quarters: params.quarters,
+      });
+    },
+    enabled: !!params?.campus_id,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useTasksAnalytics() {
+  return useQuery({
+    queryKey: COMPANY_ANALYTICS_KEYS.tasks(),
+    queryFn: fetchTasksAnalytics,
     refetchOnWindowFocus: false,
   });
 }

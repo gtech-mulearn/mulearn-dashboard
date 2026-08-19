@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -85,12 +84,10 @@ export function GameProgressBar() {
             </div>
           ) : (
             <>
-              <motion.div
+              <div
                 key={progressPercent}
-                initial={{ width: 0 }}
-                animate={{ width: `${progressPercent}%` }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
                 className="h-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600 rounded-tr-full rounded-br-full rounded-tl-full"
+                style={{ width: `${progressPercent}%` }}
               />
               <div className="absolute inset-0 flex items-center justify-end pr-2 text-[9px] font-semibold text-white/95 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
                 {userKarma}/{levelKarmaRequirement}

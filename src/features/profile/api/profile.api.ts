@@ -483,7 +483,6 @@ export async function issueVC(
       subject_info: subjectInfo,
       credential_info: credentialInfo,
       template_id: templateId,
-      send_email: true,
     },
     IssuedVCResponseSchema,
   );

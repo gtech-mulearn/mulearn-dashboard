@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { formatTime } from "../lib/format-time";
 import type { CampusContentItem, CampusContentType } from "../schemas";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -69,6 +70,12 @@ export function CampusContentDetailDialog({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Date">{item.date}</Field>
+            <Field label="Time">
+              {item.time ? formatTime(item.time) : "—"}
+            </Field>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Status">
               <span
                 className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_COLORS[item.status] ?? ""}`}

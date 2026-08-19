@@ -13,8 +13,8 @@ import {
   Briefcase,
   Calendar,
   Clock,
-  DollarSign,
   Edit,
+  IndianRupee,
   MapPin,
   Package,
   Plus,
@@ -229,7 +229,7 @@ export function JobDetailView({
               Hourly Rate
             </p>
             <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
-              <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+              <IndianRupee className="h-3.5 w-3.5 text-muted-foreground" />
               {job.hourly_rate || "Not specified"}
             </div>
           </div>
@@ -238,7 +238,7 @@ export function JobDetailView({
               Stipend
             </p>
             <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
-              <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+              <IndianRupee className="h-3.5 w-3.5 text-muted-foreground" />
               {job.stipend || "Not specified"}
             </div>
           </div>

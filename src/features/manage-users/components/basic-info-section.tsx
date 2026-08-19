@@ -450,7 +450,7 @@ export function BasicInfoSection({
               {mentorTier === "CAMPUS_MENTOR" && (
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Campus College <span className="text-destructive">*</span>
+                    Campus <span className="text-destructive">*</span>
                   </Label>
                   <OrganizationCombobox
                     value={orgId}

@@ -59,7 +59,7 @@ export function IGSelector({
   const canEdit = isOwnProfile;
 
   // Format level to display as "Level X"
-  const formatLevel = (level: { unit: string; count: number }) => {
+  const _formatLevel = (level: { unit: string; count: number }) => {
     const unit = level.unit || "Level";
     const count = level.count || 1;
     return `${unit.charAt(0).toUpperCase() + unit.slice(1)} ${count}`;
@@ -195,12 +195,12 @@ export function IGSelector({
               <span className="text-foreground wrap-break-word">{ig.name}</span>
               {/* Row 2: Level + points chips */}
               <div className="flex flex-row items-center gap-2">
-                <Badge
+                {/* <Badge
                   variant="outline"
                   className="gap-1 border border-brand-blue px-3 text-xs sm:gap-1.5 sm:text-sm"
                 >
                   {formatLevel(ig.level)}
-                </Badge>
+                </Badge> */}
                 <Badge variant="default" className="rounded-lg px-2 py-0.5">
                   {formatKarma(ig.karma)}
                 </Badge>

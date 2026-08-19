@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { StateDisplay } from "@/components/ui/state-display";
 import { useOfficeHoursList } from "../hooks";
 import type { OfficeHoursItem } from "../schemas";
 import { MediaCard, MediaCardSkeleton } from "./media-card";
@@ -27,7 +28,7 @@ export function OfficeHoursCards() {
     pageIndex: page,
     perPage: 12,
     search,
-    status: status || undefined,
+    status: status || "ongoing,upcoming",
   });
 
   const items = data?.data ?? [];
@@ -60,54 +61,62 @@ export function OfficeHoursCards() {
               <SelectItem value="all">All statuses</SelectItem>
               <SelectItem value="upcoming">Upcoming</SelectItem>
               <SelectItem value="ongoing">Ongoing</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {isLoading
-          ? SKELETONS.map((key) => <MediaCardSkeleton key={key} />)
-          : items.map((item) => (
-              <MediaCard
-                key={item.id}
-                id={item.id}
-                title={item.title}
-                subtitle={item.performer ?? undefined}
-                date={item.date}
-                status={item.status}
-                imageSrc={item.poster_thumbnail}
-                onClick={() => setSheetItem(item)}
-              />
-            ))}
-      </div>
-
-      {/* Error */}
-      {!isLoading && isError && (
-        <div className="flex flex-col items-center justify-center py-16 text-destructive">
-          <p className="text-sm">Failed to load sessions. Please try again.</p>
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {SKELETONS.map((key) => (
+            <MediaCardSkeleton key={key} />
+          ))}
         </div>
-      )}
-
-      {/* Empty */}
-      {!isLoading && !isError && items.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-          <p className="text-sm">No sessions found.</p>
+      ) : isError ? (
+        <StateDisplay
+          variant="no-results"
+          className="rounded-2xl border border-dashed border-border bg-muted/40"
+          title="Failed to load sessions"
+          description="Something went wrong while fetching Office Hours sessions. Please try again."
+        />
+      ) : items.length === 0 ? (
+        <StateDisplay
+          variant="no-results"
+          className="rounded-2xl border border-dashed border-border bg-muted/40"
+          title="No sessions found"
+          description="There are currently no Office Hours sessions listed here."
+        />
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {items.map((item) => (
+            <MediaCard
+              key={item.id}
+              id={item.id}
+              title={item.title}
+              subtitle={item.performer ?? undefined}
+              date={item.date}
+              time={item.time}
+              status={item.status}
+              imageSrc={item.poster_thumbnail}
+              onClick={() => setSheetItem(item)}
+            />
+          ))}
         </div>
       )}
 
       {/* Pagination */}
-      <Pagination
-        currentPage={page}
-        totalPages={totalPages}
-        perPage={12}
-        totalCount={data?.pagination.count}
-        currentPageCount={items.length}
-        handlePreviousClick={() => setPage((p) => p - 1)}
-        handleNextClick={() => setPage((p) => p + 1)}
-      />
+      {items.length > 0 && (
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          perPage={12}
+          totalCount={data?.pagination.count}
+          currentPageCount={items.length}
+          handlePreviousClick={() => setPage((p) => p - 1)}
+          handleNextClick={() => setPage((p) => p + 1)}
+        />
+      )}
 
       {/* Detail dialog */}
       <OfficeHoursDetailDialog

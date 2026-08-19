@@ -52,6 +52,11 @@ export function CompanyTasksPage() {
     page: 1,
     per_page: 1,
   });
+  const { data: changesRequestedCountData } = useCompanyTasks({
+    approval_status: "changes_requested",
+    page: 1,
+    per_page: 1,
+  });
   const { data: rejectedCountData } = useCompanyTasks({
     approval_status: "rejected",
     page: 1,
@@ -67,7 +72,11 @@ export function CompanyTasksPage() {
     approval_status:
       statusFilter === "all"
         ? undefined
-        : (statusFilter as "approved" | "pending" | "rejected"),
+        : (statusFilter as
+            | "approved"
+            | "pending"
+            | "rejected"
+            | "changes_requested"),
     page: page,
     per_page: 10,
   });
@@ -111,19 +120,35 @@ export function CompanyTasksPage() {
 
   const normalizeStatus = (
     status?: string,
-  ): "pending" | "approved" | "rejected" => {
+  ): "pending" | "approved" | "rejected" | "changes_requested" => {
     if (!status) return "pending";
     const lower = status.toLowerCase();
     if (lower === "approved") return "approved";
     if (lower === "rejected") return "rejected";
+    if (lower === "changes_requested" || lower === "changes requested")
+      return "changes_requested";
     return "pending";
   };
 
   // Tab counts directly from backend pagination.count
-  const allCount = allCountData?.pagination?.count ?? 0;
-  const approvedCount = approvedCountData?.pagination?.count ?? 0;
-  const pendingCount = pendingCountData?.pagination?.count ?? 0;
-  const rejectedCount = rejectedCountData?.pagination?.count ?? 0;
+  const allCount =
+    allCountData?.pagination?.count ?? allCountData?.pagination?.total ?? 0;
+  const approvedCount =
+    approvedCountData?.pagination?.count ??
+    approvedCountData?.pagination?.total ??
+    0;
+  const pendingCount =
+    pendingCountData?.pagination?.count ??
+    pendingCountData?.pagination?.total ??
+    0;
+  const changesRequestedCount =
+    changesRequestedCountData?.pagination?.count ??
+    changesRequestedCountData?.pagination?.total ??
+    0;
+  const rejectedCount =
+    rejectedCountData?.pagination?.count ??
+    rejectedCountData?.pagination?.total ??
+    0;
 
   const currentTabCount =
     statusFilter === "all"
@@ -132,7 +157,9 @@ export function CompanyTasksPage() {
         ? approvedCount
         : statusFilter === "pending"
           ? pendingCount
-          : rejectedCount;
+          : statusFilter === "changes_requested"
+            ? changesRequestedCount
+            : rejectedCount;
 
   return (
     <div className="space-y-6">
@@ -163,10 +190,13 @@ export function CompanyTasksPage() {
         }}
         className="w-full"
       >
-        <TabsList className="grid w-full grid-cols-4 lg:w-[480px]">
-          <TabsTrigger value="all">All Tasks ({allCount})</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-5 lg:w-[600px]">
+          <TabsTrigger value="all">All ({allCount})</TabsTrigger>
           <TabsTrigger value="approved">Approved ({approvedCount})</TabsTrigger>
           <TabsTrigger value="pending">Pending ({pendingCount})</TabsTrigger>
+          <TabsTrigger value="changes_requested">
+            Changes ({changesRequestedCount})
+          </TabsTrigger>
           <TabsTrigger value="rejected">Rejected ({rejectedCount})</TabsTrigger>
         </TabsList>
       </Tabs>
@@ -184,7 +214,7 @@ export function CompanyTasksPage() {
             variant="no-results"
             size="sm"
             className="rounded-2xl border border-dashed"
-            description={`No ${statusFilter} tasks right now. Try a different path and keep exploring.`}
+            description={`No ${statusFilter.replace("_", " ")} tasks right now. Try a different path and keep exploring.`}
           />
         )
       ) : (
@@ -213,11 +243,19 @@ export function CompanyTasksPage() {
                             : normalizeStatus(task.approval_status) ===
                                 "rejected"
                               ? "destructive"
-                              : "secondary"
+                              : normalizeStatus(task.approval_status) ===
+                                  "changes_requested"
+                                ? "outline"
+                                : "secondary"
                         }
-                        className="capitalize"
+                        className={`capitalize ${
+                          normalizeStatus(task.approval_status) ===
+                          "changes_requested"
+                            ? "bg-amber-500/10 text-amber-600 border-amber-500/30"
+                            : ""
+                        }`}
                       >
-                        {task.approval_status.toLowerCase()}
+                        {task.approval_status.replace("_", " ").toLowerCase()}
                       </Badge>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

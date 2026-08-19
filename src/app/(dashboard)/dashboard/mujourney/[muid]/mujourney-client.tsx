@@ -1,16 +1,19 @@
 /**
  * Public User Journey Page (Client Component)
  *
- * View another user's public journey
+ * View another user's public journey.
+ * Uses only the public journey endpoint; no task list merge.
  */
 
 "use client";
 
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { JourneyHeader, LevelCard } from "@/features/mujourney";
-import { useUserJourney } from "@/features/mujourney/hooks";
+import { usePublicUserJourney } from "@/features/mujourney/hooks";
+import type { TaskListPublic } from "@/features/mujourney/schemas";
 
 interface PublicUserJourneyPageClientProps {
   muid: string;
@@ -19,7 +22,46 @@ interface PublicUserJourneyPageClientProps {
 export function PublicUserJourneyPageClient({
   muid,
 }: PublicUserJourneyPageClientProps) {
-  const { data, isLoading, error } = useUserJourney(muid);
+  const { data: journeyData, isLoading, error } = usePublicUserJourney(muid);
+
+  // New format: response is an array of JourneyLevelSchema directly
+  const levels = journeyData?.response ?? [];
+
+  // Map legacy journey tasks to TaskListPublic shape for LevelCard compatibility
+  const mappedLevels = useMemo(() => {
+    // biome-ignore lint/suspicious/noExplicitAny: Legacy mapping
+    return levels.map((level: any) => {
+      const levelName = level.name || "General";
+      // biome-ignore lint/suspicious/noExplicitAny: Legacy mapping
+      const tasks: TaskListPublic[] = (level.tasks || []).map((task: any) => ({
+        id: task.id || task.task_id || "",
+        hashtag: task.hashtag || "",
+        title: task.task_name || "Untitled Task",
+        description: task.task_description || null,
+        karma: task.karma || 0,
+        channel: task.submission_channel?.name || null,
+        discord_id: task.submission_channel?.discord_id || null,
+        type: task.type || "regular",
+        variable_karma: task.variable_karma || false,
+        level: levelName,
+        ig: task.interest_group?.name || null,
+        event: task.event || null,
+        event_id: task.event_id || null,
+        completed: task.completed || false,
+      }));
+
+      return {
+        name: levelName,
+        tasks,
+      };
+    });
+  }, [levels]);
+
+  // Filter out empty levels
+  const nonEmptyLevels = useMemo(
+    () => mappedLevels.filter((level) => level.tasks.length > 0),
+    [mappedLevels],
+  );
 
   if (isLoading) {
     return (
@@ -32,7 +74,7 @@ export function PublicUserJourneyPageClient({
     );
   }
 
-  if (error || !data?.response) {
+  if (error || !journeyData?.response) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center space-y-4">
@@ -41,40 +83,39 @@ export function PublicUserJourneyPageClient({
             {error?.message || "User journey not found"}
           </p>
           <Button asChild>
-            <Link href="/mujourney">Back to MuJourney</Link>
+            <Link href="/dashboard/mujourney">Back to MuJourney</Link>
           </Button>
         </div>
       </div>
     );
   }
 
-  const { full_name, levels } = data.response;
+  const displayName = decodeURIComponent(muid) || muid;
 
   return (
     <div className="space-y-8">
-      {/* Back Button */}
       <Button variant="ghost" asChild>
-        <Link href="/mujourney" className="gap-2">
+        <Link href="/dashboard/mujourney" className="gap-2">
           <ArrowLeft className="size-4" />
           Back to MuJourney
         </Link>
       </Button>
 
-      {/* Header */}
-      <JourneyHeader
-        title={`${full_name}'s Journey`}
-        subtitle={`MUID: ${muid}`}
-      />
+      <JourneyHeader title={`${displayName}'s Journey`} subtitle={``} />
 
-      {/* Levels */}
       <div className="space-y-8">
-        {levels.map((level, index) => (
-          <LevelCard
-            key={level.name || `level-${index}`}
-            level={level}
-            isLocked={false}
-          />
-        ))}
+        {nonEmptyLevels.length > 0 ? (
+          nonEmptyLevels.map((level, index) => (
+            <LevelCard
+              key={level.name || `level-${index}`}
+              name={level.name}
+              tasks={level.tasks}
+              isLocked={false}
+            />
+          ))
+        ) : (
+          <p className="text-muted-foreground">No tasks available yet.</p>
+        )}
       </div>
     </div>
   );

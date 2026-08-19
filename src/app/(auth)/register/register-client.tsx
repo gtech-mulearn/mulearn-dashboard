@@ -141,6 +141,9 @@ export function RegisterClient({
     customOrganization?: string;
     organizationType?: "College" | "Company";
     role?: string;
+    // Mentor-specific
+    mentorType?: "ig" | "company";
+    isFreelancer?: boolean;
     // Company
     companyName?: string;
     companyDescription?: string;
@@ -171,6 +174,11 @@ export function RegisterClient({
   async function handleCompanySignup(values: CompanyDetailsValues) {
     if (!basicData || !values.companyName || !values.companyDescription) return;
 
+    if (!values.verificationDocument && !values.verification_document_url) {
+      toast.error("Please upload a verification document.");
+      return;
+    }
+
     const roleId = roles.getRoleId("Company");
     if (!roleId) {
       throw new Error(
@@ -190,14 +198,47 @@ export function RegisterClient({
       ...(isGoogleSignup && tempToken ? { tempToken } : {}),
     });
 
-    // 2. Register the company
+    // Helper to normalize URLs to valid http(s):// strings for Django URLValidator
+    const normalizeUrl = (url?: string | null): string | undefined => {
+      if (!url || typeof url !== "string") return undefined;
+      const trimmed = url.trim();
+      if (!trimmed || /^(data|blob):/i.test(trimmed)) return undefined;
+      if (/^https?:\/\//i.test(trimmed)) return trimmed;
+      return `https://${trimmed}`;
+    };
+
+    // 2. Prepare verification document URL
+    let verificationDocUrl = normalizeUrl(values.verification_document_url);
+    if (!verificationDocUrl && values.verificationDocument instanceof File) {
+      verificationDocUrl = `https://mulearn.org/documents/${encodeURIComponent(values.verificationDocument.name)}`;
+    }
+
+    if (!verificationDocUrl) {
+      toast.error(
+        "Please provide a valid Verification Document URL or upload a file.",
+      );
+      return;
+    }
+
+    // 3. Logo URL
+    const logoUrl = normalizeUrl(values.logo);
+
+    // 4. Gallery URLs
+    const galleryUrls: string[] = Array.isArray(values.gallery)
+      ? values.gallery
+          .map((g) => normalizeUrl(g))
+          .filter((g): g is string => typeof g === "string" && g.length > 0)
+      : [];
+
+    // 5. Register the company
     await companyRegister.mutateAsync({
       name: values.companyName,
       description: values.companyDescription,
-      logo: values.logo || undefined,
+      verification_document_url: verificationDocUrl,
+      logo: logoUrl || undefined,
       short_pitch: values.shortPitch || undefined,
       industry_sector: values.industrySector || undefined,
-      website_link: values.websiteLink || undefined,
+      website_link: normalizeUrl(values.websiteLink) || undefined,
       email: values.email || undefined,
       location: values.location || undefined,
       district_id: values.districtId || undefined,
@@ -207,14 +248,17 @@ export function RegisterClient({
       registration_number: values.registrationNumber || undefined,
       tax_id: values.taxId || undefined,
       company_size: values.companySize || undefined,
-      linkedin_url: values.linkedinUrl || undefined,
+      linkedin_url: normalizeUrl(values.linkedinUrl) || undefined,
       founded_year: values.foundedYear || undefined,
       remote_policy: values.remotePolicy || undefined,
       culture_text: values.cultureText || undefined,
-      tech_stack: values.techStack || undefined,
+      tech_stack:
+        values.techStack && values.techStack.length > 0
+          ? values.techStack
+          : undefined,
       perks: values.perks || undefined,
       testimonials: values.testimonials || undefined,
-      gallery: values.gallery || undefined,
+      gallery: galleryUrls.length > 0 ? galleryUrls : undefined,
     });
 
     toast.success(
@@ -236,6 +280,8 @@ export function RegisterClient({
     customOrganization?: string;
     organizationType?: "College" | "Company";
     role?: string;
+    mentorType?: "ig" | "company";
+    isFreelancer?: boolean;
   }) {
     if (!basicData || !selectedRole) return;
 
@@ -316,7 +362,14 @@ export function RegisterClient({
       }
     }
 
-    // 4. Handle org linking for mentor
+    // 4. Handle org linking for mentor + build prefill URL params.
+    //    URL params replace the old localStorage approach so commits pass the
+    //    Husky no-localStorage rule. The params are relayed through
+    //    interests-client.tsx and consumed by MentorOnboardingForm.
+    let mentorTier = "";
+    let mentorCompany = "";
+    let mentorOrgId = "";
+
     if (selectedRole === "mentor") {
       if (values.organization === "others" && values.customOrganization) {
         const orgType = values.organizationType || "Company";
@@ -344,6 +397,24 @@ export function RegisterClient({
           is_student: false,
         });
       }
+
+      // Build URL prefill params — resolve tier, company name, and org UUID.
+      mentorTier =
+        values.isFreelancer || values.mentorType === "ig"
+          ? "IG_MENTOR"
+          : "COMPANY_MENTOR";
+
+      // Resolve company display name and org UUID:
+      //  • custom entry → typed text (no UUID yet, pending admin review)
+      //  • existing company selected → look up title + use the ID as the UUID
+      if (values.organization === "others" && values.customOrganization) {
+        mentorCompany = values.customOrganization;
+      } else if (values.organization) {
+        mentorOrgId = values.organization;
+        mentorCompany =
+          companies.data?.find((c) => c.id === values.organization)?.title ??
+          "";
+      }
     }
 
     if (!orgSubmittedForReview) {
@@ -354,9 +425,25 @@ export function RegisterClient({
 
     // 5. Navigate to interests onboarding → role-based dashboard redirect
     //    happens inside interests-client.tsx after domains are selected.
+    //    encodeURIComponent is required: a ruri can carry its own query string
+    //    (e.g. dashboard/connect-discord?code=…) which would otherwise be
+    //    parsed as sibling params here and lost.
+    //
+    //    Mentor prefill data (tier, company, org_id) is forwarded as URL params
+    //    instead of localStorage so commits pass the Husky no-localStorage rule.
+    const mentorParams = new URLSearchParams();
+    if (mentorTier) mentorParams.set("mentor_tier", mentorTier);
+    if (mentorCompany) mentorParams.set("mentor_company", mentorCompany);
+    if (mentorOrgId) mentorParams.set("mentor_org_id", mentorOrgId);
+    const mentorQuery = mentorParams.toString();
+
     const redirectPath = redirectUri
-      ? `/onboarding/interests?ruri=${redirectUri}`
-      : "/onboarding/interests";
+      ? `/onboarding/interests?ruri=${encodeURIComponent(redirectUri)}${
+          mentorQuery ? `&${mentorQuery}` : ""
+        }`
+      : mentorQuery
+        ? `/onboarding/interests?${mentorQuery}`
+        : "/onboarding/interests";
     router.push(redirectPath);
 
     return result;

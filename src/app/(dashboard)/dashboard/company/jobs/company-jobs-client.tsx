@@ -11,22 +11,28 @@ import {
   JobsPageHeader,
 } from "@/features/company-jobs/components";
 import {
+  JOB_SORT_DEFAULT,
   JOBS_DEFAULT_PAGE_INDEX,
   JOBS_DEFAULT_PAGE_SIZE,
 } from "@/features/company-jobs/constants";
 import { useJobs } from "@/features/company-jobs/hooks";
+import type { JobSortValue } from "@/features/company-jobs/types";
 import { useDebounce } from "@/hooks/use-debounce";
 
 export function CompanyJobsPageClient() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(JOBS_DEFAULT_PAGE_INDEX);
+  // Newest listings first. The backend model declares no Meta.ordering, so
+  // without an explicit sort the database is free to return rows in any order.
+  const [sortBy, setSortBy] = useState<JobSortValue>(JOB_SORT_DEFAULT);
   const debouncedSearch = useDebounce(search, 300);
 
   const { data, isLoading, isError, error } = useJobs({
     pageIndex: page,
     perPage: JOBS_DEFAULT_PAGE_SIZE,
     search: debouncedSearch || undefined,
+    sortBy,
   });
 
   const handleCreateJob = useCallback(() => {
@@ -45,6 +51,11 @@ export function CompanyJobsPageClient() {
     setPage(JOBS_DEFAULT_PAGE_INDEX); // Reset to first page on search
   }, []);
 
+  const handleSortChange = useCallback((value: JobSortValue) => {
+    setSortBy(value);
+    setPage(JOBS_DEFAULT_PAGE_INDEX); // Page 1 of the new order, not the old
+  }, []);
+
   return (
     <CompanyStatusGuard>
       <div className="space-y-6 p-1">
@@ -53,6 +64,8 @@ export function CompanyJobsPageClient() {
           onSearchChange={handleSearchChange}
           onCreateJob={handleCreateJob}
           totalJobs={data?.pagination.count}
+          sortBy={sortBy}
+          onSortChange={handleSortChange}
         />
 
         {/* Loading */}

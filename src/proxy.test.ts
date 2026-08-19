@@ -17,7 +17,10 @@ function makeToken(payload: Record<string, unknown>): string {
   return `${b64({ alg: "HS256", typ: "JWT" })}.${b64(payload)}.sig`;
 }
 
-function requestFor(pathname: string, cookies: Record<string, string>) {
+function requestFor(
+  pathname: string,
+  cookies: Record<string, string>,
+): NextRequest {
   const url = `https://app.test${pathname}`;
   const cookieHeader = Object.entries(cookies)
     .map(([k, v]) => `${k}=${v}`)
@@ -65,6 +68,48 @@ describe("proxy access-token recovery", () => {
     );
     // NextResponse.next() carries no Location header.
     expect(res.headers.get("location")).toBeNull();
+  });
+});
+
+describe("proxy preserves the query string across auth detours", () => {
+  // Regression: Discord's OAuth callback returns to
+  // /dashboard/connect-discord?code=… . Any redirect that drops `code` breaks
+  // the connect flow silently — the page renders idle and nothing happens.
+  // Codes are single-use and short-lived, so they cannot be replayed.
+  const OAUTH_RETURN = "/dashboard/connect-discord?code=DISCORD_CODE";
+
+  it("carries ?code= into the login ruri when logged out", () => {
+    const res = proxy(requestFor(OAUTH_RETURN, {}));
+    const ruri = new URL(
+      res.headers.get("location") as string,
+    ).searchParams.get("ruri");
+    expect(ruri).toBe("dashboard/connect-discord?code=DISCORD_CODE");
+  });
+
+  it("carries ?code= into the refresh ruri when the access token is stale", () => {
+    const res = proxy(requestFor(OAUTH_RETURN, { refreshToken: "r" }));
+    const location = res.headers.get("location") as string;
+    expect(location).toContain("/api/auth/refresh");
+    const ruri = new URL(location).searchParams.get("ruri");
+    expect(ruri).toBe("dashboard/connect-discord?code=DISCORD_CODE");
+  });
+
+  it("passes the callback straight through when the session is live", () => {
+    const res = proxy(
+      requestFor(OAUTH_RETURN, {
+        accessToken: makeToken({ expiry: FUTURE, roles: [] }),
+        refreshToken: "r",
+      }),
+    );
+    expect(res.headers.get("location")).toBeNull();
+  });
+
+  it("omits a trailing '?' for routes with no query", () => {
+    const res = proxy(requestFor("/dashboard/profile", {}));
+    const ruri = new URL(
+      res.headers.get("location") as string,
+    ).searchParams.get("ruri");
+    expect(ruri).toBe("dashboard/profile");
   });
 });
 
