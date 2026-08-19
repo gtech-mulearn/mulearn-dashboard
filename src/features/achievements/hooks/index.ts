@@ -22,6 +22,7 @@ export {
   useAchievements,
   useAllAchievementsForUser,
   useEligibleAchievements,
+  useQseverseTemplates,
   useSimulation,
   useSingleRule,
   useUserAchievements,

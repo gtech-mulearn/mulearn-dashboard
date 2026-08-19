@@ -22,6 +22,7 @@ import {
   ProfileStats,
   type ProfileTab,
   ProfileTabs,
+  useEditableProfile,
   usePublicProfile,
   usePublicUserLevels,
   usePublicUserLog,
@@ -55,6 +56,11 @@ export function PublicProfilePageClient({
   const { data: userLevels, isLoading: isLoadingLevels } =
     usePublicUserLevels(muid);
   const { data: viewer } = useUserProfile();
+  // UserProfileSerializer (backing both viewer and the viewed `profile`) never
+  // includes email — it's shared with the public-profile response. The only
+  // endpoint that returns the current user's real email is the editable-profile
+  // one, so that's what Issue VC needs when this is the viewer's own page.
+  const { data: editableProfile } = useEditableProfile();
 
   // Calculate month difference for avg karma
   const getMonthDifference = (joined: string | undefined): number => {
@@ -156,6 +162,7 @@ export function PublicProfilePageClient({
               <Achievements
                 muid={profile.muid}
                 userName={profile.full_name}
+                userEmail={isOwnProfile ? editableProfile?.email : undefined}
                 isOwnProfile={isOwnProfile}
               />
             )}

@@ -371,14 +371,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
       IG_ROLES.some((role) => userRoles.includes(role)) ||
       hasIgLeadRole(userRoles),
   },
-  {
-    id: "mentor-verification",
-    title: "Mentor Verification",
-    href: "/dashboard/management/mentor-verification",
-    icon: UserCheck,
-    section: "management",
-    roles: MANAGEMENT_ROLES,
-  },
+
   {
     id: "management",
     title: "Management",

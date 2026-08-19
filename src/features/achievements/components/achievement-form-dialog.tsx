@@ -29,12 +29,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
 import { useTaskLevels } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import {
   useCreateAchievement,
   useUpdateAchievement,
 } from "../hooks/use-achievement-mutations";
+import { useQseverseTemplates } from "../hooks/use-achievements";
 import {
   type Achievement,
   AchievementFormSchema,
@@ -72,6 +74,13 @@ export function AchievementFormDialog({
 
   const [levelError, setLevelError] = React.useState<string | null>(null);
 
+  // QSeverse: autofill the form from an external credential template.
+  // Only offered on create — the legacy form never supported templating an edit.
+  const [useQSeverse, setUseQSeverse] = React.useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = React.useState("");
+  const { data: qsTemplates = [], isFetching: isLoadingTemplates } =
+    useQseverseTemplates(useQSeverse && mode === "create");
+
   // Icon mode: "url" (text input) | "file" (file upload)
   const [iconMode, setIconMode] = React.useState<"url" | "file">("url");
   const [iconFile, setIconFile] = React.useState<File | null>(null);
@@ -91,7 +100,7 @@ export function AchievementFormDialog({
       level_id: null,
       has_vc: false,
       is_active: true,
-      tags: "",
+      tags: [],
       type: "",
       icon_url: "",
       template_id: "",
@@ -116,9 +125,7 @@ export function AchievementFormDialog({
           level_id: achievement.level_id ?? null,
           has_vc: achievement.has_vc ?? false,
           is_active: achievement.is_active ?? true,
-          tags: Array.isArray(achievement.tags)
-            ? achievement.tags.join(", ")
-            : (achievement.tags ?? ""),
+          tags: achievement.tags ?? [],
           type: achievement.type ?? "",
           // Prefer icon_url (full URL) over icon (relative path) for the preview
           icon_url: achievement.icon_url ?? achievement.icon ?? "",
@@ -132,7 +139,7 @@ export function AchievementFormDialog({
           level_id: null,
           has_vc: false,
           is_active: true,
-          tags: "",
+          tags: [],
           type: "",
           icon_url: "",
           template_id: "",
@@ -144,10 +151,82 @@ export function AchievementFormDialog({
       setIconFilePreview(null);
       setIconFileError(null);
       setIconMode("url");
+      // Reset QSeverse state when dialog opens
+      setUseQSeverse(false);
+      setSelectedTemplateId("");
     }
   }, [open, mode, achievement, form]);
 
   const levelBased = form.watch("level_based");
+  const watchedName = form.watch("name");
+  const watchedTags = form.watch("tags");
+  const watchedType = form.watch("type");
+  const watchedHasVc = form.watch("has_vc");
+  const watchedIconUrl = form.watch("icon_url");
+
+  // A field is locked only if the selected template actually supplied a value
+  // for it — an empty field (e.g. a template with no banner image) must stay
+  // editable so the admin can still fill it in manually.
+  const isTemplateActive = useQSeverse && !!selectedTemplateId;
+  const isNameLocked = isTemplateActive && !!watchedName;
+  const isTagsLocked = isTemplateActive && (watchedTags?.length ?? 0) > 0;
+  const isTypeLocked = isTemplateActive && !!watchedType;
+  const isHasVcLocked = isTemplateActive && watchedHasVc === true;
+  const isIconLocked = isTemplateActive && !!watchedIconUrl;
+
+  const emptyFormValues: AchievementFormValues = {
+    name: "",
+    description: "",
+    level_based: false,
+    level_id: null,
+    has_vc: false,
+    is_active: true,
+    tags: [],
+    type: "",
+    icon_url: "",
+    template_id: "",
+  };
+
+  // ── QSeverse: toggle + template autofill ────────────────────────────────────
+
+  const handleQSeverseToggle = (checked: boolean) => {
+    setUseQSeverse(checked);
+    if (!checked) {
+      setSelectedTemplateId("");
+      form.reset(emptyFormValues);
+      setIconMode("url");
+    }
+  };
+
+  const handleTemplateSelect = (templateId: string) => {
+    const template = qsTemplates.find((t) => t.id === templateId);
+    if (!template) return;
+
+    setSelectedTemplateId(templateId);
+    const templateTags = template.tags ?? [];
+    const isLevelBased = templateTags.some((tag) =>
+      tag.toLowerCase().startsWith("level"),
+    );
+    const hasVC = templateTags.includes("Verifiable Credential");
+
+    form.reset({
+      name: template.name ?? "",
+      description: template.description ?? "",
+      level_based: isLevelBased,
+      level_id: null,
+      has_vc: hasVC,
+      is_active: true,
+      tags: templateTags,
+      type: template.template_type ?? "",
+      icon_url: template.banner_image_url ?? "",
+      template_id: template.id,
+    });
+    setIconMode("url");
+    setIconFile(null);
+    setIconFilePreview(null);
+    setIconFileError(null);
+    setLevelError(null);
+  };
 
   // ── File handling ────────────────────────────────────────────────────────────
 
@@ -204,10 +283,7 @@ export function AchievementFormDialog({
       return;
     }
 
-    const tagArray = values.tags
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean);
+    const tagArray = values.tags.filter(Boolean);
 
     // ── File upload path: build FormData (multipart/form-data) ──
     if (iconMode === "file" && iconFile) {
@@ -286,6 +362,63 @@ export function AchievementFormDialog({
             data-testid="achievement-form"
           >
             <div className="space-y-5 overflow-y-auto max-h-[60vh] pr-2">
+              {/* QSeverse template autofill — create mode only */}
+              {mode === "create" && (
+                <div className="space-y-3 rounded-lg border p-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium">
+                        Use QSeverse Template
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Autofill this achievement from a QSeverse credential
+                        template
+                      </p>
+                    </div>
+                    <Switch
+                      checked={useQSeverse}
+                      onCheckedChange={handleQSeverseToggle}
+                      disabled={isPending}
+                      data-testid="achievement-use-qseverse"
+                    />
+                  </div>
+
+                  {useQSeverse && (
+                    <Select
+                      value={selectedTemplateId}
+                      onValueChange={handleTemplateSelect}
+                      disabled={isPending || isLoadingTemplates}
+                    >
+                      <SelectTrigger
+                        className="w-full"
+                        data-testid="achievement-qseverse-template"
+                      >
+                        <SelectValue
+                          placeholder={
+                            isLoadingTemplates
+                              ? "Loading templates..."
+                              : "Select a QSeverse template"
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {qsTemplates.length === 0 && !isLoadingTemplates ? (
+                          <div className="p-2 text-sm text-muted-foreground text-center">
+                            No templates available
+                          </div>
+                        ) : (
+                          qsTemplates.map((template) => (
+                            <SelectItem key={template.id} value={template.id}>
+                              {template.name}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              )}
+
               {/* Name */}
               <FormField
                 control={form.control}
@@ -297,6 +430,7 @@ export function AchievementFormDialog({
                       <Input
                         placeholder="Achievement name"
                         {...field}
+                        disabled={isPending || isNameLocked}
                         data-testid="achievement-name"
                       />
                     </FormControl>
@@ -333,10 +467,11 @@ export function AchievementFormDialog({
                   <FormItem>
                     <FormLabel>Tags</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="e.g. Hackathon, Coding"
-                        {...field}
-                        data-testid="achievement-tags"
+                      <TagInput
+                        value={field.value ?? []}
+                        onChange={field.onChange}
+                        placeholder="Type a tag and press Enter…"
+                        disabled={isPending || isTagsLocked}
                       />
                     </FormControl>
                     <FormMessage />
@@ -355,6 +490,7 @@ export function AchievementFormDialog({
                       <Input
                         placeholder="e.g. Badge, Medal"
                         {...field}
+                        disabled={isPending || isTypeLocked}
                         data-testid="achievement-type"
                       />
                     </FormControl>
@@ -375,7 +511,8 @@ export function AchievementFormDialog({
                     <button
                       type="button"
                       onClick={() => setIconMode("url")}
-                      className={`flex items-center gap-1 px-2.5 py-1 transition-colors ${
+                      disabled={isIconLocked}
+                      className={`flex items-center gap-1 px-2.5 py-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                         iconMode === "url"
                           ? "bg-primary text-primary-foreground"
                           : "text-muted-foreground hover:bg-muted"
@@ -387,7 +524,8 @@ export function AchievementFormDialog({
                     <button
                       type="button"
                       onClick={() => setIconMode("file")}
-                      className={`flex items-center gap-1 px-2.5 py-1 transition-colors ${
+                      disabled={isIconLocked}
+                      className={`flex items-center gap-1 px-2.5 py-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                         iconMode === "file"
                           ? "bg-primary text-primary-foreground"
                           : "text-muted-foreground hover:bg-muted"
@@ -410,6 +548,7 @@ export function AchievementFormDialog({
                           <Input
                             placeholder="https://example.com/icon.png"
                             {...field}
+                            disabled={isPending || isIconLocked}
                             data-testid="achievement-icon-url"
                           />
                         </FormControl>
@@ -445,6 +584,7 @@ export function AchievementFormDialog({
                       type="file"
                       accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
                       className="hidden"
+                      disabled={isPending || isIconLocked}
                       onChange={handleFileInputChange}
                       data-testid="achievement-icon-file"
                     />
@@ -614,6 +754,7 @@ export function AchievementFormDialog({
                       <Switch
                         checked={field.value}
                         onCheckedChange={field.onChange}
+                        disabled={isPending || isHasVcLocked}
                         data-testid="achievement-has-vc"
                       />
                     </FormControl>

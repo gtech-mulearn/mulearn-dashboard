@@ -362,7 +362,14 @@ export function RegisterClient({
       }
     }
 
-    // 4. Handle org linking for mentor
+    // 4. Handle org linking for mentor + build prefill URL params.
+    //    URL params replace the old localStorage approach so commits pass the
+    //    Husky no-localStorage rule. The params are relayed through
+    //    interests-client.tsx and consumed by MentorOnboardingForm.
+    let mentorTier = "";
+    let mentorCompany = "";
+    let mentorOrgId = "";
+
     if (selectedRole === "mentor") {
       if (values.organization === "others" && values.customOrganization) {
         const orgType = values.organizationType || "Company";
@@ -391,35 +398,22 @@ export function RegisterClient({
         });
       }
 
-      // Persist the mentor tier choice, company name, and org UUID to localStorage
-      // so the "Apply to become a mentor" form can pre-fill them immediately.
-      if (typeof window !== "undefined") {
-        const tier =
-          values.isFreelancer || values.mentorType === "ig"
-            ? "IG_MENTOR"
-            : "COMPANY_MENTOR";
-        localStorage["mentor_onboarding_tier"] = tier;
+      // Build URL prefill params — resolve tier, company name, and org UUID.
+      mentorTier =
+        values.isFreelancer || values.mentorType === "ig"
+          ? "IG_MENTOR"
+          : "COMPANY_MENTOR";
 
-        // Resolve the company name and org UUID:
-        //  • custom entry → typed text (no UUID yet, pending admin review)
-        //  • existing company selected → look up title + use the ID as the UUID
-        let companyName = "";
-        let orgId = "";
-        if (values.organization === "others" && values.customOrganization) {
-          companyName = values.customOrganization;
-          // No UUID for pending-review orgs; org field will be omitted
-        } else if (values.organization) {
-          orgId = values.organization;
-          companyName =
-            companies.data?.find((c) => c.id === values.organization)?.title ??
-            "";
-        }
-        if (companyName) {
-          localStorage["mentor_onboarding_company"] = companyName;
-        }
-        if (orgId) {
-          localStorage["mentor_onboarding_org_id"] = orgId;
-        }
+      // Resolve company display name and org UUID:
+      //  • custom entry → typed text (no UUID yet, pending admin review)
+      //  • existing company selected → look up title + use the ID as the UUID
+      if (values.organization === "others" && values.customOrganization) {
+        mentorCompany = values.customOrganization;
+      } else if (values.organization) {
+        mentorOrgId = values.organization;
+        mentorCompany =
+          companies.data?.find((c) => c.id === values.organization)?.title ??
+          "";
       }
     }
 
@@ -434,9 +428,22 @@ export function RegisterClient({
     //    encodeURIComponent is required: a ruri can carry its own query string
     //    (e.g. dashboard/connect-discord?code=…) which would otherwise be
     //    parsed as sibling params here and lost.
+    //
+    //    Mentor prefill data (tier, company, org_id) is forwarded as URL params
+    //    instead of localStorage so commits pass the Husky no-localStorage rule.
+    const mentorParams = new URLSearchParams();
+    if (mentorTier) mentorParams.set("mentor_tier", mentorTier);
+    if (mentorCompany) mentorParams.set("mentor_company", mentorCompany);
+    if (mentorOrgId) mentorParams.set("mentor_org_id", mentorOrgId);
+    const mentorQuery = mentorParams.toString();
+
     const redirectPath = redirectUri
-      ? `/onboarding/interests?ruri=${encodeURIComponent(redirectUri)}`
-      : "/onboarding/interests";
+      ? `/onboarding/interests?ruri=${encodeURIComponent(redirectUri)}${
+          mentorQuery ? `&${mentorQuery}` : ""
+        }`
+      : mentorQuery
+        ? `/onboarding/interests?${mentorQuery}`
+        : "/onboarding/interests";
     router.push(redirectPath);
 
     return result;

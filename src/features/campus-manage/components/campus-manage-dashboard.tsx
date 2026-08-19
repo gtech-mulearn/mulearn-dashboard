@@ -552,6 +552,7 @@ const LEADERBOARD_COLUMNS = [
   { column: "level", Label: "Level", isSortable: false },
   { column: "cluster", Label: "Department / Cluster", isSortable: false },
   { column: "alumni", Label: "Alumni Status", isSortable: false },
+  { column: "graduationYear", Label: "Passout Year", isSortable: false },
 ];
 
 export function CampusManageDashboard() {
@@ -1226,6 +1227,12 @@ export function CampusManageDashboard() {
                           onCheckedChange={() => setPendingStudent(student)}
                           aria-label={`Toggle alumni status for ${student.name}`}
                         />
+                      );
+                    case "graduationYear":
+                      return (
+                        <span className="text-xs text-muted-foreground">
+                          {student.alumni ? student.graduationYear || "-" : "-"}
+                        </span>
                       );
                     default:
                       return null;

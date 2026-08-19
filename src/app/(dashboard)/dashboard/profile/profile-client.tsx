@@ -11,7 +11,11 @@ import { Clock } from "lucide-react";
 import { useState } from "react";
 import Loader from "@/app/loading";
 import { CompanyProfilePage } from "@/features/company-jobs/components";
-import { useMentorOverview } from "@/features/mentor/hooks";
+import {
+  useMentorOverview,
+  usePersonaCurrent,
+  useSwitchPersona,
+} from "@/features/mentor/hooks";
 import {
   useMentorApplication,
   useMentorProfile,
@@ -52,16 +56,11 @@ import {
   ChangeOrganizationRequestSchema,
 } from "@/features/settings";
 import { ROLES } from "@/lib/auth/roles";
-import { useUIStore } from "@/stores/ui-store";
 
 export function ProfilePageClient() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<ProfileTab>("basic-details");
   const [lastSavedDepartmentId, setLastSavedDepartmentId] = useState("");
-  // Persisted toggle: "learner" = show standard learner view even if user is a mentor.
-  // Stored in ui-store so it survives tab navigation and remounts.
-  const { profileViewMode, setProfileViewMode } = useUIStore();
-  const showLearnerView = profileViewMode === "learner";
 
   // Modal states
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -77,7 +76,6 @@ export function ProfilePageClient() {
   } = useUserProfile();
 
   // Mentor status — only fetched to decide which view to render.
-  // Uses the same hook the mentor onboarding flow already relies on.
   const isMentorRole = profile?.roles?.includes(ROLES.MENTOR) ?? false;
   const { data: mentorStatus } = useMentorApplication(isMentorRole);
 
@@ -89,8 +87,18 @@ export function ProfilePageClient() {
 
   const { data: mentorProfile } = useMentorProfile(isVerifiedMentor);
 
+  // Persona — driven by the backend. Falls back to "mentor" if the user is a
+  // verified mentor and the query hasn't resolved yet (avoids learner flash).
+  const { data: personaCurrent } = usePersonaCurrent(isMentorRole);
+  const switchPersonaMutation = useSwitchPersona();
+
+  // While the persona query is loading, assume mentor view for verified mentors
+  // to avoid flashing the learner profile.
+  const activePersona =
+    personaCurrent?.active_persona ?? (isVerifiedMentor ? "mentor" : "learner");
+
   const isMentor =
-    !showLearnerView &&
+    activePersona === "mentor" &&
     profile?.roles.includes(ROLES.MENTOR) &&
     isVerifiedMentor;
 
@@ -237,7 +245,9 @@ export function ProfilePageClient() {
   if (isMentor && mentorProfile) {
     return (
       <MentorProfilePage
-        onSwitchToLearner={() => setProfileViewMode("learner")}
+        onSwitchToLearner={() =>
+          switchPersonaMutation.mutate({ persona: "learner" })
+        }
       />
     );
   }
@@ -250,7 +260,7 @@ export function ProfilePageClient() {
 
   return (
     <div className="w-full max-w-full space-y-6 overflow-x-hidden">
-      {isPendingMentor && !showLearnerView && (
+      {isPendingMentor && activePersona === "learner" && (
         <div className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-amber-500/90 shadow-sm backdrop-blur-sm">
           <Clock className="h-5 w-5 shrink-0" />
           <div className="min-w-0 flex-1">
@@ -275,7 +285,17 @@ export function ProfilePageClient() {
           }
           onSwitchToMentor={
             profile?.roles.includes(ROLES.MENTOR) && isVerifiedMentor
-              ? () => setProfileViewMode("mentor")
+              ? () =>
+                  switchPersonaMutation.mutate(
+                    personaCurrent?.available_scopes?.[0]
+                      ? {
+                          persona: "mentor",
+                          scope_type:
+                            personaCurrent.available_scopes[0].scope_type,
+                          scope_id: personaCurrent.available_scopes[0].scope_id,
+                        }
+                      : { persona: "mentor" },
+                  )
               : undefined
           }
         />
@@ -313,6 +333,7 @@ export function ProfilePageClient() {
               <Achievements
                 muid={profile.muid}
                 userName={profile.full_name}
+                userEmail={editableProfile?.email}
                 isOwnProfile={true}
               />
             )}

@@ -4,13 +4,15 @@
  * 📍 src/features/profile/components/eligible-achievement-card.tsx
  *
  * Shows an achievement the user is currently eligible to claim.
- * Provides a "Claim Achievement" button that triggers the claim mutation.
+ * Clicking the card opens a detail modal with the full description and a
+ * "Claim Achievement" action; the footer button claims directly.
  */
 
 "use client";
 
 import { Award, Loader2 } from "lucide-react";
 import Image from "next/image";
+import * as React from "react";
 import { Button } from "@/components/ui/button";
 import {
   type Achievement,
@@ -18,6 +20,7 @@ import {
   useClaimAchievement,
 } from "@/features/achievements";
 import { resolveMediaUrl } from "@/lib/utils";
+import { AchievementDetailModal } from "./achievement-detail-modal";
 
 function getProgressLabel(progress: EligibleAchievement["progress"]): string {
   if (!progress) return "Progress";
@@ -51,6 +54,7 @@ export function EligibleAchievementCard({
   onClaimed,
 }: EligibleAchievementCardProps) {
   const { mutate: claim, isPending } = useClaimAchievement();
+  const [detailOpen, setDetailOpen] = React.useState(false);
 
   const iconUrl = meta?.icon_url || meta?.icon || "";
   const resolvedImageSrc = resolveMediaUrl(iconUrl);
@@ -58,6 +62,7 @@ export function EligibleAchievementCard({
   const handleClaim = () => {
     claim(item.achievement_id, {
       onSuccess: () => {
+        setDetailOpen(false);
         onClaimed?.();
       },
     });
@@ -65,69 +70,120 @@ export function EligibleAchievementCard({
 
   const progress = item.progress;
   const label = getProgressLabel(progress);
+  // Admin-granted eligibility (via bulk-issue) has no real progress metric —
+  // the backend returns an empty `progress: {}` object for these, which is
+  // truthy but has no current/required values to show. Users don't need to
+  // know it came from an admin grant vs. a rule — just that it's ready.
+  const isManualGrant = item.reason === "Manually granted";
+  const hasProgressMetric =
+    !!progress &&
+    !isManualGrant &&
+    (progress.current != null || progress.required != null);
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
-      {/* ── Body ─────────────────────────────────────────────── */}
-      <div className="flex flex-1 flex-col items-center px-6 pt-9 pb-6">
-        {/* Circular icon */}
-        <div className="mb-5 h-36 w-36 shrink-0 overflow-hidden rounded-full border-2 border-brand-blue/40 bg-muted shadow-sm ring-4 ring-brand-blue/10 transition-all duration-300 group-hover:ring-brand-blue/25 group-hover:shadow-md">
-          {resolvedImageSrc ? (
-            <div className="relative h-full w-full">
-              <Image
-                src={resolvedImageSrc}
-                alt={item.achievement_name}
-                fill
-                className="object-contain"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
-                }}
-              />
-            </div>
-          ) : (
-            <div className="flex h-full w-full items-center justify-center bg-muted">
-              <Award className="h-12 w-12 text-brand-blue/60" />
-            </div>
-          )}
+    <>
+      {/* biome-ignore lint/a11y/useSemanticElements: card wraps a nested "Claim" button; can't nest a real <button> inside a <button> */}
+      <div
+        className="group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
+        role="button"
+        tabIndex={0}
+        onClick={() => setDetailOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setDetailOpen(true);
+          }
+        }}
+        aria-label={`View details for ${item.achievement_name}`}
+      >
+        {/* ── Body ─────────────────────────────────────────────── */}
+        <div className="flex flex-1 flex-col items-center px-6 pt-9 pb-6">
+          {/* Circular icon */}
+          <div className="mb-5 h-36 w-36 shrink-0 overflow-hidden rounded-full border-2 border-brand-blue/40 bg-muted shadow-sm ring-4 ring-brand-blue/10 transition-all duration-300 group-hover:ring-brand-blue/25 group-hover:shadow-md">
+            {resolvedImageSrc ? (
+              <div className="relative h-full w-full">
+                <Image
+                  src={resolvedImageSrc}
+                  alt={item.achievement_name}
+                  fill
+                  className="object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-muted">
+                <Award className="h-12 w-12 text-brand-blue/60" />
+              </div>
+            )}
+          </div>
+
+          {/* Title + description */}
+          <div className="flex w-full flex-col items-center gap-2">
+            <h2 className="text-center text-lg font-semibold leading-snug text-foreground line-clamp-2">
+              {item.achievement_name}
+            </h2>
+            {meta?.description && (
+              <p className="text-center text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+                {meta.description}
+              </p>
+            )}
+
+            {/* Metric met — compact summary row */}
+            {hasProgressMetric && progress && (
+              <div className="mt-2 flex items-center gap-1.5 rounded-full bg-success/10 border border-success/20 px-3 py-1 text-xs font-medium text-success">
+                <span>{label}:</span>
+                <span className="font-bold">
+                  {(progress.current ?? 0).toLocaleString()}
+                </span>
+                <span className="text-success/70">
+                  / {(progress.required ?? 0).toLocaleString()}
+                </span>
+              </div>
+            )}
+            {isManualGrant && (
+              <div className="mt-2 flex items-center gap-1.5 rounded-full bg-brand-blue/10 border border-brand-blue/20 px-3 py-1 text-xs font-medium text-brand-blue">
+                <span>Ready to claim!</span>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Title + description */}
-        <div className="flex w-full flex-col items-center gap-2">
-          <h2 className="text-center text-lg font-semibold leading-snug text-foreground line-clamp-2">
-            {item.achievement_name}
-          </h2>
-          {meta?.description && (
-            <p className="text-center text-sm text-muted-foreground line-clamp-3 leading-relaxed">
-              {meta.description}
-            </p>
-          )}
-
-          {/* Metric met — compact summary row */}
-          {progress && (
-            <div className="mt-2 flex items-center gap-1.5 rounded-full bg-success/10 border border-success/20 px-3 py-1 text-xs font-medium text-success">
-              <span>{label}:</span>
-              <span className="font-bold">
-                {(progress.current ?? 0).toLocaleString()}
-              </span>
-              <span className="text-success/70">
-                / {(progress.required ?? 0).toLocaleString()}
-              </span>
-            </div>
-          )}
+        {/* ── Footer ───────────────────────────────────────────── */}
+        <div className="flex justify-center px-6 pb-6 pt-2">
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClaim();
+            }}
+            disabled={isPending}
+            className="h-10 w-full rounded-xl text-sm font-semibold bg-brand-blue text-primary-foreground hover:bg-brand-blue/90 shadow-xs border border-transparent transition-all duration-300"
+          >
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Claim Achievement
+          </Button>
         </div>
       </div>
 
-      {/* ── Footer ───────────────────────────────────────────── */}
-      <div className="flex justify-center px-6 pb-6 pt-2">
-        <Button
-          onClick={handleClaim}
-          disabled={isPending}
-          className="h-10 w-full rounded-xl text-sm font-semibold bg-brand-blue text-primary-foreground hover:bg-brand-blue/90 shadow-xs border border-transparent transition-all duration-300"
-        >
-          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Claim Achievement
-        </Button>
-      </div>
-    </div>
+      <AchievementDetailModal
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        name={item.achievement_name}
+        description={meta?.description}
+        iconUrl={iconUrl}
+        tags={meta?.tags}
+        footer={
+          <Button
+            onClick={handleClaim}
+            disabled={isPending}
+            className="h-10 w-full rounded-xl text-sm font-semibold bg-brand-blue text-primary-foreground hover:bg-brand-blue/90 sm:w-auto sm:px-8"
+          >
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Claim Achievement
+          </Button>
+        }
+      />
+    </>
   );
 }

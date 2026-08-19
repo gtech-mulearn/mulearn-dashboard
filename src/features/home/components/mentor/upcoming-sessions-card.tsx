@@ -1,4 +1,5 @@
 import { CalendarClock } from "lucide-react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -49,74 +50,82 @@ const STATUS_STYLES: Record<string, string> = {
 
 export function UpcomingSessionsCard({ sessions, isLoading }: Props) {
   return (
-    <Card className="rounded-2xl border bg-card shadow-sm">
-      <CardHeader className="px-5 py-4">
-        <div className="flex flex-row items-center gap-2.5">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
-            <CalendarClock className="size-4 text-primary" />
+    <Link
+      href="/dashboard/mentor/sessions"
+      className="block outline-none hover:opacity-90 transition-opacity"
+    >
+      <Card className="rounded-2xl border bg-card shadow-sm h-full hover:border-primary/50 transition-colors">
+        <CardHeader className="px-5 py-4">
+          <div className="flex flex-row items-center gap-2.5">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
+              <CalendarClock className="size-4 text-primary" />
+            </div>
+            <CardTitle className="text-base font-bold text-foreground">
+              Upcoming Sessions
+            </CardTitle>
           </div>
-          <CardTitle className="text-base font-bold text-foreground">
-            Upcoming Sessions
-          </CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="px-5 pb-5 pt-0">
-        {isLoading ? (
-          <div className="space-y-3">
-            {[0, 1, 2].map((i) => (
-              <Skeleton key={i} className="h-12 w-full rounded-lg" />
-            ))}
-          </div>
-        ) : sessions.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            No upcoming sessions.
-          </p>
-        ) : (
-          <div className="space-y-0">
-            {sessions.map((session) => {
-              const { date, time } = formatDateTime(session.starts_at);
-              const color = avatarColor(session.id);
-              const status = session.status;
-              return (
-                <div
-                  key={session.id}
-                  className="flex items-center gap-3 border-b border-border py-3 last:border-b-0"
-                >
+        </CardHeader>
+        <CardContent className="px-5 pb-5 pt-0">
+          {isLoading ? (
+            <div className="space-y-3">
+              {[0, 1, 2].map((i) => (
+                <Skeleton key={i} className="h-12 w-full rounded-lg" />
+              ))}
+            </div>
+          ) : sessions.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              No upcoming sessions.
+            </p>
+          ) : (
+            <div className="space-y-0">
+              {sessions.map((session) => {
+                const { date, time } = formatDateTime(session.starts_at);
+                const color = avatarColor(session.id);
+                const status = session.status;
+                return (
                   <div
-                    className="flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-primary-foreground"
-                    style={{ backgroundColor: color }}
+                    key={session.id}
+                    className="flex items-center gap-3 border-b border-border py-3 last:border-b-0"
                   >
-                    {initials(session.title)}
+                    <div
+                      className="flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-primary-foreground"
+                      style={{ backgroundColor: color }}
+                    >
+                      {initials(session.title)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {session.title}
+                      </p>
+                      <p className="truncate text-[11px] text-muted-foreground">
+                        {session.ig_name ??
+                          (session.is_global ? "Global" : session.mode)}
+                      </p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="text-xs font-medium text-foreground">
+                        {date}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {time}
+                      </p>
+                    </div>
+                    <span
+                      className={cn(
+                        "shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
+                        STATUS_STYLES[status] ??
+                          "bg-muted text-muted-foreground",
+                      )}
+                    >
+                      {status.charAt(0) + status.slice(1).toLowerCase()}
+                    </span>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-foreground">
-                      {session.title}
-                    </p>
-                    <p className="truncate text-[11px] text-muted-foreground">
-                      {session.ig_name ??
-                        (session.is_global ? "Global" : session.mode)}
-                    </p>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <p className="text-xs font-medium text-foreground">
-                      {date}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground">{time}</p>
-                  </div>
-                  <span
-                    className={cn(
-                      "shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
-                      STATUS_STYLES[status] ?? "bg-muted text-muted-foreground",
-                    )}
-                  >
-                    {status.charAt(0) + status.slice(1).toLowerCase()}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
