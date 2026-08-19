@@ -56,7 +56,7 @@ export async function deleteKarmaVoucher(id: string): Promise<void> {
 
 export async function importVouchers(file: File): Promise<BulkImportResponse> {
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("voucher_log", file);
 
   const response = await apiClient.post(
     endpoints.admin.karmaVoucher.import,
