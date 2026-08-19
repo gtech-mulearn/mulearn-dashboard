@@ -12,12 +12,7 @@ import { persist } from "zustand/middleware";
 
 interface UIState {
   isSidebarExpanded: boolean;
-  toggleSidebar: () => void;
   setSidebarExpanded: (expanded: boolean) => void;
-  expandSidebar: () => void;
-  collapseSidebar: () => void;
-  isMobileOpen: boolean;
-  setMobileOpen: (open: boolean) => void;
   resetUI: () => void;
 }
 
@@ -25,17 +20,10 @@ export const useUIStore = create<UIState>()(
   persist(
     (set) => ({
       isSidebarExpanded: true, // Default to expanded on desktop
-      toggleSidebar: () =>
-        set((state) => ({ isSidebarExpanded: !state.isSidebarExpanded })),
       setSidebarExpanded: (expanded) => set({ isSidebarExpanded: expanded }),
-      expandSidebar: () => set({ isSidebarExpanded: true }),
-      collapseSidebar: () => set({ isSidebarExpanded: false }),
-      isMobileOpen: false,
-      setMobileOpen: (open) => set({ isMobileOpen: open }),
       resetUI: () =>
         set({
           isSidebarExpanded: true,
-          isMobileOpen: false,
         }),
     }),
     {

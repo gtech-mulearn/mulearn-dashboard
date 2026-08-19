@@ -1,18 +1,29 @@
 "use client";
 
+import { LogOut, Settings, UserRound } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { ThemeToggle } from "@/app/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserInfo } from "@/features/auth/hooks/use-session";
 import { useCompanyProfile } from "@/features/company-jobs/hooks";
 import { GameProgressBar } from "@/features/mujourney/components/GameProgressBar";
-import { ROLES } from "@/lib/auth";
-import { cn } from "@/lib/utils";
+import { authStore, ROLES } from "@/lib/auth";
+import { useUIStore } from "@/stores/ui-store";
 
 function getInitials(name: string) {
   return name
@@ -25,11 +36,24 @@ function getInitials(name: string) {
 
 export function AppTopbar() {
   const [mounted, setMounted] = useState(false);
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const { data, isLoading, dataUpdatedAt } = useUserInfo();
   const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  const handleLogout = useCallback(async () => {
+    // Clear cookies server-side first: the HttpOnly refreshToken can't be removed
+    // by client js-cookie, and if it lingers the proxy refreshes a new accessToken
+    // and bounces /login back to /dashboard.
+    await fetch("/api/auth/logout", { method: "POST" });
+    await authStore.clearTokens();
+    useUIStore.getState().resetUI();
+    toast.success("Logged out successfully");
+    // Hard redirect so the proxy re-evaluates with the cookies actually gone.
+    window.location.href = "/login";
   }, []);
 
   // Company accounts: show the company profile (name + logo) in the topbar,
@@ -83,25 +107,53 @@ export function AppTopbar() {
             </div>
           </div>
         ) : data ? (
-          <Link
-            href="/dashboard/profile"
-            className="flex items-center gap-2 pr-1"
-          >
-            <Avatar className="w-8 h-8 shrink-0">
-              <AvatarImage src={displayImage} alt={displayName ?? ""} />
-              <AvatarFallback className="text-xs font-semibold">
-                {getInitials(displayName ?? "")}
-              </AvatarFallback>
-            </Avatar>
-            <div className={cn("hidden sm:flex flex-col leading-tight")}>
-              <span className="text-sm font-semibold truncate max-w-[120px]">
-                {displayName}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {displaySubtitle}
-              </span>
-            </div>
-          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                aria-label="Account menu"
+                className="flex items-center pr-1 rounded-full cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Avatar className="w-8 h-8 shrink-0">
+                  <AvatarImage src={displayImage} alt={displayName ?? ""} />
+                  <AvatarFallback className="text-xs font-semibold">
+                    {getInitials(displayName ?? "")}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel className="flex flex-col gap-0.5">
+                <span className="text-sm font-semibold truncate">
+                  {displayName}
+                </span>
+                <span className="text-xs font-normal text-muted-foreground">
+                  {displaySubtitle}
+                </span>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/profile">
+                  <UserRound className="mr-2 h-4 w-4" />
+                  Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/settings">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onSelect={() => setIsLogoutDialogOpen(true)}
+                className="text-destructive focus:text-destructive"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         ) : (
           <div className="flex items-center gap-2 pr-1">
             <Link
@@ -119,6 +171,15 @@ export function AppTopbar() {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={isLogoutDialogOpen}
+        onOpenChange={setIsLogoutDialogOpen}
+        title="Logout"
+        description="Are you sure you want to log out?"
+        onConfirm={handleLogout}
+        confirmLabel="Logout"
+      />
     </header>
   );
 }
