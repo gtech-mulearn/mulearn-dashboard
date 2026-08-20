@@ -138,7 +138,13 @@ export function CreateTaskModal({
       setKarmaError(err);
       return;
     }
-    if (!title.trim() || !hashtag.trim() || !karma || !description.trim())
+    if (
+      !title.trim() ||
+      !hashtag.trim() ||
+      !karma ||
+      !description.trim() ||
+      !level.trim()
+    )
       return;
 
     if (taskToEdit) {
