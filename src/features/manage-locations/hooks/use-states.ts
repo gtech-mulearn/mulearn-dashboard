@@ -37,6 +37,7 @@ export const useAddState = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["states"] });
       queryClient.invalidateQueries({ queryKey: ["state-dropdown"] });
+      toast.success("State added successfully");
     },
     onError: (error) => {
       toast.error(
@@ -52,11 +53,12 @@ export const useUpdateState = () => {
   return useMutation({
     mutationFn: (data: UpdateStateInput) => updateState(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["states"], exact: false }); // 👈 added
+      queryClient.invalidateQueries({ queryKey: ["states"], exact: false });
       queryClient.invalidateQueries({
         queryKey: ["state-dropdown"],
         exact: false,
       });
+      toast.success("State updated successfully");
     },
     onError: (error) => {
       toast.error(
@@ -74,6 +76,7 @@ export const useDeleteState = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["states"] });
       queryClient.invalidateQueries({ queryKey: ["state-dropdown"] });
+      toast.success("State deleted successfully");
     },
     onError: (error) => {
       toast.error(
