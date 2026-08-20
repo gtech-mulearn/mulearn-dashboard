@@ -20,14 +20,14 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { CompanyTaskFormSchema } from "@/features/company-jobs";
+import { ProjectSkillPicker } from "@/features/projects/components/project-skill-picker";
 import {
   useCreateCompanyTask,
-  useTaskTypes,
   useTaskLevels,
+  useTaskTypes,
   useUpdateCompanyTask,
 } from "../hooks/use-company-tasks";
 import type { CompanyTask, TaskTemplate } from "../types/tasks.types";
-import { ProjectSkillPicker } from "@/features/projects/components/project-skill-picker";
 
 interface CreateTaskModalProps {
   open: boolean;

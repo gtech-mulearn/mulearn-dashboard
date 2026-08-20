@@ -3,25 +3,25 @@ import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   createCompanyTask,
+  createTaskTemplate,
   createTaskType,
   deleteCompanyTask,
+  deleteTaskTemplate,
   deleteTaskType,
   type FetchCompanyTasksParams,
   fetchCompanyTaskDetail,
   fetchCompanyTasks,
   fetchPublicTaskList,
-  fetchTaskTypes,
   fetchTaskLevels,
+  fetchTaskTemplates,
+  fetchTaskTypes,
   updateCompanyTask,
   updateTaskType,
-  fetchTaskTemplates,
-  createTaskTemplate,
-  deleteTaskTemplate,
 } from "../api/tasks.api";
 import type {
   CreateCompanyTaskPayload,
-  UpdateCompanyTaskPayload,
   TaskTemplate,
+  UpdateCompanyTaskPayload,
 } from "../types/tasks.types";
 
 export const COMPANY_TASKS_KEYS = {

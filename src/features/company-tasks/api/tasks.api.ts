@@ -12,8 +12,8 @@ import type {
   CompanyTaskApprovalStatus,
   CompanyTasksResponse,
   CreateCompanyTaskPayload,
-  UpdateCompanyTaskPayload,
   TaskTemplate,
+  UpdateCompanyTaskPayload,
 } from "../types/tasks.types";
 
 export interface FetchCompanyTasksParams {

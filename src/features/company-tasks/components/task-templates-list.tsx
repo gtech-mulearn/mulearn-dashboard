@@ -1,6 +1,7 @@
 "use client";
 
-import { CheckSquare, Hash, Coins, Trash2, Plus } from "lucide-react";
+import { CheckSquare, Hash, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,12 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useState } from "react";
-import {
-  useDeleteTaskTemplate,
-  useTaskTemplates,
-} from "../hooks/use-company-tasks";
 import {
   Dialog,
   DialogContent,
@@ -23,8 +18,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CreateTaskTemplateModal } from "./create-task-template-modal";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  useDeleteTaskTemplate,
+  useTaskTemplates,
+} from "../hooks/use-company-tasks";
 import type { TaskTemplate } from "../types/tasks.types";
+import { CreateTaskTemplateModal } from "./create-task-template-modal";
 
 interface TaskTemplatesModalProps {
   open: boolean;
