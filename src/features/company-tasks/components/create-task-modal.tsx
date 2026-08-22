@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { CompanyTaskFormSchema } from "@/features/company-jobs";
-import { ProjectSkillPicker } from "@/features/projects/components/project-skill-picker";
+import { ProjectSkillPicker } from "@/features/projects";
 import {
   useCreateCompanyTask,
   useTaskLevels,

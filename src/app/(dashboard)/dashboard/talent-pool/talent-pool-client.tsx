@@ -4,24 +4,24 @@ import { useQuery } from "@tanstack/react-query";
 import {
   AlertTriangle,
   ChevronDown,
+  Download,
   Filter,
+  GraduationCap,
   Search,
+  Star,
   User,
   Users,
   X,
-  BarChart3,
-  Download,
-  GraduationCap,
-  Star,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -43,6 +43,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fetchAchievements } from "@/features/achievements";
+import { downloadTalentPoolInsightsCSV } from "@/features/company-jobs/api";
 import { LearnerCard } from "@/features/company-jobs/components";
 import {
   useLearnerDiscovery,
@@ -50,7 +51,6 @@ import {
   useShortlistedLearners,
   useTalentPoolInsights,
 } from "@/features/company-jobs/hooks";
-import { downloadTalentPoolInsightsCSV } from "@/features/company-jobs/api";
 import type { LearnerDiscoveryParams } from "@/features/company-jobs/types";
 import { getInterestGroupsList } from "@/features/interest-groups/api/interest-groups.api";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -477,8 +477,8 @@ function InsightsTab() {
     setIsExporting(true);
     try {
       await downloadTalentPoolInsightsCSV();
-    } catch (error) {
-      console.error("Export failed:", error);
+    } catch (_error) {
+      toast.error("Export failed. Please try again.");
     } finally {
       setIsExporting(false);
     }
