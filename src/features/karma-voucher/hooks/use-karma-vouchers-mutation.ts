@@ -41,9 +41,30 @@ export function useImportVouchers() {
 
   const mutation = useMutation({
     mutationFn: importVouchers,
-    onSuccess: () => {
+    onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: karmaVoucherKeys.lists() });
+
+      const successCount = data.Success.length;
+      const failedCount = data.Failed.length;
+
+      if (failedCount === 0) {
+        toast.success(
+          `Imported ${successCount} voucher${successCount === 1 ? "" : "s"} successfully`,
+        );
+      } else if (successCount === 0) {
+        toast.error(
+          `Import failed: ${failedCount} row${failedCount === 1 ? "" : "s"} had errors`,
+        );
+      } else {
+        toast.warning(
+          `Imported ${successCount} voucher${successCount === 1 ? "" : "s"}, ${failedCount} row${failedCount === 1 ? "" : "s"} failed`,
+        );
+      }
     },
+    onError: (error) =>
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to import vouchers" }),
+      ),
   });
 
   return {

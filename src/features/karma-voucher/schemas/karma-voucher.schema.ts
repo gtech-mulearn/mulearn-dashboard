@@ -47,19 +47,40 @@ export const KarmaVoucherSchema = z.object({
 });
 
 /**
- * Import Result Schema
+ * Import Success Row Schema
  */
-export const ImportResultSchema = z.object({
+export const ImportSuccessRowSchema = z.object({
+  muid: z.string().nullable().optional(),
   code: z.string(),
-  message: z.string(),
+  user: z.string().nullable().optional(),
+  task: z.string().nullable().optional(),
+  karma: z.union([z.number(), z.string(), z.null()]).optional(),
+  month: z.string().nullable().optional(),
+  week: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  event: z.string().nullable().optional(),
+});
+
+/**
+ * Import Failure Row Schema
+ */
+export const ImportFailureRowSchema = z.object({
+  muid: z.string().nullable().optional(),
+  karma: z.union([z.number(), z.string(), z.null()]).optional(),
+  hashtag: z.string().nullable().optional(),
+  month: z.string().nullable().optional(),
+  week: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  event: z.string().nullable().optional(),
+  error: z.string(),
 });
 
 /**
  * Bulk Import Response Schema
  */
 export const BulkImportResponseSchema = z.object({
-  Success: z.array(ImportResultSchema).default([]),
-  Failed: z.array(ImportResultSchema).default([]),
+  Success: z.array(ImportSuccessRowSchema).default([]),
+  Failed: z.array(ImportFailureRowSchema).default([]),
 });
 
 /**

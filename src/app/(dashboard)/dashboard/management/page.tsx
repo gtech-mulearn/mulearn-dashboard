@@ -12,8 +12,17 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ROLES } from "@/lib/auth/roles";
-import { requireRole } from "@/lib/auth/server";
+import { redirect } from "next/navigation";
+import { hasAnyRole } from "@/lib/auth/permissions";
+import {
+  ADMIN_ROLES,
+  COMMUNITY_SETTINGS_HUB_ROLES,
+  FELLOW_MANAGEMENT_ROLES,
+  MANAGEMENT_ROLES,
+  SYSTEM_CONFIG_HUB_ROLES,
+  USER_MANAGEMENT_HUB_ROLES,
+} from "@/lib/auth/roles";
+import { requireAuth } from "@/lib/auth/server";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -28,6 +37,7 @@ interface ManagementItem {
   description: string;
   path: string;
   color?: string;
+  roles: readonly string[];
 }
 
 const MANAGEMENT_ITEMS: ManagementItem[] = [
@@ -38,6 +48,7 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
       "Manage users, role permissions, interns, and role verification.",
     path: "/dashboard/management/user-management",
     color: "bg-chart-1/10 text-chart-1",
+    roles: USER_MANAGEMENT_HUB_ROLES,
   },
   {
     icon: ShieldCheck,
@@ -45,6 +56,7 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
     description: "Verify roles, tasks, sessions, orgs, companies, and mentors.",
     path: "/dashboard/management/verification",
     color: "bg-chart-2/10 text-chart-2",
+    roles: FELLOW_MANAGEMENT_ROLES,
   },
   {
     icon: Trophy,
@@ -53,6 +65,7 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
       "Configure achievements, rules, simulation, logs, and manual/bulk operations.",
     path: "/dashboard/management/manage-achievements",
     color: "bg-chart-4/10 text-chart-4",
+    roles: ADMIN_ROLES,
   },
   {
     icon: ListTodo,
@@ -61,6 +74,7 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
       "Manage task lists, create tasks, types, imports, and verification.",
     path: "/dashboard/management/tasks",
     color: "bg-primary/10 text-primary",
+    roles: ADMIN_ROLES,
   },
   {
     icon: Building,
@@ -69,6 +83,7 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
       "Manage organizations, affiliations, departments, transfers, and verifications.",
     path: "/dashboard/management/organizations",
     color: "bg-chart-1/10 text-chart-1",
+    roles: MANAGEMENT_ROLES,
   },
   {
     icon: Users,
@@ -77,6 +92,7 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
       "Configure interest groups, college levels, locations, channels, and Discord moderation.",
     path: "/dashboard/management/community",
     color: "bg-chart-3/10 text-chart-3",
+    roles: COMMUNITY_SETTINGS_HUB_ROLES,
   },
   {
     icon: Settings2,
@@ -85,6 +101,7 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
       "Manage karma point vouchers, error log reports, and dynamic types.",
     path: "/dashboard/management/system",
     color: "bg-chart-5/10 text-chart-5",
+    roles: SYSTEM_CONFIG_HUB_ROLES,
   },
   {
     icon: Home,
@@ -92,11 +109,20 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
     description: "Manage content sections shown on the public homepage.",
     path: "/dashboard/management/homepage",
     color: "bg-chart-2/10 text-chart-2",
+    roles: MANAGEMENT_ROLES,
   },
 ];
 
 export default async function ManagementPage() {
-  await requireRole([ROLES.ADMIN]);
+  const user = await requireAuth();
+
+  const visibleItems = MANAGEMENT_ITEMS.filter((item) =>
+    hasAnyRole(user.roles, item.roles),
+  );
+
+  if (visibleItems.length === 0) {
+    redirect("/dashboard?unauthorized=true");
+  }
 
   return (
     <div className="space-y-8">
@@ -108,7 +134,7 @@ export default async function ManagementPage() {
         </p>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {MANAGEMENT_ITEMS.map((item) => (
+        {visibleItems.map((item) => (
           <Link
             key={item.path}
             href={item.path}

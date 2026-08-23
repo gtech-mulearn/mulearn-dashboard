@@ -2,7 +2,7 @@ import { ChevronLeft, Gamepad2 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GritMeterItem } from "@/features/grit-meter/components/grit-meter-item";
-import { ROLES } from "@/lib/auth/roles";
+import { MANAGEMENT_ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function FeaturesPage() {
-  await requireRole([ROLES.ADMIN]);
+  await requireRole(MANAGEMENT_ROLES);
 
   return (
     <div className="space-y-8 py-6">

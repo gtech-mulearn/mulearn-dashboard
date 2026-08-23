@@ -10,8 +10,14 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ROLES } from "@/lib/auth/roles";
-import { requireRole } from "@/lib/auth/server";
+import { redirect } from "next/navigation";
+import { hasAnyRole } from "@/lib/auth/permissions";
+import {
+  ADMIN_ROLES,
+  FELLOW_MANAGEMENT_ROLES,
+  MANAGEMENT_ROLES,
+} from "@/lib/auth/roles";
+import { requireAuth } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
   title: "Organization Hub | Management",
@@ -25,6 +31,7 @@ interface OrgItem {
   href: string;
   icon: LucideIcon;
   iconBg: string;
+  roles: readonly string[];
 }
 
 const ORG_ITEMS: OrgItem[] = [
@@ -34,6 +41,7 @@ const ORG_ITEMS: OrgItem[] = [
     href: "/dashboard/management/organizations/list",
     icon: Building,
     iconBg: "bg-warning/15 text-warning",
+    roles: ADMIN_ROLES,
   },
   {
     title: "Organization Affiliation",
@@ -41,6 +49,7 @@ const ORG_ITEMS: OrgItem[] = [
     href: "/dashboard/management/organizations/affiliation",
     icon: LinkIcon,
     iconBg: "bg-success/15 text-success",
+    roles: MANAGEMENT_ROLES,
   },
   {
     title: "Organization Departments",
@@ -48,6 +57,7 @@ const ORG_ITEMS: OrgItem[] = [
     href: "/dashboard/management/organizations/departments",
     icon: Building2,
     iconBg: "bg-brand-blue/15 text-brand-blue",
+    roles: FELLOW_MANAGEMENT_ROLES,
   },
   {
     title: "Organization Transfer",
@@ -55,6 +65,7 @@ const ORG_ITEMS: OrgItem[] = [
     href: "/dashboard/management/organizations/transfer",
     icon: RefreshCw,
     iconBg: "bg-brand-purple/15 text-brand-purple",
+    roles: ADMIN_ROLES,
   },
   {
     title: "Organization Verification",
@@ -62,11 +73,20 @@ const ORG_ITEMS: OrgItem[] = [
     href: "/dashboard/management/organizations/verify",
     icon: CheckCircle,
     iconBg: "bg-destructive/15 text-destructive",
+    roles: FELLOW_MANAGEMENT_ROLES,
   },
 ];
 
 export default async function OrganizationHubPage() {
-  await requireRole([ROLES.ADMIN]);
+  const user = await requireAuth();
+
+  const visibleItems = ORG_ITEMS.filter((item) =>
+    hasAnyRole(user.roles, item.roles),
+  );
+
+  if (visibleItems.length === 0) {
+    redirect("/dashboard/management?unauthorized=true");
+  }
 
   return (
     <div className="space-y-8 py-6">
@@ -92,7 +112,7 @@ export default async function OrganizationHubPage() {
 
       {/* Grid of Sub-Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {ORG_ITEMS.map((card) => (
+        {visibleItems.map((card) => (
           <Link
             key={card.href}
             href={card.href}

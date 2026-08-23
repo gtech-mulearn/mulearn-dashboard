@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { MentorVerificationPage } from "@/features/mentor/admin/components/mentor-verification-page";
-import { ROLES } from "@/lib/auth/roles";
+import { ADMIN_ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
@@ -9,6 +9,6 @@ export const metadata: Metadata = {
 };
 
 export default async function MentorVerificationRoute() {
-  await requireRole([ROLES.ADMIN]);
+  await requireRole(ADMIN_ROLES);
   return <MentorVerificationPage />;
 }

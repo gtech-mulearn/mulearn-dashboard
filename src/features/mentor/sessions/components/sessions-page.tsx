@@ -42,7 +42,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { usePermissions } from "@/hooks/use-permissions";
-import { MANAGEMENT_ROLES } from "@/lib/auth/roles";
+import { ASSOCIATE_MANAGEMENT_ROLES } from "@/lib/auth/roles";
 import {
   useCompleteSession,
   useDeleteSession,
@@ -413,7 +413,7 @@ function SessionTable({
 
 export function SessionsPage() {
   const { hasRole } = usePermissions();
-  const isAdmin = hasRole(MANAGEMENT_ROLES);
+  const isAdmin = hasRole(ASSOCIATE_MANAGEMENT_ROLES);
   const searchParams = useSearchParams();
   const defaultTab = searchParams.get("tab") || "upcoming";
 
