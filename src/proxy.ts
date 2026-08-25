@@ -114,40 +114,78 @@ function decodeTokenPayload(token: string): Record<string, unknown> | null {
  * this, a present-but-expired cookie slips past recovery and the client guard
  * gets stuck bouncing /dashboard ⇄ /login (a stuck loading screen).
  */
+/**
+ * When does this token expire? Returns null if it does not say.
+ *
+ * TWO FORMATS ARE IN PLAY during the migration and they spell this
+ * differently:
+ *
+ *   legacy   "expiry": "2026-08-22 12:15:00+0000"   (a formatted string)
+ *   OIDC     "exp":    1755000900                    (Unix seconds, standard)
+ *
+ * Reading only `expiry` — as this did — means an OIDC token looks like it has
+ * no expiry at all, so the refresh below never fires and the person sits on a
+ * dead token getting 401s with no way to recover.
+ */
+function tokenExpiryDate(parsed: Record<string, unknown>): Date | null {
+  const exp = parsed.exp;
+  if (typeof exp === "number") {
+    // Seconds since the epoch, not milliseconds. Treating it as ms puts the
+    // expiry in 1970 and refreshes on every single request.
+    return new Date(exp * 1000);
+  }
+
+  const expiry = parsed.expiry;
+  if (typeof expiry === "string" || typeof expiry === "number") {
+    const date = new Date(expiry);
+    if (!Number.isNaN(date.getTime())) return date;
+  }
+
+  return null;
+}
+
 function isAccessTokenExpired(token: string): boolean {
   const parsed = decodeTokenPayload(token);
   if (!parsed) return true;
-  const expiry = parsed.expiry;
-  if (typeof expiry === "string" || typeof expiry === "number") {
-    const expiryDate = new Date(expiry);
-    // Invalid/unparseable date → fail open (treat as not-expired) and let the
-    // backend reject it, rather than risk a refresh→render→refresh loop.
-    if (!Number.isNaN(expiryDate.getTime())) {
-      return expiryDate < new Date();
-    }
-  }
-  // No expiry claim → can't prove it's valid; let the backend be the judge.
-  return false;
+
+  const expiry = tokenExpiryDate(parsed);
+  // Unparseable or absent → fail open (treat as not-expired) and let the
+  // backend reject it, rather than risk a refresh→render→refresh loop.
+  if (!expiry) return false;
+  return expiry < new Date();
 }
 
 /**
  * Decode JWT payload without verification and return roles.
  * Returns an empty array for malformed or expired tokens.
  */
-function extractRolesFromToken(token: string): string[] {
+/**
+ * Roles from the token, or NULL when the token does not carry them.
+ *
+ * The distinction matters enormously:
+ *
+ *   []    this person genuinely has no roles  → deny role-gated routes
+ *   null  this token format does not say      → defer to the server
+ *
+ * OIDC tokens carry no `roles` claim by design: roles are muLearn's data, not
+ * identity data, and are resolved per-request from the database so a revoked
+ * role takes effect immediately instead of whenever a token expires.
+ *
+ * Returning [] for those tokens would read as "no roles at all" and bounce
+ * every Campus Lead, IG Lead and admin off their own pages.
+ */
+function extractRolesFromToken(token: string): string[] | null {
   const parsed = decodeTokenPayload(token);
   if (!parsed) return [];
 
   // Expired tokens grant no roles.
-  const expiry = parsed.expiry;
-  if (typeof expiry === "string" || typeof expiry === "number") {
-    const expiryDate = new Date(expiry);
-    if (!Number.isNaN(expiryDate.getTime()) && expiryDate < new Date()) {
-      return [];
-    }
-  }
+  const expiry = tokenExpiryDate(parsed);
+  if (expiry && expiry < new Date()) return [];
 
-  return Array.isArray(parsed.roles) ? (parsed.roles as string[]) : [];
+  if (Array.isArray(parsed.roles)) return parsed.roles as string[];
+
+  // No roles claim at all — an OIDC token. The edge cannot answer this one.
+  return null;
 }
 
 // ─── Middleware ─────────────────────────────────────────────
@@ -214,6 +252,16 @@ export function proxy(request: NextRequest) {
 
     if (routeConfig && routeConfig.roles.length > 0) {
       const userRoles = extractRolesFromToken(accessToken);
+
+      // null = the token does not carry roles (OIDC). This edge check is
+      // "Layer 1": a cheap early filter, never the only gate. The server
+      // authorises every request from its own tables regardless, so deferring
+      // here loses no protection — whereas denying would lock every
+      // role-holding member out of their own pages.
+      if (userRoles === null) {
+        return NextResponse.next();
+      }
+
       const hasStaticRole = routeConfig.roles.some((r) =>
         userRoles.includes(r),
       );

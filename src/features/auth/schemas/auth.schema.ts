@@ -123,6 +123,25 @@ export const UserInfoSchema = z.object({
   profile_pic: z.string().nullable(),
   user_domains: z.array(z.string()),
   user_endgoals: z.array(z.string()),
+  /**
+   * Whether onboarding is finished, decided by the server.
+   *
+   * This used to be worked out here, from `user_domains.length === 0`. That
+   * rule lived only in this app, so nothing else applied it — and express
+   * signups (created through another app) have no domains by definition, so
+   * every consumer needs the same answer without reinventing it.
+   *
+   * Optional so an older backend still validates: the guard falls back to the
+   * old check when this is absent.
+   */
+  onboarding: z
+    .object({
+      state: z.enum(["COMPLETE", "INCOMPLETE"]),
+      missing: z.array(z.string()),
+      /** True for roles the interest checklist does not apply to, e.g. Company. */
+      exempt: z.boolean(),
+    })
+    .optional(),
   interested_in_work: z.boolean().optional(),
   interested_in_gig_work: z.boolean().optional(),
   is_verified: z.boolean().optional(),
@@ -228,6 +247,12 @@ export type CompanyOnboardingStatus = z.infer<
 
 export const GoogleAuthUrlResponseDataSchema = z.object({
   redirect_url: z.string(),
+  // F5: the server now issues a single-use state and embeds it in
+  // redirect_url. It returns the raw value here so this browser can remember
+  // it and reject a callback that does not match. Required, not optional —
+  // if the server stops sending it the flow is silently unprotected, and a
+  // schema failure is the correct way to find that out.
+  state: z.string(),
 });
 
 export const GoogleAuthUrlResponseSchema = ApiResponseSchema(

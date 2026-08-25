@@ -19,6 +19,32 @@ interface OnboardingGuardProps {
   children: ReactNode;
 }
 
+/**
+ * Does this person still have onboarding to do?
+ *
+ * Prefers the server's answer. The old rule — "no domains means not
+ * onboarded" — lived only in this component, so nothing else in the estate
+ * applied it. Now that other apps can sign people in, and express signups have
+ * no domains by definition, the decision belongs on the server where every
+ * consumer sees the same result.
+ *
+ * The fallback keeps this working against a backend that has not shipped the
+ * field yet, so the two can deploy in either order.
+ */
+function needsOnboarding(user: {
+  roles: string[];
+  user_domains?: string[];
+  onboarding?: { state: string; exempt: boolean };
+}): boolean {
+  if (user.onboarding) {
+    return user.onboarding.state === "INCOMPLETE";
+  }
+  // Legacy fallback, including the company exemption this component has always
+  // applied. Delete once the backend field is deployed everywhere.
+  if (user.roles.includes(ROLES.COMPANY)) return false;
+  return !user.user_domains || user.user_domains.length === 0;
+}
+
 export function OnboardingGuard({ children }: OnboardingGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -47,11 +73,7 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
 
     // Company users have their own onboarding/verification flow —
     // they skip the interests selection step entirely.
-    const isCompany = user.roles.includes(ROLES.COMPANY);
-    if (isCompany) return;
-
-    // All other roles: redirect to interests onboarding if no domains selected
-    if (!user.user_domains || user.user_domains.length === 0) {
+    if (needsOnboarding(user)) {
       router.replace("/onboarding/interests");
     }
   }, [user, isLoading, isFetching, isError, hasSession, router, isPublicRoute]);
@@ -78,8 +100,9 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
     return <>{children}</>;
   }
 
-  // Non-company: block render until domains are selected
-  if (!user.user_domains || user.user_domains.length === 0) {
+  // Block render until onboarding is done, so a half-onboarded dashboard is
+  // never briefly visible before the redirect lands.
+  if (needsOnboarding(user)) {
     if (isPublicRoute) {
       return <>{children}</>;
     }

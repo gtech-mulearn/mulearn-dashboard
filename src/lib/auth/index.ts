@@ -11,6 +11,10 @@
  * Import server utilities directly: `import { requireRole } from "@/lib/auth/server"`
  */
 
+// OAuth `state` — browser half of the login-CSRF fix (audit finding F5).
+// Must be used in pairs: rememberState before redirecting to the provider,
+// consumeState on the callback BEFORE the code is exchanged.
+export { consumeState, OAuthStateError, rememberState } from "./oauth-state";
 // Permissions
 export {
   getRolesForPermission,

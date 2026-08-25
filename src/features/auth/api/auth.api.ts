@@ -163,7 +163,10 @@ export async function fetchCompanyOnboardingStatus() {
 /**
  * Get Google OAuth2 redirect URL
  */
-export async function fetchGoogleAuthUrl(): Promise<{ redirect_url: string }> {
+export async function fetchGoogleAuthUrl(): Promise<{
+  redirect_url: string;
+  state: string;
+}> {
   const redirectUri =
     typeof window !== "undefined" ? `${window.location.origin}/callback/` : "";
 
@@ -175,16 +178,22 @@ export async function fetchGoogleAuthUrl(): Promise<{ redirect_url: string }> {
 }
 
 /**
- * Exchange Google auth code for access/refresh tokens
+ * Exchange Google auth code for access/refresh tokens.
+ *
+ * `state` is forwarded so the server can consume it (F5). The caller must
+ * ALSO have verified it against the browser's remembered value first — see
+ * consumeState in @/lib/auth. Server-side consumption alone does not close
+ * the CSRF.
  */
 export async function fetchGoogleCallback(
   code: string,
+  state: string,
 ): Promise<GoogleCallbackResponseData> {
   const redirectUri =
     typeof window !== "undefined" ? `${window.location.origin}/callback/` : "";
 
   const response = await publicApiClient.get(
-    endpoints.auth.googleCallback(code, encodeURIComponent(redirectUri)),
+    endpoints.auth.googleCallback(code, state, encodeURIComponent(redirectUri)),
     GoogleCallbackResponseSchema,
   );
   return response.response;

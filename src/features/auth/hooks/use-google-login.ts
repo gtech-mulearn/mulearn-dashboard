@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
-import { authStore } from "@/lib/auth";
+import { authStore, consumeState, rememberState } from "@/lib/auth";
 import { fetchGoogleAuthUrl, fetchGoogleCallback, fetchUserInfo } from "../api";
 import { authKeys } from "./query-keys";
 
@@ -24,8 +24,11 @@ import { authKeys } from "./query-keys";
 export function useGoogleAuthUrl() {
   return useMutation({
     mutationFn: async () => {
-      const { redirect_url } = await fetchGoogleAuthUrl();
+      const { redirect_url, state } = await fetchGoogleAuthUrl();
       if (typeof window !== "undefined") {
+        // F5: remember before navigating. If this throws we must NOT send the
+        // user to Google — an unverifiable callback is worse than no login.
+        rememberState(state);
         window.location.href = redirect_url;
       }
       return redirect_url;
@@ -44,14 +47,32 @@ export function useGoogleAuthUrl() {
  * Hook to handle Google OAuth2 callback.
  * Exchanges the auth code for tokens and fetches user info.
  */
-export function useGoogleCallback(code?: string, error?: string) {
+export function useGoogleCallback(
+  code?: string,
+  state?: string,
+  error?: string,
+) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const hasRun = useRef(false);
 
   const mutation = useMutation({
-    mutationFn: async ({ code: authCode }: { code: string }) => {
-      const tokenData = await fetchGoogleCallback(authCode);
+    mutationFn: async ({
+      code: authCode,
+      state: returnedState,
+    }: {
+      code: string;
+      state?: string;
+    }) => {
+      // F5: bind this callback to the browser that started the flow, BEFORE
+      // the code is spent. consumeState throws OAuthStateError on mismatch,
+      // which the mutation's onError turns into a toast + redirect to /login.
+      consumeState(returnedState);
+
+      const tokenData = await fetchGoogleCallback(
+        authCode,
+        returnedState as string,
+      );
 
       if (tokenData.isNewUser === true && tokenData.tempToken) {
         await authStore.setTempToken(tokenData.tempToken);
@@ -109,9 +130,9 @@ export function useGoogleCallback(code?: string, error?: string) {
 
     if (code) {
       hasRun.current = true;
-      mutation.mutate({ code });
+      mutation.mutate({ code, state });
     }
-  }, [code, error, router, mutation.mutate]);
+  }, [code, state, error, router, mutation.mutate]);
 
   return mutation;
 }

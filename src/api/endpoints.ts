@@ -25,9 +25,13 @@ export const endpoints = {
     /** GET - Get Google OAuth2 redirect URL */
     signinWithGoogle: (redirectUri: string) =>
       `/api/v1/auth/signin-with-google/?redirect_uri=${redirectUri}`,
-    /** GET - Google OAuth2 callback to exchange code for tokens */
-    googleCallback: (code: string, redirectUri: string) =>
-      `/api/v1/auth/google/login/callback/?code=${code}&redirect_uri=${redirectUri}`,
+    /**
+     * GET - Google OAuth2 callback to exchange code for tokens.
+     * `state` is required: GoogleLoginCallbackAPIView consumes it before
+     * spending the code (audit finding F5). Omitting it fails the request.
+     */
+    googleCallback: (code: string, state: string, redirectUri: string) =>
+      `/api/v1/auth/google/login/callback/?code=${code}&state=${encodeURIComponent(state)}&redirect_uri=${redirectUri}`,
   },
 
   // ============================================

@@ -22,6 +22,7 @@
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 import { refreshAccessTokenServer } from "@/api/refresh.server";
+import { refreshOidcSession } from "@/lib/auth/oidc-refresh";
 import { sanitizeReturnPath } from "@/lib/auth/return-path";
 
 /**
@@ -79,8 +80,36 @@ export async function GET(request: NextRequest) {
     return redirectToPath(loginPathWithReturn(returnPath));
   }
 
+  const issuer = process.env.NEXT_PUBLIC_OIDC_ISSUER;
+  const clientId = process.env.NEXT_PUBLIC_OIDC_CLIENT_ID;
+  const useOidc = process.env.OIDC_ENABLED === "true" && issuer && clientId;
+
   try {
-    const newAccessToken = await refreshAccessTokenServer(refreshToken);
+    let newAccessToken: string | null;
+    let accessTokenMaxAgeMs = 15 * 60 * 1000;
+
+    if (useOidc) {
+      // ROTATION: the provider consumes this refresh token and returns a
+      // replacement. The new one MUST be stored — presenting a spent token is
+      // treated as theft and revokes the whole family, signing the person out
+      // everywhere. See lib/auth/oidc-refresh.ts.
+      const session = await refreshOidcSession(refreshToken, {
+        issuer,
+        clientId,
+      });
+      newAccessToken = session.accessToken;
+      accessTokenMaxAgeMs = session.expiresIn * 1000;
+
+      cookieStore.set("refreshToken", session.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60,
+      });
+    } else {
+      newAccessToken = await refreshAccessTokenServer(refreshToken);
+    }
 
     if (!newAccessToken) {
       throw new Error("No access token in refresh response");
@@ -93,7 +122,7 @@ export async function GET(request: NextRequest) {
       // Must match authStore.setTokens' 15-minute accessToken lifetime —
       // otherwise the cookie outlives the JWT it holds and browsers keep
       // presenting an already-expired token until this cookie itself expires.
-      expires: new Date(Date.now() + 15 * 60 * 1000),
+      expires: new Date(Date.now() + accessTokenMaxAgeMs),
       secure: isProduction,
       sameSite: "lax",
       path: "/",

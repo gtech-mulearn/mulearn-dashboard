@@ -14,9 +14,12 @@ import { useGoogleCallback } from "@/features/auth";
 export function CallbackPageClient() {
   const searchParams = useSearchParams();
   const code = searchParams.get("code") || undefined;
+  // F5: Google echoes back the state we sent. useGoogleCallback verifies it
+  // against sessionStorage before the code is exchanged.
+  const state = searchParams.get("state") || undefined;
   const error = searchParams.get("error") || undefined;
 
-  useGoogleCallback(code, error);
+  useGoogleCallback(code, state, error);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center space-y-4">
