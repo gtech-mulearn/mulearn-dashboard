@@ -143,7 +143,7 @@ export function CreateTaskModal({
       !hashtag.trim() ||
       !karma ||
       !description.trim() ||
-      !level.trim()
+      (!taskToEdit && !level.trim())
     )
       return;
 
