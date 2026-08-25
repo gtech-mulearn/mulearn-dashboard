@@ -14,7 +14,11 @@ export const MentorApplicationSchema = z.object({
   about: z.string().nullable().optional(),
   expertise: z.string().nullable().optional(),
   reason: z.string().nullable().optional(),
-  hours: z.number().optional().default(0),
+  hours: z
+    .number()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? 0),
   mentor_tier: z.string().nullable().optional(),
   status: z.enum(MENTOR_STATUSES).optional(),
   preferred_ig_ids: z.array(z.string()).optional().default([]),

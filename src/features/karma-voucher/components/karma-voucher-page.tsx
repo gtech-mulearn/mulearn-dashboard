@@ -179,13 +179,13 @@ function KarmaVoucherContent() {
                     </p>
                     {importData.Failed.map((err) => (
                       <div
-                        key={`${err.code}-${err.message}`}
+                        key={`${err.muid ?? "row"}-${err.hashtag ?? ""}-${err.error}`}
                         className="text-xs text-destructive/80 flex gap-2"
                       >
-                        <span className="font-mono text-neutral-500">
-                          [{err.code}]
+                        <span className="text-neutral-500">
+                          [{err.muid ?? "—"}]
                         </span>
-                        <span>{err.message}</span>
+                        <span>{err.error}</span>
                       </div>
                     ))}
                   </div>

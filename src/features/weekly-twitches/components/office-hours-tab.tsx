@@ -31,8 +31,8 @@ const STATUS_COLORS: Record<string, string> = {
 const COLUMNS = [
   { column: "title", Label: "Title", isSortable: false, width: "w-52" },
   { column: "performer", Label: "Performer", isSortable: false, width: "w-36" },
-  { column: "date", Label: "Date", isSortable: false, width: "w-28" },
-  { column: "time", Label: "Time", isSortable: false, width: "w-20" },
+  { column: "date", Label: "Date", isSortable: true, width: "w-28" },
+  { column: "time", Label: "Time", isSortable: true, width: "w-20" },
   { column: "status", Label: "Status", isSortable: false, width: "w-28" },
   {
     column: "interest_groups",
@@ -47,6 +47,7 @@ export function OfficeHoursTab() {
   const [perPage, setPerPage] = useState(10);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
+  const [sort, setSort] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [viewTarget, setViewTarget] = useState<OfficeHoursItem | null>(null);
   const [editTarget, setEditTarget] = useState<OfficeHoursItem | null>(null);
@@ -59,6 +60,7 @@ export function OfficeHoursTab() {
     perPage,
     search,
     status: status || undefined,
+    sortBy: sort || undefined,
   });
 
   const { remove } = useOfficeHoursMutations();
@@ -86,6 +88,11 @@ export function OfficeHoursTab() {
   const handleStatusChange = (val: string) => {
     setPage(1);
     setStatus(val === "all" ? "" : val);
+  };
+
+  const handleSortChange = (column: string) => {
+    setPage(1);
+    setSort((prev) => (prev === column ? `-${column}` : column));
   };
 
   const openCreate = () => {
@@ -221,7 +228,11 @@ export function OfficeHoursTab() {
           </div>
         )}
       >
-        <THead columnOrder={COLUMNS} onIconClick={() => {}} action={true} />
+        <THead
+          columnOrder={COLUMNS}
+          onIconClick={handleSortChange}
+          action={true}
+        />
         <Pagination
           currentPage={page}
           totalPages={totalPages}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -22,6 +23,7 @@ export function GysCards() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
+  const [sortBy, setSortBy] = useState("");
   const [sheetItem, setSheetItem] = useState<GysItem | null>(null);
 
   const { data, isLoading, isError } = useGysList({
@@ -29,10 +31,19 @@ export function GysCards() {
     perPage: 12,
     search,
     status: status || "ongoing,upcoming",
+    sortBy: sortBy || undefined,
   });
 
   const items = data?.data ?? [];
   const totalPages = data?.pagination.totalPages ?? 0;
+  const hasSearch = Boolean(search.trim());
+  const hasFilters = hasSearch || Boolean(status);
+
+  const handleClearFilters = () => {
+    setPage(1);
+    setSearch("");
+    setStatus("");
+  };
 
   return (
     <div className="space-y-4">
@@ -64,6 +75,23 @@ export function GysCards() {
               <SelectItem value="ongoing">Ongoing</SelectItem>
             </SelectContent>
           </Select>
+          <Select
+            value={sortBy || undefined}
+            onValueChange={(v) => {
+              setPage(1);
+              setSortBy(v);
+            }}
+          >
+            <SelectTrigger className="w-[170px] rounded-xl border-border bg-background">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date">Date (Soonest first)</SelectItem>
+              <SelectItem value="-date">Date (Latest first)</SelectItem>
+              <SelectItem value="time">Time (Earliest first)</SelectItem>
+              <SelectItem value="-time">Time (Latest first)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -85,8 +113,23 @@ export function GysCards() {
         <StateDisplay
           variant="no-results"
           className="rounded-2xl border border-dashed border-border bg-muted/40"
-          title="No sessions found"
-          description="There are currently no Grab Your Superpowers sessions listed here."
+          title={
+            hasFilters ? "No matching sessions found" : "No sessions found"
+          }
+          description={
+            hasSearch
+              ? "No Grab Your Superpowers sessions match your search. Try changing or clearing your search filters."
+              : hasFilters
+                ? "No Grab Your Superpowers sessions match the selected filters. Try changing or clearing them."
+                : "There are currently no Grab Your Superpowers sessions listed here."
+          }
+          action={
+            hasFilters ? (
+              <Button variant="outline" size="sm" onClick={handleClearFilters}>
+                Clear filters
+              </Button>
+            ) : undefined
+          }
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

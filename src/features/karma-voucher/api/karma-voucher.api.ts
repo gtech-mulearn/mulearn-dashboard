@@ -1,6 +1,7 @@
-import { apiClient } from "@/api/client";
+import { ApiError, apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
+  ApiResponseSchema,
   BulkImportResponseSchema,
   KarmaVoucherListResponseSchema,
 } from "../schemas";
@@ -58,14 +59,28 @@ export async function importVouchers(file: File): Promise<BulkImportResponse> {
   const formData = new FormData();
   formData.append("voucher_log", file);
 
-  const response = await apiClient.post(
-    endpoints.admin.karmaVoucher.import,
-    formData,
-    BulkImportResponseSchema,
-    { isFormData: true },
-  );
+  try {
+    const response = await apiClient.post(
+      endpoints.admin.karmaVoucher.import,
+      formData,
+      ApiResponseSchema(BulkImportResponseSchema),
+      { isFormData: true },
+    );
 
-  return response;
+    const nestedResult = response.response || response.data;
+    return nestedResult ?? BulkImportResponseSchema.parse(response);
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      error.data &&
+      typeof error.data === "object"
+    ) {
+      const payload = (error.data as { response?: unknown }).response;
+      const parsed = BulkImportResponseSchema.safeParse(payload);
+      if (parsed.success) return parsed.data;
+    }
+    throw error;
+  }
 }
 
 // ─── Export CSV (blob download) ─────────────────────────────────────────────

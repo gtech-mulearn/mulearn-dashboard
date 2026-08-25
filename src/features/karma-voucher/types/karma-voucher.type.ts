@@ -20,14 +20,32 @@ export interface KarmaVoucher {
   muid?: string | null;
 }
 
-export interface ImportResult {
+export interface ImportSuccessRow {
+  muid?: string | null;
   code: string;
-  message: string;
+  user?: string | null;
+  task?: string | null;
+  karma?: number | string | null;
+  month?: string | null;
+  week?: string | null;
+  description?: string | null;
+  event?: string | null;
+}
+
+export interface ImportFailureRow {
+  muid?: string | null;
+  karma?: number | string | null;
+  hashtag?: string | null;
+  month?: string | null;
+  week?: string | null;
+  description?: string | null;
+  event?: string | null;
+  error: string;
 }
 
 export interface BulkImportResponse {
-  Success: ImportResult[];
-  Failed: ImportResult[];
+  Success: ImportSuccessRow[];
+  Failed: ImportFailureRow[];
 }
 
 export interface PaginatedData<T> {

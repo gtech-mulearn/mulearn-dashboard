@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { WeeklyTwitchesView } from "@/features/weekly-twitches";
-import { MANAGEMENT_ROLES, ROLES } from "@/lib/auth/roles";
+import { ASSOCIATE_MANAGEMENT_ROLES, ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   await requireRole([
-    ...MANAGEMENT_ROLES,
+    ...ASSOCIATE_MANAGEMENT_ROLES,
     ROLES.IG_LEAD,
     ROLES.ZONAL_CAMPUS_LEAD,
     ROLES.DISTRICT_CAMPUS_LEAD,

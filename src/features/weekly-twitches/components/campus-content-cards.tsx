@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -32,6 +33,7 @@ export function CampusContentCards({ contentType }: Props) {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [zone, setZone] = useState("");
+  const [sortBy, setSortBy] = useState("");
   const [sheetItem, setSheetItem] = useState<CampusContentItem | null>(null);
 
   const params = {
@@ -40,6 +42,7 @@ export function CampusContentCards({ contentType }: Props) {
     search,
     status: status || "ongoing,upcoming",
     zone: zone || undefined,
+    sortBy: sortBy || undefined,
   };
 
   const smtQuery = useSmtList(params, contentType === "smt");
@@ -49,6 +52,15 @@ export function CampusContentCards({ contentType }: Props) {
 
   const items = data?.data ?? [];
   const totalPages = data?.pagination.totalPages ?? 0;
+  const hasSearch = Boolean(search.trim());
+  const hasFilters = hasSearch || Boolean(status) || Boolean(zone);
+
+  const handleClearFilters = () => {
+    setPage(1);
+    setSearch("");
+    setStatus("");
+    setZone("");
+  };
 
   return (
     <div className="space-y-4">
@@ -97,6 +109,23 @@ export function CampusContentCards({ contentType }: Props) {
               <SelectItem value="south">South</SelectItem>
             </SelectContent>
           </Select>
+          <Select
+            value={sortBy || undefined}
+            onValueChange={(v) => {
+              setPage(1);
+              setSortBy(v);
+            }}
+          >
+            <SelectTrigger className="w-[170px] rounded-xl border-border bg-background">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date">Date (Soonest first)</SelectItem>
+              <SelectItem value="-date">Date (Latest first)</SelectItem>
+              <SelectItem value="time">Time (Earliest first)</SelectItem>
+              <SelectItem value="-time">Time (Latest first)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -118,8 +147,23 @@ export function CampusContentCards({ contentType }: Props) {
         <StateDisplay
           variant="no-results"
           className="rounded-2xl border border-dashed border-border bg-muted/40"
-          title="No episodes found"
-          description={`There are currently no ${LABELS[contentType]} episodes listed here.`}
+          title={
+            hasFilters ? "No matching episodes found" : "No episodes found"
+          }
+          description={
+            hasSearch
+              ? `No ${LABELS[contentType]} episodes match your search. Try changing or clearing your search filters.`
+              : hasFilters
+                ? `No ${LABELS[contentType]} episodes match the selected filters. Try changing or clearing them.`
+                : `There are currently no ${LABELS[contentType]} episodes listed here.`
+          }
+          action={
+            hasFilters ? (
+              <Button variant="outline" size="sm" onClick={handleClearFilters}>
+                Clear filters
+              </Button>
+            ) : undefined
+          }
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

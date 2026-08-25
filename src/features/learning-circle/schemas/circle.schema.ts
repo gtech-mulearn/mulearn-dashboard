@@ -292,7 +292,10 @@ export const CircleListResponseSchema = ApiResponseSchema(
 );
 
 export const UserCircleListResponseSchema = ApiResponseSchema(
-  z.array(LearningCircleSchema),
+  z.object({
+    data: z.array(LearningCircleSchema),
+    pagination: PaginationSchema,
+  }),
 );
 
 export const CircleDetailResponseSchema = ApiResponseSchema(

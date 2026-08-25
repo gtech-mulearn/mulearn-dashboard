@@ -10,8 +10,6 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { toast } from "sonner";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import type { KarmaVoucher } from "../types";
 import {
   useDeleteKarmaVoucher,
@@ -108,10 +106,8 @@ export function useKarmaVoucherLogic() {
 
       try {
         await uploadVouchers(file);
-      } catch (error) {
-        toast.error(
-          getApiResponseError(error, { fallback: "Failed to import vouchers" }),
-        );
+      } catch {
+        // Handled by useImportVouchers' onError toast.
       }
     },
     [uploadVouchers],

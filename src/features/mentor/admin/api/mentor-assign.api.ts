@@ -37,3 +37,29 @@ export async function revokeMentorAssignment(
     : endpoints.mentor.adminRevoke(muid);
   await apiClient.delete(url, undefined, GenericResponseSchema);
 }
+
+// ─── §5.3 POST /mentor/admin/deactivate/<user_mentor_id>/ ────────────────────
+// Sets is_active=False on the UserMentor profile (global kill-switch).
+// Blocks session/event creation, persona switch, removes from roster.
+// Does NOT touch application/grant rows — those stay APPROVED.
+// reason is required (max 500 chars).
+export async function deactivateMentor(
+  userMentorId: string,
+  reason: string,
+): Promise<void> {
+  await apiClient.post(
+    endpoints.mentor.adminDeactivate(userMentorId),
+    { reason },
+    GenericResponseSchema,
+  );
+}
+
+// ─── §5.4 POST /mentor/admin/reactivate/<user_mentor_id>/ ────────────────────
+// Flips is_active back to True — restores all gates without re-verification.
+export async function reactivateMentor(userMentorId: string): Promise<void> {
+  await apiClient.post(
+    endpoints.mentor.adminReactivate(userMentorId),
+    {},
+    GenericResponseSchema,
+  );
+}

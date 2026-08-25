@@ -1,3 +1,4 @@
+import { format, isValid, parseISO } from "date-fns";
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
@@ -29,9 +30,10 @@ export interface ListParams {
 }
 
 function toOfficeHoursDate(dateStr: string): string {
-  if (!dateStr?.includes("-")) return dateStr;
-  const [year, month, day] = dateStr.split("-");
-  return `${day}/${month}/${year}`;
+  if (!dateStr) return dateStr;
+  const parsed = parseISO(dateStr);
+  if (!isValid(parsed)) return dateStr;
+  return format(parsed, "dd/MM/yyyy");
 }
 
 function buildQuery(params: ListParams): string {

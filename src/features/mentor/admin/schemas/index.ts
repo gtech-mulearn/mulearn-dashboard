@@ -36,6 +36,7 @@ export const MentorApplicationListItemSchema = z.object({
   verification_note: z.string().nullable().optional(),
   mentor_tier: z.enum(MENTOR_TIERS).nullable().optional(),
   hours: z.number().optional().default(0),
+  is_active: z.boolean().optional(),
   created_at: z.string().nullable().optional(),
   updated_at: z.string().nullable().optional(),
 });
@@ -70,6 +71,35 @@ export type VerifyActionValues = z.infer<typeof VerifyActionSchema>;
 export const GenericResponseSchema = z.object({
   statusCode: z.number().optional(),
   response: z.unknown(),
+});
+
+// ─── §17 Roster — GET /mentor/roster/ ────────────────────────────────────────
+// Fields: id, user_full_name, avg_rating, rating_count
+// Pagination uses page / per_page / total (different from /list/ which uses
+// pageIndex / perPage / count).
+export const MentorRosterItemSchema = z.object({
+  id: z.string(),
+  user_full_name: z.string().default(""),
+  avg_rating: z.number().nullable().optional(),
+  rating_count: z.number().default(0),
+  is_active: z.boolean().optional(),
+});
+export type MentorRosterItem = z.infer<typeof MentorRosterItemSchema>;
+
+export const MentorRosterResponseSchema = z.object({
+  statusCode: z.number().optional(),
+  response: z.object({
+    data: z.array(MentorRosterItemSchema),
+    pagination: z
+      .object({
+        count: z.number().optional(),
+        totalPages: z.coerce.number().default(1),
+        isNext: z.boolean().optional(),
+        isPrev: z.boolean().optional(),
+        nextPage: z.number().nullable().optional(),
+      })
+      .optional(),
+  }),
 });
 
 // ─── §4 Mentor scope grants ───────────────────────────────────────────────────

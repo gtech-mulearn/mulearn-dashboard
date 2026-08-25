@@ -15,7 +15,7 @@ import {
   getMeetTimeErrorMessage,
   isMeetTimeValid,
 } from "../utils/meet-time-validation";
-import { ApiResponseSchema } from "./circle.schema";
+import { ApiResponseSchema, PaginationSchema } from "./circle.schema";
 
 // ============================================
 // Meeting Schemas
@@ -226,7 +226,10 @@ export type MeetingReportRequest = z.infer<typeof MeetingReportRequestSchema>;
 // ============================================
 
 export const MeetingListResponseSchema = ApiResponseSchema(
-  z.array(MeetingSchema),
+  z.object({
+    data: z.array(MeetingSchema),
+    pagination: PaginationSchema,
+  }),
 );
 
 export const MeetingDetailResponseSchema =

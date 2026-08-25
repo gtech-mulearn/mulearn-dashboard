@@ -294,7 +294,7 @@ export async function getCircleMeetings(circleId: string): Promise<Meeting[]> {
     endpoints.learningCircle.meetingList(circleId),
     MeetingListResponseSchema,
   );
-  return response.response;
+  return response.response.data;
 }
 
 /** Get public meetings with pagination */
@@ -328,7 +328,7 @@ export async function getUserMeetings(params?: {
 
   const url = `${endpoints.learningCircle.meetingListUser}?${searchParams}`;
   const response = await apiClient.get(url, MeetingListResponseSchema);
-  return response.response;
+  return response.response.data;
 }
 
 /** Get meeting details */
@@ -503,5 +503,5 @@ export async function getUserCircles(): Promise<LearningCircle[]> {
     endpoints.learningCircle.userCircles,
     UserCircleListResponseSchema,
   );
-  return response.response;
+  return response.response.data;
 }

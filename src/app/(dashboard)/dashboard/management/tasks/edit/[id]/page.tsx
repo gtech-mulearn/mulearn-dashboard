@@ -1,5 +1,5 @@
 import { TaskEditView } from "@/features/tasks";
-import { ROLES } from "@/lib/auth/roles";
+import { ADMIN_ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 
 export const metadata = {
@@ -13,7 +13,7 @@ interface PageProps {
 }
 
 export default async function TaskEditPage({ params }: PageProps) {
-  await requireRole([ROLES.ADMIN]);
+  await requireRole(ADMIN_ROLES);
   const { id } = await params;
   return <TaskEditView id={id} />;
 }
