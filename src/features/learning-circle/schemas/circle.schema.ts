@@ -263,13 +263,19 @@ export const JoinRequestListResponseSchema = ApiResponseSchema(
   z.array(JoinRequestSchema),
 );
 
-/** Body for PATCH join/<circle_id>/ — accept or reject a pending request. */
+/** Body for PATCH join/<circle_id>/ — accept, reject, or revoke a pending request. */
 export const RespondJoinRequestSchema = z.object({
   link_id: z.string(),
-  action: z.enum(["accept", "reject"]),
+  action: z.enum(["accept", "reject", "revoke"]),
 });
 
 export type RespondJoinRequest = z.infer<typeof RespondJoinRequestSchema>;
+
+/** Body for DELETE members/remove/<circle_id>/ — kick a member. */
+export const RemoveMemberRequestSchema = z.object({
+  muid: z.string(),
+});
+export type RemoveMemberRequest = z.infer<typeof RemoveMemberRequestSchema>;
 
 /**
  * Pagination shape returned by Django
@@ -292,7 +298,10 @@ export const CircleListResponseSchema = ApiResponseSchema(
 );
 
 export const UserCircleListResponseSchema = ApiResponseSchema(
-  z.array(LearningCircleSchema),
+  z.object({
+    data: z.array(LearningCircleSchema),
+    pagination: PaginationSchema,
+  }),
 );
 
 export const CircleDetailResponseSchema = ApiResponseSchema(

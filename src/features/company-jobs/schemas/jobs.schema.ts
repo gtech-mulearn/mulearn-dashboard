@@ -1541,11 +1541,15 @@ export const CompanyCollaborationResponseSchema = DjangoResponse(
 export const IgSponsorshipMetricsSchema = z.object({
   ig_id: z.string(),
   ig_name: z.string(),
-  sponsor_status: z.string(),
-  active_learners: z.number(),
-  sponsored_tasks_count: z.number(),
-  total_karma_funded: z.number(),
-  engagement_score: z.number(),
+  membership: z.object({
+    total_members: z.number(),
+    new_members_last_30_days: z.number(),
+  }),
+  activity_level: z.object({
+    active_tasks: z.number(),
+    task_completions_last_30_days: z.number(),
+    sessions_last_30_days: z.number(),
+  }),
 });
 
 export const IgSponsorshipMetricsResponseSchema = DjangoResponse(

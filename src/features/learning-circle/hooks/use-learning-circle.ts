@@ -43,7 +43,9 @@ import {
   getUserMeetings,
   joinCircle,
   joinMeeting,
+  leaveCircle,
   leaveMeeting,
+  removeMember,
   removeRsvpMeeting,
   respondToInvite,
   respondToInviteByLink,
@@ -65,6 +67,7 @@ import type {
   JoinMeetingRequest,
   Meeting,
   MeetingReportRequest,
+  RemoveMemberRequest,
   RespondJoinRequest,
   SendInviteRequest,
   TransferLeadRequest,
@@ -79,14 +82,20 @@ const STALE_TIME = 5 * 60 * 1000; // 5 minutes
 
 const CIRCLES_PER_PAGE = 12;
 
-export function useCircles(search = "", page = 1) {
+export function useCircles(
+  search = "",
+  page = 1,
+  filters?: { status?: "joined" | "pending" | "not_joined"; ig?: string },
+) {
   return useQuery({
-    queryKey: learningCircleKeys.circleList({ search, page }),
+    queryKey: learningCircleKeys.circleList({ search, page, ...filters }),
     queryFn: () =>
       getCircles({
         search: search || undefined,
         page,
         perPage: CIRCLES_PER_PAGE,
+        status: filters?.status,
+        ig: filters?.ig,
       }),
     placeholderData: keepPreviousData,
     staleTime: STALE_TIME,
@@ -96,7 +105,7 @@ export function useCircles(search = "", page = 1) {
 export function useUserCircles() {
   return useQuery({
     queryKey: learningCircleKeys.userCircles(),
-    queryFn: getUserCircles,
+    queryFn: () => getUserCircles(),
     staleTime: STALE_TIME,
   });
 }
@@ -369,6 +378,60 @@ export function useTransferLead(circleId: string) {
   });
 }
 
+/** Lead/creator: remove (kick) a member from the circle. */
+export function useRemoveMember(circleId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: RemoveMemberRequest) => removeMember(circleId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.circleMembers(circleId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.circleDetail(circleId),
+      });
+      toast.success("Member removed from circle");
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to remove member" }),
+      );
+    },
+  });
+}
+
+/** Member: leave a circle (creator/lead cannot use this — must transfer/delete). */
+export function useLeaveCircle() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (circleId: string) => leaveCircle(circleId),
+    onSuccess: (_, circleId) => {
+      unmarkCircleAsRequested(circleId);
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.circleDetail(circleId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.circleMembers(circleId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.userCircles(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...learningCircleKeys.circles(), "list"],
+        exact: false,
+      });
+      toast.success("You have left the circle");
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to leave circle" }),
+      );
+    },
+  });
+}
+
 // ============================================
 // Join & Invite
 // ============================================
@@ -379,6 +442,13 @@ const pendingJoinListeners = new Set<() => void>();
 
 export function markCircleAsRequested(circleId: string) {
   pendingJoinCircleIds.add(circleId);
+  pendingJoinListeners.forEach((listener) => {
+    listener();
+  });
+}
+
+export function unmarkCircleAsRequested(circleId: string) {
+  pendingJoinCircleIds.delete(circleId);
   pendingJoinListeners.forEach((listener) => {
     listener();
   });

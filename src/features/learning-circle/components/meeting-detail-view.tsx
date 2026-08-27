@@ -245,6 +245,15 @@ export function MeetingDetailView({
     permissions.canEditMeeting ||
     (userInfo?.muid != null && userInfo.muid === creatorMuid);
 
+  /**
+   * Attendee CSV export access: circle owner/lead (canSubmitReport) OR the
+   * meeting's own creator, per the backend's export permission (owner/lead/
+   * meeting creator).
+   */
+  const canExportAttendees =
+    permissions.canSubmitReport ||
+    (userInfo?.muid != null && userInfo.muid === creatorMuid);
+
   const currentMember = members?.members?.find(
     (m) => m.muid === userInfo?.muid,
   );
@@ -672,7 +681,7 @@ export function MeetingDetailView({
               )
             </span>
           </h3>
-          {permissions.canSubmitReport && (
+          {canExportAttendees && (
             <Button
               type="button"
               id="meeting-attendees-export-csv"

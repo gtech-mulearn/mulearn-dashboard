@@ -2,10 +2,13 @@
 
 import {
   CheckCircle,
+  GitPullRequestArrow,
+  RefreshCw,
   Search,
   ShieldCheck,
   ShieldOff,
   UserPlus,
+  Users,
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
@@ -26,12 +29,15 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
+  useMentorChangeRequests,
   useMentorList,
+  useReactivateMentor,
   useRevokeMentorAssignment,
 } from "../hooks/use-mentor-verify";
 import type { MentorApplicationListItem } from "../schemas";
 import { AssignMentorsDialog } from "./assign-mentors-dialog";
 import { MentorGrantsSheet } from "./mentor-grants-sheet";
+import { MentorRosterTab } from "./mentor-roster-tab";
 import { MentorVerifyDialog } from "./mentor-verify-dialog";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -84,6 +90,7 @@ function MentorTable({
   onVerify,
   onScopes,
   onRevokeTier,
+  onReactivate,
   page,
   totalPages,
   totalCount,
@@ -98,6 +105,7 @@ function MentorTable({
   ) => void;
   onScopes: (m: MentorApplicationListItem) => void;
   onRevokeTier: (m: MentorApplicationListItem) => void;
+  onReactivate: (m: MentorApplicationListItem) => void;
   page: number;
   totalPages: number;
   totalCount: number | undefined;
@@ -218,6 +226,24 @@ function MentorTable({
                         <TooltipContent>Revoke tier</TooltipContent>
                       </Tooltip>
                     )}
+                    {/* Reactivate — only shown when the mentor is suspended */}
+                    {resolveStatus(m) === "APPROVED" &&
+                      m.is_active === false && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950"
+                              onClick={() => onReactivate(m)}
+                              id={`reactivate-btn-${m.id}`}
+                            >
+                              <RefreshCw className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Reactivate mentor</TooltipContent>
+                        </Tooltip>
+                      )}
                   </>
                 );
               }
@@ -253,6 +279,7 @@ export function MentorVerificationPage() {
   const [search, setSearch] = useState("");
   const [pendingPage, setPendingPage] = useState(1);
   const [allPage, setAllPage] = useState(1);
+  const [changeRequestsPage, setChangeRequestsPage] = useState(1);
   const [verifyState, setVerifyState] = useState<{
     mentor: MentorApplicationListItem;
     action: "approve" | "reject";
@@ -264,7 +291,10 @@ export function MentorVerificationPage() {
   const [revokeFor, setRevokeFor] = useState<MentorApplicationListItem | null>(
     null,
   );
+  const [reactivateFor, setReactivateFor] =
+    useState<MentorApplicationListItem | null>(null);
   const revokeAssignment = useRevokeMentorAssignment();
+  const reactivateMutation = useReactivateMentor();
 
   const { data: pending, isLoading: pendingLoading } = useMentorList({
     status: "PENDING",
@@ -277,6 +307,12 @@ export function MentorVerificationPage() {
     page: allPage,
     perPage: PER_PAGE,
   });
+  const { data: changeRequests, isLoading: changeRequestsLoading } =
+    useMentorChangeRequests({
+      search: search || undefined,
+      page: changeRequestsPage,
+      perPage: PER_PAGE,
+    });
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -311,15 +347,30 @@ export function MentorVerificationPage() {
 
         <Tabs defaultValue="pending">
           <TabsList>
-            <TabsTrigger value="pending">
+            <TabsTrigger value="pending" className="gap-1.5">
               Pending
               {pending && pending.totalItems > 0 && (
-                <Badge variant="secondary" className="ml-2">
+                <Badge variant="secondary" className="ml-1">
                   {pending.totalItems}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="all">All Applications</TabsTrigger>
+            <TabsTrigger value="all" className="gap-1.5">
+              All Applications
+            </TabsTrigger>
+            <TabsTrigger value="change-requests" className="gap-1.5">
+              <GitPullRequestArrow className="h-3.5 w-3.5" />
+              Change Requests
+              {changeRequests && changeRequests.totalItems > 0 && (
+                <Badge variant="secondary" className="ml-1">
+                  {changeRequests.totalItems}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="roster" className="gap-1.5">
+              <Users className="h-3.5 w-3.5" />
+              Roster
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="pending" className="mt-4">
@@ -330,6 +381,7 @@ export function MentorVerificationPage() {
               onVerify={(m, action) => setVerifyState({ mentor: m, action })}
               onScopes={setGrantsFor}
               onRevokeTier={setRevokeFor}
+              onReactivate={setReactivateFor}
               page={pendingPage}
               totalPages={pending?.totalPages ?? 1}
               totalCount={pending?.totalItems}
@@ -345,11 +397,44 @@ export function MentorVerificationPage() {
               onVerify={(m, action) => setVerifyState({ mentor: m, action })}
               onScopes={setGrantsFor}
               onRevokeTier={setRevokeFor}
+              onReactivate={setReactivateFor}
               page={allPage}
               totalPages={all?.totalPages ?? 1}
               totalCount={all?.totalItems}
               onPageChange={setAllPage}
             />
+          </TabsContent>
+
+          {/* ── Change Requests tab ─────────────────────────────────────────
+               Shows PENDING applications from users who are already approved
+               for the same tier (affiliation-change requests). Same shape as
+               /list/, so MentorTable works unchanged. Admin can approve/reject
+               directly from here. */}
+          <TabsContent value="change-requests" className="mt-4">
+            <MentorTable
+              items={changeRequests?.data}
+              isLoading={changeRequestsLoading}
+              showActions
+              onVerify={(m, action) => setVerifyState({ mentor: m, action })}
+              onScopes={setGrantsFor}
+              onRevokeTier={setRevokeFor}
+              onReactivate={setReactivateFor}
+              page={changeRequestsPage}
+              totalPages={changeRequests?.totalPages ?? 1}
+              totalCount={changeRequests?.totalItems}
+              onPageChange={setChangeRequestsPage}
+            />
+          </TabsContent>
+
+          {/* ── Roster tab ──────────────────────────────────────────────────
+               Active APPROVED mentors with avg_rating and rating_count.
+               Supports mentor_tier filter and low_rating toggle. */}
+          <TabsContent
+            value="roster"
+            className="mt-4 data-[state=inactive]:hidden"
+            forceMount
+          >
+            <MentorRosterTab />
           </TabsContent>
         </Tabs>
 
@@ -390,6 +475,27 @@ export function MentorVerificationPage() {
               },
               { onSuccess: () => setRevokeFor(null) },
             );
+          }}
+        />
+
+        {/* Reactivate confirm — no reason needed, just a warning */}
+        <ConfirmDialog
+          open={Boolean(reactivateFor)}
+          onOpenChange={(v) => !v && setReactivateFor(null)}
+          variant="warning"
+          title={
+            reactivateFor
+              ? `Reactivate ${getDisplayName(reactivateFor)}?`
+              : "Reactivate mentor?"
+          }
+          description="This will immediately restore all mentor capabilities: session creation, persona switch, and roster visibility — without re-verification."
+          confirmLabel="Reactivate mentor"
+          isPending={reactivateMutation.isPending}
+          onConfirm={() => {
+            if (!reactivateFor) return;
+            reactivateMutation.mutate(reactivateFor.id, {
+              onSuccess: () => setReactivateFor(null),
+            });
           }}
         />
       </div>

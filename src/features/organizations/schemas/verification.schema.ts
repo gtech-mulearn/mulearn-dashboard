@@ -23,17 +23,34 @@ export const UnverifiedOrgItemSchema = z.object({
 
 export type UnverifiedOrgItem = z.infer<typeof UnverifiedOrgItemSchema>;
 
-// ─── List response (flat array — no pagination) ───────────────────────────────
+// ─── Pagination shape returned by Django ───────────────────────────────────────
 
-export const UnverifiedOrgListResponseSchema = z
-  .object({
-    hasError: z.boolean().optional(),
-    statusCode: z.number().optional(),
-    message: z.unknown().optional(),
-    response: z.array(UnverifiedOrgItemSchema).optional(),
-    data: z.array(UnverifiedOrgItemSchema).optional(),
-  })
-  .passthrough();
+export const PaginationSchema = z.object({
+  count: z.number(),
+  totalPages: z.number(),
+  isNext: z.boolean(),
+  isPrev: z.boolean(),
+  nextPage: z.number().nullable(),
+});
+
+export type Pagination = z.infer<typeof PaginationSchema>;
+
+// ─── List response (paginated envelope) ────────────────────────────────────────
+
+export const UnverifiedOrgListResponseSchema = z.object({
+  hasError: z.boolean().optional(),
+  statusCode: z.number().optional(),
+  message: z.unknown().optional(),
+  response: z.object({
+    data: z.array(UnverifiedOrgItemSchema),
+    pagination: PaginationSchema,
+  }),
+});
+
+export type UnverifiedOrgListData = {
+  data: UnverifiedOrgItem[];
+  pagination: Pagination;
+};
 
 // ─── Verify form ──────────────────────────────────────────────────────────────
 

@@ -41,6 +41,7 @@ import {
   type Pagination,
   type PublicMeetingListResponse,
   PublicMeetingListResponseSchema,
+  type RemoveMemberRequest,
   type RespondJoinRequest,
   type SendInviteRequest,
   type TransferLeadRequest,
@@ -79,11 +80,15 @@ export async function getCircles(params?: {
   page?: number;
   perPage?: number;
   search?: string;
+  status?: "joined" | "pending" | "not_joined";
+  ig?: string;
 }): Promise<{ circles: LearningCircle[]; pagination: Pagination }> {
   const searchParams = new URLSearchParams();
   if (params?.page) searchParams.set("pageIndex", String(params.page));
   if (params?.perPage) searchParams.set("perPage", String(params.perPage));
   if (params?.search) searchParams.set("search", params.search);
+  if (params?.status) searchParams.set("status", params.status);
+  if (params?.ig) searchParams.set("ig", params.ig);
 
   const url = searchParams.toString()
     ? `${endpoints.learningCircle.list}?${searchParams}`
@@ -175,6 +180,27 @@ export async function transferLead(
   );
 }
 
+/** Remove (kick) a member from a circle. Lead/creator only. */
+export async function removeMember(
+  circleId: string,
+  data: RemoveMemberRequest,
+): Promise<void> {
+  await apiClient.delete(
+    endpoints.learningCircle.removeMember(circleId),
+    data,
+    EmptyResponseSchema,
+  );
+}
+
+/** Leave a circle. Member only — creator/lead must transfer/delete instead. */
+export async function leaveCircle(circleId: string): Promise<void> {
+  await apiClient.delete(
+    endpoints.learningCircle.leaveCircle(circleId),
+    undefined,
+    EmptyResponseSchema,
+  );
+}
+
 // ============================================
 // Join & Invite
 // ============================================
@@ -239,7 +265,7 @@ export async function revokeInvite(
 ): Promise<void> {
   await respondToJoinRequest(circleId, {
     link_id: linkId,
-    action: "reject",
+    action: "revoke",
   });
 }
 
@@ -294,7 +320,7 @@ export async function getCircleMeetings(circleId: string): Promise<Meeting[]> {
     endpoints.learningCircle.meetingList(circleId),
     MeetingListResponseSchema,
   );
-  return response.response;
+  return response.response.data;
 }
 
 /** Get public meetings with pagination */
@@ -328,7 +354,7 @@ export async function getUserMeetings(params?: {
 
   const url = `${endpoints.learningCircle.meetingListUser}?${searchParams}`;
   const response = await apiClient.get(url, MeetingListResponseSchema);
-  return response.response;
+  return response.response.data;
 }
 
 /** Get meeting details */
@@ -498,10 +524,15 @@ export async function deleteMeetingReport(meetingId: string): Promise<void> {
 }
 
 /** Get learning circles the current user has joined */
-export async function getUserCircles(): Promise<LearningCircle[]> {
-  const response = await apiClient.get(
-    endpoints.learningCircle.userCircles,
-    UserCircleListResponseSchema,
-  );
-  return response.response;
+export async function getUserCircles(params?: {
+  ig?: string;
+}): Promise<LearningCircle[]> {
+  const searchParams = new URLSearchParams();
+  if (params?.ig) searchParams.set("ig", params.ig);
+
+  const url = searchParams.toString()
+    ? `${endpoints.learningCircle.userCircles}?${searchParams}`
+    : endpoints.learningCircle.userCircles;
+  const response = await apiClient.get(url, UserCircleListResponseSchema);
+  return response.response.data;
 }

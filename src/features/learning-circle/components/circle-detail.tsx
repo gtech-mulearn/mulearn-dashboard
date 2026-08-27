@@ -43,6 +43,7 @@ import { CreateMeetingModal } from "./create-meeting-modal";
 import { DeleteCircleButton } from "./delete-circle-button";
 import { EditCircleModal } from "./edit-circle-modal";
 import { InviteManagerCard } from "./invite-section";
+import { LeaveCircleButton } from "./leave-circle-button";
 import { MeetingCard } from "./meeting-card";
 import { MemberList } from "./member-list";
 import { TransferLeadModal } from "./transfer-lead-modal";
@@ -426,6 +427,25 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
               </div>
               <div className="shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
                 <DeleteCircleButton
+                  circleId={circleId}
+                  circleName={circle.title}
+                />
+              </div>
+            </div>
+          )}
+
+          {permissions.role === "member" && (
+            <div className="w-full rounded-2xl bg-card p-4 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col items-center justify-between sm:flex-row gap-4">
+              <div className="flex min-w-0 flex-1 flex-col text-center sm:text-left">
+                <span className="text-[14px] font-semibold text-foreground">
+                  Leave Circle
+                </span>
+                <p className="text-[12px] text-muted-foreground">
+                  You will need to request to join again to rejoin.
+                </p>
+              </div>
+              <div className="shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
+                <LeaveCircleButton
                   circleId={circleId}
                   circleName={circle.title}
                 />

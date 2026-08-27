@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Blank } from "@/components/dashboard/table/Blank";
+import { useEffect, useMemo, useState } from "react";
+import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
@@ -13,40 +13,62 @@ import type { UnverifiedOrgItem } from "../../schemas/verification.schema";
 import { VerifyActionDialog } from "./verify-action-dialog";
 
 const COLUMNS = [
-  { column: "title", Label: "Title", isSortable: false },
+  { column: "title", Label: "Title", isSortable: true },
   { column: "org_type", Label: "Type", isSortable: false },
-  { column: "department", Label: "Department", isSortable: false },
+  { column: "department", Label: "Department", isSortable: true },
   { column: "graduation_year", Label: "Grad. Year", isSortable: false },
-  { column: "created_by", Label: "Created By", isSortable: false },
-  { column: "created_at", Label: "Created At", isSortable: false },
+  { column: "created_by", Label: "Created By", isSortable: true },
+  { column: "created_at", Label: "Created At", isSortable: true },
 ];
+
+const DEFAULT_PER_PAGE = 10;
 
 export default function VerifyOrgsView() {
   const [searchInput, setSearchInput] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(DEFAULT_PER_PAGE);
+  const [sortBy, setSortBy] = useState("");
 
-  const { data: orgs, isLoading } = useUnverifiedOrgs();
+  const { data, isLoading } = useUnverifiedOrgs({
+    pageIndex: currentPage,
+    perPage,
+    search: searchInput,
+    sortBy,
+  });
+
+  const orgs = data?.data ?? [];
+  const totalPages = data?.pagination.totalPages ?? 0;
+  const totalCount = data?.pagination.count ?? 0;
+
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
 
   const [selectedOrg, setSelectedOrg] = useState<UnverifiedOrgItem | null>(
     null,
   );
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const filtered = useMemo(() => {
-    if (!orgs) return [];
-    const term = searchInput.toLowerCase();
-    return term
-      ? orgs.filter(
-          (o) =>
-            o.title.toLowerCase().includes(term) ||
-            o.org_type.toLowerCase().includes(term) ||
-            o.created_by.toLowerCase().includes(term),
-        )
-      : orgs;
-  }, [orgs, searchInput]);
+  const handleSearch = (value: string) => {
+    setCurrentPage(1);
+    setSearchInput(value);
+  };
+
+  const handlePerPage = (value: number) => {
+    setCurrentPage(1);
+    setPerPage(value);
+  };
+
+  const handleSort = (column: string) => {
+    setCurrentPage(1);
+    setSortBy((prev) => (prev === column ? `-${column}` : column));
+  };
 
   const rows = useMemo(
     () =>
-      filtered.map((item, idx) => ({
+      orgs.map((item, idx) => ({
         id: item.id,
         slno: idx + 1,
         title: item.title,
@@ -61,7 +83,7 @@ export default function VerifyOrgsView() {
         }),
         _raw: item,
       })),
-    [filtered],
+    [orgs],
   );
 
   const renderActions = (row: Data) => (
@@ -98,15 +120,15 @@ export default function VerifyOrgsView() {
           variant="outline"
           className="text-sm px-3 py-1 self-start sm:self-auto"
         >
-          {filtered.length} pending
+          {totalCount} pending
         </Badge>
       </CardHeader>
 
       <CardContent className="space-y-6 px-0">
         <TableTop
-          onSearchText={(val) => setSearchInput(val)}
-          onPerPageNumber={() => {}}
-          perPage={10}
+          onSearchText={handleSearch}
+          onPerPageNumber={handlePerPage}
+          perPage={perPage}
           perPageOptions={[10, 25, 50]}
           CSV=""
           searchPlaceholder="Search by name, type, or submitter…"
@@ -121,15 +143,35 @@ export default function VerifyOrgsView() {
           <Table
             rows={rows as unknown as Data[]}
             isLoading={isLoading}
-            page={1}
-            perPage={rows.length || 10}
+            page={currentPage}
+            perPage={perPage}
             columnOrder={COLUMNS}
             id={["id"]}
             customActionRender={renderActions}
             customCellRender={renderCell}
           >
-            <THead columnOrder={COLUMNS} onIconClick={() => {}} action={true} />
-            <Blank />
+            <THead
+              columnOrder={COLUMNS}
+              onIconClick={handleSort}
+              action={true}
+            />
+            <div>
+              {!isLoading && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  handleNextClick={() =>
+                    setCurrentPage((p) => Math.min(p + 1, totalPages || 1))
+                  }
+                  handlePreviousClick={() =>
+                    setCurrentPage((p) => Math.max(p - 1, 1))
+                  }
+                  perPage={perPage}
+                  totalCount={totalCount}
+                />
+              )}
+            </div>
+            <div />
           </Table>
         </div>
       </CardContent>

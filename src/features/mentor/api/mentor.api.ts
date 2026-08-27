@@ -311,7 +311,7 @@ export async function changeCompany(
 export interface ProfileCompletionChecklist {
   about: boolean;
   expertise: boolean;
-  hours: boolean;
+  hours?: boolean;
   linkedin: boolean;
   preferred_igs: boolean;
 }
@@ -327,7 +327,7 @@ const ProfileCompletionSchema = ApiResponseOf(
     checklist: z.object({
       about: z.boolean(),
       expertise: z.boolean(),
-      hours: z.boolean(),
+      hours: z.boolean().optional(),
       linkedin: z.boolean(),
       preferred_igs: z.boolean(),
     }),
@@ -341,4 +341,75 @@ export async function getProfileCompletion(): Promise<ProfileCompletionData> {
     ProfileCompletionSchema,
   );
   return response as ProfileCompletionData;
+}
+
+// ─── Analytics ───────────────────────────────────────────────────────────────
+
+const MentorPersonalAnalyticsSchema = z
+  .object({
+    sessions: z.object({
+      total: z
+        .number()
+        .nullable()
+        .optional()
+        .transform((v) => v ?? 0),
+      completed: z
+        .number()
+        .nullable()
+        .optional()
+        .transform((v) => v ?? 0),
+      upcoming: z
+        .number()
+        .nullable()
+        .optional()
+        .transform((v) => v ?? 0),
+      cancelled: z
+        .number()
+        .nullable()
+        .optional()
+        .transform((v) => v ?? 0),
+    }),
+    karma_earned: z
+      .number()
+      .nullable()
+      .optional()
+      .transform((v) => v ?? 0),
+    hours_contributed: z
+      .number()
+      .nullable()
+      .optional()
+      .transform((v) => v ?? 0),
+    profile_hours: z
+      .number()
+      .nullable()
+      .optional()
+      .transform((v) => v ?? 0),
+    rating: z
+      .object({
+        average: z
+          .number()
+          .nullable()
+          .optional()
+          .transform((v) => v ?? 0),
+        count: z
+          .number()
+          .nullable()
+          .optional()
+          .transform((v) => v ?? 0),
+      })
+      .optional(),
+  })
+  .passthrough();
+
+export type MentorPersonalAnalytics = z.infer<
+  typeof MentorPersonalAnalyticsSchema
+>;
+
+/** GET /mentor/analytics/personal/ — Personal metrics */
+export async function fetchMentorPersonalAnalytics(): Promise<MentorPersonalAnalytics> {
+  const res = await apiClient.get(
+    endpoints.mentor.analyticsPersonal,
+    ApiResponseOf(MentorPersonalAnalyticsSchema),
+  );
+  return res.response;
 }

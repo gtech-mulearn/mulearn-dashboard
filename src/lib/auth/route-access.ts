@@ -50,7 +50,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   "/dashboard": { roles: [] },
   "/dashboard/profile": { roles: [] },
   "/dashboard/leaderboard": { roles: [] },
-  "/dashboard/learning-circles": { roles: [] },
+  "/dashboard/learning-circle": { roles: [] },
   "/dashboard/interest-groups": { roles: [] },
   "/dashboard/campus": { roles: [] },
   "/dashboard/search": { roles: [] },
