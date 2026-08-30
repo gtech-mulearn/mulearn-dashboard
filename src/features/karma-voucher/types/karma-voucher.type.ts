@@ -11,6 +11,7 @@ export interface KarmaVoucher {
   karma: number;
   claimed: boolean;
   task?: string | null;
+  hashtag?: string | null;
   week?: string | null;
   month?: string | null;
   updated_by?: string | null;
@@ -60,3 +61,25 @@ export interface PaginatedData<T> {
 }
 
 export interface KarmaVoucherListData extends PaginatedData<KarmaVoucher> {}
+
+export interface CreateVoucherPayload {
+  user: string;
+  task: string;
+  karma: number;
+  month: string;
+  week: string;
+}
+
+export interface CreateVoucherResponse {
+  user: string;
+  task: string;
+  karma: number | string;
+  month: string;
+  week: string;
+}
+
+export interface UpdateVoucherPayload {
+  id: string;
+  hashtag: string;
+  new_karma: number;
+}

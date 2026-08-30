@@ -10,13 +10,19 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import type { KarmaVoucher } from "../types";
+import type {
+  CreateVoucherPayload,
+  KarmaVoucher,
+  UpdateVoucherPayload,
+} from "../types";
 import {
+  useCreateKarmaVoucher,
   useDeleteKarmaVoucher,
   useDownloadTemplate,
   useImportVouchers,
   useKarmaVoucherCsvDownload,
   useKarmaVouchers,
+  useUpdateKarmaVoucher,
 } from "./index";
 
 export function useKarmaVoucherLogic() {
@@ -26,9 +32,15 @@ export function useKarmaVoucherLogic() {
   const [sort, setSort] = useState("");
   const [search, setSearch] = useState("");
   const [openImport, setOpenImport] = useState(false);
+  const [openAdd, setOpenAdd] = useState(false);
+  const [editingVoucher, setEditingVoucher] = useState<KarmaVoucher | null>(
+    null,
+  );
 
   // ─── Mutation Hooks ───────────────────────────────────────────────────────
   const { deleteVoucher, isDeleting } = useDeleteKarmaVoucher();
+  const { createVoucher, isCreating } = useCreateKarmaVoucher();
+  const { updateVoucher, isUpdating } = useUpdateKarmaVoucher();
   const {
     uploadVouchers,
     isUploading,
@@ -125,6 +137,38 @@ export function useKarmaVoucherLogic() {
     [resetImport],
   );
 
+  const toggleAddModal = useCallback((open: boolean) => {
+    setOpenAdd(open);
+  }, []);
+
+  const handleAddSubmit = useCallback(
+    async (values: CreateVoucherPayload) => {
+      await createVoucher(values);
+    },
+    [createVoucher],
+  );
+
+  const handleEditRow = useCallback(
+    (id: string | number | boolean) => {
+      const voucher = rows.find((row) => row.id === id);
+      if (voucher) setEditingVoucher(voucher);
+    },
+    [rows],
+  );
+
+  const closeEditModal = useCallback((open: boolean) => {
+    if (!open) setEditingVoucher(null);
+  }, []);
+
+  const handleEditSubmit = useCallback(
+    async (values: Omit<UpdateVoucherPayload, "id">) => {
+      if (!editingVoucher) return;
+      await updateVoucher({ id: editingVoucher.id, ...values });
+      setEditingVoucher(null);
+    },
+    [editingVoucher, updateVoucher],
+  );
+
   return {
     // Data & State
     rows,
@@ -136,6 +180,8 @@ export function useKarmaVoucherLogic() {
     totalPages,
     totalCount,
     openImport,
+    openAdd,
+    editingVoucher,
 
     // Mutation States
     isUploading,
@@ -143,6 +189,8 @@ export function useKarmaVoucherLogic() {
     importData,
     isExporting,
     isDownloadingTemplate,
+    isCreating,
+    isUpdating,
 
     // Handlers
     handleNextClick,
@@ -154,6 +202,11 @@ export function useKarmaVoucherLogic() {
     handleImportSubmit,
     handleDownloadTemplate,
     toggleImportModal,
+    toggleAddModal,
+    handleAddSubmit,
+    handleEditRow,
+    closeEditModal,
+    handleEditSubmit,
     downloadCsv,
   };
 }
