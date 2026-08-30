@@ -1,5 +1,5 @@
 "use client";
-import { Ticket, Upload } from "lucide-react";
+import { Plus, Ticket, Upload } from "lucide-react";
 import { endpoints } from "@/api/endpoints";
 import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
 import { Blank } from "@/components/dashboard/table/Blank";
@@ -17,6 +17,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useKarmaVoucherLogic } from "../hooks";
+import { AddVoucherDialog } from "./add-voucher-dialog";
+import { EditVoucherDialog } from "./edit-voucher-dialog";
 
 export default function KarmaVoucherPage() {
   return (
@@ -35,11 +37,15 @@ function KarmaVoucherContent() {
     totalPages,
     totalCount,
     openImport,
+    openAdd,
+    editingVoucher,
     isUploading,
     isImportSuccess,
     importData,
     isExporting,
     isDownloadingTemplate,
+    isCreating,
+    isUpdating,
     handleNextClick,
     handlePreviousClick,
     handleSearch,
@@ -49,6 +55,11 @@ function KarmaVoucherContent() {
     handleImportSubmit,
     handleDownloadTemplate,
     toggleImportModal,
+    toggleAddModal,
+    handleAddSubmit,
+    handleEditRow,
+    closeEditModal,
+    handleEditSubmit,
     downloadCsv,
   } = useKarmaVoucherLogic();
 
@@ -74,6 +85,13 @@ function KarmaVoucherContent() {
               >
                 <Upload className="mr-2 size-4" />
                 Bulk Import
+              </Button>
+              <Button
+                onClick={() => toggleAddModal(true)}
+                className="h-10 rounded-xl"
+              >
+                <Plus className="mr-2 size-4" />
+                Add Voucher
               </Button>
             </div>
           </div>
@@ -106,6 +124,7 @@ function KarmaVoucherContent() {
               { column: "created_at", Label: "Created On", isSortable: true },
             ]}
             id={["id"]}
+            onEditClick={handleEditRow}
             onDeleteClick={handleDeleteRow}
             modalDeleteHeading="Delete Voucher"
             modalTypeContent="error"
@@ -219,6 +238,20 @@ function KarmaVoucherContent() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AddVoucherDialog
+        open={openAdd}
+        onOpenChange={toggleAddModal}
+        onSubmit={handleAddSubmit}
+        isSubmitting={isCreating}
+      />
+
+      <EditVoucherDialog
+        voucher={editingVoucher}
+        onOpenChange={closeEditModal}
+        onSubmit={handleEditSubmit}
+        isSubmitting={isUpdating}
+      />
     </>
   );
 }

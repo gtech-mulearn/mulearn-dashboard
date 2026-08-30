@@ -17,6 +17,7 @@ const PUBLIC_DASHBOARD_PREFIXES = [
   "/dashboard/mujourney",
   "/dashboard/search",
   "/dashboard/interest-groups",
+  "/dashboard/events",
 ];
 
 export function isPublicDashboardRoute(pathname: string): boolean {

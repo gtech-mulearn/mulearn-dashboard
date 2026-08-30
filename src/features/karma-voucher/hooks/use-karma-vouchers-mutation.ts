@@ -6,12 +6,62 @@ import { useCsvDownload } from "@/hooks/use-csv-download";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { downloadBlob } from "@/lib/download";
 import {
+  createVoucher,
   deleteKarmaVoucher,
   downloadTemplate,
   exportVouchersCsv,
   importVouchers,
+  updateVoucher,
 } from "../api";
 import { karmaVoucherKeys } from "./query-keys";
+
+// ─── Create ─────────────────────────────────────────────────────────────────
+
+export function useCreateKarmaVoucher() {
+  const qc = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: createVoucher,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: karmaVoucherKeys.lists() });
+      toast.success("Voucher created and emailed to user");
+    },
+    onError: (error) =>
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to create voucher" }),
+      ),
+  });
+
+  return {
+    createVoucher: mutation.mutateAsync,
+    isCreating: mutation.isPending,
+    reset: mutation.reset,
+  };
+}
+
+// ─── Update ─────────────────────────────────────────────────────────────────
+
+export function useUpdateKarmaVoucher() {
+  const qc = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: updateVoucher,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: karmaVoucherKeys.lists() });
+      toast.success("Voucher updated");
+    },
+    onError: (error) =>
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update voucher" }),
+      ),
+  });
+
+  return {
+    updateVoucher: mutation.mutateAsync,
+    isUpdating: mutation.isPending,
+    reset: mutation.reset,
+  };
+}
 
 // ─── Delete ─────────────────────────────────────────────────────────────────
 

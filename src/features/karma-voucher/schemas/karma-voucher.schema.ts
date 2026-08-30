@@ -37,6 +37,7 @@ export const KarmaVoucherSchema = z.object({
     }),
   claimed: z.boolean(),
   task: z.string().nullable().optional(),
+  hashtag: z.string().nullable().optional(),
   week: z.string().nullable().optional(),
   month: z.string().nullable().optional(),
   updated_by: z.string().nullable().optional(),
@@ -111,3 +112,33 @@ export const PaginatedDataSchema = <T extends z.ZodTypeAny>(schema: T) =>
 export const KarmaVoucherListResponseSchema = ApiResponseSchema(
   PaginatedDataSchema(KarmaVoucherSchema),
 );
+
+/**
+ * Create Voucher — form input
+ */
+export const CreateVoucherFormSchema = z.object({
+  user: z.string().min(1, "Select a user"),
+  task: z.string().min(1, "Task hashtag is required"),
+  karma: z.coerce.number().int().positive("Enter a valid karma"),
+  month: z.string().min(1, "Month is required"),
+  week: z.string().min(1, "Week is required"),
+});
+
+/**
+ * Create Voucher — API response payload
+ */
+export const CreateVoucherResponseSchema = z.object({
+  user: z.string(),
+  task: z.string(),
+  karma: z.union([z.number(), z.string()]),
+  month: z.string(),
+  week: z.string(),
+});
+
+/**
+ * Update Voucher — form input
+ */
+export const UpdateVoucherFormSchema = z.object({
+  hashtag: z.string().min(1, "Task hashtag is required"),
+  new_karma: z.coerce.number().int().positive("Enter a valid karma"),
+});
