@@ -120,8 +120,6 @@ function toUpdatePayload(data: Partial<SessionFormValues>) {
     recurrence_interval: _recurrence_interval,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     recurrence_end_date: _recurrence_end_date,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    apply_to_series: _apply_to_series,
     ...rest
   } = data;
 
