@@ -59,6 +59,26 @@ const MAX_WIZARD_UPLOAD_BYTES = 900 * 1024;
 const MAX_SINGLE_IMAGE_BYTES = 450 * 1024;
 const MAX_IMAGE_DIMENSION = 1600;
 
+/** What actually happened, per the status the publish endpoint returned.
+ *  An event whose dates have passed is recorded rather than published, and
+ *  one that needs a reviewer is submitted rather than live. */
+function describePublishOutcome(status: string | undefined): string {
+  switch (status) {
+    case "completed":
+      return "Past event recorded";
+    case "ongoing":
+      return "Event published — it's happening now";
+    case "pending_campus_approval":
+      return "Event sent to your campus lead for approval";
+    case "pending_mentor_approval":
+      return "Event sent to your mentor for approval";
+    case "pending_approval":
+      return "Event submitted for approval";
+    default:
+      return "Event published";
+  }
+}
+
 function formatReviewEnum(value: unknown): string {
   if (typeof value !== "string") return "Not set";
 
@@ -595,6 +615,12 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
       return trigger(fields);
     }
 
+    if (stepIndex === 5) {
+      // Registration URL had no validation at all: a link without a scheme
+      // passed straight through to the API and saved as a dead relative link.
+      return trigger(["registration_url"]);
+    }
+
     return true;
   };
 
@@ -720,12 +746,16 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
       const created = await createEvent.mutateAsync(requestBody as never);
       createdEventId = created.id;
 
+      let publishedStatus: string | undefined;
       if (action === "publish") {
-        await eventsApi.publish(created.id);
+        const published = await eventsApi.publish(created.id);
+        publishedStatus = published?.status;
       }
 
       toast.success(
-        action === "publish" ? "Event published" : "Event saved as draft",
+        action === "draft"
+          ? "Event saved as draft"
+          : describePublishOutcome(publishedStatus),
       );
       resetWizard();
       onClose();
@@ -1289,6 +1319,24 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       />
                     )
                   ) : null}
+
+                  {/* The schema raises the missing-target issue against these
+                      paths. Without them Next silently did nothing. */}
+                  {errors.target_campus_id?.message ? (
+                    <p className="text-xs text-destructive">
+                      {errors.target_campus_id.message}
+                    </p>
+                  ) : null}
+                  {errors.target_ig_id?.message ? (
+                    <p className="text-xs text-destructive">
+                      {errors.target_ig_id.message}
+                    </p>
+                  ) : null}
+                  {errors.target_campus_ig_id?.message ? (
+                    <p className="text-xs text-destructive">
+                      {errors.target_campus_ig_id.message}
+                    </p>
+                  ) : null}
                 </section>
               ) : null}
 
@@ -1391,7 +1439,20 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       <p className="text-sm font-medium text-foreground">
                         Registration URL
                       </p>
-                      <Input {...register("registration_url")} />
+                      <Input
+                        placeholder="https://example.com/register"
+                        {...register("registration_url")}
+                      />
+                      {errors.registration_url?.message ? (
+                        <p className="text-xs text-destructive">
+                          {errors.registration_url.message}
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">
+                          Include https:// at the start, or the link will not
+                          open.
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm font-medium text-foreground">

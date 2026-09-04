@@ -28,6 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useInterestGroupsList } from "@/features/interest-groups";
 import { useGuilds } from "@/features/intern";
 import { useCollegeSearch } from "@/features/onboarding";
+import { useInfiniteScroll } from "@/features/search";
 import { useDebounce } from "@/hooks/use-debounce";
 import type { BulkAssignExtraPayload } from "../api/manage-roles.api";
 import {
@@ -691,8 +692,19 @@ function BulkAddTab({ role }: { role: Role }) {
 
 function BulkRemoveTab({ role }: { role: Role }) {
   const [selected, setSelected] = useState<string[]>([]);
-  const { data: users, isLoading } = useBulkRoleUsers(role.id);
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useBulkRoleUsers(role.id);
   const bulkRemove = useBulkRemoveRole(role.id);
+  const users = useMemo(
+    () => data?.pages.flatMap((page) => page.users) ?? [],
+    [data],
+  );
+
+  const loadMoreRef = useInfiniteScroll({
+    onLoadMore: fetchNextPage,
+    hasMore: !!hasNextPage,
+    isLoading: isFetchingNextPage,
+  });
 
   const toggle = (id: string) =>
     setSelected((prev) =>
@@ -707,18 +719,18 @@ function BulkRemoveTab({ role }: { role: Role }) {
 
   return (
     <div className="space-y-4">
-      <div className="max-h-48 space-y-2 overflow-y-auto pr-1">
+      <div className="max-h-[42rem] space-y-2 overflow-y-auto pr-1">
         {isLoading && (
           <p className="py-4 text-center text-sm text-muted-foreground">
             Loading…
           </p>
         )}
-        {!isLoading && (!users || users.length === 0) && (
+        {!isLoading && users.length === 0 && (
           <p className="py-4 text-center text-sm text-muted-foreground">
             No users with this role
           </p>
         )}
-        {users?.map((user) => (
+        {users.map((user) => (
           <BulkUserRow
             key={user.id}
             user={user}
@@ -726,6 +738,12 @@ function BulkRemoveTab({ role }: { role: Role }) {
             onToggle={() => toggle(user.id)}
           />
         ))}
+        {hasNextPage && <div ref={loadMoreRef} className="h-6" />}
+        {isFetchingNextPage && (
+          <p className="py-2 text-center text-xs text-muted-foreground">
+            Loading more…
+          </p>
+        )}
       </div>
       <Button
         variant="destructive"
@@ -784,7 +802,7 @@ export function UserRoleAssignment({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-col gap-0 p-0 rounded-3xl border border-border bg-card sm:max-w-md overflow-visible">
+      <DialogContent className="flex h-[85vh] max-h-[85vh] flex-col gap-0 p-0 rounded-3xl border border-border bg-card sm:max-w-3xl overflow-visible">
         <DialogHeader className="p-6 pb-0 mb-4">
           <DialogTitle className="flex items-center gap-2 text-2xl font-bold">
             Assign Role
@@ -800,7 +818,7 @@ export function UserRoleAssignment({
         </DialogHeader>
 
         {role && (
-          <div className="px-6 pb-6 max-h-[calc(100vh-12rem)] overflow-y-auto scrollbar-thin">
+          <div className="flex-1 px-6 pb-6 overflow-y-auto scrollbar-thin">
             <Tabs defaultValue="single" className="w-full">
               <TabsList className="mb-4 w-full rounded-xl">
                 <TabsTrigger value="single" className="flex-1 rounded-xl">

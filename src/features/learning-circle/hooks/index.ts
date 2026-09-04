@@ -33,6 +33,7 @@ export {
   useMeetingDetail,
   useMeetingReport,
   useMyPendingInvites,
+  usePendingRsvpMeetingIds,
   usePublicMeetings,
   useRemoveMember,
   useRemoveRsvpMeeting,

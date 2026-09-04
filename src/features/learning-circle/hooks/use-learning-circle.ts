@@ -11,6 +11,7 @@
 import {
   keepPreviousData,
   useMutation,
+  useMutationState,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
@@ -743,8 +744,14 @@ export function useRsvpMeeting() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: learningCircleKeys.rsvpMutation(),
     mutationFn: (meetingId: string) => rsvpMeeting(meetingId),
     onMutate: async (meetingId) => {
+      // Cancel any outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({
+        queryKey: learningCircleKeys.meetings(),
+      });
+
       // Optimistically update every cached meeting list to flip is_rsvp immediately.
       // This ensures the UI reflects the change without waiting for the API refetch.
       const caches = queryClient.getQueriesData<Meeting[]>({
@@ -827,8 +834,14 @@ export function useRemoveRsvpMeeting() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: learningCircleKeys.removeRsvpMutation(),
     mutationFn: (meetingId: string) => removeRsvpMeeting(meetingId),
     onMutate: async (meetingId) => {
+      // Cancel any outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({
+        queryKey: learningCircleKeys.meetings(),
+      });
+
       // Optimistically update every cached meeting list to clear is_rsvp immediately.
       const caches = queryClient.getQueriesData<Meeting[]>({
         queryKey: learningCircleKeys.meetings(),
@@ -851,9 +864,6 @@ export function useRemoveRsvpMeeting() {
       });
       queryClient.invalidateQueries({
         queryKey: learningCircleKeys.meetingsUser(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: [...learningCircleKeys.all, "meetings"],
       });
       toast.success("RSVP removed successfully!");
     },
@@ -878,6 +888,36 @@ export function useRemoveRsvpMeeting() {
       );
     },
   });
+}
+
+/**
+ * Hook returning a Set of meeting IDs currently undergoing RSVP or Remove-RSVP mutations.
+ * Powered by TanStack Query's mutation cache so concurrent mutations across multiple
+ * cards are accurately tracked independently without losing loading states.
+ */
+export function usePendingRsvpMeetingIds(): Set<string> {
+  const rsvpMeetingIds = useMutationState<string>({
+    filters: {
+      mutationKey: learningCircleKeys.rsvpMutation(),
+      status: "pending",
+    },
+    select: (mutation) => mutation.state.variables as string,
+  });
+
+  const removeRsvpMeetingIds = useMutationState<string>({
+    filters: {
+      mutationKey: learningCircleKeys.removeRsvpMutation(),
+      status: "pending",
+    },
+    select: (mutation) => mutation.state.variables as string,
+  });
+
+  return useMemo(() => {
+    return new Set<string>([
+      ...rsvpMeetingIds.filter(Boolean),
+      ...removeRsvpMeetingIds.filter(Boolean),
+    ]);
+  }, [rsvpMeetingIds, removeRsvpMeetingIds]);
 }
 
 export function useJoinMeeting() {

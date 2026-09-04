@@ -152,7 +152,18 @@ export const CreateCircleRequestSchema = z.object({
 
 export type CreateCircleRequest = z.infer<typeof CreateCircleRequestSchema>;
 
-export const EditCircleRequestSchema = CreateCircleRequestSchema.partial();
+export const EditCircleRequestSchema = z.object({
+  title: z
+    .string()
+    .min(1)
+    .max(100, "Title must be 100 characters or less")
+    .optional(),
+  description: z
+    .string()
+    .min(1)
+    .max(1000, "Description must be 1000 characters or less")
+    .optional(),
+});
 export type EditCircleRequest = z.infer<typeof EditCircleRequestSchema>;
 
 /** Accept or reject a pending member */
@@ -263,10 +274,10 @@ export const JoinRequestListResponseSchema = ApiResponseSchema(
   z.array(JoinRequestSchema),
 );
 
-/** Body for PATCH join/<circle_id>/ — accept, reject, or revoke a pending request. */
+/** Body for PATCH join/<circle_id>/ — accept or reject a pending request. */
 export const RespondJoinRequestSchema = z.object({
   link_id: z.string(),
-  action: z.enum(["accept", "reject", "revoke"]),
+  action: z.enum(["accept", "reject"]),
 });
 
 export type RespondJoinRequest = z.infer<typeof RespondJoinRequestSchema>;

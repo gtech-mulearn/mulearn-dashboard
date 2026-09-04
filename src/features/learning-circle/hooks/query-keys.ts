@@ -46,4 +46,9 @@ export const learningCircleKeys = {
     [...learningCircleKeys.meetings(), "attendeeReport", id] as const,
   meetingReport: (id: string) =>
     [...learningCircleKeys.meetings(), "meetingReport", id] as const,
+
+  // Mutation keys
+  rsvpMutation: () => [...learningCircleKeys.meetings(), "rsvp"] as const,
+  removeRsvpMutation: () =>
+    [...learningCircleKeys.meetings(), "removeRsvp"] as const,
 } as const;

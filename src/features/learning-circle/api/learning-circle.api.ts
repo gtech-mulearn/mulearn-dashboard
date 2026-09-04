@@ -265,7 +265,7 @@ export async function revokeInvite(
 ): Promise<void> {
   await respondToJoinRequest(circleId, {
     link_id: linkId,
-    action: "revoke",
+    action: "reject",
   });
 }
 
@@ -329,16 +329,16 @@ export async function getPublicMeetings(params?: {
   page?: number;
   perPage?: number;
   search?: string;
-}): Promise<PublicMeetingListResponse> {
+}): Promise<PublicMeetingListResponse["response"]> {
   const searchParams = new URLSearchParams();
   if (params?.ig_id) searchParams.set("ig_id", params.ig_id);
-  if (params?.page) searchParams.set("page", String(params.page));
+  if (params?.page) searchParams.set("pageIndex", String(params.page));
   if (params?.perPage) searchParams.set("perPage", String(params.perPage));
   if (params?.search) searchParams.set("search", params.search);
 
   const url = `${endpoints.learningCircle.meetingListPublic}?${searchParams}`;
   const response = await apiClient.get(url, PublicMeetingListResponseSchema);
-  return response;
+  return response.response;
 }
 
 /** Get user's meetings */
