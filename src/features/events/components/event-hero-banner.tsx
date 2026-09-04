@@ -47,7 +47,7 @@ export function EventHeroBanner({
         variant="default"
         size="icon"
         onClick={() => router.back()}
-        className="absolute left-4 top-4 z-20"
+        className="absolute left-4 top-4 z-30"
         aria-label="Go back"
       >
         <ChevronLeft className="size-4" />
