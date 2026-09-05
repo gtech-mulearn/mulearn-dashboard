@@ -30,8 +30,10 @@ import { usePermissions } from "@/hooks/use-permissions";
 import { eventsApi } from "../api";
 import {
   EVENT_BANNER_IMAGE_ASPECT,
+  EVENT_BANNER_IMAGE_MAX_DIMENSION,
   EVENT_BANNER_IMAGE_MOBILE_PREVIEW_ASPECT,
   EVENT_COVER_IMAGE_ASPECT,
+  EVENT_COVER_IMAGE_MAX_DIMENSION,
   EVENT_CREATE_WIZARD_STEPS,
   EVENT_FORM_DEFAULT_VALUES,
   EVENT_SCOPE_OPTIONS,
@@ -1411,6 +1413,8 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                         value={coverImageFile}
                         onChange={setCoverImageFile}
                         aspectRatio={EVENT_COVER_IMAGE_ASPECT}
+                        outputMaxDimension={EVENT_COVER_IMAGE_MAX_DIMENSION}
+                        hint="Instagram post size — 1080x1350 (4:5)"
                       />
                     </div>
                     <div className="space-y-2">
@@ -1421,7 +1425,9 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                         value={bannerImageFile}
                         onChange={setBannerImageFile}
                         aspectRatio={EVENT_BANNER_IMAGE_ASPECT}
+                        outputMaxDimension={EVENT_BANNER_IMAGE_MAX_DIMENSION}
                         previewAspect={EVENT_BANNER_IMAGE_MOBILE_PREVIEW_ASPECT}
+                        hint="LinkedIn banner size — 1584x396 (4:1)"
                       />
                     </div>
                   </div>

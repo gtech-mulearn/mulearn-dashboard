@@ -15,11 +15,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./dialog";
-import { cropImageToBlobWithinSizeLimit } from "./lib/crop-image";
+import {
+  cropImageToBlobWithinSizeLimit,
+  isLosslessPassThrough,
+} from "./lib/crop-image";
 
 export interface ImageCropDialogProps {
   open: boolean;
   imageSrc: string;
+  /**
+   * The file `imageSrc` was made from. When the user keeps the whole frame and
+   * it already fits the output budget, these original bytes are handed back
+   * untouched instead of being re-encoded.
+   */
+  originalFile?: File | null;
   aspect: number;
   cropShape?: "rect" | "round";
   outputMaxDimension?: number;
@@ -32,6 +41,7 @@ export interface ImageCropDialogProps {
 export function ImageCropDialog({
   open,
   imageSrc,
+  originalFile,
   aspect,
   cropShape = "rect",
   outputMaxDimension = 1600,
@@ -54,11 +64,30 @@ export function ImageCropDialog({
     if (!croppedAreaPixels) return;
     setIsSaving(true);
     try {
+      const maxSizeBytes = outputMaxSizeMB * 1024 * 1024;
+
+      // Nothing was cropped away and the image already fits — canvas
+      // re-encoding could only lose detail, so pass the original through.
+      if (
+        originalFile &&
+        mediaSize &&
+        originalFile.size <= maxSizeBytes &&
+        isLosslessPassThrough(
+          croppedAreaPixels,
+          mediaSize.naturalWidth,
+          mediaSize.naturalHeight,
+          outputMaxDimension,
+        )
+      ) {
+        onCropComplete(originalFile);
+        return;
+      }
+
       const blob = await cropImageToBlobWithinSizeLimit(
         imageSrc,
         croppedAreaPixels,
         outputMaxDimension,
-        outputMaxSizeMB * 1024 * 1024,
+        maxSizeBytes,
       );
       onCropComplete(
         new File([blob], "cropped-image.jpg", { type: "image/jpeg" }),

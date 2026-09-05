@@ -20,8 +20,10 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   EVENT_BANNER_IMAGE_ASPECT,
+  EVENT_BANNER_IMAGE_MAX_DIMENSION,
   EVENT_BANNER_IMAGE_MOBILE_PREVIEW_ASPECT,
   EVENT_COVER_IMAGE_ASPECT,
+  EVENT_COVER_IMAGE_MAX_DIMENSION,
   EVENT_FORM_DEFAULT_VALUES,
   EVENT_SCOPE_OPTIONS,
 } from "../constants/events.constants";
@@ -676,6 +678,8 @@ export function EventInlineEditForm({
               onChange={setCoverImageFile}
               currentUrl={event.cover_image}
               aspectRatio={EVENT_COVER_IMAGE_ASPECT}
+              outputMaxDimension={EVENT_COVER_IMAGE_MAX_DIMENSION}
+              hint="Instagram post size — 1080x1350 (4:5)"
             />
           </div>
           <div className="space-y-2">
@@ -685,7 +689,9 @@ export function EventInlineEditForm({
               onChange={setBannerImageFile}
               currentUrl={event.banner_image}
               aspectRatio={EVENT_BANNER_IMAGE_ASPECT}
+              outputMaxDimension={EVENT_BANNER_IMAGE_MAX_DIMENSION}
               previewAspect={EVENT_BANNER_IMAGE_MOBILE_PREVIEW_ASPECT}
+              hint="LinkedIn banner size — 1584x396 (4:1)"
             />
           </div>
         </div>
