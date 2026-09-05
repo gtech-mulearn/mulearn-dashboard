@@ -46,6 +46,8 @@ export function FeaturedEventsCarousel() {
   if (featuredEvents.length === 0) return null;
 
   const event = featuredEvents[activeIndex];
+  const venueDisplay =
+    event.venue_type === "online" ? "Online Event" : "Physical Event";
   return (
     <section
       aria-label="Featured events carousel"
@@ -105,7 +107,7 @@ export function FeaturedEventsCarousel() {
               <span>{formatEventDate(event.start_datetime)}</span>
               <span>|</span>
               <MapPin className="h-4 w-4" />
-              <span>{event.venue_city ?? "Venue TBA"}</span>
+              <span>{venueDisplay}</span>
             </div>
           </div>
 
