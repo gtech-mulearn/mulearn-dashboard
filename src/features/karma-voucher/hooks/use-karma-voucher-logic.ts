@@ -10,6 +10,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { toast } from "sonner";
 import type {
   CreateVoucherPayload,
   KarmaVoucher,
@@ -115,6 +116,10 @@ export function useKarmaVoucherLogic() {
       const formData = new FormData(e.currentTarget);
       const file = formData.get("file");
       if (!(file instanceof File)) return;
+      if (!file.name.toLowerCase().endsWith(".xlsx")) {
+        toast.error("Only .xlsx files are supported for bulk import");
+        return;
+      }
 
       try {
         await uploadVouchers(file);

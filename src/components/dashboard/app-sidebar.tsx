@@ -49,15 +49,21 @@ export function AppSidebar() {
   const isCompanyVerified = companyProfile?.status === "verified";
 
   const handleLogout = useCallback(async () => {
-    // Clear cookies server-side first: the HttpOnly refreshToken can't be removed
-    // by client js-cookie, and if it lingers the proxy refreshes a new accessToken
-    // and bounces /login back to /dashboard.
-    await fetch("/api/auth/logout", { method: "POST" });
-    await authStore.clearTokens();
-    useUIStore.getState().resetUI();
-    toast.success("Logged out successfully");
-    // Hard redirect so the proxy re-evaluates with the cookies actually gone.
-    window.location.href = "/login";
+    try {
+      // Clear cookies server-side first: the HttpOnly refreshToken can't be removed
+      // by client js-cookie, and if it lingers the proxy refreshes a new accessToken
+      // and bounces /login back to /dashboard.
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      toast.error("Couldn't reach the server, logging out locally");
+    } finally {
+      await authStore.clearTokens();
+      useUIStore.getState().resetUI();
+      setIsLogoutDialogOpen(false);
+      toast.success("Logged out successfully");
+      // Hard redirect so the proxy re-evaluates with the cookies actually gone.
+      window.location.href = "/login";
+    }
   }, []);
 
   const isActive = useCallback(

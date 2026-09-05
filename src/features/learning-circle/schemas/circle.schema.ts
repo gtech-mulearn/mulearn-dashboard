@@ -282,6 +282,12 @@ export const RespondJoinRequestSchema = z.object({
 
 export type RespondJoinRequest = z.infer<typeof RespondJoinRequestSchema>;
 
+/** Body for DELETE members/remove/<circle_id>/ — kick a member. */
+export const RemoveMemberRequestSchema = z.object({
+  muid: z.string(),
+});
+export type RemoveMemberRequest = z.infer<typeof RemoveMemberRequestSchema>;
+
 /**
  * Pagination shape returned by Django
  */

@@ -257,6 +257,78 @@ h5 {
     background-color: color-mix(in srgb, var(--chart-2) 18%, var(--background));
     color: var(--chart-2);
   }
+  .ig-cat-workshop {
+    background-color: color-mix(in srgb, var(--chart-1) 16%, var(--background));
+    color: var(--chart-1);
+  }
+  .ig-cat-webinar {
+    background-color: color-mix(in srgb, var(--chart-2) 16%, var(--background));
+    color: var(--chart-2);
+  }
+  .ig-cat-hackathon {
+    background-color: color-mix(in srgb, var(--chart-3) 16%, var(--background));
+    color: var(--chart-3);
+  }
+  .ig-cat-meetup {
+    background-color: color-mix(in srgb, var(--chart-4) 16%, var(--background));
+    color: var(--chart-4);
+  }
+  .ig-cat-competition {
+    background-color: color-mix(in srgb, var(--chart-5) 16%, var(--background));
+    color: var(--chart-5);
+  }
+  .ig-cat-seminar {
+    background-color: color-mix(in srgb, var(--primary) 16%, var(--background));
+    color: var(--primary);
+  }
+  .ig-cat-bootcamp {
+    background-color: color-mix(
+      in srgb,
+      var(--brand-blue) 16%,
+      var(--background)
+    );
+    color: var(--brand-blue);
+  }
+  .ig-cat-conference {
+    background-color: color-mix(
+      in srgb,
+      var(--brand-purple) 16%,
+      var(--background)
+    );
+    color: var(--brand-purple);
+  }
+  .ig-cat-ideathon {
+    background-color: color-mix(in srgb, var(--chart-1) 16%, var(--background));
+    color: var(--chart-1);
+  }
+  .ig-cat-cultural_event {
+    background-color: color-mix(in srgb, var(--chart-2) 16%, var(--background));
+    color: var(--chart-2);
+  }
+  .ig-cat-sports_event {
+    background-color: color-mix(in srgb, var(--chart-3) 16%, var(--background));
+    color: var(--chart-3);
+  }
+  .ig-cat-community_event {
+    background-color: color-mix(in srgb, var(--chart-4) 16%, var(--background));
+    color: var(--chart-4);
+  }
+  .ig-cat-expo {
+    background-color: color-mix(in srgb, var(--chart-5) 16%, var(--background));
+    color: var(--chart-5);
+  }
+  .ig-cat-networking_event {
+    background-color: color-mix(in srgb, var(--primary) 16%, var(--background));
+    color: var(--primary);
+  }
+  .ig-cat-tech_talk {
+    background-color: color-mix(
+      in srgb,
+      var(--brand-blue) 16%,
+      var(--background)
+    );
+    color: var(--brand-blue);
+  }
   .ig-cat-others {
     background-color: color-mix(
       in srgb,

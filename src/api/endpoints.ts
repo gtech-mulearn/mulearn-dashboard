@@ -758,6 +758,12 @@ export const endpoints = {
       `/api/v1/dashboard/learningcircle/transfer-lead/${id}/`,
     /** POST - Request to join a circle */
     join: (id: string) => `/api/v1/dashboard/learningcircle/join/${id}/`,
+    /** DELETE - Leave a circle (member only, not creator/lead) */
+    leaveCircle: (id: string) =>
+      `/api/v1/dashboard/learningcircle/leave/${id}/`,
+    /** DELETE - Remove (kick) a member from a circle (lead/creator only) */
+    removeMember: (id: string) =>
+      `/api/v1/dashboard/learningcircle/members/remove/${id}/`,
     /** GET - User's own circles */
     userCircles: "/api/v1/dashboard/learningcircle/user-circles/",
 

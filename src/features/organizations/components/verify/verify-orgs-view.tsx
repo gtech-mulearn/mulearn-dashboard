@@ -37,8 +37,8 @@ export default function VerifyOrgsView() {
   });
 
   const orgs = data?.data ?? [];
-  const totalPages = data?.pagination.totalPages ?? 0;
-  const totalCount = data?.pagination.count ?? 0;
+  const totalPages = data?.pagination?.totalPages ?? 0;
+  const totalCount = data?.pagination?.count ?? 0;
 
   useEffect(() => {
     if (totalPages > 0 && currentPage > totalPages) {

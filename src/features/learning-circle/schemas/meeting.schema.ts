@@ -31,6 +31,7 @@ export const MeetingAttendeeSchema = z.object({
   is_report_submitted: z.boolean(),
   profile_pic: z.string().nullable(),
   is_same_org: z.boolean().optional(),
+  is_creator: z.boolean().optional(),
 });
 
 export type MeetingAttendee = z.infer<typeof MeetingAttendeeSchema>;
@@ -236,17 +237,12 @@ export const MeetingDetailResponseSchema =
   ApiResponseSchema(MeetingDetailSchema);
 
 /** Public meetings with pagination - matches paginated_response format */
-export const PublicMeetingListResponseSchema = z.object({
-  hasError: z.boolean().optional(),
-  statusCode: z.number(),
-  data: z.array(PublicMeetingSchema),
-  pagination: z.object({
-    currentPage: z.number(),
-    perPage: z.number(),
-    totalPages: z.number(),
-    totalItems: z.number(),
+export const PublicMeetingListResponseSchema = ApiResponseSchema(
+  z.object({
+    data: z.array(PublicMeetingSchema),
+    pagination: PaginationSchema,
   }),
-});
+);
 
 export type PublicMeetingListResponse = z.infer<
   typeof PublicMeetingListResponseSchema

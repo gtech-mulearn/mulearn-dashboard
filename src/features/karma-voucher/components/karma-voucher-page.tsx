@@ -170,13 +170,11 @@ function KarmaVoucherContent() {
           </DialogHeader>
           <form onSubmit={handleImportSubmit} className="space-y-4">
             <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg border-neutral-700 ">
-              <p className="mb-4 text-sm text-neutral-400">
-                Upload CSV or XLSX file
-              </p>
+              <p className="mb-4 text-sm text-neutral-400">Upload XLSX file</p>
               <input
                 type="file"
                 name="file"
-                accept=".csv, .xlsx, .xls"
+                accept=".xlsx"
                 className="w-full text-sm text-neutral-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-neutral-800 file:text-white hover:file:bg-neutral-700 transition-colors"
                 required
               />
