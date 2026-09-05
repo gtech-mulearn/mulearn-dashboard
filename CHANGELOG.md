@@ -1,5 +1,11 @@
 # mulearn-dashboard
 
+## 5.0.1
+
+### Patch Changes
+
+- [#345](https://github.com/gtech-mulearn/mulearn-dashboard/pull/345) [`c3995c6`](https://github.com/awindsr/mulearn-dashboard/commit/c3995c671cb0a21dfd0dc4ccf2afdcdf1d9e4036) Thanks [@aprameyak](https://github.com/aprameyak)! - Reject whitespace-only company names during company registration
+
 ## 5.0.0
 
 The μLearn Dashboard has been rebuilt from the ground up. This is a full rewrite faster, more secure, and significantly broader in scope than before. It keeps everything the community already relies on (authentication, profiles, μJourney, interest groups, learning circles, leaderboards) while adding role-aware home pages, a dedicated Company portal, a complete Mentor portal, an Intern workspace, rebuilt task management, new analytics, and hardened security and performance under the hood.
