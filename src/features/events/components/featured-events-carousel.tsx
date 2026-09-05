@@ -68,6 +68,8 @@ export function FeaturedEventsCarousel() {
             src={ev.cover_image ?? "/images/fallback.webp"}
             alt={ev.title}
             fill
+            sizes="(min-width: 1024px) 1200px, 100vw"
+            quality={90}
             className="object-cover"
             priority={i === 0}
           />

@@ -27,13 +27,7 @@ export function useIgSponsorshipMetrics(igId: string) {
 export function useSubmitIgSponsorship() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      igId,
-      payload,
-    }: {
-      igId: string;
-      payload: { proposal: string; budget?: number; duration_months?: number };
-    }) => submitIgSponsorship(igId, payload),
+    mutationFn: ({ igId }: { igId: string }) => submitIgSponsorship(igId),
     onSuccess: (_, variables) => {
       toast.success("Sponsorship proposal submitted");
       queryClient.invalidateQueries({
@@ -58,11 +52,11 @@ export function useReviewIgSponsorship() {
       payload,
     }: {
       igId: string;
-      payload: { action: "APPROVE" | "REJECT"; comments?: string };
+      payload: { approve: boolean };
     }) => reviewIgSponsorship(igId, payload),
     onSuccess: (_, variables) => {
       toast.success(
-        variables.payload.action === "APPROVE"
+        variables.payload.approve
           ? "Sponsorship approved"
           : "Sponsorship rejected",
       );

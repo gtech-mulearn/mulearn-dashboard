@@ -9,11 +9,27 @@
 
 "use client";
 
-import { Crown, Plus, Users } from "lucide-react";
+import { Crown, Plus, UserMinus, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { type CirclePermissions, useCircleMembers } from "../hooks";
+import { useUserInfo } from "@/features/auth/hooks";
+import {
+  type CirclePermissions,
+  useCircleMembers,
+  useRemoveMember,
+} from "../hooks";
+import type { CircleMember } from "../schemas";
 
 // TODO: avatar gradient palette — no semantic token for multi-color identity gradients; needs design decision
 const AVATAR_BG = [
@@ -75,7 +91,18 @@ export function MemberList({
   onInviteClick,
 }: MemberListProps) {
   const { data: membersData, isLoading } = useCircleMembers(circleId);
+  const { data: userInfo } = useUserInfo();
+  const removeMember = useRemoveMember(circleId);
+  const [memberToKick, setMemberToKick] = useState<CircleMember | null>(null);
   const members = membersData?.members ?? [];
+
+  const handleConfirmKick = () => {
+    if (!memberToKick) return;
+    removeMember.mutate(
+      { muid: memberToKick.muid },
+      { onSuccess: () => setMemberToKick(null) },
+    );
+  };
 
   if (isLoading) {
     return (
@@ -176,6 +203,11 @@ export function MemberList({
           </div>
         );
 
+        const canKick =
+          permissions.canManageMembers &&
+          !member.is_leader &&
+          member.muid !== userInfo?.muid;
+
         return (
           <div
             key={member.id}
@@ -192,9 +224,56 @@ export function MemberList({
             ) : (
               <div className="flex-1 min-w-0">{cardContent}</div>
             )}
+            {canKick && (
+              <button
+                type="button"
+                onClick={() => setMemberToKick(member)}
+                className="ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100 cursor-pointer"
+                title="Remove member"
+              >
+                <UserMinus className="h-4 w-4" />
+              </button>
+            )}
           </div>
         );
       })}
+
+      <Dialog
+        open={memberToKick !== null}
+        onOpenChange={(open) => !open && setMemberToKick(null)}
+      >
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle>Remove member</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to remove{" "}
+              <span className="font-bold text-foreground">
+                {memberToKick?.full_name}
+              </span>{" "}
+              from this circle? They will need to request to join again.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setMemberToKick(null)}
+              disabled={removeMember.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleConfirmKick}
+              disabled={removeMember.isPending}
+            >
+              {removeMember.isPending && <Spinner className="mr-2 h-4 w-4" />}
+              Remove
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -20,8 +20,10 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   EVENT_BANNER_IMAGE_ASPECT,
+  EVENT_BANNER_IMAGE_MAX_DIMENSION,
   EVENT_BANNER_IMAGE_MOBILE_PREVIEW_ASPECT,
   EVENT_COVER_IMAGE_ASPECT,
+  EVENT_COVER_IMAGE_MAX_DIMENSION,
   EVENT_FORM_DEFAULT_VALUES,
   EVENT_SCOPE_OPTIONS,
 } from "../constants/events.constants";
@@ -494,6 +496,11 @@ export function EventInlineEditForm({
                 {errors.category.message}
               </p>
             ) : null}
+            {errors.event_type?.message ? (
+              <p className="text-xs text-destructive">
+                {errors.event_type.message}
+              </p>
+            ) : null}
           </div>
         </div>
       </section>
@@ -581,6 +588,24 @@ export function EventInlineEditForm({
             }}
           />
         ) : null}
+
+        {/* The schema raises the missing-target issue against these paths.
+            Without them the form refuses to save and says nothing. */}
+        {errors.target_campus_id?.message ? (
+          <p className="text-xs text-destructive">
+            {errors.target_campus_id.message}
+          </p>
+        ) : null}
+        {errors.target_ig_id?.message ? (
+          <p className="text-xs text-destructive">
+            {errors.target_ig_id.message}
+          </p>
+        ) : null}
+        {errors.target_campus_ig_id?.message ? (
+          <p className="text-xs text-destructive">
+            {errors.target_campus_ig_id.message}
+          </p>
+        ) : null}
       </section>
 
       <section className={eventEditSectionClassName()}>
@@ -653,6 +678,8 @@ export function EventInlineEditForm({
               onChange={setCoverImageFile}
               currentUrl={event.cover_image}
               aspectRatio={EVENT_COVER_IMAGE_ASPECT}
+              outputMaxDimension={EVENT_COVER_IMAGE_MAX_DIMENSION}
+              hint="Instagram post size — 1080x1350 (4:5)"
             />
           </div>
           <div className="space-y-2">
@@ -662,7 +689,9 @@ export function EventInlineEditForm({
               onChange={setBannerImageFile}
               currentUrl={event.banner_image}
               aspectRatio={EVENT_BANNER_IMAGE_ASPECT}
+              outputMaxDimension={EVENT_BANNER_IMAGE_MAX_DIMENSION}
               previewAspect={EVENT_BANNER_IMAGE_MOBILE_PREVIEW_ASPECT}
+              hint="LinkedIn banner size — 1584x396 (4:1)"
             />
           </div>
         </div>
@@ -679,8 +708,18 @@ export function EventInlineEditForm({
             </p>
             <Input
               className="rounded-xl border-border bg-background text-foreground"
+              placeholder="https://example.com/register"
               {...register("registration_url")}
             />
+            {errors.registration_url?.message ? (
+              <p className="text-xs text-destructive">
+                {errors.registration_url.message}
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Include https:// at the start, or the link will not open.
+              </p>
+            )}
           </div>
           <div className="space-y-1">
             <p className="text-sm font-medium text-foreground">

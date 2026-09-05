@@ -67,7 +67,7 @@ export function EventDetailView({
     "/images/mulearn-logo-small.jpg";
 
   const innerContent = (
-    <div className="mx-auto w-full max-w-7xl space-y-5 pb-24 lg:pb-6 lc-fade-in overflow-x-hidden">
+    <div className="mx-auto w-full space-y-5 pb-24 lg:pb-6 lc-fade-in overflow-x-hidden">
       <EventHeroBanner
         event={event}
         organizerName={organizerName}
@@ -112,7 +112,7 @@ export function EventDetailView({
 
   if (layout === "full") {
     return (
-      <div className="w-full max-w-full overflow-x-hidden bg-background rounded-2xl shadow-sm p-4 min-h-[calc(100vh-6rem)]">
+      <div className="w-full max-w-full overflow-x-hidden px-0 py-2 lg:p-4 min-h-[calc(100vh-6rem)]">
         {innerContent}
       </div>
     );

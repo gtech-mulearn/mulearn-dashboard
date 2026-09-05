@@ -16,14 +16,18 @@ export const eventKeys = {
   all: ["events"] as const,
 
   // ── Public ──────────────────────────────────────────────────
+  // `authenticated` is part of the key so an authed fetch never shares a
+  // cache slot with an anonymous visitor's fetch of the same params.
   lists: () => [...eventKeys.all, "list"] as const,
-  list: (params: EventListQueryParams) =>
-    [...eventKeys.lists(), params] as const,
+  list: (params: EventListQueryParams, authenticated = true) =>
+    [...eventKeys.lists(), authenticated ? "auth" : "public", params] as const,
 
-  featured: () => [...eventKeys.all, "featured"] as const,
+  featured: (authenticated = true) =>
+    [...eventKeys.all, "featured", authenticated ? "auth" : "public"] as const,
 
   details: () => [...eventKeys.all, "detail"] as const,
-  detail: (id: string) => [...eventKeys.details(), id] as const,
+  detail: (id: string, authenticated = true) =>
+    [...eventKeys.details(), authenticated ? "auth" : "public", id] as const,
 
   // ── Manage ─────────────────────────────────────────────────
   manage: () => [...eventKeys.all, "manage"] as const,

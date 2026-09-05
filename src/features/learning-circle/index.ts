@@ -85,6 +85,7 @@ export {
   useMeetingDetail,
   useMeetingReport,
   useMyPendingInvites,
+  usePendingRsvpMeetingIds,
   usePublicMeetings,
   useRemoveRsvpMeeting,
   useRespondToInvite,

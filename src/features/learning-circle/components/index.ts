@@ -21,6 +21,7 @@ export {
   SentInvitesCard,
 } from "./invite-section";
 export { JoinMeetingModal } from "./join-meeting-modal";
+export { LeaveCircleButton } from "./leave-circle-button";
 export { MeetingCard } from "./meeting-card";
 export { MeetingDetailView } from "./meeting-detail-view";
 export { MeetingReportForm } from "./meeting-report-form";

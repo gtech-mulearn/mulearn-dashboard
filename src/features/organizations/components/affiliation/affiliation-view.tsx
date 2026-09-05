@@ -90,8 +90,8 @@ function AffiliationContent() {
   });
 
   const rows = (data?.data ?? []) as AffiliationItem[];
-  const totalPages = data?.pagination.totalPages ?? 0;
-  const totalCount = data?.pagination.count;
+  const totalPages = data?.pagination?.totalPages ?? 0;
+  const totalCount = data?.pagination?.count;
 
   // ─── Mutations ────────────────────────────────────────────────────────────
   const deleteMutation = useDeleteAffiliation();
