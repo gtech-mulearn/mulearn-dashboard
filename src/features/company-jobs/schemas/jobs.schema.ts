@@ -1398,87 +1398,54 @@ export const TasksAnalyticsResponseSchema =
   DjangoResponse(TasksAnalyticsSchema);
 
 // ─── Shortlisted Learners ────────────────────────────────────
+// Backend GET /company/mulearners/shortlist/ returns:
+//   { data: [{ id, full_name, karma, shortlist_note }] }
 
 export const ShortlistedLearnerSchema = z.object({
   id: z.string(),
-  user_id: z.string(),
-  learner_name: z.string(),
-  muid: z.string(),
-  email: z.string().nullable().optional(),
+  full_name: z.string(),
   karma: z.number(),
-  level: z.number(),
-  shortlisted_at: z.string(),
-  note: z.string().nullable().optional(),
+  shortlist_note: z.string().nullable().optional(),
 });
 
+// The DjangoResponse wrapper expects { response: <inner> }.
+// The inner shape here is { data: ShortlistedLearner[] }.
 export const ShortlistListResponseSchema = DjangoResponse(
-  z.array(ShortlistedLearnerSchema),
+  z.object({
+    data: z.array(ShortlistedLearnerSchema).default([]),
+  }),
 );
-export const ShortlistMutationResponseSchema = DjangoResponse(
-  ShortlistedLearnerSchema,
-);
+
+// POST/PATCH mutation just returns a generic success message.
+export const ShortlistMutationResponseSchema = DjangoResponse(z.unknown());
 
 // ─── Talent Pool Insights ────────────────────────────────────
 
 export const TalentPoolInsightsSchema = z.object({
-  total_active_learners: z.number(),
-  available_for_hire: z.number(),
-  available_for_gigs: z.number(),
-  district_distribution: z
-    .array(z.object({ district: z.string(), count: z.number() }))
-    .default([]),
+  total_learners: z.number(),
   top_skills: z
-    .array(z.object({ skill: z.string(), learner_count: z.number() }))
+    .array(
+      z.object({
+        skill_id: z.string(),
+        skill_name: z.string(),
+        learner_count: z.number(),
+      }),
+    )
     .default([]),
-  recommended_roles: z
-    .array(z.object({ role: z.string(), talent_count: z.number() }))
+  top_colleges: z
+    .array(
+      z.object({
+        college_id: z.string(),
+        college_name: z.string(),
+        learner_count: z.number(),
+      }),
+    )
     .default([]),
 });
 
 export const TalentPoolInsightsResponseSchema = DjangoResponse(
   TalentPoolInsightsSchema,
 );
-
-// ─── Task Templates ──────────────────────────────────────────
-
-export const TaskTemplateSchema = z
-  .object({
-    id: z.string(),
-    title: z.string(),
-    description: z.string().optional().nullable().default(""),
-    hashtag_prefix: z.string().optional().nullable(),
-    hashtag: z.string().optional().nullable(),
-    karma: z.coerce.number().default(0),
-    type_id: z.string().optional().nullable(),
-    type_title: z.string().optional().nullable(),
-    type: z.string().optional().nullable(),
-    skills: z.array(z.string()).optional().default([]),
-    created_at: z.string().optional().nullable(),
-  })
-  .passthrough();
-
-export const TaskTemplatesListResponseSchema = z.union([
-  DjangoResponse(
-    z.object({
-      data: z.array(TaskTemplateSchema),
-    }),
-  ),
-  DjangoResponse(z.array(TaskTemplateSchema)),
-  z.object({
-    response: z.object({
-      data: z.array(TaskTemplateSchema),
-    }),
-  }),
-  z.object({
-    data: z.array(TaskTemplateSchema),
-  }),
-]);
-
-export const TaskTemplateDetailResponseSchema = z.union([
-  DjangoResponse(TaskTemplateSchema),
-  DjangoResponse(z.object({ id: z.string() }).passthrough()),
-  DjangoResponse(z.object({}).passthrough()),
-]);
 
 // ─── Company Feedback ────────────────────────────────────────
 

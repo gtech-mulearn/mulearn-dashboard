@@ -13,7 +13,8 @@ import {
 export const SHORTLIST_KEYS = {
   all: ["company-shortlist"] as const,
   list: () => [...SHORTLIST_KEYS.all, "list"] as const,
-  insights: () => [...SHORTLIST_KEYS.all, "insights"] as const,
+  insights: (params?: { district_id?: string }) =>
+    [...SHORTLIST_KEYS.all, "insights", params] as const,
 };
 
 export function useShortlistedLearners() {
@@ -24,10 +25,10 @@ export function useShortlistedLearners() {
   });
 }
 
-export function useTalentPoolInsights() {
+export function useTalentPoolInsights(params?: { district_id?: string }) {
   return useQuery({
-    queryKey: SHORTLIST_KEYS.insights(),
-    queryFn: fetchTalentPoolInsights,
+    queryKey: SHORTLIST_KEYS.insights(params),
+    queryFn: () => fetchTalentPoolInsights(params),
     refetchOnWindowFocus: false,
   });
 }

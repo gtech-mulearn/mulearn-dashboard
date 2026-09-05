@@ -40,8 +40,6 @@ import {
   TalentPoolAnalyticsResponseSchema,
   TalentPoolInsightsResponseSchema,
   TasksAnalyticsResponseSchema,
-  TaskTemplateDetailResponseSchema,
-  TaskTemplatesListResponseSchema,
   TrackJobViewResponseSchema,
   UpdateApplicantStatusResponseSchema,
   UpdateCompanyProfileResponseSchema,
@@ -81,7 +79,6 @@ import type {
   TalentPoolAnalyticsParams,
   TalentPoolInsights,
   TasksAnalytics,
-  TaskTemplate,
   UpdateApplicantStatusResponse,
   UpdateJobPayload,
   UpdateJobResponse,
@@ -802,19 +799,20 @@ export async function fetchShortlistedLearners(): Promise<
     endpoints.company.shortlist,
     ShortlistListResponseSchema,
   );
-  return res.response ?? [];
+  // Backend returns { data: [...] } inside the DjangoResponse envelope.
+  // So res.response.data is the array we want.
+  return res.response?.data ?? [];
 }
 
 export async function addLearnerToShortlist(
   userId: string,
   note?: string,
-): Promise<ShortlistedLearner> {
-  const res = await apiClient.post(
+): Promise<void> {
+  await apiClient.post(
     endpoints.company.shortlistAdd,
     { user_id: userId, note },
-    ShortlistMutationResponseSchema,
+    GenericResponseSchema,
   );
-  return res.response;
 }
 
 export async function removeLearnerFromShortlist(
@@ -827,54 +825,40 @@ export async function removeLearnerFromShortlist(
   );
 }
 
-export async function fetchTalentPoolInsights(): Promise<TalentPoolInsights> {
-  const res = await apiClient.get(
-    endpoints.company.talentPoolInsights,
-    TalentPoolInsightsResponseSchema,
-  );
+export async function fetchTalentPoolInsights(params?: {
+  district_id?: string;
+}): Promise<TalentPoolInsights> {
+  let url = endpoints.company.talentPoolInsights;
+  if (params?.district_id) {
+    url += `?district_id=${params.district_id}`;
+  }
+  const res = await apiClient.get(url, TalentPoolInsightsResponseSchema);
   return res.response;
 }
 
-export async function fetchTaskTemplates(): Promise<TaskTemplate[]> {
-  const res = await apiClient.get(
-    endpoints.company.taskTemplates,
-    TaskTemplatesListResponseSchema,
-  );
-  if ("response" in res && res.response) {
-    if (Array.isArray(res.response)) return res.response;
-    if ("data" in res.response && Array.isArray(res.response.data)) {
-      return res.response.data;
-    }
+export async function downloadTalentPoolInsightsCSV(params?: {
+  district_id?: string;
+}): Promise<void> {
+  const query = new URLSearchParams();
+  query.append("export", "csv");
+  if (params?.district_id) {
+    query.append("district_id", params.district_id);
   }
-  if ("data" in res && Array.isArray(res.data)) {
-    return res.data;
-  }
-  if (Array.isArray(res)) {
-    return res;
-  }
-  return [];
-}
 
-export async function createTaskTemplate(
-  payload: Partial<TaskTemplate>,
-): Promise<TaskTemplate> {
-  const res = await apiClient.post(
-    endpoints.company.taskTemplates,
-    payload,
-    TaskTemplateDetailResponseSchema,
-  );
-  if ("response" in res && res.response) {
-    return res.response as TaskTemplate;
-  }
-  return res as unknown as TaskTemplate;
-}
-
-export async function deleteTaskTemplate(templateId: string): Promise<void> {
-  await apiClient.delete(
-    endpoints.company.taskTemplateDetail(templateId),
+  const blob = (await apiClient.get(
+    `${endpoints.company.talentPoolInsights}?${query.toString()}`,
     undefined,
-    GenericResponseSchema,
-  );
+    { responseType: "blob" },
+  )) as unknown as Blob;
+
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "talent_pool_insights.csv";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
 }
 
 // ─── Feedback & Impact Reports (§8) ─────────────────────────
