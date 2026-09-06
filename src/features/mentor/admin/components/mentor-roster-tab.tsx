@@ -1,6 +1,6 @@
 "use client";
 
-import { PowerOff, Star } from "lucide-react";
+import { PowerOff } from "lucide-react";
 import { useState } from "react";
 import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
 import Pagination from "@/components/dashboard/table/pagination";
@@ -65,25 +65,8 @@ function StarRating({ value }: { value: number | null | undefined }) {
   if (value == null) {
     return <span className="text-sm text-muted-foreground">—</span>;
   }
-  const filled = Math.round(value);
   return (
-    <div className="flex items-center gap-1.5">
-      <div className="flex items-center gap-0.5">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            className={`h-3.5 w-3.5 ${
-              star <= filled
-                ? "fill-amber-400 text-amber-400"
-                : "fill-muted text-muted-foreground/40"
-            }`}
-          />
-        ))}
-      </div>
-      <span className="text-sm font-medium tabular-nums">
-        {value.toFixed(1)}
-      </span>
-    </div>
+    <span className="text-sm font-medium tabular-nums">{value.toFixed(1)}</span>
   );
 }
 
