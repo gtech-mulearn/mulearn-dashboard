@@ -62,6 +62,7 @@ export async function createStudentRequest(
 export async function fetchMyRequests(params: ListParams = {}): Promise<{
   data: StudentSessionRequest[];
   totalPages: number;
+  totalCount: number;
 }> {
   const q = new URLSearchParams();
   if (params.status) q.set("status", params.status);
@@ -77,7 +78,8 @@ export async function fetchMyRequests(params: ListParams = {}): Promise<{
   );
   return {
     data: res.response.data,
-    totalPages: res.response.pagination.totalPages,
+    totalPages: res.response.pagination?.totalPages ?? 1,
+    totalCount: res.response.pagination?.count ?? 0,
   };
 }
 

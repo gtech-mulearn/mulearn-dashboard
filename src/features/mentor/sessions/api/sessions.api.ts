@@ -1,6 +1,7 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import { localInputToUtcIso } from "@/lib/datetime";
+import { ApiResponseSchema } from "@/lib/schemas/api-response";
 import type {
   AddParticipantFormValues,
   AdminVerifySessionValues,
@@ -13,6 +14,7 @@ import type {
 import {
   GenericResponseSchema,
   ParticipantsListResponseSchema,
+  SessionParticipantSchema,
   SessionsListResponseSchema,
   SingleSessionResponseSchema,
 } from "../schemas";
@@ -49,28 +51,39 @@ function toBackendPayload(data: Partial<SessionFormValues>) {
     recurrence_type,
     recurrence_interval,
     recurrence_end_date,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    apply_to_series: _apply_to_series,
     ...rest
   } = data;
   const payload: Record<string, unknown> = { ...rest, is_recurring };
 
   // Every session is scoped to the selected Interest Group.
   if (ig_id?.trim()) {
-    payload.ig = ig_id;
-    payload.entity_id = ig_id;
-    payload.session_type = "ig_session";
+    payload.entity_id = ig_id.trim();
+    payload.session_type = "IG_SESSION";
   }
 
   // Normalise datetime strings to full ISO-8601
   if (starts_at !== undefined) payload.starts_at = toISO(starts_at);
   if (ends_at !== undefined) payload.ends_at = toISO(ends_at);
 
-  // Only include optional text/URL fields when they have actual content
-  if (meeting_link && meeting_link.trim() !== "")
-    payload.meeting_link = meeting_link.trim();
+  // Mode-specific field handling: clear irrelevant fields on mode switch
+  if (data.mode === "ONLINE") {
+    payload.venue = "";
+    if (meeting_link && meeting_link.trim() !== "")
+      payload.meeting_link = meeting_link.trim();
+  } else if (data.mode === "OFFLINE") {
+    payload.meeting_link = "";
+    if (venue && (venue as string).trim() !== "")
+      payload.venue = (venue as string).trim();
+  } else {
+    if (meeting_link && meeting_link.trim() !== "")
+      payload.meeting_link = meeting_link.trim();
+    if (venue && (venue as string).trim() !== "")
+      payload.venue = (venue as string).trim();
+  }
   if (description && description.trim() !== "")
     payload.description = description.trim();
-  if (venue && (venue as string).trim() !== "")
-    payload.venue = (venue as string).trim();
 
   if (is_recurring) {
     payload.recurrence_type = recurrence_type;
@@ -113,20 +126,29 @@ function toUpdatePayload(data: Partial<SessionFormValues>) {
   const payload: Record<string, unknown> = { ...rest };
 
   if (ig_id?.trim()) {
-    payload.ig = ig_id;
-    payload.entity_id = ig_id;
-    payload.session_type = "ig_session";
+    payload.entity_id = ig_id.trim();
+    payload.session_type = "IG_SESSION";
   }
 
   if (starts_at !== undefined) payload.starts_at = toISO(starts_at);
   if (ends_at !== undefined) payload.ends_at = toISO(ends_at);
 
-  if (meeting_link && meeting_link.trim() !== "")
-    payload.meeting_link = meeting_link.trim();
+  if (data.mode === "ONLINE") {
+    payload.venue = "";
+    if (meeting_link && meeting_link.trim() !== "")
+      payload.meeting_link = meeting_link.trim();
+  } else if (data.mode === "OFFLINE") {
+    payload.meeting_link = "";
+    if (venue && (venue as string).trim() !== "")
+      payload.venue = (venue as string).trim();
+  } else {
+    if (meeting_link && meeting_link.trim() !== "")
+      payload.meeting_link = meeting_link.trim();
+    if (venue && (venue as string).trim() !== "")
+      payload.venue = (venue as string).trim();
+  }
   if (description && description.trim() !== "")
     payload.description = description.trim();
-  if (venue && (venue as string).trim() !== "")
-    payload.venue = (venue as string).trim();
 
   return payload;
 }
@@ -146,6 +168,7 @@ export async function createSession(data: SessionFormValues): Promise<Session> {
 export async function fetchSessions(params: ListParams = {}): Promise<{
   data: Session[];
   totalPages: number;
+  totalCount: number;
 }> {
   const q = new URLSearchParams();
   if (params.status) q.set("status", params.status);
@@ -164,6 +187,7 @@ export async function fetchSessions(params: ListParams = {}): Promise<{
   return {
     data: res.response.data,
     totalPages: res.response.pagination?.totalPages ?? 1,
+    totalCount: res.response.pagination?.count ?? 0,
   };
 }
 
@@ -200,10 +224,20 @@ export async function deleteSession(id: string): Promise<void> {
   );
 }
 
+// ─── POST /session/complete/<session_id>/ ───────────────────────────────────
+export async function completeSession(sessionId: string): Promise<void> {
+  await apiClient.post(
+    endpoints.mentor.sessionComplete(sessionId),
+    {},
+    GenericResponseSchema,
+    OPT,
+  );
+}
+
 // ─── #15 GET /session/available/ ─────────────────────────────────────────────
 export async function fetchAvailableSessions(
   params: ListParams = {},
-): Promise<{ data: Session[]; totalPages: number }> {
+): Promise<{ data: Session[]; totalPages: number; totalCount: number }> {
   const q = new URLSearchParams();
   if (params.pageIndex) q.set("pageIndex", String(params.pageIndex));
   if (params.perPage) q.set("perPage", String(params.perPage));
@@ -218,6 +252,7 @@ export async function fetchAvailableSessions(
   return {
     data: res.response.data,
     totalPages: res.response.pagination?.totalPages ?? 1,
+    totalCount: res.response.pagination?.count ?? 0,
   };
 }
 
@@ -278,20 +313,24 @@ export async function joinSession(
   const res = await apiClient.post(
     endpoints.mentor.sessionJoin(sessionId),
     {},
-    SingleSessionResponseSchema,
+    ApiResponseSchema(SessionParticipantSchema),
     OPT,
   );
-  // Response shape: { hasError, statusCode, message, response: { ...participant fields } }
-  return res.response as unknown as SessionParticipant;
+  return res.response;
 }
 
 // ─── #19 GET /session/participant/history/ ───────────────────────────────────
 export async function fetchParticipantHistory(
   params: ListParams = {},
-): Promise<{ data: SessionParticipant[]; totalPages: number }> {
+): Promise<{
+  data: SessionParticipant[];
+  totalPages: number;
+  totalCount: number;
+}> {
   const q = new URLSearchParams();
   if (params.pageIndex) q.set("pageIndex", String(params.pageIndex));
   if (params.perPage) q.set("perPage", String(params.perPage));
+  if (params.sortBy) q.set("sortBy", params.sortBy);
 
   const res = await apiClient.get(
     `${endpoints.mentor.sessionParticipantHistory}?${q}`,
@@ -301,6 +340,7 @@ export async function fetchParticipantHistory(
   return {
     data: res.response.data,
     totalPages: res.response.pagination?.totalPages ?? 1,
+    totalCount: res.response.pagination?.count ?? 0,
   };
 }
 
@@ -356,7 +396,7 @@ export async function submitFeedback(
 ): Promise<void> {
   await apiClient.patch(
     endpoints.mentor.sessionParticipantFeedback(sessionId),
-    data,
+    { feedback: data.feedback.trim() },
     GenericResponseSchema,
     OPT,
   );
