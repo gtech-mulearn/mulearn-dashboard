@@ -22,11 +22,27 @@ type LabelValueOption<T extends string> = {
   value: T;
 };
 
-/** Cover image crop target — matches the portrait poster ratio in event-card.tsx. */
-export const EVENT_COVER_IMAGE_ASPECT = 3 / 4;
-/** Banner image crop target — matches the desktop hero ratio in event-hero-banner.tsx. */
-export const EVENT_BANNER_IMAGE_ASPECT = 21 / 8;
-/** Banner's mobile hero ratio, used as the crop dialog's mobile-preview thumbnail. */
+/**
+ * Cover image crop target — Instagram portrait post (1080x1350), so an
+ * organiser can upload their Instagram poster unchanged. Matches the card
+ * ratio in event-card.tsx.
+ */
+export const EVENT_COVER_IMAGE_ASPECT = 4 / 5;
+/** Longest edge kept for a cover crop: 2x the 1080x1350 Instagram poster. */
+export const EVENT_COVER_IMAGE_MAX_DIMENSION = 2700;
+/**
+ * Banner image crop target — LinkedIn banner (1584x396), so an organiser can
+ * upload their LinkedIn cover unchanged. Matches the desktop hero ratio in
+ * event-hero-banner.tsx.
+ */
+export const EVENT_BANNER_IMAGE_ASPECT = 4 / 1;
+/** Longest edge kept for a banner crop: 2x the 1584x396 LinkedIn banner. */
+export const EVENT_BANNER_IMAGE_MAX_DIMENSION = 3168;
+/**
+ * Banner's mobile hero ratio, used as the crop dialog's mobile-preview
+ * thumbnail. A 4:1 strip is too short to hold the title overlay on a phone,
+ * so the mobile hero centre-crops to 16:9 — the preview shows what survives.
+ */
 export const EVENT_BANNER_IMAGE_MOBILE_PREVIEW_ASPECT = 16 / 9;
 
 export const EVENT_STATUS_MAP: Record<

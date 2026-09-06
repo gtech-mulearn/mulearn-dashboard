@@ -45,10 +45,12 @@ import {
 } from "lucide-react";
 import type { Permission } from "@/lib/auth/permissions";
 import {
+  ASSOCIATE_MANAGEMENT_ROLES,
   CAMPUS_MANAGEMENT_ROLES,
   DISTRICT_ROLES,
   hasIgLeadRole,
   IG_ROLES,
+  MANAGEMENT_HUB_ROLES,
   MANAGEMENT_ROLES,
   ROLES,
   ZONAL_ROLES,
@@ -378,7 +380,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     href: "/dashboard/management",
     icon: Shield,
     section: "management",
-    roles: MANAGEMENT_ROLES,
+    roles: MANAGEMENT_HUB_ROLES,
   },
   {
     id: "url-shortener",
@@ -394,7 +396,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   //   href: "/dashboard/reports",
   //   icon: LineChart,
   //   section: "management",
-  //   roles: MANAGEMENT_ROLES,
+  //   roles: ASSOCIATE_MANAGEMENT_ROLES,
   // },
   {
     id: "manage-events",
@@ -410,11 +412,13 @@ export const NAV_ITEMS: readonly NavItem[] = [
     href: "/dashboard/management/weekly-twitches",
     icon: Radio,
     section: "management",
-    roles: MANAGEMENT_ROLES,
+    roles: ASSOCIATE_MANAGEMENT_ROLES,
     dynamicCheck: (roles) =>
       roles.includes(ROLES.ADMIN) ||
       roles.includes(ROLES.ASSOCIATE) ||
-      roles.includes(ROLES.IG_LEAD),
+      roles.includes(ROLES.IG_LEAD) ||
+      roles.includes(ROLES.ZONAL_CAMPUS_LEAD) ||
+      roles.includes(ROLES.DISTRICT_CAMPUS_LEAD),
   },
 
   // ── Bottom Section (all authenticated users) ──────────────

@@ -1,10 +1,18 @@
-import { apiClient } from "@/api/client";
+import { ApiError, apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
+  ApiResponseSchema,
   BulkImportResponseSchema,
+  CreateVoucherResponseSchema,
   KarmaVoucherListResponseSchema,
 } from "../schemas";
-import type { BulkImportResponse, KarmaVoucherListData } from "../types";
+import type {
+  BulkImportResponse,
+  CreateVoucherPayload,
+  CreateVoucherResponse,
+  KarmaVoucherListData,
+  UpdateVoucherPayload,
+} from "../types";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -46,6 +54,33 @@ export async function fetchKarmaVouchers(
   );
 }
 
+// ─── Create Voucher ─────────────────────────────────────────────────────────
+
+export async function createVoucher(
+  payload: CreateVoucherPayload,
+): Promise<CreateVoucherResponse> {
+  const response = await apiClient.post(
+    endpoints.admin.karmaVoucher.create,
+    payload,
+    ApiResponseSchema(CreateVoucherResponseSchema),
+  );
+
+  const voucher = response.response ?? response.data;
+  if (!voucher) {
+    throw new Error("Voucher creation failed. Please try again.");
+  }
+  return voucher;
+}
+
+// ─── Update Voucher ─────────────────────────────────────────────────────────
+
+export async function updateVoucher({
+  id,
+  ...payload
+}: UpdateVoucherPayload): Promise<void> {
+  await apiClient.patch(endpoints.admin.karmaVoucher.update(id), payload);
+}
+
 // ─── Delete Voucher ─────────────────────────────────────────────────────────
 
 export async function deleteKarmaVoucher(id: string): Promise<void> {
@@ -56,16 +91,43 @@ export async function deleteKarmaVoucher(id: string): Promise<void> {
 
 export async function importVouchers(file: File): Promise<BulkImportResponse> {
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("voucher_log", file);
 
-  const response = await apiClient.post(
-    endpoints.admin.karmaVoucher.import,
-    formData,
-    BulkImportResponseSchema,
-    { isFormData: true },
-  );
+  try {
+    const response = await apiClient.post(
+      endpoints.admin.karmaVoucher.import,
+      formData,
+      ApiResponseSchema(BulkImportResponseSchema),
+      { isFormData: true },
+    );
 
-  return response;
+    const nestedResult = response.response || response.data;
+    if (!nestedResult) {
+      throw new Error("Import failed. Please try again.");
+    }
+    return nestedResult;
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      error.data &&
+      typeof error.data === "object"
+    ) {
+      const envelope = error.data as { response?: unknown; data?: unknown };
+      const candidates = [envelope.response, envelope.data, error.data];
+      for (const candidate of candidates) {
+        if (
+          !candidate ||
+          typeof candidate !== "object" ||
+          (!("Success" in candidate) && !("Failed" in candidate))
+        ) {
+          continue;
+        }
+        const parsed = BulkImportResponseSchema.safeParse(candidate);
+        if (parsed.success) return parsed.data;
+      }
+    }
+    throw error;
+  }
 }
 
 // ─── Export CSV (blob download) ─────────────────────────────────────────────

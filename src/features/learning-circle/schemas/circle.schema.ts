@@ -152,7 +152,18 @@ export const CreateCircleRequestSchema = z.object({
 
 export type CreateCircleRequest = z.infer<typeof CreateCircleRequestSchema>;
 
-export const EditCircleRequestSchema = CreateCircleRequestSchema.partial();
+export const EditCircleRequestSchema = z.object({
+  title: z
+    .string()
+    .min(1)
+    .max(100, "Title must be 100 characters or less")
+    .optional(),
+  description: z
+    .string()
+    .min(1)
+    .max(1000, "Description must be 1000 characters or less")
+    .optional(),
+});
 export type EditCircleRequest = z.infer<typeof EditCircleRequestSchema>;
 
 /** Accept or reject a pending member */
@@ -271,6 +282,12 @@ export const RespondJoinRequestSchema = z.object({
 
 export type RespondJoinRequest = z.infer<typeof RespondJoinRequestSchema>;
 
+/** Body for DELETE members/remove/<circle_id>/ — kick a member. */
+export const RemoveMemberRequestSchema = z.object({
+  muid: z.string(),
+});
+export type RemoveMemberRequest = z.infer<typeof RemoveMemberRequestSchema>;
+
 /**
  * Pagination shape returned by Django
  */
@@ -292,7 +309,10 @@ export const CircleListResponseSchema = ApiResponseSchema(
 );
 
 export const UserCircleListResponseSchema = ApiResponseSchema(
-  z.array(LearningCircleSchema),
+  z.object({
+    data: z.array(LearningCircleSchema),
+    pagination: PaginationSchema,
+  }),
 );
 
 export const CircleDetailResponseSchema = ApiResponseSchema(

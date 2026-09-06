@@ -976,20 +976,17 @@ export async function cancelCollaboration(id: string): Promise<void> {
 
 // ─── Interest Group Sponsorships (§10) ──────────────────────
 
-export async function submitIgSponsorship(
-  igId: string,
-  payload: { proposal: string; budget?: number; duration_months?: number },
-): Promise<void> {
+export async function submitIgSponsorship(igId: string): Promise<void> {
   await apiClient.post(
     endpoints.company.igSponsorship(igId),
-    payload,
+    undefined,
     GenericResponseSchema,
   );
 }
 
 export async function reviewIgSponsorship(
   igId: string,
-  payload: { action: "APPROVE" | "REJECT"; comments?: string },
+  payload: { approve: boolean },
 ): Promise<void> {
   await apiClient.patch(
     endpoints.company.igSponsorshipReview(igId),

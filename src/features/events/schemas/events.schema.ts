@@ -10,6 +10,10 @@ export const venueTypeSchema = z.enum(["physical", "online", "hybrid"]);
 
 // Base object shape — kept separate so .partial() can be called without hitting
 // the Zod restriction: ".partial() cannot be used on object schemas containing refinements"
+/** Shown when a link is missing its scheme — the usual slip is typing
+ *  "mulearn.org/x", which saves as a relative path and renders dead. */
+const URL_MESSAGE = "Enter a full link starting with https://";
+
 const createEventBaseSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title too long"),
   description: z
@@ -47,11 +51,11 @@ const createEventBaseSchema = z.object({
     .optional()
     .transform((v) => (v === "" ? null : v)),
   maps_url: z
-    .union([z.string().url("Invalid URL"), z.literal("")])
+    .union([z.string().url(URL_MESSAGE), z.literal("")])
     .optional()
     .transform((v) => (v === "" ? null : v)),
   online_link: z
-    .union([z.string().url("Invalid URL"), z.literal("")])
+    .union([z.string().url(URL_MESSAGE), z.literal("")])
     .optional()
     .transform((v) => (v === "" ? null : v)),
   platform: z
@@ -61,7 +65,7 @@ const createEventBaseSchema = z.object({
   cover_image: z.string().optional().nullable(),
   banner_image: z.string().optional().nullable(),
   registration_url: z
-    .union([z.string().url("Invalid URL"), z.literal("")])
+    .union([z.string().url(URL_MESSAGE), z.literal("")])
     .optional()
     .transform((v) => (v === "" ? null : v)),
   registration_deadline: z

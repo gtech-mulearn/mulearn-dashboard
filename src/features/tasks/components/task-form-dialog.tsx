@@ -84,7 +84,7 @@ export function TaskFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="flex flex-col gap-0 p-0 max-w-4xl">
+      <DialogContent className="flex flex-col gap-0 p-0 max-w-4xl sm:max-w-6xl">
         <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
           <DialogTitle>Edit Task</DialogTitle>
           <DialogDescription>

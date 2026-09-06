@@ -194,8 +194,8 @@ function OrganizationsContent() {
   });
 
   const rows = (data?.data ?? []) as OrgInfo[];
-  const totalPages = data?.pagination.totalPages ?? 0;
-  const totalCount = data?.pagination.count;
+  const totalPages = data?.pagination?.totalPages ?? 0;
+  const totalCount = data?.pagination?.count;
 
   // ─── Mutations ────────────────────────────────────────────────────────────
   const deleteMutation = useDeleteOrg();

@@ -36,8 +36,8 @@ const COLUMNS = [
   { column: "topic", Label: "Topic", isSortable: false, width: "w-52" },
   { column: "campus", Label: "Campus", isSortable: false, width: "w-40" },
   { column: "zone", Label: "Zone", isSortable: false, width: "w-24" },
-  { column: "date", Label: "Date", isSortable: false, width: "w-28" },
-  { column: "time", Label: "Time", isSortable: false, width: "w-20" },
+  { column: "date", Label: "Date", isSortable: true, width: "w-28" },
+  { column: "time", Label: "Time", isSortable: true, width: "w-20" },
   { column: "status", Label: "Status", isSortable: false, width: "w-28" },
 ];
 
@@ -56,6 +56,7 @@ export function CampusContentTab({ contentType }: Props) {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [zone, setZone] = useState("");
+  const [sort, setSort] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [viewTarget, setViewTarget] = useState<CampusContentItem | null>(null);
   const [editTarget, setEditTarget] = useState<CampusContentItem | null>(null);
@@ -69,6 +70,7 @@ export function CampusContentTab({ contentType }: Props) {
     search,
     status: status || undefined,
     zone: zone || undefined,
+    sortBy: sort || undefined,
   };
 
   const smtQuery = useSmtList(params, contentType === "smt");
@@ -104,6 +106,10 @@ export function CampusContentTab({ contentType }: Props) {
   const handleZoneChange = (val: string) => {
     setPage(1);
     setZone(val === "all" ? "" : val);
+  };
+  const handleSortChange = (column: string) => {
+    setPage(1);
+    setSort((prev) => (prev === column ? `-${column}` : column));
   };
 
   const openCreate = () => {
@@ -247,7 +253,11 @@ export function CampusContentTab({ contentType }: Props) {
           </div>
         )}
       >
-        <THead columnOrder={COLUMNS} onIconClick={() => {}} action={true} />
+        <THead
+          columnOrder={COLUMNS}
+          onIconClick={handleSortChange}
+          action={true}
+        />
         <Pagination
           currentPage={page}
           totalPages={totalPages}
