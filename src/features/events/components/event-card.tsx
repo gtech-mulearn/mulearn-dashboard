@@ -110,7 +110,11 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
   );
 
   const venueDisplay =
-    event.venue_type === "online" ? "Online Event" : "Physical Event";
+    event.venue_type === "online"
+      ? "Online Event"
+      : event.venue_type === "hybrid"
+        ? "Hybrid Event"
+        : "Physical Event";
 
   const isEnded = new Date(event.end_datetime).getTime() < Date.now();
 
