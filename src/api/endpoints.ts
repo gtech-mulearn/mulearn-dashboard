@@ -592,6 +592,10 @@ export const endpoints = {
   events: {
     base: "/api/v1/dashboard/events/",
     featured: "/api/v1/dashboard/events/featured/",
+    public: {
+      base: "/api/v1/public/events/",
+      featured: "/api/v1/public/events/featured/",
+    },
     manage: "/api/v1/dashboard/events/manage/",
     myInvites: "/api/v1/dashboard/events/my-invites/",
     admin: "/api/v1/dashboard/events/admin/",
@@ -878,6 +882,12 @@ export const endpoints = {
       `/api/v1/dashboard/learningcircle/transfer-lead/${id}/`,
     /** POST - Request to join a circle */
     join: (id: string) => `/api/v1/dashboard/learningcircle/join/${id}/`,
+    /** DELETE - Leave a circle (member only, not creator/lead) */
+    leaveCircle: (id: string) =>
+      `/api/v1/dashboard/learningcircle/leave/${id}/`,
+    /** DELETE - Remove (kick) a member from a circle (lead/creator only) */
+    removeMember: (id: string) =>
+      `/api/v1/dashboard/learningcircle/members/remove/${id}/`,
     /** GET - User's own circles */
     userCircles: "/api/v1/dashboard/learningcircle/user-circles/",
 
@@ -1063,6 +1073,10 @@ export const endpoints = {
     karmaVoucher: {
       /** GET - List karma vouchers (paginated, sortable, searchable) */
       list: "/api/v1/dashboard/karma-voucher/",
+      /** POST - Create a single karma voucher */
+      create: "/api/v1/dashboard/karma-voucher/create/",
+      /** PATCH - Update a karma voucher's task/karma */
+      update: (id: string) => `/api/v1/dashboard/karma-voucher/update/${id}/`,
       /** DELETE - Delete a karma voucher */
       delete: (id: string) => `/api/v1/dashboard/karma-voucher/delete/${id}/`,
       /** GET - Export voucher log as CSV */

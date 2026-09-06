@@ -1,15 +1,23 @@
 "use client";
 
 import {
+  Activity,
   BarChart2,
+  BookOpen,
   Briefcase,
+  Building2,
   CheckCircle,
+  ChevronRight,
   Eye,
+  GraduationCap,
+  Layers,
   Percent,
   RefreshCw,
+  Star,
   TrendingDown,
   TrendingUp,
   Users,
+  Zap,
 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -35,11 +43,14 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  useCampusAnalytics,
+  useCampusQuarterTrend,
   useCompanyDashboardSummary,
   useGigAnalytics,
   useJobEngagementAnalytics,
   useJobs,
   useTalentPoolAnalytics,
+  useTasksAnalytics,
 } from "@/features/company-jobs/hooks";
 
 export function CompanyAnalyticsPageClient() {
@@ -53,11 +64,10 @@ export function CompanyAnalyticsPageClient() {
           Analytics & Insights
         </h1>
         <p className="text-muted-foreground mt-2">
-          Monitor your job listing engagement, gig performance, and browse
-          community talent pool statistics.
+          Monitor your job listing engagement, gig performance, campus outreach,
+          task outcomes, and community talent pool statistics.
         </p>
       </div>
-      {/* Tab triggers omitted for brevity but remain identical */}
 
       <Tabs
         value={activeTab}
@@ -82,6 +92,18 @@ export function CompanyAnalyticsPageClient() {
             className="shrink-0 whitespace-nowrap py-2.5 px-4 rounded-lg text-xs md:text-sm font-medium"
           >
             Job Engagement
+          </TabsTrigger>
+          <TabsTrigger
+            value="tasks-analytics"
+            className="shrink-0 whitespace-nowrap py-2.5 px-4 rounded-lg text-xs md:text-sm font-medium"
+          >
+            Task Analytics
+          </TabsTrigger>
+          <TabsTrigger
+            value="campus-analytics"
+            className="shrink-0 whitespace-nowrap py-2.5 px-4 rounded-lg text-xs md:text-sm font-medium"
+          >
+            Campus Insights
           </TabsTrigger>
           <TabsTrigger
             value="talent-pool-stats"
@@ -110,6 +132,20 @@ export function CompanyAnalyticsPageClient() {
           className="space-y-6 focus-visible:outline-none"
         >
           <JobEngagementView />
+        </TabsContent>
+
+        <TabsContent
+          value="tasks-analytics"
+          className="space-y-6 focus-visible:outline-none"
+        >
+          <TasksAnalyticsView />
+        </TabsContent>
+
+        <TabsContent
+          value="campus-analytics"
+          className="space-y-6 focus-visible:outline-none"
+        >
+          <CampusAnalyticsView />
         </TabsContent>
 
         <TabsContent
@@ -693,7 +729,682 @@ function JobEngagementView() {
   );
 }
 
-// ─── 4. Talent Pool Insights View ──────────────────────────────────────────
+// ─── 4. Tasks Analytics View ─────────────────────────────────────────────────
+function TasksAnalyticsView() {
+  const {
+    data: tasks,
+    isLoading,
+    error,
+    refetch,
+    isRefetching,
+  } = useTasksAnalytics();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="p-6 space-y-3">
+              <Skeleton className="h-4 w-1/3 rounded" />
+              <Skeleton className="h-8 w-1/2 rounded" />
+              <Skeleton className="h-4 w-2/3 rounded" />
+            </Card>
+          ))}
+        </div>
+        <Card className="p-6">
+          <Skeleton className="h-48 w-full rounded" />
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="p-12 text-center text-muted-foreground border-destructive/20 bg-destructive/5 dark:bg-destructive/10 dark:border-destructive/20">
+        <p className="font-semibold text-destructive">
+          Failed to load Tasks Analytics
+        </p>
+        <p className="text-xs mt-1 text-muted-foreground">
+          {process.env.NODE_ENV === "development" && error instanceof Error
+            ? error.message
+            : "Internal Server Error. Please contact administrator if this persists."}
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => refetch()}
+          className="mt-4 gap-1.5 mx-auto"
+        >
+          <RefreshCw className="h-3.5 w-3.5" /> Try Again
+        </Button>
+      </Card>
+    );
+  }
+
+  if (!tasks) {
+    return (
+      <Card className="p-12 text-center text-muted-foreground">
+        No task analytics data found for this company.
+      </Card>
+    );
+  }
+
+  const funnel = tasks.approval_funnel ?? {};
+  const funnelOrder = [
+    "Total",
+    "approved",
+    "pending",
+    "rejected",
+    "changes_requested",
+  ];
+  const orderedFunnel = [
+    ...funnelOrder
+      .filter((k) => k in funnel)
+      .map((k) => [k, funnel[k]] as [string, number]),
+    ...Object.entries(funnel).filter(([k]) => !funnelOrder.includes(k)),
+  ];
+
+  const satisfaction = tasks.learner_satisfaction;
+  const ratingPct = satisfaction ? (satisfaction.average_rating / 5) * 100 : 0;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">
+            Task Analytics
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            Aggregated metrics across all company-submitted learning tasks
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => refetch()}
+          disabled={isRefetching}
+          className="gap-2 h-9 text-xs"
+        >
+          <RefreshCw
+            className={`h-3 w-3 ${isRefetching ? "animate-spin" : ""}`}
+          />
+          Refresh
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-5 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase">
+                Tasks Submitted
+              </p>
+              <h3 className="text-2xl font-bold mt-1.5">
+                {tasks.total_tasks_submitted}
+              </h3>
+            </div>
+            <div className="h-9 w-9 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+              <Layers className="h-5 w-5" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-5 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase">
+                Total Completions
+              </p>
+              <h3 className="text-2xl font-bold mt-1.5 text-emerald-600 dark:text-emerald-400">
+                {tasks.total_completions.toLocaleString()}
+              </h3>
+            </div>
+            <div className="h-9 w-9 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-600">
+              <CheckCircle className="h-5 w-5" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-5 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase">
+                Karma Distributed
+              </p>
+              <h3 className="text-2xl font-bold mt-1.5 text-indigo-600 dark:text-indigo-400">
+                {tasks.karma_distributed.toLocaleString()}
+              </h3>
+            </div>
+            <div className="h-9 w-9 bg-indigo-500/10 rounded-lg flex items-center justify-center text-indigo-600">
+              <Zap className="h-5 w-5" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-5 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase">
+                Completion Rate
+              </p>
+              <h3 className="text-2xl font-bold mt-1.5 text-violet-600 dark:text-violet-400">
+                {tasks.completion_rate}
+              </h3>
+            </div>
+            <div className="h-9 w-9 bg-violet-500/10 rounded-lg flex items-center justify-center text-violet-600">
+              <Activity className="h-5 w-5" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2 border border-border bg-card">
+          <CardHeader>
+            <CardTitle className="text-base font-semibold">
+              Approval Funnel
+            </CardTitle>
+            <CardDescription>
+              Task approval status breakdown by admin review
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {orderedFunnel.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No approval data available.
+              </p>
+            ) : (
+              orderedFunnel.map(([stage, count]) => {
+                const total = (funnel.Total as number) || 1;
+                const pct = Math.round((Number(count) / total) * 100);
+                const colorMap: Record<string, string> = {
+                  approved: "bg-emerald-500",
+                  pending: "bg-amber-500",
+                  rejected: "bg-rose-500",
+                  changes_requested: "bg-orange-500",
+                  Total: "bg-primary",
+                };
+                const barColor = colorMap[stage] ?? "bg-primary";
+                return (
+                  <div key={stage} className="space-y-1">
+                    <div className="flex justify-between text-xs font-medium">
+                      <span className="capitalize">
+                        {stage.replace(/_/g, " ")}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {count} ({pct}%)
+                      </span>
+                    </div>
+                    <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${barColor} rounded-full transition-all duration-500`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="flex flex-col border border-border bg-card">
+          <CardHeader>
+            <CardTitle className="text-base font-semibold">
+              Learner Satisfaction
+            </CardTitle>
+            <CardDescription>
+              Average rating from task participants
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1 flex flex-col items-center justify-center py-6 gap-4">
+            <div className="relative flex items-center justify-center">
+              <div className="h-28 w-28 rounded-full border-4 border-amber-500/20 flex flex-col items-center justify-center">
+                <span className="text-3xl font-black text-amber-600 dark:text-amber-400">
+                  {satisfaction
+                    ? Number(satisfaction.average_rating).toFixed(1)
+                    : "—"}
+                </span>
+                <span className="text-xs text-muted-foreground">/ 5.0</span>
+              </div>
+              <div className="absolute -bottom-1 bg-amber-500 text-[10px] text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-0.5">
+                <Star className="h-2.5 w-2.5" /> Rating
+              </div>
+            </div>
+
+            <div className="w-full space-y-1 mt-2">
+              <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-amber-500 rounded-full transition-all duration-700"
+                  style={{ width: `${ratingPct}%` }}
+                />
+              </div>
+              {satisfaction && (
+                <p className="text-xs text-center text-muted-foreground">
+                  Based on {satisfaction.rating_count} rating
+                  {satisfaction.rating_count !== 1 ? "s" : ""}
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ─── 5. Campus Analytics View ────────────────────────────────────────────────
+function CampusAnalyticsView() {
+  const [activeSub, setActiveSub] = useState<"overview" | "trend">("overview");
+
+  return (
+    <div className="space-y-6">
+      <div className="flex gap-2">
+        <Button
+          variant={activeSub === "overview" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveSub("overview")}
+          className="gap-1.5"
+        >
+          <GraduationCap className="h-4 w-4" />
+          Campus Overview
+        </Button>
+        <Button
+          variant={activeSub === "trend" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveSub("trend")}
+          className="gap-1.5"
+        >
+          <TrendingUp className="h-4 w-4" />
+          Quarterly Trend
+        </Button>
+      </div>
+
+      {activeSub === "overview" ? <CampusOverview /> : <CampusTrendView />}
+    </div>
+  );
+}
+
+function CampusOverview() {
+  const { data, isLoading, error, refetch, isRefetching } =
+    useCampusAnalytics();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        {[1, 2, 3].map((i) => (
+          <Card key={i} className="p-6">
+            <Skeleton className="h-4 w-1/4 rounded mb-4" />
+            <Skeleton className="h-36 w-full rounded" />
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="p-12 text-center text-muted-foreground border-destructive/20 bg-destructive/5 dark:bg-destructive/10 dark:border-destructive/20">
+        <p className="font-semibold text-destructive">
+          Failed to load Campus Analytics
+        </p>
+        <p className="text-xs mt-1 text-muted-foreground">
+          {process.env.NODE_ENV === "development" && error instanceof Error
+            ? error.message
+            : "Internal Server Error. Please contact administrator if this persists."}
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => refetch()}
+          className="mt-4 gap-1.5 mx-auto"
+        >
+          <RefreshCw className="h-3.5 w-3.5" /> Try Again
+        </Button>
+      </Card>
+    );
+  }
+
+  if (!data) {
+    return (
+      <Card className="p-12 text-center text-muted-foreground">
+        No campus analytics available. This feature is restricted to College
+        type organisations.
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-lg font-semibold">Campus Engagement Overview</h2>
+          <p className="text-xs text-muted-foreground">
+            Top-10 campuses driving jobs, tasks, and event engagement
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => refetch()}
+          disabled={isRefetching}
+          className="gap-2 h-9 text-xs"
+        >
+          <RefreshCw
+            className={`h-3 w-3 ${isRefetching ? "animate-spin" : ""}`}
+          />
+          Refresh
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <CampusRankCard
+          title="Job Applicants by Campus"
+          icon={<Briefcase className="h-4 w-4" />}
+          rows={data.job_applicants_by_campus.map((r) => ({
+            name: r.campus_name,
+            value: r.applicant_count,
+            label: "applicants",
+          }))}
+          color="text-amber-600"
+          bgColor="bg-amber-500/10"
+          barColor="bg-amber-500"
+        />
+
+        <CampusRankCard
+          title="Task Completers by Campus"
+          icon={<BookOpen className="h-4 w-4" />}
+          rows={data.task_completers_by_campus.map((r) => ({
+            name: r.campus_name,
+            value: r.completer_count,
+            label: "completers",
+          }))}
+          color="text-emerald-600"
+          bgColor="bg-emerald-500/10"
+          barColor="bg-emerald-500"
+        />
+
+        <CampusRankCard
+          title="Event Attendees by Campus"
+          icon={<Users className="h-4 w-4" />}
+          rows={data.event_attendees_by_campus.map((r) => ({
+            name: r.campus_name,
+            value: r.attendee_count,
+            label: "attendees",
+          }))}
+          color="text-indigo-600"
+          bgColor="bg-indigo-500/10"
+          barColor="bg-indigo-500"
+        />
+      </div>
+    </div>
+  );
+}
+
+function CampusRankCard({
+  title,
+  icon,
+  rows,
+  color,
+  bgColor,
+  barColor,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  rows: { name: string; value: number; label: string }[];
+  color: string;
+  bgColor: string;
+  barColor: string;
+}) {
+  const max = Math.max(...rows.map((r) => r.value), 1);
+
+  return (
+    <Card className="border border-border bg-card">
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-2">
+          <div
+            className={`h-8 w-8 rounded-lg ${bgColor} ${color} flex items-center justify-center`}
+          >
+            {icon}
+          </div>
+          <CardTitle className="text-sm font-semibold">{title}</CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {rows.length === 0 ? (
+          <p className="text-xs text-muted-foreground text-center py-4">
+            No data available
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {rows.map((row) => {
+              const pct = (row.value / max) * 100;
+              return (
+                <div key={`${row.name}-${row.value}`} className="space-y-1">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="font-medium text-foreground truncate max-w-[60%]">
+                      {row.name || "Unknown Campus"}
+                    </span>
+                    <span className={`font-bold ${color}`}>
+                      {row.value.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${barColor} rounded-full transition-all duration-500`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function CampusTrendView() {
+  const [campusId, setCampusId] = useState<string>("");
+  const [quarters, setQuarters] = useState<number>(4);
+  const [submittedCampusId, setSubmittedCampusId] = useState<string>("");
+  const [submittedQuarters, setSubmittedQuarters] = useState<number>(4);
+
+  const {
+    data: trend,
+    isLoading,
+    error,
+    refetch,
+    isRefetching,
+  } = useCampusQuarterTrend(
+    submittedCampusId
+      ? { campus_id: submittedCampusId, quarters: submittedQuarters }
+      : undefined,
+  );
+
+  function handleFetch() {
+    if (!campusId.trim()) return;
+    setSubmittedCampusId(campusId.trim());
+    setSubmittedQuarters(quarters);
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card className="border border-border bg-card">
+        <CardHeader>
+          <CardTitle className="text-base font-semibold">
+            Campus Quarterly Trend
+          </CardTitle>
+          <CardDescription>
+            Enter a campus ID and number of quarters to view engagement trends
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4 items-end">
+            <div className="flex-1 space-y-1.5">
+              <Label className="text-xs font-semibold text-muted-foreground uppercase">
+                Campus ID (UUID)
+              </Label>
+              <Input
+                placeholder="e.g. 3f2a1b4c-..."
+                value={campusId}
+                onChange={(e) => setCampusId(e.target.value)}
+                className="h-9"
+              />
+            </div>
+            <div className="w-32 space-y-1.5">
+              <Label className="text-xs font-semibold text-muted-foreground uppercase">
+                Quarters
+              </Label>
+              <Select
+                value={String(quarters)}
+                onValueChange={(v) => setQuarters(Number(v))}
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[2, 4, 6, 8].map((q) => (
+                    <SelectItem key={q} value={String(q)}>
+                      {q} Quarters
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              onClick={handleFetch}
+              disabled={!campusId.trim() || isLoading}
+              className="h-9 gap-2"
+            >
+              <ChevronRight className="h-4 w-4" />
+              Fetch Trend
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {!submittedCampusId ? (
+        <div className="border border-dashed border-border rounded-xl p-12 text-center text-muted-foreground">
+          Enter a Campus ID above to view the quarterly engagement trend.
+        </div>
+      ) : isLoading ? (
+        <Card className="p-6">
+          <Skeleton className="h-48 w-full rounded" />
+        </Card>
+      ) : error ? (
+        <Card className="p-12 text-center text-muted-foreground border-destructive/20 bg-destructive/5 dark:bg-destructive/10 dark:border-destructive/20">
+          <p className="font-semibold text-destructive">
+            Failed to load campus trend data
+          </p>
+          <p className="text-xs mt-1 text-muted-foreground">
+            {process.env.NODE_ENV === "development" && error instanceof Error
+              ? error.message
+              : "Internal Server Error. Please contact administrator if this persists."}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            className="mt-4 gap-1.5 mx-auto"
+          >
+            <RefreshCw className="h-3.5 w-3.5" /> Try Again
+          </Button>
+        </Card>
+      ) : !trend ? (
+        <Card className="p-12 text-center text-muted-foreground">
+          No trend data returned. Ensure the campus ID is correct and the
+          organisation type is College.
+        </Card>
+      ) : (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-primary" />
+                {trend.campus_name || trend.campus_id}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Quarterly engagement trend — last {trend.trend.length} quarter
+                {trend.trend.length !== 1 ? "s" : ""}
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              disabled={isRefetching}
+              className="gap-2 h-9 text-xs"
+            >
+              <RefreshCw
+                className={`h-3 w-3 ${isRefetching ? "animate-spin" : ""}`}
+              />
+              Refresh
+            </Button>
+          </div>
+
+          {trend.trend.length === 0 ? (
+            <Card className="p-12 text-center text-muted-foreground">
+              No quarterly data available for this campus.
+            </Card>
+          ) : (
+            <Card className="border border-border bg-card overflow-hidden">
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-muted/60 border-b">
+                        <th className="p-3 font-bold uppercase text-muted-foreground">
+                          Quarter
+                        </th>
+                        <th className="p-3 font-bold uppercase text-muted-foreground text-right">
+                          Active Learners
+                        </th>
+                        <th className="p-3 font-bold uppercase text-muted-foreground text-right">
+                          Job Applicants
+                        </th>
+                        <th className="p-3 font-bold uppercase text-muted-foreground text-right">
+                          Karma Earned
+                        </th>
+                        <th className="p-3 font-bold uppercase text-muted-foreground text-right">
+                          Sessions Held
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {trend.trend.map((item) => (
+                        <tr key={item.quarter} className="hover:bg-muted/30">
+                          <td className="p-3 font-semibold text-foreground">
+                            {item.quarter}
+                          </td>
+                          <td className="p-3 text-right font-medium text-emerald-600 dark:text-emerald-400">
+                            {item.active_learners.toLocaleString()}
+                          </td>
+                          <td className="p-3 text-right font-medium text-amber-600 dark:text-amber-400">
+                            {item.job_applicants.toLocaleString()}
+                          </td>
+                          <td className="p-3 text-right font-medium text-indigo-600 dark:text-indigo-400">
+                            {item.karma_earned.toLocaleString()}
+                          </td>
+                          <td className="p-3 text-right font-medium text-foreground">
+                            {item.sessions_held.toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── 6. Talent Pool Insights View ──────────────────────────────────────────
 function TalentPoolInsightsView() {
   const [karmaMin, setKarmaMin] = useState<number | undefined>(undefined);
   const [karmaMax, setKarmaMax] = useState<number | undefined>(undefined);

@@ -1,7 +1,13 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
+  type FetchUnverifiedOrgsParams,
   fetchUnverifiedOrgs,
   verifyOrganization,
 } from "../api/verification.api";
@@ -10,10 +16,11 @@ import { useOrgQueryErrorToast } from "./org-error";
 
 const VERIFY_KEY = "org-unverified";
 
-export const useUnverifiedOrgs = () => {
+export const useUnverifiedOrgs = (params: FetchUnverifiedOrgsParams = {}) => {
   const query = useQuery({
-    queryKey: [VERIFY_KEY],
-    queryFn: fetchUnverifiedOrgs,
+    queryKey: [VERIFY_KEY, params],
+    queryFn: () => fetchUnverifiedOrgs(params),
+    placeholderData: keepPreviousData,
     staleTime: 60 * 1000,
   });
   useOrgQueryErrorToast(

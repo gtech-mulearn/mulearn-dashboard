@@ -5,7 +5,10 @@ export interface CropPixels {
   height: number;
 }
 
-const QUALITY_STEPS = [0.85, 0.7, 0.5] as const;
+// Start near-lossless and only step down if the encoded result blows the size
+// budget. Event posters carry small text, which is the first thing low-quality
+// JPEG smears, so the top step matters.
+const QUALITY_STEPS = [0.95, 0.85, 0.75, 0.6] as const;
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -14,6 +17,34 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     image.onerror = () => reject(new Error(`Failed to load image: ${src}`));
     image.src = src;
   });
+}
+
+/** Pixel slack allowed when deciding a crop kept the whole frame. */
+const FULL_FRAME_TOLERANCE_RATIO = 0.01;
+
+/**
+ * True when `cropPixels` covers essentially all of a `naturalWidth` x
+ * `naturalHeight` image and that image needs no downscaling to fit
+ * `outputMaxDimension` — i.e. re-encoding would only throw away detail.
+ */
+export function isLosslessPassThrough(
+  cropPixels: CropPixels,
+  naturalWidth: number,
+  naturalHeight: number,
+  outputMaxDimension: number,
+): boolean {
+  if (naturalWidth <= 0 || naturalHeight <= 0) return false;
+  if (Math.max(naturalWidth, naturalHeight) > outputMaxDimension) return false;
+
+  const toleranceX = Math.max(2, naturalWidth * FULL_FRAME_TOLERANCE_RATIO);
+  const toleranceY = Math.max(2, naturalHeight * FULL_FRAME_TOLERANCE_RATIO);
+
+  return (
+    cropPixels.x <= toleranceX &&
+    cropPixels.y <= toleranceY &&
+    cropPixels.width >= naturalWidth - toleranceX * 2 &&
+    cropPixels.height >= naturalHeight - toleranceY * 2
+  );
 }
 
 /**
@@ -25,7 +56,7 @@ export async function cropImageToBlob(
   imageSrc: string,
   cropPixels: CropPixels,
   outputMaxDimension = 1600,
-  quality = 0.85,
+  quality = 0.95,
 ): Promise<Blob> {
   const image = await loadImage(imageSrc);
 

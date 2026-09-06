@@ -112,9 +112,9 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
   const venueDisplay =
     event.venue_type === "online"
       ? "Online Event"
-      : event.venue_city
-        ? event.venue_city
-        : "Venue TBA";
+      : event.venue_type === "hybrid"
+        ? "Hybrid Event"
+        : "Physical Event";
 
   const isEnded = new Date(event.end_datetime).getTime() < Date.now();
 
@@ -156,11 +156,13 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
         />
       ) : null}
 
-      <div className="relative aspect-[3/4] w-full overflow-hidden">
+      <div className="relative aspect-[4/5] w-full overflow-hidden">
         <Image
           src={event.cover_image ?? "/images/fallback.webp"}
           alt={event.title}
           fill
+          sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+          quality={90}
           className="object-cover"
         />
 
@@ -170,7 +172,9 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
         {/* Top-left stickers: event type + cluster */}
         <div className="absolute left-3 top-3 z-30 flex flex-col gap-1.5 pointer-events-none">
           {EventTypeIcon && eventTypeLabel && (
-            <Badge className="bg-brand-blue/10 dark:bg-brand-blue/20 text-brand-blue border border-brand-blue/20 dark:border-brand-blue/30 hover:bg-brand-blue/20 font-semibold gap-1 text-[11px] px-2.5 py-0.5 rounded-full shadow-sm w-fit">
+            <Badge
+              className={`ig-cat-${eventTypeSlug ?? "others"} font-medium gap-1 text-[11px] px-2.5 py-0.5 rounded-full shadow-sm w-fit`}
+            >
               <EventTypeIcon className="h-3 w-3 shrink-0" />
               {eventTypeLabel}
             </Badge>

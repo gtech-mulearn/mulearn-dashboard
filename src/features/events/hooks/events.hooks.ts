@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { ApiError } from "@/api/errors";
 import { useDebounce } from "@/hooks/use-debounce";
 import { getApiResponseError } from "@/hooks/use-get-error";
+import { authStore } from "@/lib/auth";
 import { eventsApi } from "../api";
 import type { ApprovalTier } from "../lib/events.policy";
 import type {
@@ -31,23 +32,26 @@ function isForbiddenPermissionError(error: unknown, message?: string): boolean {
 }
 
 export function useEventsList(params?: EventListQueryParams) {
+  const authenticated = authStore.isAuthenticated();
   return useQuery({
-    queryKey: eventKeys.list(params ?? {}),
-    queryFn: () => eventsApi.list(params),
+    queryKey: eventKeys.list(params ?? {}, authenticated),
+    queryFn: () => eventsApi.list(params, authenticated),
   });
 }
 
 export function useFeaturedEvents(params?: EventListQueryParams) {
+  const authenticated = authStore.isAuthenticated();
   return useQuery({
-    queryKey: [...eventKeys.featured(), params ?? {}],
-    queryFn: () => eventsApi.featured(params),
+    queryKey: [...eventKeys.featured(authenticated), params ?? {}],
+    queryFn: () => eventsApi.featured(params, authenticated),
   });
 }
 
 export function useEventDetail(id?: string) {
+  const authenticated = authStore.isAuthenticated();
   return useQuery({
-    queryKey: eventKeys.detail(id as string),
-    queryFn: () => eventsApi.detail(id as string),
+    queryKey: eventKeys.detail(id as string, authenticated),
+    queryFn: () => eventsApi.detail(id as string, authenticated),
     enabled: !!id,
   });
 }

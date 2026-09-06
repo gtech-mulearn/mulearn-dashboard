@@ -1,5 +1,5 @@
 import { DepartmentsView } from "@/features/organizations";
-import { ROLES } from "@/lib/auth/roles";
+import { FELLOW_MANAGEMENT_ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 
 export const metadata = {
@@ -8,6 +8,6 @@ export const metadata = {
 };
 
 export default async function OrgDepartmentsPage() {
-  await requireRole([ROLES.ADMIN]);
+  await requireRole(FELLOW_MANAGEMENT_ROLES);
   return <DepartmentsView />;
 }

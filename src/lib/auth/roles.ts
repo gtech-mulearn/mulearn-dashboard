@@ -39,10 +39,8 @@ export const ROLES = {
   LEAD_ENABLER: "Lead Enabler",
 } as const;
 
-/** Union type of all role string values */
 export type RoleValue = (typeof ROLES)[keyof typeof ROLES];
 
-/** Union type of all role keys */
 export type RoleKey = keyof typeof ROLES;
 
 // ─── Dynamic Role Helpers ──────────────────────────────────
@@ -77,11 +75,61 @@ export function hasIgLeadRole(roles: readonly string[]): boolean {
 // Commonly used role combinations. Use these instead of
 // repeating arrays of roles across the codebase.
 
-/** Roles with full platform administration access */
 export const ADMIN_ROLES = [ROLES.ADMIN] as const;
 
-/** Roles that can perform management tasks (admin-level) */
-export const MANAGEMENT_ROLES = [ROLES.ADMIN, ROLES.ASSOCIATE] as const;
+export const ASSOCIATE_MANAGEMENT_ROLES = [
+  ROLES.ADMIN,
+  ROLES.ASSOCIATE,
+] as const;
+
+export const FELLOW_MANAGEMENT_ROLES = [ROLES.ADMIN, ROLES.FELLOW] as const;
+
+export const MANAGEMENT_ROLES = [
+  ROLES.ADMIN,
+  ROLES.ASSOCIATE,
+  ROLES.FELLOW,
+] as const;
+
+export const INTERN_MANAGEMENT_ROLES = [
+  ROLES.ADMIN,
+  ROLES.ASSOCIATE,
+  ROLES.INTERN_LEAD,
+] as const;
+
+export const USER_MANAGEMENT_HUB_ROLES = [
+  ROLES.ADMIN,
+  ROLES.ASSOCIATE,
+  ROLES.INTERN_LEAD,
+  ROLES.FELLOW,
+] as const;
+
+export const COMMUNITY_SETTINGS_HUB_ROLES = [
+  ROLES.ADMIN,
+  ROLES.ASSOCIATE,
+  ROLES.FELLOW,
+  ROLES.DISCORD_MODERATOR,
+] as const;
+
+export const SYSTEM_CONFIG_HUB_ROLES = [
+  ROLES.ADMIN,
+  ROLES.ASSOCIATE,
+  ROLES.FELLOW,
+  ROLES.TECH_TEAM,
+] as const;
+
+export const DISCORD_MODERATION_ROLES = [
+  ROLES.ADMIN,
+  ROLES.DISCORD_MODERATOR,
+] as const;
+
+export const MANAGEMENT_HUB_ROLES = [
+  ROLES.ADMIN,
+  ROLES.ASSOCIATE,
+  ROLES.FELLOW,
+  ROLES.INTERN_LEAD,
+  ROLES.TECH_TEAM,
+  ROLES.DISCORD_MODERATOR,
+] as const;
 
 /** Roles that can manage campus-level operations */
 export const CAMPUS_MANAGEMENT_ROLES = [

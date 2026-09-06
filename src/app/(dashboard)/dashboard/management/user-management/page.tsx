@@ -9,8 +9,14 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ROLES } from "@/lib/auth/roles";
-import { requireRole } from "@/lib/auth/server";
+import { redirect } from "next/navigation";
+import { hasAnyRole } from "@/lib/auth/permissions";
+import {
+  ADMIN_ROLES,
+  FELLOW_MANAGEMENT_ROLES,
+  INTERN_MANAGEMENT_ROLES,
+} from "@/lib/auth/roles";
+import { requireAuth } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
   title: "User Management | Management",
@@ -23,6 +29,7 @@ interface UserManagementItem {
   href: string;
   icon: LucideIcon;
   iconBg: string;
+  roles: readonly string[];
 }
 
 const USER_MANAGEMENT_ITEMS: UserManagementItem[] = [
@@ -32,6 +39,7 @@ const USER_MANAGEMENT_ITEMS: UserManagementItem[] = [
     href: "/dashboard/management/manage-users",
     icon: User,
     iconBg: "bg-warning/15 text-warning",
+    roles: ADMIN_ROLES,
   },
   {
     title: "Manage Roles",
@@ -39,6 +47,7 @@ const USER_MANAGEMENT_ITEMS: UserManagementItem[] = [
     href: "/dashboard/management/manage-roles",
     icon: Shield,
     iconBg: "bg-success/15 text-success",
+    roles: ADMIN_ROLES,
   },
   {
     title: "Manage Interns",
@@ -46,6 +55,7 @@ const USER_MANAGEMENT_ITEMS: UserManagementItem[] = [
     href: "/dashboard/management/manage-interns",
     icon: Users,
     iconBg: "bg-brand-blue/15 text-brand-blue",
+    roles: INTERN_MANAGEMENT_ROLES,
   },
   {
     title: "Role Verification",
@@ -53,11 +63,20 @@ const USER_MANAGEMENT_ITEMS: UserManagementItem[] = [
     href: "/dashboard/management/role-verification",
     icon: ShieldCheck,
     iconBg: "bg-brand-purple/15 text-brand-purple",
+    roles: FELLOW_MANAGEMENT_ROLES,
   },
 ];
 
 export default async function UserManagementPage() {
-  await requireRole([ROLES.ADMIN]);
+  const user = await requireAuth();
+
+  const visibleItems = USER_MANAGEMENT_ITEMS.filter((item) =>
+    hasAnyRole(user.roles, item.roles),
+  );
+
+  if (visibleItems.length === 0) {
+    redirect("/dashboard/management?unauthorized=true");
+  }
 
   return (
     <div className="space-y-8 py-6">
@@ -80,7 +99,7 @@ export default async function UserManagementPage() {
 
       {/* Grid of Sub-Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {USER_MANAGEMENT_ITEMS.map((card) => (
+        {visibleItems.map((card) => (
           <Link
             key={card.href}
             href={card.href}

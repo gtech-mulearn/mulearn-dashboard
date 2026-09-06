@@ -1,4 +1,4 @@
-import { ROLES } from "@/lib/auth/roles";
+import { INTERN_MANAGEMENT_ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 import { AdminTasksPageClient } from "./admin-tasks-client";
 
@@ -7,6 +7,6 @@ export const metadata = {
 };
 
 export default async function Page() {
-  await requireRole([ROLES.ADMIN, ROLES.ASSOCIATE]);
+  await requireRole(INTERN_MANAGEMENT_ROLES);
   return <AdminTasksPageClient />;
 }

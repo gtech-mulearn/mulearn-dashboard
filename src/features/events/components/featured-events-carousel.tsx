@@ -46,6 +46,12 @@ export function FeaturedEventsCarousel() {
   if (featuredEvents.length === 0) return null;
 
   const event = featuredEvents[activeIndex];
+  const venueDisplay =
+    event.venue_type === "online"
+      ? "Online Event"
+      : event.venue_type === "hybrid"
+        ? "Hybrid Event"
+        : "Physical Event";
   return (
     <section
       aria-label="Featured events carousel"
@@ -68,6 +74,8 @@ export function FeaturedEventsCarousel() {
             src={ev.cover_image ?? "/images/fallback.webp"}
             alt={ev.title}
             fill
+            sizes="(min-width: 1024px) 1200px, 100vw"
+            quality={90}
             className="object-cover"
             priority={i === 0}
           />
@@ -103,7 +111,7 @@ export function FeaturedEventsCarousel() {
               <span>{formatEventDate(event.start_datetime)}</span>
               <span>|</span>
               <MapPin className="h-4 w-4" />
-              <span>{event.venue_city ?? "Venue TBA"}</span>
+              <span>{venueDisplay}</span>
             </div>
           </div>
 

@@ -694,11 +694,15 @@ export interface CompanyCollaboration {
 export interface IgSponsorshipMetrics {
   ig_id: string;
   ig_name: string;
-  sponsor_status: string;
-  active_learners: number;
-  sponsored_tasks_count: number;
-  total_karma_funded: number;
-  engagement_score: number;
+  membership: {
+    total_members: number;
+    new_members_last_30_days: number;
+  };
+  activity_level: {
+    active_tasks: number;
+    task_completions_last_30_days: number;
+    sessions_last_30_days: number;
+  };
 }
 
 export interface EventTemplate {
