@@ -62,6 +62,7 @@ function getClusterDotStyle(value: string): string {
 
 interface EventsFiltersProps {
   onSearch: (query: string) => void;
+  searchValue?: string;
   selectedCluster: string;
   onClusterChange?: (cluster: string) => void;
   selectedEventType?: string;
@@ -80,6 +81,7 @@ interface EventsFiltersProps {
 
 export function EventsFilters({
   onSearch,
+  searchValue = "",
   selectedCluster,
   onClusterChange,
   selectedEventType = "all",
@@ -101,6 +103,7 @@ export function EventsFilters({
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       {/* Search input — Left side */}
       <SearchBar
+        defaultValue={searchValue}
         onSearch={onSearch}
         placeholder="Search events..."
         size="md"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserProfile } from "@/features/auth";
 import type { EventListItem, PaginationMeta } from "@/features/events";
@@ -19,7 +19,6 @@ import {
   useEventsList,
   useEventTypeScope,
 } from "@/features/events";
-import { useDebounce } from "@/hooks/use-debounce";
 
 const FETCH_ALL_LIMIT = 200;
 const PAGE_SIZE = 12;
@@ -50,26 +49,13 @@ export function EventsPageClient() {
   const searchParams = useSearchParams();
 
   // Derive filter values directly from searchParams to avoid stale state on popstate/history navigation
+  const searchQuery = searchParams.get("q") ?? "";
   const selectedCluster = searchParams.get("cluster") ?? "all";
   const selectedEventType = searchParams.get("type") ?? "all";
   const selectedPublisher = searchParams.get("publisher") ?? "all";
   const sortBy = searchParams.get("sort") ?? EVENT_SORT_DEFAULT;
   const currentPage =
     Number(searchParams.get("page")) > 0 ? Number(searchParams.get("page")) : 1;
-
-  // Local state for immediate typing responsiveness with debounced URL synchronization
-  const [searchInput, setSearchInput] = useState(
-    () => searchParams.get("q") ?? cachedEventsFilters?.search ?? "",
-  );
-  const debouncedSearch = useDebounce(searchInput, 300);
-
-  // Sync search input if URL changes externally (e.g. back/forward navigation)
-  useEffect(() => {
-    const q = searchParams.get("q") ?? "";
-    if (q !== searchInput) {
-      setSearchInput(q);
-    }
-  }, [searchParams, searchInput]);
 
   // Restore cached filters on initial mount if landing on a naked URL
   useEffect(() => {
@@ -149,14 +135,6 @@ export function EventsPageClient() {
     [searchParams, router],
   );
 
-  // Sync debounced search to URL
-  useEffect(() => {
-    const currentQ = searchParams.get("q") ?? "";
-    if (debouncedSearch !== currentQ) {
-      updateUrl({ q: debouncedSearch });
-    }
-  }, [debouncedSearch, searchParams, updateUrl]);
-
   // ── User Profile for College Prioritization ───────────────────────────────
   const { data: userProfile } = useUserProfile();
 
@@ -215,7 +193,7 @@ export function EventsPageClient() {
 
   // ── Data fetch: retrieve full set so publisher discovery and sorting is global
   const { data, isLoading } = useEventsList({
-    search: debouncedSearch || undefined,
+    search: searchQuery || undefined,
     status: "published",
     sortBy: sortBy.startsWith("publisher_") ? EVENT_SORT_DEFAULT : sortBy,
     pageIndex: 1,
@@ -347,7 +325,7 @@ export function EventsPageClient() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const handleSearch = (value: string) => {
-    setSearchInput(value);
+    updateUrl({ q: value });
   };
   const handleSortChange = (value: string) => {
     updateUrl({ sort: value });
@@ -378,6 +356,7 @@ export function EventsPageClient() {
         <div className="px-4 md:px-0">
           <EventsFilters
             onSearch={handleSearch}
+            searchValue={searchQuery}
             selectedCluster={selectedCluster}
             onClusterChange={handleClusterChange}
             selectedEventType={selectedEventType}

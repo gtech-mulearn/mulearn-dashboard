@@ -460,6 +460,7 @@ export default function ManageEventsDashboard() {
         </Select>
 
         <SearchBar
+          defaultValue={searchParamQ}
           onSearch={(val) => {
             updateUrl({ q: val });
           }}

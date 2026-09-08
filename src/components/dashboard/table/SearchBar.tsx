@@ -14,6 +14,7 @@ type Props = {
   className?: string;
   showButton: boolean;
   inputClassName?: string;
+  defaultValue?: string;
 };
 
 export const SearchBar = ({
@@ -24,10 +25,18 @@ export const SearchBar = ({
   className,
   showButton,
   inputClassName,
+  defaultValue = "",
 }: Props) => {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(defaultValue);
   const debouncedSearch = useDebounce(search, 300);
-  const prevSearchRef = useRef("");
+  const prevSearchRef = useRef(defaultValue);
+
+  useEffect(() => {
+    if (defaultValue !== prevSearchRef.current) {
+      setSearch(defaultValue);
+      prevSearchRef.current = defaultValue;
+    }
+  }, [defaultValue]);
 
   useEffect(() => {
     const trimmed = debouncedSearch.trim();
