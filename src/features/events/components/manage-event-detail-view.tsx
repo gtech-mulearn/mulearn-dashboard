@@ -226,6 +226,22 @@ export function ManageEventDetailView({
   const mapsUrl = event.venue.maps_url;
   const venueName = event.venue.address ?? event.venue.city ?? null;
 
+  const navigateBack = () => {
+    if (onBack) {
+      onBack();
+      return;
+    }
+    if (
+      typeof window !== "undefined" &&
+      window.history.length > 1 &&
+      document.referrer.includes("/dashboard/manage-events")
+    ) {
+      router.back();
+    } else {
+      router.push("/dashboard/manage-events");
+    }
+  };
+
   const requestBack = () => {
     if (isEditing && formIsDirty) {
       setPendingBackAfterConfirm(true);
@@ -233,11 +249,7 @@ export function ManageEventDetailView({
       return;
     }
 
-    if (onBack) {
-      onBack();
-      return;
-    }
-    router.back();
+    navigateBack();
   };
 
   const handleDiscard = () => {
@@ -593,11 +605,7 @@ export function ManageEventDetailView({
 
           if (pendingBackAfterConfirm) {
             setPendingBackAfterConfirm(false);
-            if (onBack) {
-              onBack();
-            } else {
-              router.push("/dashboard/manage-events");
-            }
+            navigateBack();
           }
         }}
       />

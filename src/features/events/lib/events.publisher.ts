@@ -130,6 +130,22 @@ export function sortEventsByPublisher<T extends EventWithPublisher>(
   });
 }
 
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function matchesCollegeCode(target: string, code: string): boolean {
+  if (!target || !code) return false;
+  const trimmedTarget = target.trim();
+  const trimmedCode = code.trim();
+  if (trimmedTarget.toLowerCase() === trimmedCode.toLowerCase()) {
+    return true;
+  }
+  const escaped = escapeRegex(trimmedCode);
+  const boundaryRegex = new RegExp(`\\b${escaped}\\b`, "i");
+  return boundaryRegex.test(trimmedTarget);
+}
+
 /**
  * Determines whether an event was published by / associated with the user's college.
  */
@@ -157,40 +173,37 @@ export function isEventFromUserCollege(
   for (const campus of candidateCampuses) {
     if (!campus) continue;
     const eventCampusId = campus.id;
-    const eventCampusTitle = (campus.title ?? campus.name ?? "").toLowerCase();
+    const eventCampusTitle = campus.title ?? campus.name ?? "";
+    const eventCampusCode = (campus as { code?: string }).code;
 
     // 1. Match by college_id
     if (userCollegeId && eventCampusId && userCollegeId === eventCampusId) {
       return true;
     }
 
-    // 2. Match by college_code
-    if (userCollegeCode && eventCampusTitle) {
-      if (
-        eventCampusTitle === userCollegeCode ||
-        eventCampusTitle.includes(`(${userCollegeCode})`) ||
-        eventCampusTitle.includes(`[${userCollegeCode}]`) ||
-        eventCampusTitle.startsWith(userCollegeCode) ||
-        (userCollegeCode.length >= 3 &&
-          eventCampusTitle.includes(userCollegeCode))
-      ) {
-        return true;
-      }
+    // 2. Match by explicit campus code
+    if (
+      userCollegeCode &&
+      eventCampusCode &&
+      eventCampusCode.trim().toLowerCase() === userCollegeCode
+    ) {
+      return true;
+    }
+
+    // 3. Match by college_code against campus title/name using word boundaries
+    if (
+      userCollegeCode &&
+      eventCampusTitle &&
+      matchesCollegeCode(eventCampusTitle, userCollegeCode)
+    ) {
+      return true;
     }
   }
 
-  // 3. Match against the resolved publisher name
+  // 4. Match against the resolved publisher name using word boundaries
   if (userCollegeCode) {
-    const publisherName = getEventPublisherName(event).toLowerCase();
-    if (
-      publisherName &&
-      (publisherName === userCollegeCode ||
-        publisherName.includes(`(${userCollegeCode})`) ||
-        publisherName.includes(`[${userCollegeCode}]`) ||
-        publisherName.startsWith(userCollegeCode) ||
-        (userCollegeCode.length >= 3 &&
-          publisherName.includes(userCollegeCode)))
-    ) {
+    const publisherName = getEventPublisherName(event);
+    if (publisherName && matchesCollegeCode(publisherName, userCollegeCode)) {
       return true;
     }
   }

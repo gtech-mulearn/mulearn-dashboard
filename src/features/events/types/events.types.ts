@@ -137,6 +137,7 @@ export interface MinimalCampus {
   id: UUID;
   title: string;
   name?: string; // Backward compatibility
+  code?: string;
   org_type?: "College" | "School";
   logo?: string; // Backward compatibility
 }

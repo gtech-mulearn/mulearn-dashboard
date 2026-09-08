@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserProfile } from "@/features/auth";
-import type { EventListItem } from "@/features/events";
+import type { EventListItem, PaginationMeta } from "@/features/events";
 import {
   EVENT_SORT_DEFAULT,
   EventsFilters,
@@ -20,6 +20,9 @@ import {
   useEventTypeScope,
 } from "@/features/events";
 import { useDebounce } from "@/hooks/use-debounce";
+
+const FETCH_ALL_LIMIT = 200;
+const PAGE_SIZE = 12;
 
 // Normalise a string to a slug for comparison (e.g. "Cultural Event" → "cultural_event")
 function toSlug(s?: string | null) {
@@ -46,39 +49,113 @@ export function EventsPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Read initial filter state from URL search params with fallback to in-memory cache
-  const [currentPage, setCurrentPage] = useState(() => {
-    const p = Number(searchParams.get("page"));
-    if (p > 0) return p;
-    return cachedEventsFilters?.page ?? 1;
-  });
+  // Derive filter values directly from searchParams to avoid stale state on popstate/history navigation
+  const selectedCluster = searchParams.get("cluster") ?? "all";
+  const selectedEventType = searchParams.get("type") ?? "all";
+  const selectedPublisher = searchParams.get("publisher") ?? "all";
+  const sortBy = searchParams.get("sort") ?? EVENT_SORT_DEFAULT;
+  const currentPage =
+    Number(searchParams.get("page")) > 0 ? Number(searchParams.get("page")) : 1;
 
-  const [search, setSearch] = useState(() => {
-    return searchParams.get("q") ?? cachedEventsFilters?.search ?? "";
-  });
-  const debouncedSearch = useDebounce(search, 300);
+  // Local state for immediate typing responsiveness with debounced URL synchronization
+  const [searchInput, setSearchInput] = useState(
+    () => searchParams.get("q") ?? cachedEventsFilters?.search ?? "",
+  );
+  const debouncedSearch = useDebounce(searchInput, 300);
 
-  const [selectedCluster, setSelectedCluster] = useState<string>(() => {
-    return searchParams.get("cluster") ?? cachedEventsFilters?.cluster ?? "all";
-  });
+  // Sync search input if URL changes externally (e.g. back/forward navigation)
+  useEffect(() => {
+    const q = searchParams.get("q") ?? "";
+    if (q !== searchInput) {
+      setSearchInput(q);
+    }
+  }, [searchParams, searchInput]);
 
-  const [selectedEventType, setSelectedEventType] = useState<string>(() => {
-    return searchParams.get("type") ?? cachedEventsFilters?.eventType ?? "all";
-  });
+  // Restore cached filters on initial mount if landing on a naked URL
+  useEffect(() => {
+    if (!searchParams.toString() && cachedEventsFilters) {
+      const params = new URLSearchParams();
+      if (cachedEventsFilters.search)
+        params.set("q", cachedEventsFilters.search);
+      if (cachedEventsFilters.cluster && cachedEventsFilters.cluster !== "all")
+        params.set("cluster", cachedEventsFilters.cluster);
+      if (
+        cachedEventsFilters.eventType &&
+        cachedEventsFilters.eventType !== "all"
+      )
+        params.set("type", cachedEventsFilters.eventType);
+      if (
+        cachedEventsFilters.publisher &&
+        cachedEventsFilters.publisher !== "all"
+      )
+        params.set("publisher", cachedEventsFilters.publisher);
+      if (
+        cachedEventsFilters.sortBy &&
+        cachedEventsFilters.sortBy !== EVENT_SORT_DEFAULT
+      )
+        params.set("sort", cachedEventsFilters.sortBy);
+      if (cachedEventsFilters.page && cachedEventsFilters.page > 1)
+        params.set("page", String(cachedEventsFilters.page));
 
-  const [selectedPublisher, setSelectedPublisher] = useState<string>(() => {
-    return (
-      searchParams.get("publisher") ?? cachedEventsFilters?.publisher ?? "all"
-    );
-  });
+      const qs = params.toString();
+      if (qs) {
+        router.replace(`/dashboard/events?${qs}`, { scroll: false });
+      }
+    }
+  }, [searchParams, router]); // Evaluates correctly on mount
 
-  const [sortBy, setSortBy] = useState<string>(() => {
-    return (
-      searchParams.get("sort") ??
-      cachedEventsFilters?.sortBy ??
-      EVENT_SORT_DEFAULT
-    );
-  });
+  // Keep in-memory cache synchronized with URL params
+  useEffect(() => {
+    cachedEventsFilters = {
+      search: searchParams.get("q") ?? "",
+      cluster: searchParams.get("cluster") ?? "all",
+      eventType: searchParams.get("type") ?? "all",
+      publisher: searchParams.get("publisher") ?? "all",
+      sortBy: searchParams.get("sort") ?? EVENT_SORT_DEFAULT,
+      page: Number(searchParams.get("page")) || 1,
+    };
+  }, [searchParams]);
+
+  // Push URL updates
+  const updateUrl = useCallback(
+    (updates: Record<string, string | number | null | undefined>) => {
+      const params = new URLSearchParams(searchParams.toString());
+      for (const [key, value] of Object.entries(updates)) {
+        if (
+          value === null ||
+          value === undefined ||
+          value === "" ||
+          value === "all" ||
+          (key === "sort" && value === EVENT_SORT_DEFAULT) ||
+          (key === "page" && Number(value) <= 1)
+        ) {
+          params.delete(key);
+        } else {
+          params.set(key, String(value));
+        }
+      }
+      // Reset page when any filter other than page changes
+      if (!("page" in updates)) {
+        params.delete("page");
+      }
+      const qs = params.toString();
+      const currentQs = searchParams.toString();
+      if (qs !== currentQs) {
+        router.replace(`/dashboard/events${qs ? `?${qs}` : ""}`, {
+          scroll: false,
+        });
+      }
+    },
+    [searchParams, router],
+  );
+
+  // Sync debounced search to URL
+  useEffect(() => {
+    const currentQ = searchParams.get("q") ?? "";
+    if (debouncedSearch !== currentQ) {
+      updateUrl({ q: debouncedSearch });
+    }
+  }, [debouncedSearch, searchParams, updateUrl]);
 
   // ── User Profile for College Prioritization ───────────────────────────────
   const { data: userProfile } = useUserProfile();
@@ -136,63 +213,22 @@ export function EventsPageClient() {
     return rawCluster.toLowerCase();
   }, []);
 
-  // ── Data fetch ────────────────────────────────────────────────────────────
+  // ── Data fetch: retrieve full set so publisher discovery and sorting is global
   const { data, isLoading } = useEventsList({
-    pageIndex: currentPage,
     search: debouncedSearch || undefined,
     status: "published",
     sortBy: sortBy.startsWith("publisher_") ? EVENT_SORT_DEFAULT : sortBy,
-    perPage: 12,
+    pageIndex: 1,
+    perPage: FETCH_ALL_LIMIT,
   });
 
   const events = data?.data ?? [];
-  const pagination = data?.pagination;
 
-  // ── Publisher bucket ──────────────────────────────────────────────────────
+  // ── Publisher bucket computed across ALL fetched events ────────────────────
   const publisherBucket = useMemo(() => getPublisherBucket(events), [events]);
 
-  // ── Sync URL & in-memory cache for persistence ─────────────────────────────
-  useEffect(() => {
-    const params = new URLSearchParams();
-    if (debouncedSearch) params.set("q", debouncedSearch);
-    if (selectedCluster && selectedCluster !== "all")
-      params.set("cluster", selectedCluster);
-    if (selectedEventType && selectedEventType !== "all")
-      params.set("type", selectedEventType);
-    if (selectedPublisher && selectedPublisher !== "all")
-      params.set("publisher", selectedPublisher);
-    if (sortBy && sortBy !== EVENT_SORT_DEFAULT) params.set("sort", sortBy);
-    if (currentPage > 1) params.set("page", String(currentPage));
-
-    const nextQs = params.toString();
-    const currentQs = searchParams.toString();
-    if (nextQs !== currentQs) {
-      const qs = nextQs ? `?${nextQs}` : "";
-      router.replace(`/dashboard/events${qs}`, { scroll: false });
-    }
-
-    cachedEventsFilters = {
-      search: debouncedSearch,
-      cluster: selectedCluster,
-      eventType: selectedEventType,
-      publisher: selectedPublisher,
-      sortBy,
-      page: currentPage,
-    };
-  }, [
-    debouncedSearch,
-    selectedCluster,
-    selectedEventType,
-    selectedPublisher,
-    sortBy,
-    currentPage,
-    router,
-    searchParams,
-  ]);
-
-  // ── Client-side Filter & Sort ─────────────────────────────────────────────
+  // ── Client-side Filter & Sort across complete collection ──────────────────
   const filteredAndSortedEvents = useMemo(() => {
-    // 1. Filter events client-side to be absolutely sure the selection is respected
     let result = [...events];
 
     if (selectedCluster !== "all") {
@@ -219,7 +255,6 @@ export function EventsPageClient() {
       });
     }
 
-    // 2. Sort the filtered events
     if (sortBy === "publisher_asc") {
       result = sortEventsByPublisher(result, "asc");
     } else if (sortBy === "publisher_desc") {
@@ -244,7 +279,6 @@ export function EventsPageClient() {
           return timeB - timeA;
         }
 
-        // If no cluster filter is active, sort by cluster order first
         if (selectedCluster === "all") {
           const idxA = categoryOrder.indexOf(resolveEventCluster(a));
           const idxB = categoryOrder.indexOf(resolveEventCluster(b));
@@ -253,7 +287,6 @@ export function EventsPageClient() {
           if (cleanIdxA !== cleanIdxB) return cleanIdxA - cleanIdxB;
         }
 
-        // If no event type filter is active, sort by event type order second
         if (selectedEventType === "all") {
           const typeA =
             resolveEventTypeValue(a.event_type, a.category_name) ?? "";
@@ -266,7 +299,6 @@ export function EventsPageClient() {
           if (cleanIdxA !== cleanIdxB) return cleanIdxA - cleanIdxB;
         }
 
-        // Fallback: sort by start date descending
         const timeA = new Date(a.start_datetime).getTime();
         const timeB = new Date(b.start_datetime).getTime();
         return timeB - timeA;
@@ -286,30 +318,48 @@ export function EventsPageClient() {
     resolveEventCluster,
   ]);
 
+  // ── Client Pagination ─────────────────────────────────────────────────────
+  const totalItems = filteredAndSortedEvents.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+  const safePage = Math.min(Math.max(1, currentPage), totalPages);
+
+  const paginatedEvents = useMemo(() => {
+    const startIndex = (safePage - 1) * PAGE_SIZE;
+    return filteredAndSortedEvents.slice(startIndex, startIndex + PAGE_SIZE);
+  }, [filteredAndSortedEvents, safePage]);
+
+  const clientPagination: PaginationMeta = useMemo(
+    () => ({
+      count: totalItems,
+      totalPages,
+      isNext: safePage < totalPages,
+      isPrev: safePage > 1,
+      nextPage: safePage < totalPages ? safePage + 1 : null,
+      pageSize: PAGE_SIZE,
+      perPage: PAGE_SIZE,
+    }),
+    [totalItems, totalPages, safePage],
+  );
+
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    updateUrl({ page });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const handleSearch = (value: string) => {
-    setSearch(value);
-    if (currentPage !== 1) setCurrentPage(1);
+    setSearchInput(value);
   };
   const handleSortChange = (value: string) => {
-    setSortBy(value);
-    setCurrentPage(1);
+    updateUrl({ sort: value });
   };
   const handleClusterChange = (value: string) => {
-    setSelectedCluster(value);
-    setCurrentPage(1);
+    updateUrl({ cluster: value });
   };
   const handleEventTypeChange = (value: string) => {
-    setSelectedEventType(value);
-    setCurrentPage(1);
+    updateUrl({ type: value });
   };
   const handlePublisherChange = (value: string) => {
-    setSelectedPublisher(value);
-    setCurrentPage(1);
+    updateUrl({ publisher: value });
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -353,19 +403,19 @@ export function EventsPageClient() {
           </div>
         ) : (
           <EventsGrid
-            events={filteredAndSortedEvents}
+            events={paginatedEvents}
             onEventView={(event) =>
               router.push(`/dashboard/events/${event.id}`)
             }
           />
         )}
 
-        {pagination && (
+        {clientPagination && (
           <EventsPagination
-            pagination={pagination}
-            currentPage={currentPage}
+            pagination={clientPagination}
+            currentPage={safePage}
             onPageChange={handlePageChange}
-            currentCount={filteredAndSortedEvents.length}
+            currentCount={paginatedEvents.length}
           />
         )}
       </div>

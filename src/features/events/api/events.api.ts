@@ -241,7 +241,13 @@ function buildQueryStringWithStatusOverride(
     searchParams.set("eligible_only", String(params.eligible_only));
   if (params.start_date) searchParams.set("start_date", params.start_date);
   if (params.end_date) searchParams.set("end_date", params.end_date);
-  if (params.sortBy) searchParams.set("sortBy", params.sortBy);
+  if (params.sortBy) {
+    if (!params.sortBy.startsWith("publisher_")) {
+      searchParams.set("sortBy", params.sortBy);
+    } else {
+      searchParams.set("sortBy", "-created_at");
+    }
+  }
   if (params.organiser_type)
     searchParams.set("organiser_type", params.organiser_type);
   if (params.created_by) searchParams.set("created_by", params.created_by);
