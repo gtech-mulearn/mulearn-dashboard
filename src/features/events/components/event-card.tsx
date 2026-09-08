@@ -24,7 +24,8 @@ import {
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { resolveEventTypeValue } from "../hooks";
-import type { EventListItem, OrganizerInfo } from "../types";
+import { getEventPublisherName } from "../lib/events.publisher";
+import type { EventListItem } from "../types";
 import { EventStatusBadge } from "./event-status-badge";
 import { InterestButton } from "./interest-button";
 
@@ -64,39 +65,6 @@ interface EventCardProps {
   onDelete?: () => void;
   onEdit?: (event: EventListItem) => void;
   onView?: (event: EventListItem) => void;
-}
-
-function getOrganizerName(organizer: OrganizerInfo): string {
-  if (!organizer) return "µLearn";
-
-  const type = organizer.type ?? organizer.organiser_type;
-
-  if (type === "global_ig") {
-    const igName = organizer.ig?.name ?? organizer.organiser_ig?.name;
-    return igName ?? "Global IG";
-  }
-  if (type === "campus_ig") {
-    const igName = organizer.ig?.name ?? organizer.organiser_ig?.name;
-    const campusInfo = organizer.campus ?? organizer.organiser_campus;
-    const campusName = campusInfo?.title ?? campusInfo?.name;
-
-    if (igName && campusName) {
-      return `${igName} @ ${campusName}`;
-    }
-    return organizer.campus_ig?.name ?? "Campus IG";
-  }
-  if (type === "campus") {
-    const campusInfo = organizer.campus ?? organizer.organiser_campus;
-    return campusInfo?.title ?? campusInfo?.name ?? "Campus";
-  }
-  if (type === "company") {
-    const companyInfo = organizer.company ?? organizer.organiser_company;
-    return companyInfo?.title ?? companyInfo?.name ?? "Company";
-  }
-  if (type === "admin") {
-    return "µLearn";
-  }
-  return "µLearn";
 }
 
 export function EventCard({ event, isManageView, onView }: EventCardProps) {
@@ -201,7 +169,7 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
             {event.title}
           </h3>
           <p className="mt-1 text-xs opacity-85">
-            By {getOrganizerName(event.organizer)}
+            By {getEventPublisherName(event)}
           </p>
           <p className="mt-1 flex items-center gap-1 text-xs opacity-85">
             <MapPin className="h-3.5 w-3.5" />

@@ -5,6 +5,7 @@ export {
   CoOwnersPanel,
   EventAnalyticsPanel,
   EventCard,
+  EventCoOwnersSection,
   EventCreateWizard,
   EventDetailView,
   EventInlineEditForm,
@@ -99,6 +100,12 @@ export {
   useRemoveCoOwner,
   useToggleInterest,
 } from "./hooks";
+export {
+  getEventPublisherName,
+  getPublisherBucket,
+  isEventFromUserCollege,
+  sortEventsByPublisher,
+} from "./lib/events.publisher";
 export type {
   CreateEventSchema,
   EventListParamsSchema,

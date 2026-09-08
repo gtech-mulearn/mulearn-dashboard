@@ -3,7 +3,7 @@
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ApiError } from "@/api/client";
 import { SearchBar } from "@/components/dashboard/table/SearchBar";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,11 @@ import {
 } from "../constants/events.constants";
 import { usePendingCollaboratorInvites } from "../hooks";
 import { eventKeys } from "../hooks/query-keys";
+import {
+  getEventPublisherName,
+  getPublisherBucket,
+  sortEventsByPublisher,
+} from "../lib/events.publisher";
 import type { EventListQueryParams, EventStatus } from "../types";
 import { CollaboratorInvitesSheet } from "./collaborator-invites-sheet";
 import { EventCreateWizard } from "./event-create-wizard";
@@ -41,28 +46,66 @@ function makeEventQuery(isAdmin: boolean, params: EventListQueryParams) {
   };
 }
 
+interface ManageEventsFilterCache {
+  search?: string;
+  status?: EventStatus | "all";
+  publisher?: string;
+  sortBy?: string;
+  page?: number;
+}
+
+let cachedManageEventsFilters: ManageEventsFilterCache | null = null;
+
 export default function ManageEventsDashboard() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState<string>(EVENT_SORT_DEFAULT);
-  const [statusFilter, setStatusFilter] = useState<EventStatus | "all">("all");
+  const [page, setPage] = useState(() => {
+    const p = Number(searchParams.get("page"));
+    if (p > 0) return p;
+    return cachedManageEventsFilters?.page ?? 1;
+  });
+
+  const [search, setSearch] = useState(() => {
+    return searchParams.get("q") ?? cachedManageEventsFilters?.search ?? "";
+  });
+
+  const [sortBy, setSortBy] = useState<string>(() => {
+    return (
+      searchParams.get("sort") ??
+      cachedManageEventsFilters?.sortBy ??
+      EVENT_SORT_DEFAULT
+    );
+  });
+
+  const [statusFilter, setStatusFilter] = useState<EventStatus | "all">(() => {
+    const fromUrl = searchParams.get("status") as EventStatus | "all" | null;
+    return fromUrl ?? cachedManageEventsFilters?.status ?? "all";
+  });
+
+  const [selectedPublisher, setSelectedPublisher] = useState<string>(() => {
+    return (
+      searchParams.get("publisher") ??
+      cachedManageEventsFilters?.publisher ??
+      "all"
+    );
+  });
+
   const [showWizard, setShowWizard] = useState(false);
   const [invitesOpen, setInvitesOpen] = useState(false);
 
   const { data: userInfo, isLoading: isUserInfoLoading } = useUserInfo();
 
-  const canAdminView =
-    !isUserInfoLoading &&
-    Boolean(
-      Array.isArray(userInfo?.roles) && userInfo.roles.includes(ROLES.ADMIN),
-    );
-
   const viewerRoles = Array.isArray(userInfo?.roles)
     ? (userInfo.roles as string[])
     : [];
+
+  const canAdminView =
+    !isUserInfoLoading &&
+    (viewerRoles.includes(ROLES.ADMIN) ||
+      viewerRoles.includes("Admin") ||
+      viewerRoles.includes("Super Admin"));
+
   const isMentor = viewerRoles.includes(ROLES.MENTOR);
   const isCampusLead = [
     ROLES.CAMPUS_LEAD,
@@ -99,11 +142,14 @@ export default function ManageEventsDashboard() {
     isError: isInvitesError,
   } = usePendingCollaboratorInvites();
 
+  // Sync state when URL params change
   useEffect(() => {
-    const statusFromUrl = searchParams.get("status");
-    if (!statusFromUrl) return;
-
+    const statusFromUrl = searchParams.get("status") as
+      | EventStatus
+      | "all"
+      | null;
     if (
+      statusFromUrl === "all" ||
       statusFromUrl === "draft" ||
       statusFromUrl === "pending_campus_approval" ||
       statusFromUrl === "pending_approval" ||
@@ -114,15 +160,49 @@ export default function ManageEventsDashboard() {
       statusFromUrl === "cancelled"
     ) {
       setStatusFilter(statusFromUrl);
-      setPage(1);
     }
   }, [searchParams]);
+
+  // Sync URL & in-memory cache for persistence
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (search) params.set("q", search);
+    if (statusFilter && statusFilter !== "all")
+      params.set("status", statusFilter);
+    if (selectedPublisher && selectedPublisher !== "all")
+      params.set("publisher", selectedPublisher);
+    if (sortBy && sortBy !== EVENT_SORT_DEFAULT) params.set("sort", sortBy);
+    if (page > 1) params.set("page", String(page));
+
+    const nextQs = params.toString();
+    const currentQs = searchParams.toString();
+    if (nextQs !== currentQs) {
+      const qs = nextQs ? `?${nextQs}` : "";
+      router.replace(`/dashboard/manage-events${qs}`, { scroll: false });
+    }
+
+    cachedManageEventsFilters = {
+      search,
+      status: statusFilter,
+      publisher: selectedPublisher,
+      sortBy,
+      page,
+    };
+  }, [
+    search,
+    statusFilter,
+    selectedPublisher,
+    sortBy,
+    page,
+    router,
+    searchParams,
+  ]);
 
   const listParams: EventListQueryParams = {
     pageIndex: page,
     search: search || undefined,
     status: statusFilter === "all" ? undefined : statusFilter,
-    sortBy,
+    sortBy: sortBy.startsWith("publisher_") ? EVENT_SORT_DEFAULT : sortBy,
     perPage: 12,
   };
 
@@ -163,6 +243,27 @@ export default function ManageEventsDashboard() {
   );
 
   const events = data?.data ?? [];
+
+  const publisherBucket = useMemo(() => getPublisherBucket(events), [events]);
+
+  const filteredAndSortedEvents = useMemo(() => {
+    let result = [...events];
+
+    if (selectedPublisher !== "all") {
+      result = result.filter((event) => {
+        const pub = getEventPublisherName(event);
+        return pub.toLowerCase() === selectedPublisher.toLowerCase();
+      });
+    }
+
+    if (sortBy === "publisher_asc") {
+      result = sortEventsByPublisher(result, "asc");
+    } else if (sortBy === "publisher_desc") {
+      result = sortEventsByPublisher(result, "desc");
+    }
+
+    return result;
+  }, [events, selectedPublisher, sortBy]);
 
   const is403 = error instanceof ApiError && error.status === 403;
 
@@ -299,6 +400,26 @@ export default function ManageEventsDashboard() {
         </Select>
 
         <Select
+          value={selectedPublisher}
+          onValueChange={(value) => {
+            setSelectedPublisher(value);
+            setPage(1);
+          }}
+        >
+          <SelectTrigger className="w-full md:w-52 rounded-full">
+            <SelectValue placeholder="All Publishers" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Publishers</SelectItem>
+            {publisherBucket.map((pub) => (
+              <SelectItem key={pub} value={pub}>
+                {pub}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
           value={sortBy}
           onValueChange={(value) => {
             setSortBy(value);
@@ -350,7 +471,7 @@ export default function ManageEventsDashboard() {
       ) : (
         <>
           <EventsGrid
-            events={events}
+            events={filteredAndSortedEvents}
             isManageView
             onEventDeleted={handleEventDeleted}
             onCreateEvent={handleCreateEvent}
@@ -370,7 +491,7 @@ export default function ManageEventsDashboard() {
             pagination={data?.pagination}
             currentPage={page}
             onPageChange={setPage}
-            currentCount={events.length}
+            currentCount={filteredAndSortedEvents.length}
           />
         </>
       )}

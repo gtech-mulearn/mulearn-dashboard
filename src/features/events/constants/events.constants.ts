@@ -276,4 +276,6 @@ export const EVENT_SORT_OPTIONS: readonly {
 }[] = [
   { value: "-created_at", label: "Newest first" },
   { value: "created_at", label: "Oldest first" },
+  { value: "publisher_asc", label: "Publisher: A to Z" },
+  { value: "publisher_desc", label: "Publisher: Z to A" },
 ] as const;

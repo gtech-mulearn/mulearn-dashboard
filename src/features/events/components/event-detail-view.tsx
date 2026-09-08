@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { useEventDetail } from "../hooks";
 import type { EventDetailViewProps } from "../types";
 import { EventAboutSection } from "./event-about-section";
+import { EventCoOwnersSection } from "./event-co-owners-section";
 import { EventCollaboratorsSection } from "./event-collaborators-section";
 import { EventDetailSkeleton } from "./event-detail-skeleton";
 import { EventHeroBanner } from "./event-hero-banner";
@@ -87,6 +88,7 @@ export function EventDetailView({
           <EventAboutSection description={event.description} />
           <EventTasksSection tasks={event.linked_tasks} />
           {showVenue && <EventVenueSection venue={event.venue} />}
+          <EventCoOwnersSection coOwners={event.co_owners} />
           <EventCollaboratorsSection collaborators={event.collaborators} />
         </div>
 

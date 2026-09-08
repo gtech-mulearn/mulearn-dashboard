@@ -4,6 +4,7 @@ import { FileText } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 
 interface EventAboutSectionProps {
   description: string | null;
@@ -25,11 +26,11 @@ export function EventAboutSection({ description }: EventAboutSectionProps) {
         </h2>
       </div>
       <div className="relative px-5 pb-5 pt-0">
-        <p
-          className={`whitespace-pre-wrap break-words text-sm leading-7 text-muted-foreground ${!isExpanded ? "line-clamp-15" : ""}`}
+        <div
+          className={`whitespace-pre-wrap break-words text-sm leading-7 text-muted-foreground [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:text-primary/80 ${!isExpanded ? "line-clamp-15" : ""}`}
         >
-          {description}
-        </p>
+          <MarkdownRenderer content={description} />
+        </div>
 
         {!isExpanded && (
           <div className="pointer-events-none absolute inset-x-0 bottom-5 h-16 bg-gradient-to-t from-card to-transparent" />

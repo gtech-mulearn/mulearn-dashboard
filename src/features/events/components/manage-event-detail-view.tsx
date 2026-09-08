@@ -237,7 +237,7 @@ export function ManageEventDetailView({
       onBack();
       return;
     }
-    router.push("/dashboard/manage-events");
+    router.back();
   };
 
   const handleDiscard = () => {

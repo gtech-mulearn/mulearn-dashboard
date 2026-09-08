@@ -1,8 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUserProfile } from "@/features/auth";
 import type { EventListItem } from "@/features/events";
 import {
   EVENT_SORT_DEFAULT,
@@ -10,7 +11,11 @@ import {
   EventsGrid,
   EventsPagination,
   FeaturedEventsCarousel,
+  getEventPublisherName,
+  getPublisherBucket,
+  isEventFromUserCollege,
   resolveEventTypeValue,
+  sortEventsByPublisher,
   useEventsList,
   useEventTypeScope,
 } from "@/features/events";
@@ -26,14 +31,57 @@ function toSlug(s?: string | null) {
   );
 }
 
+interface EventsFilterCache {
+  search?: string;
+  cluster?: string;
+  eventType?: string;
+  publisher?: string;
+  sortBy?: string;
+  page?: number;
+}
+
+let cachedEventsFilters: EventsFilterCache | null = null;
+
 export function EventsPageClient() {
   const router = useRouter();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
+
+  // Read initial filter state from URL search params with fallback to in-memory cache
+  const [currentPage, setCurrentPage] = useState(() => {
+    const p = Number(searchParams.get("page"));
+    if (p > 0) return p;
+    return cachedEventsFilters?.page ?? 1;
+  });
+
+  const [search, setSearch] = useState(() => {
+    return searchParams.get("q") ?? cachedEventsFilters?.search ?? "";
+  });
   const debouncedSearch = useDebounce(search, 300);
-  const [selectedCluster, setSelectedCluster] = useState<string>("all");
-  const [selectedEventType, setSelectedEventType] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<string>(EVENT_SORT_DEFAULT);
+
+  const [selectedCluster, setSelectedCluster] = useState<string>(() => {
+    return searchParams.get("cluster") ?? cachedEventsFilters?.cluster ?? "all";
+  });
+
+  const [selectedEventType, setSelectedEventType] = useState<string>(() => {
+    return searchParams.get("type") ?? cachedEventsFilters?.eventType ?? "all";
+  });
+
+  const [selectedPublisher, setSelectedPublisher] = useState<string>(() => {
+    return (
+      searchParams.get("publisher") ?? cachedEventsFilters?.publisher ?? "all"
+    );
+  });
+
+  const [sortBy, setSortBy] = useState<string>(() => {
+    return (
+      searchParams.get("sort") ??
+      cachedEventsFilters?.sortBy ??
+      EVENT_SORT_DEFAULT
+    );
+  });
+
+  // ── User Profile for College Prioritization ───────────────────────────────
+  const { data: userProfile } = useUserProfile();
 
   // ── Types and Scopes API ──────────────────────────────────────────────────
   const { data: typeScopeData, isLoading: isLoadingTypeScope } =
@@ -89,17 +137,58 @@ export function EventsPageClient() {
   }, []);
 
   // ── Data fetch ────────────────────────────────────────────────────────────
-
   const { data, isLoading } = useEventsList({
     pageIndex: currentPage,
     search: debouncedSearch || undefined,
     status: "published",
-    sortBy,
+    sortBy: sortBy.startsWith("publisher_") ? EVENT_SORT_DEFAULT : sortBy,
     perPage: 12,
   });
 
   const events = data?.data ?? [];
   const pagination = data?.pagination;
+
+  // ── Publisher bucket ──────────────────────────────────────────────────────
+  const publisherBucket = useMemo(() => getPublisherBucket(events), [events]);
+
+  // ── Sync URL & in-memory cache for persistence ─────────────────────────────
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (debouncedSearch) params.set("q", debouncedSearch);
+    if (selectedCluster && selectedCluster !== "all")
+      params.set("cluster", selectedCluster);
+    if (selectedEventType && selectedEventType !== "all")
+      params.set("type", selectedEventType);
+    if (selectedPublisher && selectedPublisher !== "all")
+      params.set("publisher", selectedPublisher);
+    if (sortBy && sortBy !== EVENT_SORT_DEFAULT) params.set("sort", sortBy);
+    if (currentPage > 1) params.set("page", String(currentPage));
+
+    const nextQs = params.toString();
+    const currentQs = searchParams.toString();
+    if (nextQs !== currentQs) {
+      const qs = nextQs ? `?${nextQs}` : "";
+      router.replace(`/dashboard/events${qs}`, { scroll: false });
+    }
+
+    cachedEventsFilters = {
+      search: debouncedSearch,
+      cluster: selectedCluster,
+      eventType: selectedEventType,
+      publisher: selectedPublisher,
+      sortBy,
+      page: currentPage,
+    };
+  }, [
+    debouncedSearch,
+    selectedCluster,
+    selectedEventType,
+    selectedPublisher,
+    sortBy,
+    currentPage,
+    router,
+    searchParams,
+  ]);
 
   // ── Client-side Filter & Sort ─────────────────────────────────────────────
   const filteredAndSortedEvents = useMemo(() => {
@@ -123,41 +212,75 @@ export function EventsPageClient() {
       });
     }
 
+    if (selectedPublisher !== "all") {
+      result = result.filter((event) => {
+        const pub = getEventPublisherName(event);
+        return pub.toLowerCase() === selectedPublisher.toLowerCase();
+      });
+    }
+
     // 2. Sort the filtered events
-    result.sort((a, b) => {
-      // If no cluster filter is active, sort by cluster order first
-      if (selectedCluster === "all") {
-        const idxA = categoryOrder.indexOf(resolveEventCluster(a));
-        const idxB = categoryOrder.indexOf(resolveEventCluster(b));
-        const cleanIdxA = idxA !== -1 ? idxA : 999;
-        const cleanIdxB = idxB !== -1 ? idxB : 999;
-        if (cleanIdxA !== cleanIdxB) return cleanIdxA - cleanIdxB;
-      }
+    if (sortBy === "publisher_asc") {
+      result = sortEventsByPublisher(result, "asc");
+    } else if (sortBy === "publisher_desc") {
+      result = sortEventsByPublisher(result, "desc");
+    } else {
+      result.sort((a, b) => {
+        // Prioritize events from the user's college on default/date sorting
+        const aIsCollege = isEventFromUserCollege(a, userProfile);
+        const bIsCollege = isEventFromUserCollege(b, userProfile);
 
-      // If no event type filter is active, sort by event type order second
-      if (selectedEventType === "all") {
-        const typeA =
-          resolveEventTypeValue(a.event_type, a.category_name) ?? "";
-        const typeB =
-          resolveEventTypeValue(b.event_type, b.category_name) ?? "";
-        const idxA = eventTypeOrder.indexOf(typeA);
-        const idxB = eventTypeOrder.indexOf(typeB);
-        const cleanIdxA = idxA !== -1 ? idxA : 999;
-        const cleanIdxB = idxB !== -1 ? idxB : 999;
-        if (cleanIdxA !== cleanIdxB) return cleanIdxA - cleanIdxB;
-      }
+        if (aIsCollege && !bIsCollege) return -1;
+        if (!aIsCollege && bIsCollege) return 1;
 
-      // Fallback: sort by start date descending
-      const timeA = new Date(a.start_datetime).getTime();
-      const timeB = new Date(b.start_datetime).getTime();
-      return timeB - timeA;
-    });
+        if (sortBy === "created_at") {
+          const timeA = new Date(a.created_at || a.start_datetime).getTime();
+          const timeB = new Date(b.created_at || b.start_datetime).getTime();
+          return timeA - timeB;
+        }
+        if (sortBy === "-created_at") {
+          const timeA = new Date(a.created_at || a.start_datetime).getTime();
+          const timeB = new Date(b.created_at || b.start_datetime).getTime();
+          return timeB - timeA;
+        }
+
+        // If no cluster filter is active, sort by cluster order first
+        if (selectedCluster === "all") {
+          const idxA = categoryOrder.indexOf(resolveEventCluster(a));
+          const idxB = categoryOrder.indexOf(resolveEventCluster(b));
+          const cleanIdxA = idxA !== -1 ? idxA : 999;
+          const cleanIdxB = idxB !== -1 ? idxB : 999;
+          if (cleanIdxA !== cleanIdxB) return cleanIdxA - cleanIdxB;
+        }
+
+        // If no event type filter is active, sort by event type order second
+        if (selectedEventType === "all") {
+          const typeA =
+            resolveEventTypeValue(a.event_type, a.category_name) ?? "";
+          const typeB =
+            resolveEventTypeValue(b.event_type, b.category_name) ?? "";
+          const idxA = eventTypeOrder.indexOf(typeA);
+          const idxB = eventTypeOrder.indexOf(typeB);
+          const cleanIdxA = idxA !== -1 ? idxA : 999;
+          const cleanIdxB = idxB !== -1 ? idxB : 999;
+          if (cleanIdxA !== cleanIdxB) return cleanIdxA - cleanIdxB;
+        }
+
+        // Fallback: sort by start date descending
+        const timeA = new Date(a.start_datetime).getTime();
+        const timeB = new Date(b.start_datetime).getTime();
+        return timeB - timeA;
+      });
+    }
 
     return result;
   }, [
     events,
     selectedCluster,
     selectedEventType,
+    selectedPublisher,
+    sortBy,
+    userProfile,
     categoryOrder,
     eventTypeOrder,
     resolveEventCluster,
@@ -184,6 +307,10 @@ export function EventsPageClient() {
     setSelectedEventType(value);
     setCurrentPage(1);
   };
+  const handlePublisherChange = (value: string) => {
+    setSelectedPublisher(value);
+    setCurrentPage(1);
+  };
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -205,6 +332,9 @@ export function EventsPageClient() {
             onClusterChange={handleClusterChange}
             selectedEventType={selectedEventType}
             onEventTypeChange={handleEventTypeChange}
+            selectedPublisher={selectedPublisher}
+            onPublisherChange={handlePublisherChange}
+            publishers={publisherBucket}
             clusters={clusterList}
             isLoadingClusters={isLoadingTypeScope}
             eventTypes={eventTypeOptions}

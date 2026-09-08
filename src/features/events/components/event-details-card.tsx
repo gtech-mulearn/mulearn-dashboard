@@ -1,5 +1,6 @@
 "use client";
 
+import { ExternalLink } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { EventDetail } from "../types";
 
@@ -91,16 +92,35 @@ export function EventDetailsCard({ event }: EventDetailsCardProps) {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-          {details.map((detail) => (
-            <div key={detail.label} className="space-y-0.5">
-              <p className="text-xs font-medium text-muted-foreground">
-                {detail.label}
-              </p>
-              <p className="text-sm font-semibold text-foreground wrap-break-word">
-                {detail.value}
-              </p>
-            </div>
-          ))}
+          {details.map((detail) => {
+            const isUrl =
+              typeof detail.value === "string" &&
+              (detail.value.startsWith("http://") ||
+                detail.value.startsWith("https://"));
+
+            return (
+              <div key={detail.label} className="space-y-0.5">
+                <p className="text-xs font-medium text-muted-foreground">
+                  {detail.label}
+                </p>
+                {isUrl ? (
+                  <a
+                    href={detail.value}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-sm font-semibold text-primary underline underline-offset-2 hover:text-primary/80 break-all"
+                  >
+                    <span>{detail.value}</span>
+                    <ExternalLink className="size-3.5 shrink-0" />
+                  </a>
+                ) : (
+                  <p className="text-sm font-semibold text-foreground wrap-break-word">
+                    {detail.value}
+                  </p>
+                )}
+              </div>
+            );
+          })}
         </div>
       </CardContent>
     </Card>

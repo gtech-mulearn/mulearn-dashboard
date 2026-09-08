@@ -70,10 +70,9 @@ interface EventsFiltersProps {
   isLoadingClusters?: boolean;
   eventTypes?: EventTypeOption[];
   isLoadingEventTypes?: boolean;
-  activeTab?: string;
-  onTabChange?: (tab: string) => void;
-  onCategoryChange?: (category: string) => void;
-  selectedCategory?: string;
+  selectedPublisher?: string;
+  onPublisherChange?: (publisher: string) => void;
+  publishers?: string[];
   /** Current `sortBy` value. Omit `onSortChange` to hide the sort control. */
   sortBy?: string;
   onSortChange?: (value: string) => void;
@@ -85,6 +84,9 @@ export function EventsFilters({
   onClusterChange,
   selectedEventType = "all",
   onEventTypeChange,
+  selectedPublisher = "all",
+  onPublisherChange,
+  publishers = [],
   clusters,
   isLoadingClusters = false,
   eventTypes = [],
@@ -206,6 +208,26 @@ export function EventsFilters({
             )}
           </SelectContent>
         </Select>
+
+        {/* Publisher dropdown */}
+        {onPublisherChange && (
+          <Select value={selectedPublisher} onValueChange={onPublisherChange}>
+            <SelectTrigger
+              className="w-full md:w-48 rounded-full"
+              id="event-publisher-filter"
+            >
+              <SelectValue placeholder="All Publishers" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Publishers</SelectItem>
+              {publishers.map((pub) => (
+                <SelectItem key={pub} value={pub}>
+                  {pub}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
 
         {/* Sort dropdown */}
         {onSortChange && (
