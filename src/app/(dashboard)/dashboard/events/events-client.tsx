@@ -33,17 +33,6 @@ function toSlug(s?: string | null) {
   );
 }
 
-interface EventsFilterCache {
-  search?: string;
-  cluster?: string;
-  eventType?: string;
-  publisher?: string;
-  sortBy?: string;
-  page?: number;
-}
-
-let cachedEventsFilters: EventsFilterCache | null = null;
-
 export function EventsPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -56,51 +45,6 @@ export function EventsPageClient() {
   const sortBy = searchParams.get("sort") ?? EVENT_SORT_DEFAULT;
   const currentPage =
     Number(searchParams.get("page")) > 0 ? Number(searchParams.get("page")) : 1;
-
-  // Restore cached filters on initial mount if landing on a naked URL
-  useEffect(() => {
-    if (!searchParams.toString() && cachedEventsFilters) {
-      const params = new URLSearchParams();
-      if (cachedEventsFilters.search)
-        params.set("q", cachedEventsFilters.search);
-      if (cachedEventsFilters.cluster && cachedEventsFilters.cluster !== "all")
-        params.set("cluster", cachedEventsFilters.cluster);
-      if (
-        cachedEventsFilters.eventType &&
-        cachedEventsFilters.eventType !== "all"
-      )
-        params.set("type", cachedEventsFilters.eventType);
-      if (
-        cachedEventsFilters.publisher &&
-        cachedEventsFilters.publisher !== "all"
-      )
-        params.set("publisher", cachedEventsFilters.publisher);
-      if (
-        cachedEventsFilters.sortBy &&
-        cachedEventsFilters.sortBy !== EVENT_SORT_DEFAULT
-      )
-        params.set("sort", cachedEventsFilters.sortBy);
-      if (cachedEventsFilters.page && cachedEventsFilters.page > 1)
-        params.set("page", String(cachedEventsFilters.page));
-
-      const qs = params.toString();
-      if (qs) {
-        router.replace(`/dashboard/events?${qs}`, { scroll: false });
-      }
-    }
-  }, [searchParams, router]); // Evaluates correctly on mount
-
-  // Keep in-memory cache synchronized with URL params
-  useEffect(() => {
-    cachedEventsFilters = {
-      search: searchParams.get("q") ?? "",
-      cluster: searchParams.get("cluster") ?? "all",
-      eventType: searchParams.get("type") ?? "all",
-      publisher: searchParams.get("publisher") ?? "all",
-      sortBy: searchParams.get("sort") ?? EVENT_SORT_DEFAULT,
-      page: Number(searchParams.get("page")) || 1,
-    };
-  }, [searchParams]);
 
   // Push URL updates
   const updateUrl = useCallback(

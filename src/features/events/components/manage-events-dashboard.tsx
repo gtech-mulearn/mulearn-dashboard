@@ -53,16 +53,6 @@ function makeEventQuery(isAdmin: boolean, params: EventListQueryParams) {
   };
 }
 
-interface ManageEventsFilterCache {
-  search?: string;
-  status?: EventStatus | "all";
-  publisher?: string;
-  sortBy?: string;
-  page?: number;
-}
-
-let cachedManageEventsFilters: ManageEventsFilterCache | null = null;
-
 export default function ManageEventsDashboard() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -123,49 +113,6 @@ export default function ManageEventsDashboard() {
     isLoading: isInvitesLoading,
     isError: isInvitesError,
   } = usePendingCollaboratorInvites();
-
-  // Restore cached filters on initial mount if URL is empty
-  useEffect(() => {
-    if (!searchParams.toString() && cachedManageEventsFilters) {
-      const params = new URLSearchParams();
-      if (cachedManageEventsFilters.search)
-        params.set("q", cachedManageEventsFilters.search);
-      if (
-        cachedManageEventsFilters.status &&
-        cachedManageEventsFilters.status !== "all"
-      )
-        params.set("status", cachedManageEventsFilters.status);
-      if (
-        cachedManageEventsFilters.publisher &&
-        cachedManageEventsFilters.publisher !== "all"
-      )
-        params.set("publisher", cachedManageEventsFilters.publisher);
-      if (
-        cachedManageEventsFilters.sortBy &&
-        cachedManageEventsFilters.sortBy !== EVENT_SORT_DEFAULT
-      )
-        params.set("sort", cachedManageEventsFilters.sortBy);
-      if (cachedManageEventsFilters.page && cachedManageEventsFilters.page > 1)
-        params.set("page", String(cachedManageEventsFilters.page));
-
-      const qs = params.toString();
-      if (qs) {
-        router.replace(`/dashboard/manage-events?${qs}`, { scroll: false });
-      }
-    }
-  }, [searchParams, router]);
-
-  // Keep in-memory cache synchronized with URL
-  useEffect(() => {
-    cachedManageEventsFilters = {
-      search: searchParams.get("q") ?? "",
-      status:
-        (searchParams.get("status") as EventStatus | "all" | null) ?? "all",
-      publisher: searchParams.get("publisher") ?? "all",
-      sortBy: searchParams.get("sort") ?? EVENT_SORT_DEFAULT,
-      page: Number(searchParams.get("page")) || 1,
-    };
-  }, [searchParams]);
 
   // Push URL updates
   const updateUrl = useCallback(
