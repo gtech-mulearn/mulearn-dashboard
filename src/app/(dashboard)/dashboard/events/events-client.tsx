@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserProfile } from "@/features/auth";
 import type { EventListItem, PaginationMeta } from "@/features/events";
@@ -49,7 +49,11 @@ export function EventsPageClient() {
   // Push URL updates
   const updateUrl = useCallback(
     (updates: Record<string, string | number | null | undefined>) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const currentQuery =
+        typeof window !== "undefined"
+          ? window.location.search.replace(/^\?/, "")
+          : searchParams.toString();
+      const params = new URLSearchParams(currentQuery);
       for (const [key, value] of Object.entries(updates)) {
         if (
           value === null ||
@@ -69,7 +73,10 @@ export function EventsPageClient() {
         params.delete("page");
       }
       const qs = params.toString();
-      const currentQs = searchParams.toString();
+      const currentQs =
+        typeof window !== "undefined"
+          ? window.location.search.replace(/^\?/, "")
+          : searchParams.toString();
       if (qs !== currentQs) {
         router.replace(`/dashboard/events${qs ? `?${qs}` : ""}`, {
           scroll: false,
@@ -281,7 +288,11 @@ export function EventsPageClient() {
     updateUrl({ type: value });
   };
   const handlePublisherChange = (value: string) => {
-    updateUrl({ publisher: value });
+    if (value === "all" && sortBy.startsWith("publisher_")) {
+      updateUrl({ publisher: value, sort: EVENT_SORT_DEFAULT });
+    } else {
+      updateUrl({ publisher: value });
+    }
   };
 
   // ── Render ────────────────────────────────────────────────────────────────

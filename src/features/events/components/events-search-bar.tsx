@@ -1,41 +1,62 @@
 "use client";
+
 import { Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 
-type Props = {
+export type EventsSearchBarProps = {
+  defaultValue?: string;
   onSearch: (data: string) => void;
-  placeholder: string;
+  placeholder?: string;
   onClear?: () => void;
-  size: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg";
   className?: string;
-  showButton: boolean;
+  showButton?: boolean;
   inputClassName?: string;
 };
 
-export const SearchBar = ({
+export function EventsSearchBar({
+  defaultValue = "",
   onSearch,
-  placeholder,
+  placeholder = "Search events...",
   onClear,
-  size,
+  size = "md",
   className,
-  showButton,
+  showButton = false,
   inputClassName,
-}: Props) => {
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 300);
-  const prevSearchRef = useRef("");
+}: EventsSearchBarProps) {
+  const [search, setSearch] = useState(defaultValue);
+  const lastSubmittedRef = useRef(defaultValue);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Keep a ref to the latest onSearch callback so the debounce timer never executes a stale closure
+  const onSearchRef = useRef(onSearch);
   useEffect(() => {
-    const trimmed = debouncedSearch.trim();
-    if (trimmed !== prevSearchRef.current) {
-      prevSearchRef.current = trimmed;
-      onSearch(trimmed);
+    onSearchRef.current = onSearch;
+  }, [onSearch]);
+
+  // Synchronize when defaultValue changes externally (e.g. browser history back/forward navigation or URL change)
+  useEffect(() => {
+    if (defaultValue !== lastSubmittedRef.current) {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      setSearch(defaultValue);
+      lastSubmittedRef.current = defaultValue;
     }
-  }, [debouncedSearch, onSearch]);
+  }, [defaultValue]);
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
 
   const sizeClass =
     size === "sm"
@@ -48,22 +69,42 @@ export const SearchBar = ({
     const inputValue = event.target.value;
     const sanitizedInput = inputValue.replace(/[<>/]/g, "");
     setSearch(sanitizedInput);
+
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+
+    timerRef.current = setTimeout(() => {
+      const trimmed = sanitizedInput.trim();
+      if (trimmed !== lastSubmittedRef.current) {
+        lastSubmittedRef.current = trimmed;
+        onSearchRef.current(trimmed);
+      }
+    }, 300);
   };
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
     const trimmed = search.trim();
-    if (trimmed !== prevSearchRef.current) {
-      prevSearchRef.current = trimmed;
-      onSearch(trimmed);
+    if (trimmed !== lastSubmittedRef.current) {
+      lastSubmittedRef.current = trimmed;
+      onSearchRef.current(trimmed);
     }
   };
 
   const clearInput = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
     setSearch("");
-    prevSearchRef.current = "";
+    lastSubmittedRef.current = "";
     if (onClear) onClear();
-    else onSearch("");
+    else onSearchRef.current("");
   };
 
   return (
@@ -102,4 +143,4 @@ export const SearchBar = ({
       )}
     </form>
   );
-};
+}

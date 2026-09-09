@@ -3,9 +3,8 @@
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ApiError } from "@/api/client";
-import { SearchBar } from "@/components/dashboard/table/SearchBar";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -39,6 +38,7 @@ import { CollaboratorInvitesSheet } from "./collaborator-invites-sheet";
 import { EventCreateWizard } from "./event-create-wizard";
 import { EventsGrid } from "./events-grid";
 import { EventsPagination } from "./events-pagination";
+import { EventsSearchBar } from "./events-search-bar";
 
 const FETCH_ALL_LIMIT = 200;
 const PAGE_SIZE = 12;
@@ -117,7 +117,11 @@ export default function ManageEventsDashboard() {
   // Push URL updates
   const updateUrl = useCallback(
     (updates: Record<string, string | number | null | undefined>) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const currentQuery =
+        typeof window !== "undefined"
+          ? window.location.search.replace(/^\?/, "")
+          : searchParams.toString();
+      const params = new URLSearchParams(currentQuery);
       for (const [key, value] of Object.entries(updates)) {
         if (
           value === null ||
@@ -136,7 +140,10 @@ export default function ManageEventsDashboard() {
         params.delete("page");
       }
       const qs = params.toString();
-      const currentQs = searchParams.toString();
+      const currentQs =
+        typeof window !== "undefined"
+          ? window.location.search.replace(/^\?/, "")
+          : searchParams.toString();
       if (qs !== currentQs) {
         router.replace(`/dashboard/manage-events${qs ? `?${qs}` : ""}`, {
           scroll: false,
@@ -369,7 +376,11 @@ export default function ManageEventsDashboard() {
         <Select
           value={selectedPublisher}
           onValueChange={(value) => {
-            updateUrl({ publisher: value });
+            if (value === "all" && sortBy.startsWith("publisher_")) {
+              updateUrl({ publisher: value, sort: EVENT_SORT_DEFAULT });
+            } else {
+              updateUrl({ publisher: value });
+            }
           }}
         >
           <SelectTrigger className="w-full md:w-52 rounded-full">
@@ -406,7 +417,7 @@ export default function ManageEventsDashboard() {
           </SelectContent>
         </Select>
 
-        <SearchBar
+        <EventsSearchBar
           defaultValue={searchParamQ}
           onSearch={(val) => {
             updateUrl({ q: val });

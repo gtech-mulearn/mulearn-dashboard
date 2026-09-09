@@ -1,7 +1,6 @@
 "use client";
 
 import { Check, ChevronDown, Loader2 } from "lucide-react";
-import { SearchBar } from "@/components/dashboard/table/SearchBar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -21,6 +20,7 @@ import {
   EVENT_SORT_DEFAULT,
   EVENT_SORT_OPTIONS,
 } from "../constants/events.constants";
+import { EventsSearchBar } from "./events-search-bar";
 
 interface ClusterOption {
   label: string;
@@ -102,7 +102,7 @@ export function EventsFilters({
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       {/* Search input — Left side */}
-      <SearchBar
+      <EventsSearchBar
         defaultValue={searchValue}
         onSearch={onSearch}
         placeholder="Search events..."

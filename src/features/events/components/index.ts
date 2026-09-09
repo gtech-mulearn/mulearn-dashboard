@@ -14,6 +14,7 @@ export { EventTypeBadge } from "./event-type-badge";
 export { EventsFilters } from "./events-filters";
 export { EventsGrid } from "./events-grid";
 export { EventsPagination } from "./events-pagination";
+export { EventsSearchBar } from "./events-search-bar";
 export { ExpandableMapDialog } from "./expandable-map-dialog";
 export { FeaturedEventsCarousel } from "./featured-events-carousel";
 export { InterestButton } from "./interest-button";

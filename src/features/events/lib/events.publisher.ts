@@ -134,6 +134,51 @@ function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function getAcronyms(str: string): string[] {
+  if (!str) return [];
+  const cleaned = str.replace(/\([^)]*\)/g, "").trim();
+  const words = cleaned.split(/[^a-zA-Z0-9]+/).filter(Boolean);
+  const stopWords = new Set([
+    "of",
+    "and",
+    "in",
+    "for",
+    "the",
+    "at",
+    "to",
+    "a",
+    "an",
+  ]);
+
+  // 1. First letter of major words (excluding stop words)
+  const majorWords = words.filter((w) => !stopWords.has(w.toLowerCase()));
+  const acronym1 = majorWords
+    .map((w) => w[0])
+    .join("")
+    .toLowerCase();
+
+  // 2. First letter of ALL words
+  const acronym2 = words
+    .map((w) => w[0])
+    .join("")
+    .toLowerCase();
+
+  // 3. If any word is already an acronym (e.g. "TKM College of Engineering" -> T,K,M, C, E), expand it
+  const expandedWords: string[] = [];
+  for (const w of majorWords) {
+    if (w.length > 1 && w === w.toUpperCase()) {
+      expandedWords.push(...w.split(""));
+    } else {
+      expandedWords.push(w[0]);
+    }
+  }
+  const acronym3 = expandedWords.join("").toLowerCase();
+
+  return Array.from(new Set([acronym1, acronym2, acronym3])).filter(
+    (a) => a.length >= 2,
+  );
+}
+
 function matchesCollegeCode(target: string, code: string): boolean {
   if (!target || !code) return false;
   const trimmedTarget = target.trim();
@@ -143,7 +188,22 @@ function matchesCollegeCode(target: string, code: string): boolean {
   }
   const escaped = escapeRegex(trimmedCode);
   const boundaryRegex = new RegExp(`\\b${escaped}\\b`, "i");
-  return boundaryRegex.test(trimmedTarget);
+  if (boundaryRegex.test(trimmedTarget)) {
+    return true;
+  }
+
+  // Match acronyms (e.g. "MBCET" matches "Mar Baselios College of Engineering and Technology")
+  const targetAcronyms = getAcronyms(trimmedTarget);
+  if (targetAcronyms.includes(trimmedCode.toLowerCase())) {
+    return true;
+  }
+
+  const codeAcronyms = getAcronyms(trimmedCode);
+  if (codeAcronyms.includes(trimmedTarget.toLowerCase())) {
+    return true;
+  }
+
+  return false;
 }
 
 /**
