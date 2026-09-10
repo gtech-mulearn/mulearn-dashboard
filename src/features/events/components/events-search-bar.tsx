@@ -29,6 +29,7 @@ export function EventsSearchBar({
 }: EventsSearchBarProps) {
   const [search, setSearch] = useState(defaultValue);
   const lastSubmittedRef = useRef(defaultValue);
+  const prevDefaultValueRef = useRef(defaultValue);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Keep a ref to the latest onSearch callback so the debounce timer never executes a stale closure
@@ -37,21 +38,36 @@ export function EventsSearchBar({
     onSearchRef.current = onSearch;
   }, [onSearch]);
 
-  // Synchronize when defaultValue changes externally (e.g. browser history back/forward navigation or URL change)
+  // Synchronize when defaultValue changes externally (e.g. router updates, filter resets)
   useEffect(() => {
-    if (defaultValue !== lastSubmittedRef.current) {
+    if (defaultValue !== prevDefaultValueRef.current) {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
         timerRef.current = null;
       }
       setSearch(defaultValue);
       lastSubmittedRef.current = defaultValue;
+      prevDefaultValueRef.current = defaultValue;
     }
   }, [defaultValue]);
 
-  // Clean up timer on unmount
+  // Abort any pending debounced search on browser history Back/Forward (popstate)
   useEffect(() => {
+    const handlePopState = () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      const params = new URLSearchParams(window.location.search);
+      const urlQ = params.get("q") ?? "";
+      setSearch(urlQ);
+      lastSubmittedRef.current = urlQ;
+      prevDefaultValueRef.current = urlQ;
+    };
+
+    window.addEventListener("popstate", handlePopState);
     return () => {
+      window.removeEventListener("popstate", handlePopState);
       if (timerRef.current) {
         clearTimeout(timerRef.current);
       }
@@ -78,6 +94,7 @@ export function EventsSearchBar({
       const trimmed = sanitizedInput.trim();
       if (trimmed !== lastSubmittedRef.current) {
         lastSubmittedRef.current = trimmed;
+        prevDefaultValueRef.current = trimmed;
         onSearchRef.current(trimmed);
       }
     }, 300);
@@ -92,6 +109,7 @@ export function EventsSearchBar({
     const trimmed = search.trim();
     if (trimmed !== lastSubmittedRef.current) {
       lastSubmittedRef.current = trimmed;
+      prevDefaultValueRef.current = trimmed;
       onSearchRef.current(trimmed);
     }
   };
@@ -103,6 +121,7 @@ export function EventsSearchBar({
     }
     setSearch("");
     lastSubmittedRef.current = "";
+    prevDefaultValueRef.current = "";
     if (onClear) onClear();
     else onSearchRef.current("");
   };

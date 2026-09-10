@@ -166,7 +166,7 @@ function getAcronyms(str: string): string[] {
   // 3. If any word is already an acronym (e.g. "TKM College of Engineering" -> T,K,M, C, E), expand it
   const expandedWords: string[] = [];
   for (const w of majorWords) {
-    if (w.length > 1 && w === w.toUpperCase()) {
+    if (w.length > 1 && w.length <= 4 && w === w.toUpperCase()) {
       expandedWords.push(...w.split(""));
     } else {
       expandedWords.push(w[0]);
@@ -192,14 +192,21 @@ function matchesCollegeCode(target: string, code: string): boolean {
     return true;
   }
 
-  // Match acronyms (e.g. "MBCET" matches "Mar Baselios College of Engineering and Technology")
+  const cleanCode = trimmedCode.replace(/[\s-]+/g, "").toLowerCase();
+  const cleanTarget = trimmedTarget.replace(/[\s-]+/g, "").toLowerCase();
+
+  // Match acronyms (e.g. "MBCET" or "NIT AP" matches "Mar Baselios College..." or "NIT Andhra Pradesh")
   const targetAcronyms = getAcronyms(trimmedTarget);
-  if (targetAcronyms.includes(trimmedCode.toLowerCase())) {
+  if (targetAcronyms.includes(cleanCode)) {
     return true;
   }
 
   const codeAcronyms = getAcronyms(trimmedCode);
-  if (codeAcronyms.includes(trimmedTarget.toLowerCase())) {
+  if (codeAcronyms.includes(cleanTarget)) {
+    return true;
+  }
+
+  if (targetAcronyms.some((ta) => codeAcronyms.includes(ta))) {
     return true;
   }
 
