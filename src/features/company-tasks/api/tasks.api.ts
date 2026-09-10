@@ -4,12 +4,15 @@ import {
   CompanyTaskDetailResponseSchema,
   CompanyTasksResponseSchema,
   GenericResponseSchema,
+  TaskTemplateDetailResponseSchema,
+  TaskTemplatesListResponseSchema,
 } from "../schemas/tasks.schema";
 import type {
   CompanyTask,
   CompanyTaskApprovalStatus,
   CompanyTasksResponse,
   CreateCompanyTaskPayload,
+  TaskTemplate,
   UpdateCompanyTaskPayload,
 } from "../types/tasks.types";
 
@@ -143,8 +146,46 @@ export async function updateCompanyTask({
 }
 
 export async function deleteCompanyTask(taskId: string): Promise<void> {
+  await apiClient.delete(endpoints.company.taskDetail(taskId), undefined);
+}
+
+export async function fetchTaskTemplates(): Promise<TaskTemplate[]> {
+  const res = await apiClient.get(
+    endpoints.company.taskTemplates,
+    TaskTemplatesListResponseSchema,
+  );
+  if ("response" in res && res.response) {
+    if (Array.isArray(res.response)) return res.response;
+    if ("data" in res.response && Array.isArray(res.response.data)) {
+      return res.response.data;
+    }
+  }
+  if ("data" in res && Array.isArray(res.data)) {
+    return res.data;
+  }
+  if (Array.isArray(res)) {
+    return res;
+  }
+  return [];
+}
+
+export async function createTaskTemplate(
+  payload: Partial<TaskTemplate>,
+): Promise<TaskTemplate> {
+  const res = await apiClient.post(
+    endpoints.company.taskTemplates,
+    payload,
+    TaskTemplateDetailResponseSchema,
+  );
+  if ("response" in res && res.response) {
+    return res.response as TaskTemplate;
+  }
+  return res as unknown as TaskTemplate;
+}
+
+export async function deleteTaskTemplate(templateId: string): Promise<void> {
   await apiClient.delete(
-    endpoints.company.taskDetail(taskId),
+    endpoints.company.taskTemplateDetail(templateId),
     undefined,
     GenericResponseSchema,
   );
@@ -192,4 +233,26 @@ export async function deleteTaskType(payload: unknown): Promise<void> {
     payload,
     GenericResponseSchema,
   );
+}
+
+export async function fetchTaskLevels(): Promise<
+  { id: string; name: string }[]
+> {
+  const data = await apiClient.get<unknown>(endpoints.adminTask.taskLevelList);
+  // Pull array out of envelope
+  let arr: Record<string, unknown>[] = [];
+  if (Array.isArray(data)) arr = data as Record<string, unknown>[];
+  else if (data && typeof data === "object") {
+    const obj = data as Record<string, unknown>;
+    for (const key of ["data", "results", "items", "response"]) {
+      if (Array.isArray(obj[key])) {
+        arr = obj[key] as Record<string, unknown>[];
+        break;
+      }
+    }
+  }
+  return arr.map((it) => ({
+    id: String(it.id),
+    name: String(it.name ?? `Level ${it.level_order}`).trim(),
+  }));
 }

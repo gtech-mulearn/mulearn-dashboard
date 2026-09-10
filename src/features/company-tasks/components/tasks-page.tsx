@@ -24,13 +24,16 @@ import {
   useCompanyTasks,
   useDeleteCompanyTask,
 } from "../hooks/use-company-tasks";
-import type { CompanyTask } from "../types/tasks.types";
+import type { CompanyTask, TaskTemplate } from "../types/tasks.types";
 import { CreateTaskModal } from "./create-task-modal";
 import { TaskDetailModal } from "./task-detail-modal";
+import { TaskTemplatesModal } from "./task-templates-list";
 
 export function CompanyTasksPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<CompanyTask | null>(null);
+  const [templateToUse, setTemplateToUse] = useState<TaskTemplate | null>(null);
+  const [isSelectTemplateOpen, setIsSelectTemplateOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [page, setPage] = useState<number>(1);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -172,13 +175,30 @@ export function CompanyTasksPage() {
             Manage your community tasks and track admin approval.
           </p>
         </div>
-        <Button
-          className="shrink-0 gap-2"
-          onClick={() => setIsCreateModalOpen(true)}
-        >
-          <Plus className="h-4 w-4" />
-          Create Task
-        </Button>
+        {statusFilter !== "templates" && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="shrink-0 gap-2">
+                <Plus className="h-4 w-4" />
+                Create Task
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => {
+                  setTaskToEdit(null);
+                  setTemplateToUse(null);
+                  setIsCreateModalOpen(true);
+                }}
+              >
+                Create New Task
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsSelectTemplateOpen(true)}>
+                Use Template
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       <Tabs
@@ -367,9 +387,22 @@ export function CompanyTasksPage() {
         open={isCreateModalOpen}
         onOpenChange={(open) => {
           setIsCreateModalOpen(open);
-          if (!open) setTaskToEdit(null);
+          if (!open) {
+            setTaskToEdit(null);
+            setTemplateToUse(null);
+          }
         }}
         taskToEdit={taskToEdit}
+        templateToUse={templateToUse}
+      />
+      <TaskTemplatesModal
+        open={isSelectTemplateOpen}
+        onOpenChange={setIsSelectTemplateOpen}
+        onSelect={(template) => {
+          setIsSelectTemplateOpen(false);
+          setTemplateToUse(template);
+          setIsCreateModalOpen(true);
+        }}
       />
       <TaskDetailModal
         taskId={selectedTaskId}

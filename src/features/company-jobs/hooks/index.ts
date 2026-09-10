@@ -55,11 +55,8 @@ export {
 export {
   TEMPLATES_KEYS,
   useCreateEventTemplate,
-  useCreateTaskTemplate,
   useDeleteEventTemplate,
-  useDeleteTaskTemplate,
   useEventTemplates,
-  useTaskTemplates,
 } from "./use-company-templates";
 export {
   type EligibilityLevel,

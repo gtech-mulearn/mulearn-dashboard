@@ -623,24 +623,25 @@ export interface TasksAnalytics {
 }
 
 export interface ShortlistedLearner {
+  /** The learner's user ID — matches LearnerProfile.id for card comparison */
   id: string;
-  user_id: string;
-  learner_name: string;
-  muid: string;
-  email?: string | null;
+  full_name: string;
   karma: number;
-  level: number;
-  shortlisted_at: string;
-  note?: string | null;
+  shortlist_note?: string | null;
 }
 
 export interface TalentPoolInsights {
-  total_active_learners: number;
-  available_for_hire: number;
-  available_for_gigs: number;
-  district_distribution: Array<{ district: string; count: number }>;
-  top_skills: Array<{ skill: string; learner_count: number }>;
-  recommended_roles: Array<{ role: string; talent_count: number }>;
+  total_learners: number;
+  top_skills: Array<{
+    skill_id: string;
+    skill_name: string;
+    learner_count: number;
+  }>;
+  top_colleges: Array<{
+    college_id: string;
+    college_name: string;
+    learner_count: number;
+  }>;
 }
 
 export interface TaskTemplate {

@@ -3,19 +3,24 @@ import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   createCompanyTask,
+  createTaskTemplate,
   createTaskType,
   deleteCompanyTask,
+  deleteTaskTemplate,
   deleteTaskType,
   type FetchCompanyTasksParams,
   fetchCompanyTaskDetail,
   fetchCompanyTasks,
   fetchPublicTaskList,
+  fetchTaskLevels,
+  fetchTaskTemplates,
   fetchTaskTypes,
   updateCompanyTask,
   updateTaskType,
 } from "../api/tasks.api";
 import type {
   CreateCompanyTaskPayload,
+  TaskTemplate,
   UpdateCompanyTaskPayload,
 } from "../types/tasks.types";
 
@@ -26,7 +31,9 @@ export const COMPANY_TASKS_KEYS = {
   detail: (taskId: string) =>
     [...COMPANY_TASKS_KEYS.all, "detail", taskId] as const,
   types: () => [...COMPANY_TASKS_KEYS.all, "types"] as const,
+  levels: () => [...COMPANY_TASKS_KEYS.all, "levels"] as const,
   publicList: () => ["public-tasks-list"] as const,
+  templates: () => [...COMPANY_TASKS_KEYS.all, "templates"] as const,
 };
 
 export function useCompanyTasks(params?: FetchCompanyTasksParams) {
@@ -47,6 +54,14 @@ export function useTaskTypes() {
   return useQuery({
     queryKey: COMPANY_TASKS_KEYS.types(),
     queryFn: fetchTaskTypes,
+    staleTime: Infinity,
+  });
+}
+
+export function useTaskLevels() {
+  return useQuery({
+    queryKey: COMPANY_TASKS_KEYS.levels(),
+    queryFn: fetchTaskLevels,
     staleTime: Infinity,
   });
 }
@@ -167,6 +182,54 @@ export function useDeleteTaskType() {
     onError: (error) => {
       toast.error(
         getApiResponseError(error, { fallback: "Failed to delete task type." }),
+      );
+    },
+  });
+}
+
+export function useTaskTemplates() {
+  return useQuery({
+    queryKey: COMPANY_TASKS_KEYS.templates(),
+    queryFn: fetchTaskTemplates,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useCreateTaskTemplate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: Partial<TaskTemplate>) => createTaskTemplate(payload),
+    onSuccess: () => {
+      toast.success("Task template created");
+      queryClient.invalidateQueries({
+        queryKey: COMPANY_TASKS_KEYS.templates(),
+      });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to create task template",
+        }),
+      );
+    },
+  });
+}
+
+export function useDeleteTaskTemplate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (templateId: string) => deleteTaskTemplate(templateId),
+    onSuccess: () => {
+      toast.success("Task template deleted");
+      queryClient.invalidateQueries({
+        queryKey: COMPANY_TASKS_KEYS.templates(),
+      });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to delete task template",
+        }),
       );
     },
   });
