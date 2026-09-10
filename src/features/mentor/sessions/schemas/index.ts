@@ -66,6 +66,7 @@ export const SessionParticipantSchema = z.object({
   attendance_status: z.enum(ATTENDANCE_STATUSES).nullable().optional(),
   progress_note: z.string().nullable().optional(),
   feedback: z.string().nullable().optional(),
+  rating: z.number().nullable().optional(),
   contributed_minutes: z.number().nullable().optional(),
   created_at: z.string().optional(),
   // Session details — populated by the participant-history endpoint so a
@@ -108,6 +109,7 @@ export const SessionSchema = z.object({
   status: z.string().nullable().optional().default("PENDING_APPROVAL"),
   meeting_link: z.string().nullable().optional(),
   venue: z.string().nullable().optional(),
+  apply_to_series: z.boolean().nullable().optional().default(false),
   max_participants: z.coerce.number().nullable().optional(),
   created_by_id: z.string().nullable().optional(),
   created_by_name: z.string().nullable().optional(),
@@ -159,6 +161,7 @@ export const SessionFormBaseSchema = z.object({
   recurrence_type: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).optional(),
   recurrence_interval: z.number().min(1).optional(),
   recurrence_end_date: z.string().optional(),
+  apply_to_series: z.boolean().optional().default(false),
 });
 
 export type SessionFormValues = z.infer<typeof SessionFormBaseSchema>;
@@ -170,6 +173,28 @@ export const SessionFormSchema = SessionFormBaseSchema.superRefine((v, ctx) => {
       code: z.ZodIssueCode.custom,
       message: "End time must be after start time",
       path: ["ends_at"],
+    });
+  }
+
+  // Mode requirements
+  if (
+    (v.mode === "ONLINE" || v.mode === "HYBRID") &&
+    (!v.meeting_link || v.meeting_link.trim() === "")
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Meeting link is required for Online/Hybrid sessions",
+      path: ["meeting_link"],
+    });
+  }
+  if (
+    (v.mode === "OFFLINE" || v.mode === "HYBRID") &&
+    (!v.venue || v.venue.trim() === "")
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Venue / location is required for Offline/Hybrid sessions",
+      path: ["venue"],
     });
   }
 
@@ -218,7 +243,11 @@ export type AdminVerifySessionValues = z.infer<typeof AdminVerifySessionSchema>;
 export const UpdateParticipantSchema = z.object({
   attendance_status: z.enum(ATTENDANCE_STATUSES).optional(),
   progress_note: z.string().max(500).nullable().optional(),
-  contributed_minutes: z.number().positive().nullable().optional(),
+  contributed_minutes: z
+    .number()
+    .positive("Contributed minutes must be greater than zero.")
+    .nullable()
+    .optional(),
 });
 export type UpdateParticipantValues = z.infer<typeof UpdateParticipantSchema>;
 

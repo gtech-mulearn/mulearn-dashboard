@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CustomDateTimePicker } from "@/components/ui/custom-datetime-picker";
 import {
@@ -101,10 +102,39 @@ export function VerifyRequestDialog({
         <DialogHeader>
           <DialogTitle>Verify Session Request</DialogTitle>
           <DialogDescription>
-            Approve or reject the session request from{" "}
-            {request.requested_by_name}.
+            Approve or reject the session request submitted by{" "}
+            {request.requested_by_name || "learner"}.
           </DialogDescription>
         </DialogHeader>
+
+        {/* Request Details Summary Card */}
+        <div className="rounded-lg border p-4 bg-muted/30 space-y-2">
+          <div className="flex items-start justify-between gap-2">
+            <div className="space-y-1">
+              <h3 className="font-semibold text-base text-foreground leading-tight">
+                {request.title}
+              </h3>
+              {request.entity_name && (
+                <Badge variant="secondary" className="text-xs">
+                  {request.entity_name}
+                </Badge>
+              )}
+            </div>
+            {request.requested_by_name && (
+              <span className="text-xs text-muted-foreground bg-background border px-2.5 py-1 rounded-full font-medium shrink-0">
+                Requested by: {request.requested_by_name}
+                {request.requested_by_muid
+                  ? ` (${request.requested_by_muid})`
+                  : ""}
+              </span>
+            )}
+          </div>
+          {request.description && (
+            <p className="text-sm text-muted-foreground leading-relaxed pt-1 whitespace-pre-wrap">
+              {request.description}
+            </p>
+          )}
+        </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

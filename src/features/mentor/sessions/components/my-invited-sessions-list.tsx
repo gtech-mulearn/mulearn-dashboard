@@ -1,8 +1,12 @@
 "use client";
 
-import { CalendarClock, MapPin, Video } from "lucide-react";
+import { CalendarClock, MapPin, MessageSquarePlus, Video } from "lucide-react";
+import { useState } from "react";
+import Pagination from "@/components/dashboard/table/pagination";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SessionFeedbackDialog } from "@/features/mentor/mentees/components/session-feedback-dialog";
 import { chipColor } from "@/lib/chip-colors";
 import { cn } from "@/lib/utils";
 import { useParticipantHistory } from "../hooks/use-sessions";
@@ -47,11 +51,18 @@ function formatRange(startIso?: string | null, endIso?: string | null): string {
   return `${datePart} · ${startTime} – ${timeFmt.format(new Date(endIso))}`;
 }
 
-function InviteCard({ participant }: { participant: SessionParticipant }) {
+function InviteCard({
+  participant,
+  onGiveFeedback,
+}: {
+  participant: SessionParticipant;
+  onGiveFeedback: (participant: SessionParticipant) => void;
+}) {
   const status = (participant.session_status ?? "").toUpperCase();
   const mode = (participant.session_mode ?? "").toUpperCase();
   const isOnline = mode === "ONLINE" || mode === "HYBRID";
   const isOffline = mode === "OFFLINE" || mode === "HYBRID";
+  const isAttended = participant.attendance_status === "ATTENDED";
   const { meetingUrl, mapUrl } = getSessionAccess(
     participant.session_mode,
     participant.session_meeting_link,
@@ -63,7 +74,7 @@ function InviteCard({ participant }: { participant: SessionParticipant }) {
     <Card className="flex h-full flex-col rounded-2xl border bg-card shadow-sm">
       <CardContent className="flex flex-1 flex-col gap-3 p-4">
         <div className="space-y-1.5">
-          <div className="flex flex-col  items-start gap-2">
+          <div className="flex flex-col items-start gap-2">
             <p className="font-semibold text-foreground">
               {participant.session_title ?? "Session"}
             </p>
@@ -121,12 +132,26 @@ function InviteCard({ participant }: { participant: SessionParticipant }) {
           </div>
         </div>
 
-        <div className="mt-auto pt-1">
+        <div className="mt-auto flex flex-col gap-2 pt-1">
+          {isAttended && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full text-xs"
+              onClick={() => onGiveFeedback(participant)}
+            >
+              <MessageSquarePlus className="mr-1.5 size-3.5" />
+              Give Feedback
+            </Button>
+          )}
+
           {hasAccess ? (
             <SessionAccessButtons
               mode={participant.session_mode}
               meetingLink={participant.session_meeting_link}
               venue={participant.session_venue}
+              status={participant.session_status}
             />
           ) : (
             <p className="text-[11px] text-muted-foreground">
@@ -142,8 +167,17 @@ function InviteCard({ participant }: { participant: SessionParticipant }) {
 }
 
 export function MyInvitedSessionsList() {
-  const { data, isLoading } = useParticipantHistory();
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useParticipantHistory({
+    pageIndex: page,
+    perPage: 10,
+  });
   const participants = data?.data ?? [];
+  const totalPages = data?.totalPages ?? 1;
+  const totalCount = data?.totalCount;
+
+  const [feedbackParticipant, setFeedbackParticipant] =
+    useState<SessionParticipant | null>(null);
 
   if (isLoading) {
     return (
@@ -168,13 +202,36 @@ export function MyInvitedSessionsList() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {participants.map((participant) => (
-        <InviteCard
-          key={participant.id ?? participant.session_id}
-          participant={participant}
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {participants.map((participant) => (
+          <InviteCard
+            key={participant.id ?? participant.session_id}
+            participant={participant}
+            onGiveFeedback={setFeedbackParticipant}
+          />
+        ))}
+      </div>
+
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          handleNextClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+          handlePreviousClick={() => setPage((p) => Math.max(p - 1, 1))}
+          perPage={10}
+          totalCount={totalCount}
         />
-      ))}
+      )}
+
+      {feedbackParticipant && (
+        <SessionFeedbackDialog
+          open={!!feedbackParticipant}
+          onOpenChange={(v) => !v && setFeedbackParticipant(null)}
+          sessionId={feedbackParticipant.session_id ?? ""}
+          sessionTitle={feedbackParticipant.session_title ?? "Session"}
+        />
+      )}
     </div>
   );
 }

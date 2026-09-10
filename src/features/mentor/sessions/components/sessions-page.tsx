@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  CheckCircle,
   Copy,
   MapPin,
   Pencil,
@@ -13,6 +14,7 @@ import {
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import Pagination from "@/components/dashboard/table/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -42,6 +44,7 @@ import {
 import { usePermissions } from "@/hooks/use-permissions";
 import { ASSOCIATE_MANAGEMENT_ROLES } from "@/lib/auth/roles";
 import {
+  useCompleteSession,
   useDeleteSession,
   usePendingSessions,
   useSessions,
@@ -75,6 +78,7 @@ function SessionRow({
   isAdmin,
   onEdit,
   onParticipants,
+  onComplete,
   onApprove,
   onKarma,
   onDelete,
@@ -83,6 +87,7 @@ function SessionRow({
   isAdmin: boolean;
   onEdit: (s: Session) => void;
   onParticipants: (s: Session) => void;
+  onComplete: (s: Session) => void;
   onApprove: (s: Session, action: "approve" | "reject") => void;
   onKarma: (s: Session) => void;
   onDelete: (id: string) => void;
@@ -236,6 +241,22 @@ function SessionRow({
             <TooltipContent>Participants</TooltipContent>
           </Tooltip>
 
+          {status === "SCHEDULED" && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/50"
+                  onClick={() => onComplete(session)}
+                >
+                  <CheckCircle className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Mark Complete</TooltipContent>
+            </Tooltip>
+          )}
+
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -306,8 +327,13 @@ function SessionTable({
   sessions,
   isLoading,
   isAdmin,
+  pageIndex,
+  totalPages,
+  totalCount,
+  onPageChange,
   onEdit,
   onParticipants,
+  onComplete,
   onApprove,
   onKarma,
   onDelete,
@@ -315,8 +341,13 @@ function SessionTable({
   sessions: Session[] | undefined;
   isLoading: boolean;
   isAdmin: boolean;
+  pageIndex?: number;
+  totalPages?: number;
+  totalCount?: number;
+  onPageChange?: (page: number) => void;
   onEdit: (s: Session) => void;
   onParticipants: (s: Session) => void;
+  onComplete: (s: Session) => void;
   onApprove: (s: Session, action: "approve" | "reject") => void;
   onKarma: (s: Session) => void;
   onDelete: (id: string) => void;
@@ -336,31 +367,47 @@ function SessionTable({
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Title</TableHead>
-          <TableHead>IG</TableHead>
-          <TableHead>Starts At</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {sessions.map((s) => (
-          <SessionRow
-            key={s.id}
-            session={s}
-            isAdmin={isAdmin}
-            onEdit={onEdit}
-            onParticipants={onParticipants}
-            onApprove={onApprove}
-            onKarma={onKarma}
-            onDelete={onDelete}
+    <div className="space-y-4">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Title</TableHead>
+            <TableHead>IG</TableHead>
+            <TableHead>Starts At</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {sessions.map((s) => (
+            <SessionRow
+              key={s.id}
+              session={s}
+              isAdmin={isAdmin}
+              onEdit={onEdit}
+              onParticipants={onParticipants}
+              onComplete={onComplete}
+              onApprove={onApprove}
+              onKarma={onKarma}
+              onDelete={onDelete}
+            />
+          ))}
+        </TableBody>
+      </Table>
+      {onPageChange &&
+        pageIndex !== undefined &&
+        totalPages !== undefined &&
+        totalPages > 1 && (
+          <Pagination
+            currentPage={pageIndex}
+            totalPages={totalPages}
+            handleNextClick={() => onPageChange(pageIndex + 1)}
+            handlePreviousClick={() => onPageChange(pageIndex - 1)}
+            perPage={10}
+            totalCount={totalCount}
           />
-        ))}
-      </TableBody>
-    </Table>
+        )}
+    </div>
   );
 }
 
@@ -370,10 +417,15 @@ export function SessionsPage() {
   const searchParams = useSearchParams();
   const defaultTab = searchParams.get("tab") || "upcoming";
 
+  const [upcomingPage, setUpcomingPage] = useState(1);
+  const [allPage, setAllPage] = useState(1);
+  const perPage = 10;
+
   const [createOpen, setCreateOpen] = useState(false);
   const [editSession, setEditSession] = useState<Session | null>(null);
   const [participantsSession, setParticipantsSession] =
     useState<Session | null>(null);
+  const [completeTarget, setCompleteTarget] = useState<Session | null>(null);
   const [approveState, setApproveState] = useState<{
     session: Session;
     action: "approve" | "reject";
@@ -381,19 +433,31 @@ export function SessionsPage() {
   const [karmaSession, setKarmaSession] = useState<Session | null>(null);
   const [deleteSessionId, setDeleteSessionId] = useState<string | null>(null);
 
-  const { data: all, isLoading: allLoading } = useSessions({});
-  const upcomingSessions = all?.data?.filter(
-    (s) => s.status === "SCHEDULED" || s.status === "PENDING_APPROVAL",
-  );
+  // Server-side status filter for Upcoming tab (SCHEDULED)
+  const { data: upcomingResult, isLoading: upcomingLoading } = useSessions({
+    status: "SCHEDULED",
+    page: upcomingPage,
+    perPage,
+  });
+
+  // Server-side paginated query for All Sessions tab
+  const { data: allResult, isLoading: allLoading } = useSessions({
+    page: allPage,
+    perPage,
+  });
+
   const { data: pendingResult, isLoading: pendingLoading } =
     usePendingSessions(isAdmin);
   const pending = pendingResult?.data;
 
   const { mutate: deleteSession, isPending: isDeleting } = useDeleteSession();
+  const { mutate: completeSession, isPending: isCompleting } =
+    useCompleteSession();
 
   const sharedHandlers = {
     onEdit: setEditSession,
     onParticipants: setParticipantsSession,
+    onComplete: setCompleteTarget,
     onApprove: (s: Session, action: "approve" | "reject") =>
       setApproveState({ session: s, action }),
     onKarma: setKarmaSession,
@@ -433,18 +497,26 @@ export function SessionsPage() {
 
           <TabsContent value="upcoming" className="mt-4">
             <SessionTable
-              sessions={upcomingSessions}
-              isLoading={allLoading}
+              sessions={upcomingResult?.data}
+              isLoading={upcomingLoading}
               isAdmin={isAdmin}
+              pageIndex={upcomingPage}
+              totalPages={upcomingResult?.totalPages}
+              totalCount={upcomingResult?.totalCount}
+              onPageChange={setUpcomingPage}
               {...sharedHandlers}
             />
           </TabsContent>
 
           <TabsContent value="all" className="mt-4">
             <SessionTable
-              sessions={all?.data}
+              sessions={allResult?.data}
               isLoading={allLoading}
               isAdmin={isAdmin}
+              pageIndex={allPage}
+              totalPages={allResult?.totalPages}
+              totalCount={allResult?.totalCount}
+              onPageChange={setAllPage}
               {...sharedHandlers}
             />
           </TabsContent>
@@ -486,6 +558,23 @@ export function SessionsPage() {
           session={karmaSession}
           open={!!karmaSession}
           onOpenChange={(v) => !v && setKarmaSession(null)}
+        />
+        <ConfirmDialog
+          open={!!completeTarget}
+          onOpenChange={(v) => !v && setCompleteTarget(null)}
+          title="Mark Session as Completed"
+          description={`Are you sure you want to mark "${completeTarget?.title}" as completed? This will update attendance and contributed minutes.`}
+          confirmLabel="Mark Complete"
+          cancelLabel="Cancel"
+          variant="success"
+          isPending={isCompleting}
+          onConfirm={() => {
+            if (completeTarget) {
+              completeSession(completeTarget.id, {
+                onSuccess: () => setCompleteTarget(null),
+              });
+            }
+          }}
         />
         <ConfirmDialog
           open={!!deleteSessionId}
