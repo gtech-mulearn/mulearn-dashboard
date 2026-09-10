@@ -29,7 +29,7 @@ export function EventsSearchBar({
 }: EventsSearchBarProps) {
   const [search, setSearch] = useState(defaultValue);
   const lastSubmittedRef = useRef(defaultValue);
-  const prevDefaultValueRef = useRef(defaultValue);
+  const inFlightSubmissionRef = useRef<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Keep a ref to the latest onSearch callback so the debounce timer never executes a stale closure
@@ -38,17 +38,27 @@ export function EventsSearchBar({
     onSearchRef.current = onSearch;
   }, [onSearch]);
 
-  // Synchronize when defaultValue changes externally (e.g. router updates, filter resets)
+  // Synchronize when defaultValue changes externally (e.g. router updates, filter resets, history navigation)
   useEffect(() => {
-    if (defaultValue !== prevDefaultValueRef.current) {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-      setSearch(defaultValue);
-      lastSubmittedRef.current = defaultValue;
-      prevDefaultValueRef.current = defaultValue;
+    // If defaultValue matches an in-flight submission from this component, acknowledge the echo
+    // and preserve any newer active keystrokes the user typed in the interim
+    if (
+      inFlightSubmissionRef.current !== null &&
+      defaultValue === inFlightSubmissionRef.current
+    ) {
+      inFlightSubmissionRef.current = null;
+      return;
     }
+
+    // External update: abort any pending debounced search so it doesn't overwrite the external change
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    inFlightSubmissionRef.current = null;
+
+    setSearch(defaultValue);
+    lastSubmittedRef.current = defaultValue;
   }, [defaultValue]);
 
   // Abort any pending debounced search on browser history Back/Forward (popstate)
@@ -58,11 +68,11 @@ export function EventsSearchBar({
         clearTimeout(timerRef.current);
         timerRef.current = null;
       }
+      inFlightSubmissionRef.current = null;
       const params = new URLSearchParams(window.location.search);
       const urlQ = params.get("q") ?? "";
       setSearch(urlQ);
       lastSubmittedRef.current = urlQ;
-      prevDefaultValueRef.current = urlQ;
     };
 
     window.addEventListener("popstate", handlePopState);
@@ -91,10 +101,11 @@ export function EventsSearchBar({
     }
 
     timerRef.current = setTimeout(() => {
+      timerRef.current = null;
       const trimmed = sanitizedInput.trim();
       if (trimmed !== lastSubmittedRef.current) {
         lastSubmittedRef.current = trimmed;
-        prevDefaultValueRef.current = trimmed;
+        inFlightSubmissionRef.current = trimmed;
         onSearchRef.current(trimmed);
       }
     }, 300);
@@ -109,7 +120,7 @@ export function EventsSearchBar({
     const trimmed = search.trim();
     if (trimmed !== lastSubmittedRef.current) {
       lastSubmittedRef.current = trimmed;
-      prevDefaultValueRef.current = trimmed;
+      inFlightSubmissionRef.current = trimmed;
       onSearchRef.current(trimmed);
     }
   };
@@ -121,7 +132,7 @@ export function EventsSearchBar({
     }
     setSearch("");
     lastSubmittedRef.current = "";
-    prevDefaultValueRef.current = "";
+    inFlightSubmissionRef.current = "";
     if (onClear) onClear();
     else onSearchRef.current("");
   };
