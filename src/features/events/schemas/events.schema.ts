@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { ApiResponseSchema } from "@/lib/schemas/api-response";
+import { isHttpUrl } from "../lib/events.url";
 
 // ─── VENUE TYPE SCHEMA ──────────────────────────────────────────────────────
 
@@ -13,6 +14,8 @@ export const venueTypeSchema = z.enum(["physical", "online", "hybrid"]);
 /** Shown when a link is missing its scheme — the usual slip is typing
  *  "mulearn.org/x", which saves as a relative path and renders dead. */
 const URL_MESSAGE = "Enter a full link starting with https://";
+
+const httpUrlSchema = z.string().refine((val) => isHttpUrl(val), URL_MESSAGE);
 
 const createEventBaseSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title too long"),
@@ -51,11 +54,11 @@ const createEventBaseSchema = z.object({
     .optional()
     .transform((v) => (v === "" ? null : v)),
   maps_url: z
-    .union([z.string().url(URL_MESSAGE), z.literal("")])
+    .union([httpUrlSchema, z.literal("")])
     .optional()
     .transform((v) => (v === "" ? null : v)),
   online_link: z
-    .union([z.string().url(URL_MESSAGE), z.literal("")])
+    .union([httpUrlSchema, z.literal("")])
     .optional()
     .transform((v) => (v === "" ? null : v)),
   platform: z
@@ -65,7 +68,7 @@ const createEventBaseSchema = z.object({
   cover_image: z.string().optional().nullable(),
   banner_image: z.string().optional().nullable(),
   registration_url: z
-    .union([z.string().url(URL_MESSAGE), z.literal("")])
+    .union([httpUrlSchema, z.literal("")])
     .optional()
     .transform((v) => (v === "" ? null : v)),
   registration_deadline: z

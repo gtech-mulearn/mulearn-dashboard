@@ -1,3 +1,4 @@
+import { isHttpUrl } from "../lib/events.url";
 import type { EventDetail } from "../types";
 
 interface EventMobileBarProps {
@@ -32,13 +33,13 @@ export function EventMobileBar({ event }: EventMobileBarProps) {
           </p>
         </div>
         {/* Right — CTA */}
-        {event.registration_url &&
+        {isHttpUrl(event.registration_url) &&
         !registrationClosed &&
         event.viewer_can_access_registration ? (
           <a
             href={event.registration_url}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className="shrink-0 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
           >
             Register

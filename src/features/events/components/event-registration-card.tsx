@@ -1,6 +1,7 @@
 import { CalendarDays, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { isHttpUrl } from "../lib/events.url";
 import type { EventDetail } from "../types";
 import { InterestButton } from "./interest-button";
 
@@ -61,7 +62,7 @@ export function EventRegistrationCard({
 
   // Registration CTA
   const registrationCTA = (() => {
-    if (!event.registration_url) {
+    if (!isHttpUrl(event.registration_url)) {
       return (
         <Button disabled className="w-full rounded-full">
           Registration Unavailable
@@ -105,7 +106,11 @@ export function EventRegistrationCard({
 
     return (
       <Button asChild className="w-full rounded-full">
-        <a href={event.registration_url} target="_blank" rel="noreferrer">
+        <a
+          href={event.registration_url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           Register Now
         </a>
       </Button>

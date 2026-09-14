@@ -5,6 +5,7 @@ export {
   CoOwnersPanel,
   EventAnalyticsPanel,
   EventCard,
+  EventCoOwnersSection,
   EventCreateWizard,
   EventDetailView,
   EventInlineEditForm,
