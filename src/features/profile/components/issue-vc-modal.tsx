@@ -9,9 +9,9 @@
 
 "use client";
 
-import { Check, ExternalLink, Maximize2, RefreshCw } from "lucide-react";
+import { ExternalLink, Maximize2, RefreshCw } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,6 +28,35 @@ import type {
   VCCredentialInfo,
   VCSubjectInfo,
 } from "../schemas";
+
+function TruncatedDescription({ text }: { text: string }) {
+  const textRef = useRef<HTMLParagraphElement>(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  useLayoutEffect(() => {
+    const el = textRef.current;
+    if (!el) return;
+    setIsOverflowing(el.scrollHeight > el.clientHeight);
+  }, []);
+
+  return (
+    <div className="text-left text-sm text-muted-foreground leading-relaxed">
+      <p ref={textRef} className={expanded ? "" : "line-clamp-3"}>
+        {text}
+      </p>
+      {isOverflowing && (
+        <button
+          type="button"
+          onClick={() => setExpanded((prev) => !prev)}
+          className="mt-1 text-xs font-medium text-brand-blue hover:underline"
+        >
+          {expanded ? "Show less" : "Read more"}
+        </button>
+      )}
+    </div>
+  );
+}
 
 interface IssueVCModalProps {
   open: boolean;
@@ -102,28 +131,19 @@ export function IssueVCModal({
     if (vc_url && !issuedCredential) {
       return (
         <div className="space-y-4">
-          <div className="rounded-lg bg-success/10 p-4 text-center">
-            <div className="mb-2 flex items-center justify-center gap-2 text-success">
-              <Check className="h-5 w-5" />
-              <span className="font-medium">Credential Issued</span>
-            </div>
-            <p className="text-sm text-success/80">
-              Scan the QR code to add it to your wallet.
-            </p>
-          </div>
-
           <div className="flex justify-center">
             <button
               type="button"
               onClick={() => setExpandedImageSrc(vc_url)}
-              className="group relative overflow-hidden rounded-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="group relative w-full overflow-hidden rounded-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Enlarge credential image"
             >
               <Image
                 src={vc_url}
                 alt="Verifiable Credential QR"
                 width={250}
-                height={250}
+                height={350}
+                className="h-auto w-full"
               />
               <span className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all group-hover:bg-black/40 group-hover:opacity-100">
                 <Maximize2 className="h-6 w-6 text-white" />
@@ -132,24 +152,8 @@ export function IssueVCModal({
           </div>
 
           {achievementData.description && (
-            <p className="text-center text-sm text-muted-foreground leading-relaxed">
-              {achievementData.description}
-            </p>
+            <TruncatedDescription text={achievementData.description} />
           )}
-
-          <div className="flex flex-wrap justify-center gap-2">
-            <span className="rounded-full bg-brand-blue/10 px-3 py-1 text-xs font-medium text-brand-blue">
-              {achievementData.achievement_name}
-            </span>
-            {achievementData.tags.slice(0, 2).map((tag) => (
-              <span
-                key={tag}
-                className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
         </div>
       );
     }
@@ -158,30 +162,19 @@ export function IssueVCModal({
     if (issuedCredential) {
       return (
         <div className="space-y-4">
-          <div className="rounded-lg bg-success/10 p-4 text-center">
-            <div className="mb-2 flex items-center justify-center gap-2 text-success">
-              <Check className="h-5 w-5" />
-              <span className="font-medium">
-                Credential Issued Successfully!
-              </span>
-            </div>
-            <p className="text-sm text-success/80">
-              Scan the QR code to add it to your wallet.
-            </p>
-          </div>
-
           <div className="flex justify-center">
             <button
               type="button"
               onClick={() => setExpandedImageSrc(issuedCredential.message)}
-              className="group relative overflow-hidden rounded-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="group relative w-full overflow-hidden rounded-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Enlarge credential image"
             >
               <Image
                 src={issuedCredential.message}
                 alt="Verifiable Credential QR"
                 width={250}
-                height={250}
+                height={350}
+                className="h-auto w-full"
               />
               <span className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all group-hover:bg-black/40 group-hover:opacity-100">
                 <Maximize2 className="h-6 w-6 text-white" />
@@ -190,19 +183,8 @@ export function IssueVCModal({
           </div>
 
           {achievementData.description && (
-            <p className="text-center text-sm text-muted-foreground leading-relaxed">
-              {achievementData.description}
-            </p>
+            <TruncatedDescription text={achievementData.description} />
           )}
-
-          <div className="flex flex-wrap justify-center gap-2">
-            <span className="rounded-full bg-brand-blue/10 px-3 py-1 text-xs font-medium text-brand-blue">
-              {issuedCredential.subject_info.course_name}
-            </span>
-            <span className="rounded-full bg-warning/10 px-3 py-1 text-xs font-medium text-warning">
-              {issuedCredential.subject_info.type}
-            </span>
-          </div>
         </div>
       );
     }
@@ -393,9 +375,15 @@ export function IssueVCModal({
         <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-md">
           <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
             <DialogTitle>{getTitle()}</DialogTitle>
-            <DialogDescription className="sr-only">
-              Issue or view Verifiable Credentials for achievements.
-            </DialogDescription>
+            {vc_url || issuedCredential ? (
+              <DialogDescription>
+                Scan the QR code to add it to your wallet.
+              </DialogDescription>
+            ) : (
+              <DialogDescription className="sr-only">
+                Issue or view Verifiable Credentials for achievements.
+              </DialogDescription>
+            )}
           </DialogHeader>
 
           <div className="overflow-y-auto px-6 py-4">{renderContent()}</div>

@@ -185,9 +185,6 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   "/dashboard/management/tasks/create": {
     roles: ADMIN_ROLES,
   },
-  "/dashboard/management/tasks/edit": {
-    roles: ADMIN_ROLES,
-  },
   "/dashboard/management/tasks/task-type": {
     roles: ADMIN_ROLES,
   },

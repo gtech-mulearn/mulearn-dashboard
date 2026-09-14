@@ -59,7 +59,7 @@ export default function TaskForm({
       active: true,
       variable_karma: false,
       description: "",
-      channel_id: "",
+      channel_id: null,
       type_id: "",
       level_id: null,
       ig_id: null,
@@ -164,20 +164,23 @@ export default function TaskForm({
 
         {/* Channel Select */}
         <div className="space-y-2">
-          <Label htmlFor="channel_id">Channel *</Label>
+          <Label htmlFor="channel_id">Channel</Label>
           <Controller
             name="channel_id"
             control={control}
             render={({ field }) => (
               <Select
-                value={field.value}
-                onValueChange={field.onChange}
+                value={field.value || "none"}
+                onValueChange={(val) =>
+                  field.onChange(val === "none" ? null : val)
+                }
                 disabled={refsLoading}
               >
                 <SelectTrigger id="channel_id">
                   <SelectValue placeholder="Select Channel" />
                 </SelectTrigger>
                 <SelectContent position="popper">
+                  <SelectItem value="none">None</SelectItem>
                   {/* biome-ignore lint/suspicious/noExplicitAny: API type */}
                   {(refs?.channels ?? []).map((ch: any) => (
                     <SelectItem key={ch.id} value={ch.id}>

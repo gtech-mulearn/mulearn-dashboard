@@ -21,7 +21,7 @@ export default function TaskCreateView() {
       active: values.active,
       variable_karma: values.variable_karma,
       description: values.description ? values.description.trim() : null,
-      channel: values.channel_id,
+      channel: values.channel_id || null,
       type: values.type_id,
       level: values.level_id || null,
       ig: values.ig_id || null,

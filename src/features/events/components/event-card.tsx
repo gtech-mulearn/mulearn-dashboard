@@ -17,6 +17,7 @@ import {
   MessagesSquare,
   Mic,
   Presentation,
+  Radio,
   Sparkles,
   Trophy,
   Users,
@@ -57,6 +58,18 @@ const EVENT_TYPE_ICONS: Record<string, LucideIcon> = {
   tech_talk: Mic,
   others: Compass,
 };
+
+function VenueIcon({
+  venueType,
+  className,
+}: {
+  venueType?: string;
+  className?: string;
+}) {
+  if (venueType === "online") return <Globe className={className} />;
+  if (venueType === "hybrid") return <Radio className={className} />;
+  return <MapPin className={className} />;
+}
 
 interface EventCardProps {
   event: EventListItem;
@@ -109,8 +122,13 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
     },
   );
 
+  const venueType = event.venue.type;
   const venueDisplay =
-    event.venue_type === "online" ? "Online Event" : "Physical Event";
+    venueType === "online"
+      ? "Online Event"
+      : venueType === "hybrid"
+        ? "Hybrid Event"
+        : "Physical Event";
 
   const isEnded = new Date(event.end_datetime).getTime() < Date.now();
 
@@ -200,7 +218,7 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
             By {getOrganizerName(event.organizer)}
           </p>
           <p className="mt-1 flex items-center gap-1 text-xs opacity-85">
-            <MapPin className="h-3.5 w-3.5" />
+            <VenueIcon venueType={venueType} className="h-3.5 w-3.5" />
             <span>{venueDisplay}</span>
           </p>
 

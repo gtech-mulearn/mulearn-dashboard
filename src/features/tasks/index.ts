@@ -20,7 +20,6 @@ export {
 export {
   TaskBulkImportView,
   TaskCreateView,
-  TaskEditView,
   TaskForm,
   TaskFormDialog,
   TaskReviewDialog,

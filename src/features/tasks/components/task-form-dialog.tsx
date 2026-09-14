@@ -107,7 +107,7 @@ export function TaskFormDialog({
                 active: task.active,
                 variable_karma: task.variable_karma,
                 description: task.description || "",
-                channel_id: task.channel || "",
+                channel_id: task.channel || null,
                 type_id: task.type || "",
                 level_id: task.level || null,
                 ig_id: task.ig || null,
