@@ -18,9 +18,7 @@ import type {
   TaskListParams,
 } from "../types/tasks.types";
 
-export async function fetchTasks(
-  params: TaskListParams,
-): Promise<TaskListData> {
+function buildTaskListQuery(params: TaskListParams): URLSearchParams {
   const query = new URLSearchParams({
     pageIndex: String(params.pageIndex),
     perPage: String(params.perPage),
@@ -32,12 +30,18 @@ export async function fetchTasks(
   if (params.sortBy?.trim()) {
     query.set("sortBy", params.sortBy.trim());
   }
-  if (params.active) {
-    query.set("active", params.active);
-  }
+
+  return query;
+}
+
+async function fetchTaskList(
+  url: string,
+  params: TaskListParams,
+): Promise<TaskListData> {
+  const query = buildTaskListQuery(params);
 
   const response = await apiClient.get(
-    `${endpoints.admin.tasks.base}?${query.toString()}`,
+    `${url}?${query.toString()}`,
     TasksResponseSchema,
     { skipAuthRedirectOn403: true },
   );
@@ -49,6 +53,20 @@ export async function fetchTasks(
       pagination: { count: 0, totalPages: 1, isNext: false, isPrev: false },
     }
   );
+}
+
+/** Tasks pre-filtered to active: true, server-side (GET /task/active/) */
+export async function fetchActiveTasks(
+  params: TaskListParams,
+): Promise<TaskListData> {
+  return fetchTaskList(endpoints.admin.tasks.active, params);
+}
+
+/** Tasks pre-filtered to active: false, server-side (GET /task/inactive/) */
+export async function fetchInactiveTasks(
+  params: TaskListParams,
+): Promise<TaskListData> {
+  return fetchTaskList(endpoints.admin.tasks.inactive, params);
 }
 
 export async function fetchPublicTasks(
@@ -140,18 +158,6 @@ export async function updateTask(
 export async function deleteTask(id: string): Promise<void> {
   await apiClient.delete(endpoints.admin.tasks.detail(id), {
     skipAuthRedirectOn403: true,
-  });
-}
-
-export async function downloadTasksCsv(): Promise<Blob> {
-  return apiClient.get<Blob>(endpoints.admin.tasks.csv, undefined, {
-    responseType: "blob",
-  });
-}
-
-export async function downloadTasksTemplate(): Promise<Blob> {
-  return apiClient.get<Blob>(endpoints.admin.tasks.template, undefined, {
-    responseType: "blob",
   });
 }
 

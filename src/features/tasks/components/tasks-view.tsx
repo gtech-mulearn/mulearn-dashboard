@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil, Plus, Trash2, Upload } from "lucide-react";
+import { Download, Pencil, Plus, Trash2, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -15,7 +15,12 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { StateDisplay } from "@/components/ui/state-display";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useDeleteTask, useDownloadTasksCsv, useTasks } from "../hooks";
+import {
+  useActiveTasks,
+  useDeleteTask,
+  useDownloadTasksCsv,
+  useInactiveTasks,
+} from "../hooks";
 import type { Task } from "../schemas/tasks.schema";
 import { TaskFormDialog } from "./task-form-dialog";
 
@@ -29,16 +34,26 @@ export default function TasksView() {
 
   const debouncedSearch = useDebounce(searchInput, 500);
 
-  const { data, isLoading } = useTasks({
+  const listParams = {
     pageIndex: currentPage,
     perPage,
     search: debouncedSearch,
     sortBy: sort,
-    active: activeTab === "active" ? "true" : "false",
+  };
+
+  const activeQuery = useActiveTasks(listParams, {
+    enabled: activeTab === "active",
+  });
+  const inactiveQuery = useInactiveTasks(listParams, {
+    enabled: activeTab === "inactive",
   });
 
+  const { data, isLoading } =
+    activeTab === "active" ? activeQuery : inactiveQuery;
+
   const deleteMutation = useDeleteTask();
-  const downloadCsvMutation = useDownloadTasksCsv();
+  const { downloadCsv, isDownloading: isCsvDownloading } =
+    useDownloadTasksCsv();
 
   // Modal / Confirm Dialog state
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -111,30 +126,27 @@ export default function TasksView() {
 
   const rows = useMemo(() => {
     if (!data?.data) return [];
-    const isTargetActive = activeTab === "active";
-    return data.data
-      .filter((item: Task) => item.active === isTargetActive)
-      .map((item: Task) => ({
-        id: String(item.id),
-        title: item.title,
-        hashtag: item.hashtag,
-        org: item.org || "—",
-        active: item.active,
-        karma: item.karma,
-        usage_count: item.usage_count,
-        variable_karma: item.variable_karma,
-        ig: item.ig || "—",
-        level: item.level || "—",
-        channel: item.channel || "—",
-        event: item.event || "—",
-        bonus_time: item.bonus_time || "—",
-        bonus_karma: item.bonus_karma,
-        updated_by: item.updated_by || "—",
-        updated_at: item.updated_at || "—",
-        created_by: item.created_by || "—",
-        created_at: item.created_at || "—",
-      }));
-  }, [data, activeTab]);
+    return data.data.map((item: Task) => ({
+      id: String(item.id),
+      title: item.title,
+      hashtag: item.hashtag,
+      org: item.org || "—",
+      active: item.active,
+      karma: item.karma,
+      usage_count: item.usage_count,
+      variable_karma: item.variable_karma,
+      ig: item.ig || "—",
+      level: item.level || "—",
+      channel: item.channel || "—",
+      event: item.event || "—",
+      bonus_time: item.bonus_time || "—",
+      bonus_karma: item.bonus_karma,
+      updated_by: item.updated_by || "—",
+      updated_at: item.updated_at || "—",
+      created_by: item.created_by || "—",
+      created_at: item.created_at || "—",
+    }));
+  }, [data]);
 
   const totalPages = data?.pagination?.totalPages ?? 0;
   const totalCount = data?.pagination?.count ?? 0;
@@ -155,20 +167,7 @@ export default function TasksView() {
   };
 
   const handleCsvDownload = async () => {
-    try {
-      const blob = await downloadCsvMutation.mutateAsync();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "tasks.csv";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-      toast.success("Downloaded tasks CSV");
-    } catch {
-      // Error toast is handled by useDownloadTasksCsv.
-    }
+    await downloadCsv();
   };
 
   const renderActions = (row: Data) => {
@@ -273,7 +272,7 @@ export default function TasksView() {
               perPageOptions={[10, 20, 50]}
               CSV="true"
               onCsvDownload={handleCsvDownload}
-              isCsvDownloading={downloadCsvMutation.isPending}
+              isCsvDownloading={isCsvDownloading}
               searchPlaceholder="Search tasks..."
               searchSize="md"
               searchPosition="left"

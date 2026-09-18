@@ -3,6 +3,7 @@ export { CollaboratorInvitesSheet } from "./collaborator-invites-sheet";
 export { CollaboratorsPanel } from "./collaborators-panel";
 export { EventAnalyticsPanel } from "./event-analytics-panel";
 export { EventCard } from "./event-card";
+export { EventCoOwnersSection } from "./event-co-owners-section";
 export { EventCreateWizard } from "./event-create-wizard";
 export { EventDetailView } from "./event-detail-view";
 export { EventDetailsCard } from "./event-details-card";

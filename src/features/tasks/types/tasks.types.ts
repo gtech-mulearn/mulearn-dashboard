@@ -5,7 +5,6 @@ export interface TaskListParams {
   perPage: number;
   search?: string;
   sortBy?: string;
-  active?: string;
 }
 
 export interface PublicTaskListParams extends TaskListParams {

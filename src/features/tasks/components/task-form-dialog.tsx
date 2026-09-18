@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { useTaskDetail, useUpdateTask } from "../hooks";
+import { useTaskDetail, useTaskReferences, useUpdateTask } from "../hooks";
 import type { TaskFormValues } from "../schemas";
 import TaskForm from "./task-form";
 
@@ -43,6 +43,7 @@ export function TaskFormDialog({
   const { data: task, isLoading } = useTaskDetail(taskId || "", {
     enabled: !!taskId && isOpen,
   });
+  useTaskReferences({ enabled: isOpen });
   const updateMutation = useUpdateTask();
 
   const handleSubmit = (values: TaskFormValues) => {

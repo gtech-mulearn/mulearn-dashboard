@@ -73,6 +73,7 @@ export function Combobox({
     onValueChange(option.id);
     setSearch("");
     setOpen(false);
+    onSearchChange?.("");
   };
 
   // Close dropdown when clicking outside

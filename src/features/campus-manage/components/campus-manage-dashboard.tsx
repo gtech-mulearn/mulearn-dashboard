@@ -36,7 +36,14 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type ReactNode, useMemo, useState } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Area,
   AreaChart,
@@ -137,16 +144,6 @@ const PAGE_SIZE = 10;
 const SHOW_EXECOM_SECTION = true;
 // TEMP: hidden per request (2026-07-21) — flip back to `true` to restore.
 const SHOW_CAMPUS_LEVEL = false;
-
-const CORE_CAMPUS_ROLES = [
-  { label: "Campus Lead", value: "Campus Lead" },
-  { label: "Lead Enabler", value: "Lead Enabler" },
-  { label: "Enabler", value: "Enabler" },
-  { label: "Tech Lead", value: "Tech Lead" },
-  { label: "Design Lead", value: "Design Lead" },
-  { label: "Campus Tech Team", value: "Campus Tech Team" },
-  { label: "Campus Design Team", value: "Campus Design Team" },
-] as const;
 
 const SOCIAL_PLATFORMS = [
   {
@@ -587,6 +584,11 @@ export function CampusManageDashboard() {
     useState<string>("Enabler");
   const [isCreateRoleOpen, setIsCreateRoleOpen] = useState(false);
   const [newRoleTitle, setNewRoleTitle] = useState("");
+  const [pendingCreatedRole, setPendingCreatedRole] = useState<{
+    label: string;
+    value: string;
+  } | null>(null);
+  const hasInitializedExecomRole = useRef(false);
 
   // ─── Queries ────────────────────────────────────────────────────────────
   const { data: overview, isLoading: isOverviewLoading } = useCampusOverview();
@@ -648,25 +650,10 @@ export function CampusManageDashboard() {
   const leaderboardPagination = leaderboardData?.pagination;
   const events = eventsData?.items ?? [];
 
-  // Build campus-scoped role list: core roles + IG campus lead per active chapter
-  // Custom roles can be typed via the combobox's "Create" option
   const comboboxRoleOptions = useMemo(() => {
-    const roles: Array<{ id: string; title: string }> = CORE_CAMPUS_ROLES.map(
-      (r) => ({ id: r.value, title: r.label }),
-    );
+    const roles: Array<{ id: string; title: string }> = [];
+    const knownIds = new Set<string>();
 
-    // Add IG Campus Lead role for each active campus chapter
-    for (const ch of chapters) {
-      if (ch.code) {
-        roles.push({
-          id: `${ch.code} CampusLead`,
-          title: `${ch.name} IG Lead`,
-        });
-      }
-    }
-
-    // Add custom roles created via the API (dedupe against core/IG roles above)
-    const knownIds = new Set(roles.map((r) => r.id.toLowerCase()));
     for (const role of execomRoles) {
       if (!knownIds.has(role.value.toLowerCase())) {
         knownIds.add(role.value.toLowerCase());
@@ -674,8 +661,70 @@ export function CampusManageDashboard() {
       }
     }
 
+    if (
+      pendingCreatedRole &&
+      !knownIds.has(pendingCreatedRole.value.toLowerCase())
+    ) {
+      roles.push({
+        id: pendingCreatedRole.value,
+        title: pendingCreatedRole.label,
+      });
+    }
+
     return roles;
-  }, [chapters, execomRoles]);
+  }, [execomRoles, pendingCreatedRole]);
+
+  const assignableRoleOptions = useMemo(
+    () =>
+      comboboxRoleOptions.filter(
+        (role) => role.id.toLowerCase() !== "campus lead",
+      ),
+    [comboboxRoleOptions],
+  );
+
+  useEffect(() => {
+    if (
+      hasInitializedExecomRole.current ||
+      assignableRoleOptions.length === 0
+    ) {
+      return;
+    }
+
+    hasInitializedExecomRole.current = true;
+    const hasSelectedRole = assignableRoleOptions.some(
+      (role) => role.id.toLowerCase() === selectedExecomRole.toLowerCase(),
+    );
+    if (!hasSelectedRole) {
+      setSelectedExecomRole(assignableRoleOptions[0].id);
+    }
+  }, [assignableRoleOptions, selectedExecomRole]);
+
+  useEffect(() => {
+    if (!pendingCreatedRole) return;
+    const isSynced = execomRoles.some(
+      (role) =>
+        role.value.toLowerCase() === pendingCreatedRole.value.toLowerCase(),
+    );
+    if (isSynced) {
+      setPendingCreatedRole(null);
+    }
+  }, [execomRoles, pendingCreatedRole]);
+
+  const selectedRoleExists = assignableRoleOptions.some(
+    (role) => role.id.toLowerCase() === selectedExecomRole.toLowerCase(),
+  );
+
+  const roleLabelById = useMemo(
+    () => new Map(comboboxRoleOptions.map((role) => [role.id, role.title])),
+    [comboboxRoleOptions],
+  );
+
+  const getRoleLabel = useCallback(
+    (roleTitle: string) =>
+      roleLabelById.get(roleTitle) ||
+      (roleTitle === "member" ? "Execom" : roleTitle),
+    [roleLabelById],
+  );
 
   // FIX: extracted from IIFE — computed above return
   const karmaTrend = overview?.trend ?? [];
@@ -778,16 +827,29 @@ export function CampusManageDashboard() {
       return;
     }
 
-    // selectedExecomRole is already the exact role title
-    // (from combobox option.id or custom-typed text)
     const roleTitle = selectedExecomRole;
+    const isCampusLead = roleTitle.toLowerCase() === "campus lead";
+
+    if (isCampusLead) {
+      toast.error(
+        "Campus Lead can't be assigned here. Use transfer-lead-role instead.",
+      );
+      return;
+    }
+
+    if (!selectedRoleExists) {
+      toast.error(
+        `'${roleTitle}' is not a recognized execom role. Create it in the role directory first.`,
+      );
+      return;
+    }
 
     addExecom(
       { muid, roleTitle },
       {
         onSuccess: () => {
           setSelectedExecomUser(null);
-          setSelectedExecomRole("Enabler");
+          setSelectedExecomRole(assignableRoleOptions[0]?.id ?? "");
         },
       },
     );
@@ -797,10 +859,24 @@ export function CampusManageDashboard() {
     const title = newRoleTitle.trim();
     if (!title) return;
 
+    if (title.toLowerCase() === "campus lead") {
+      toast.error(
+        "Campus Lead can't be assigned here. Use transfer-lead-role instead.",
+      );
+      return;
+    }
+
+    const existingRole = comboboxRoleOptions.find(
+      (role) => role.id.toLowerCase() === title.toLowerCase(),
+    );
+
     createExecomRole(title, {
-      onSuccess: () => {
-        toast.success(`Role "${title}" created`);
-        setSelectedExecomRole(title);
+      onSuccess: (role) => {
+        toast.success(
+          existingRole ? "Role already exists" : "Role created successfully",
+        );
+        setPendingCreatedRole(role);
+        setSelectedExecomRole(role.value);
         setNewRoleTitle("");
         setIsCreateRoleOpen(false);
       },
@@ -1860,24 +1936,16 @@ export function CampusManageDashboard() {
                                 Role
                               </p>
                               <Combobox
-                                options={comboboxRoleOptions}
+                                options={assignableRoleOptions}
                                 value={selectedExecomRole}
                                 onValueChange={setSelectedExecomRole}
-                                placeholder="Select or type a role..."
+                                placeholder="Search roles..."
+                                searchPlaceholder="Search roles..."
                                 emptyText="No matching roles."
                                 disabled={
                                   isAssigningExecomRole || isCreatingRole
                                 }
                                 className="h-9 rounded-xl"
-                                onCreateNew={(term) => {
-                                  createExecomRole(term, {
-                                    onSuccess: () => {
-                                      toast.success(`Role "${term}" created`);
-                                      setSelectedExecomRole(term);
-                                    },
-                                  });
-                                }}
-                                createNewText="Use custom role"
                               />
                             </div>
                             <Button
@@ -1893,7 +1961,10 @@ export function CampusManageDashboard() {
                               onClick={handleAddExecom}
                               disabled={
                                 isAssigningExecomRole ||
-                                !selectedExecomUser?.muid
+                                !selectedExecomUser?.muid ||
+                                !selectedRoleExists ||
+                                selectedExecomRole.toLowerCase() ===
+                                  "campus lead"
                               }
                               className="font-bold lg:self-end"
                             >
@@ -2010,12 +2081,7 @@ export function CampusManageDashboard() {
                                       variant="secondary"
                                       className="rounded-lg px-2 py-0 text-[9px] font-black uppercase tracking-widest"
                                     >
-                                      {comboboxRoleOptions.find(
-                                        (r) => r.id === member.role,
-                                      )?.title ||
-                                        (member.role === "member"
-                                          ? "Execom"
-                                          : member.role)}
+                                      {getRoleLabel(member.role)}
                                     </Badge>
                                   </div>
                                 </div>

@@ -978,6 +978,10 @@ export const endpoints = {
     tasks: {
       /** GET/POST - List tasks or Create task */
       base: "/api/v1/dashboard/task/",
+      /** GET - List tasks pre-filtered to active: true (server-side, paginated correctly) */
+      active: "/api/v1/dashboard/task/active/",
+      /** GET - List tasks pre-filtered to active: false (server-side, paginated correctly) */
+      inactive: "/api/v1/dashboard/task/inactive/",
       /** GET - Retrieve Task Public List */
       publicList: "/api/v1/dashboard/task/list/",
       /** GET/PUT/DELETE - Single task operations */

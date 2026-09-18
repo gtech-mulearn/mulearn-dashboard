@@ -6,14 +6,15 @@ export {
 } from "./use-task-types";
 export { usePendingTasks, useReviewTask } from "./use-task-verification";
 export {
+  useActiveTasks,
   useCreateTask,
   useDeleteTask,
   useDownloadTasksCsv,
   useDownloadTasksTemplate,
   useImportTasks,
+  useInactiveTasks,
   usePublicTasks,
   useTaskDetail,
   useTaskReferences,
-  useTasks,
   useUpdateTask,
 } from "./use-tasks";

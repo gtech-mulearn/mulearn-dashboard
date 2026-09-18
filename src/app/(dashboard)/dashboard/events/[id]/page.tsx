@@ -12,5 +12,5 @@ interface EventDetailPageProps {
 
 export default async function EventDetailPage(props: EventDetailPageProps) {
   const { id } = await props.params;
-  return <EventDetailView eventId={id} layout="full" showVenue={false} />;
+  return <EventDetailView eventId={id} layout="full" />;
 }

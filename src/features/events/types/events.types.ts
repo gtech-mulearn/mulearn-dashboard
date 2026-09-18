@@ -117,6 +117,8 @@ export interface MinimalUser {
   full_name: string;
   muid: string;
   profile_pic: string | null;
+  profile_picture?: string | null;
+  avatar?: string | null;
 }
 
 export interface MinimalIG {
@@ -199,11 +201,16 @@ export interface CollaborationTarget {
 
 export interface EventCoOwner {
   id: UUID;
-  entity_id: UUID;
+  entity_id?: UUID;
   user: MinimalUser;
-  added_by: MinimalUser;
-  added_at: ISODateTime;
+  added_by?: MinimalUser;
+  added_at?: ISODateTime;
   role?: "co_owner" | "admin"; // Backward compatibility - may or may not be in API
+  full_name?: string;
+  muid?: string;
+  profile_pic?: string | null;
+  profile_picture?: string | null;
+  avatar?: string | null;
 }
 
 export interface EventCoOwnerInput {
