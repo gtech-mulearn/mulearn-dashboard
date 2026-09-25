@@ -1,18 +1,14 @@
 import {
-  Briefcase,
   CalendarCheck,
   ChevronLeft,
   ChevronRight,
   ClipboardCheck,
-  GraduationCap,
   type LucideIcon,
   ShieldCheck,
-  UserCheck,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { verificationTabHref } from "@/features/role-verification/lib/tabs";
 import { hasAnyRole } from "@/lib/auth/permissions";
 import { ADMIN_ROLES } from "@/lib/auth/roles";
 import { requireAuth } from "@/lib/auth/server";
@@ -33,9 +29,11 @@ interface VerificationItem {
 
 const VERIFICATION_ITEMS: VerificationItem[] = [
   {
+    // One card for the unified page: its Mentor / Enabler / College /
+    // Company tabs replaced four separate verification pages.
     title: "Role Verification",
-    description: "Verify and assign roles to users.",
-    href: verificationTabHref("enabler"),
+    description: "Review mentor, enabler, organization and company requests.",
+    href: "/dashboard/management/role-verification",
     icon: ShieldCheck,
     iconBg: "bg-warning/15 text-warning",
     roles: ADMIN_ROLES,
@@ -54,30 +52,6 @@ const VERIFICATION_ITEMS: VerificationItem[] = [
     href: "/dashboard/management/tasks/task-verification",
     icon: ClipboardCheck,
     iconBg: "bg-brand-blue/15 text-brand-blue",
-    roles: ADMIN_ROLES,
-  },
-  {
-    title: "Organization Verification",
-    description: "Verify legitimacy of registered organizations.",
-    href: verificationTabHref("college"),
-    icon: GraduationCap,
-    iconBg: "bg-brand-purple/15 text-brand-purple",
-    roles: ADMIN_ROLES,
-  },
-  {
-    title: "Company Verification",
-    description: "Review and verify company registration requests.",
-    href: verificationTabHref("company"),
-    icon: Briefcase,
-    iconBg: "bg-destructive/15 text-destructive",
-    roles: ADMIN_ROLES,
-  },
-  {
-    title: "Mentor Verification",
-    description: "Review and verify mentor applications.",
-    href: verificationTabHref("mentor"),
-    icon: UserCheck,
-    iconBg: "bg-slate-500/15 text-slate-600 dark:text-slate-400",
     roles: ADMIN_ROLES,
   },
 ];
