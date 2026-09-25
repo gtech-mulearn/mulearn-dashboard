@@ -17,4 +17,8 @@ export type {
   SocialLinks,
   StudentLevelCount,
   TrendPoint,
+  UnverifiedOrgLinkUser,
+  UnverifiedOrgLinksFilters,
+  UnverifiedOrgLinksPagination,
+  UnverifiedOrgLinksResponse,
 } from "./campus-manage.types";

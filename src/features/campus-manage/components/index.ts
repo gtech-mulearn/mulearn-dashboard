@@ -5,3 +5,4 @@ export { StudentLevelsCard } from "./student-levels-card";
 export { TransferEnablerDialog } from "./transfer-enabler-dialog";
 export { TransferIgRoleDialog } from "./transfer-ig-role-dialog";
 export { TransferLeadDialog } from "./transfer-lead-dialog";
+export { UnverifiedOrgLinksTable } from "./unverified-org-links-table";

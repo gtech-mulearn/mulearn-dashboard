@@ -7,6 +7,7 @@ export {
   TransferEnablerDialog,
   TransferIgRoleDialog,
   TransferLeadDialog,
+  UnverifiedOrgLinksTable,
 } from "./components";
 export {
   campusManageKeys,
@@ -15,9 +16,11 @@ export {
   useCampusLeaderboard,
   useCampusOverview,
   useChangeStudentType,
+  useCreateExecomRole,
   useCreateIgChapter,
   useDeleteIgChapter,
   useDeleteSocialLink,
+  useDownloadStudentCsv,
   useEventDistribution,
   useExecomMembers,
   useExecomRoles,
@@ -30,7 +33,9 @@ export {
   useTransferEnablerRole,
   useTransferIgRole,
   useTransferLeadRole,
+  useUnverifiedOrgLinks,
   useUpdateIgChapter,
+  useUpdateOrgLinkVerification,
   useUpsertSocialLink,
   useUserProfile,
 } from "./hooks";
@@ -53,4 +58,8 @@ export type {
   SocialLinks,
   StudentLevelCount,
   TrendPoint,
+  UnverifiedOrgLinkUser,
+  UnverifiedOrgLinksFilters,
+  UnverifiedOrgLinksPagination,
+  UnverifiedOrgLinksResponse,
 } from "./types";

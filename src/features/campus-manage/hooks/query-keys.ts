@@ -1,3 +1,5 @@
+import type { UnverifiedOrgLinksFilters } from "../types";
+
 export const campusManageKeys = {
   all: ["campus-manage"] as const,
   overview: () => [...campusManageKeys.all, "overview"] as const,
@@ -33,4 +35,6 @@ export const campusManageKeys = {
   globalIgs: () => [...campusManageKeys.all, "global-igs"] as const,
   igChapters: (orgId?: string) =>
     [...campusManageKeys.all, "ig-chapters", orgId ?? ""] as const,
+  unverifiedOrgLinks: (filters?: UnverifiedOrgLinksFilters) =>
+    [...campusManageKeys.all, "unverified-org-links", filters] as const,
 };

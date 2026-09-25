@@ -162,3 +162,40 @@ export interface CampusEventFilters {
   type: string;
   date: string;
 }
+
+export interface UnverifiedOrgLinkUser {
+  id: string;
+  user_id: string;
+  full_name: string;
+  muid: string;
+  email: string;
+  mobile: string;
+  org_id: string;
+  org_title: string;
+  org_type: string;
+  graduation_year: string;
+  is_alumni: boolean;
+  verified: boolean;
+  created_at: string;
+}
+
+export interface UnverifiedOrgLinksFilters {
+  search?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  page: number;
+  perPage: number;
+}
+
+export interface UnverifiedOrgLinksPagination {
+  count: number;
+  totalPages: number;
+  isNext: boolean;
+  isPrev: boolean;
+  nextPage: number | null;
+}
+
+export interface UnverifiedOrgLinksResponse {
+  data: UnverifiedOrgLinkUser[];
+  pagination: UnverifiedOrgLinksPagination;
+}
