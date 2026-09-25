@@ -16,6 +16,7 @@ export type RoleVerificationListParams = {
   perPage: number;
   search?: string;
   sortBy?: string;
+  role?: string;
 };
 
 export const ROLE_VERIFICATION_KEYS = {

@@ -1,5 +1,6 @@
-import { CheckCircle, Eye, Trash2 } from "lucide-react";
+import { CheckCircle, Eye, Trash2, XCircle } from "lucide-react";
 import { useState } from "react";
+import { RowActionButton } from "@/components/dashboard/table/row-action-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -98,6 +99,7 @@ export function RoleVerificationActions({
   item,
 }: RoleVerificationActionsProps) {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
 
   const { mutate: verifyRole, isPending: isVerifying } = useVerifyRole();
@@ -107,6 +109,17 @@ export function RoleVerificationActions({
   const handleVerify = () => {
     verifyRole(item.id, {
       onSuccess: () => {
+        setIsViewModalOpen(false);
+      },
+    });
+  };
+
+  // Row-level Approve confirms first, like the other verification tabs; the
+  // details modal's "Verify Role" button stays a direct action.
+  const confirmApprove = () => {
+    verifyRole(item.id, {
+      onSuccess: () => {
+        setIsApproveModalOpen(false);
         setIsViewModalOpen(false);
       },
     });
@@ -127,16 +140,25 @@ export function RoleVerificationActions({
 
   return (
     <>
-      <div className="flex items-center justify-end gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary"
+      <div className="flex items-center gap-1">
+        <RowActionButton
+          icon={Eye}
+          label="View"
           onClick={() => setIsViewModalOpen(true)}
-          title="View Details"
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
+        />
+        <RowActionButton
+          icon={CheckCircle}
+          label="Approve"
+          tone="success"
+          onClick={() => setIsApproveModalOpen(true)}
+          disabled={item.verified}
+        />
+        <RowActionButton
+          icon={XCircle}
+          label="Reject"
+          tone="destructive"
+          onClick={handleDelete}
+        />
       </div>
 
       <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
@@ -416,6 +438,17 @@ export function RoleVerificationActions({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={isApproveModalOpen}
+        onOpenChange={setIsApproveModalOpen}
+        variant="success"
+        title="Approve Role Request"
+        description={`Approve ${item.full_name}'s request for the ${item.role_title} role?`}
+        onConfirm={confirmApprove}
+        isPending={isVerifying}
+        confirmLabel="Approve"
+      />
 
       <ConfirmDialog
         open={isRejectModalOpen}

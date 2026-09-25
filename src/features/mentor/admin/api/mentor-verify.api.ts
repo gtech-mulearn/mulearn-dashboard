@@ -7,6 +7,7 @@ import type {
 } from "../schemas";
 import {
   GenericResponseSchema,
+  MentorDetailResponseSchema,
   MentorListResponseSchema,
   MentorRosterResponseSchema,
 } from "../schemas";
@@ -60,6 +61,7 @@ interface RosterParams {
   low_rating?: boolean;
   page?: number;
   per_page?: number;
+  sortBy?: string;
 }
 
 export async function fetchMentorRoster(params: RosterParams = {}): Promise<{
@@ -72,6 +74,7 @@ export async function fetchMentorRoster(params: RosterParams = {}): Promise<{
   if (params.low_rating) q.set("low_rating", "true");
   if (params.page && params.page > 1) q.set("pageIndex", String(params.page));
   if (params.per_page) q.set("perPage", String(params.per_page));
+  if (params.sortBy) q.set("sortBy", params.sortBy);
 
   const query = q.toString();
   const url = query
@@ -95,6 +98,7 @@ interface ChangeRequestParams {
   page?: number;
   perPage?: number;
   mentor_tier?: string;
+  sortBy?: string;
 }
 
 export async function fetchMentorChangeRequests(
@@ -109,6 +113,7 @@ export async function fetchMentorChangeRequests(
   if (params.page) q.set("pageIndex", String(params.page));
   if (params.perPage) q.set("perPage", String(params.perPage));
   if (params.mentor_tier) q.set("mentor_tier", params.mentor_tier);
+  if (params.sortBy) q.set("sortBy", params.sortBy);
 
   const query = q.toString();
   const url = query
@@ -130,10 +135,9 @@ export async function fetchMentorDetail(
 ): Promise<MentorApplicationListItem> {
   const res = await apiClient.get(
     endpoints.mentor.detail(mentorId),
-    MentorListResponseSchema,
+    MentorDetailResponseSchema,
   );
-  // Detail endpoint returns a single object in response, not paginated
-  return res.response as unknown as MentorApplicationListItem;
+  return res.response;
 }
 
 // ─── PATCH /verify/<mentor_id>/ ───────────────────────────────────────────────

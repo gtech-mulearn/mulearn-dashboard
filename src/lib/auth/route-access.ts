@@ -102,7 +102,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
     roles: USER_MANAGEMENT_HUB_ROLES,
   },
   "/dashboard/management/verification": {
-    roles: FELLOW_MANAGEMENT_ROLES,
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/session-verification": {
     roles: ADMIN_ROLES,
@@ -126,7 +126,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
     roles: ADMIN_ROLES,
   },
   "/dashboard/management/role-verification": {
-    roles: FELLOW_MANAGEMENT_ROLES,
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/mentor-verification": {
     roles: ADMIN_ROLES,
@@ -156,7 +156,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
     roles: ADMIN_ROLES,
   },
   "/dashboard/management/organizations/verify": {
-    roles: FELLOW_MANAGEMENT_ROLES,
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/organizations/departments": {
     roles: FELLOW_MANAGEMENT_ROLES,

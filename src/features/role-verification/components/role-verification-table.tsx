@@ -4,28 +4,43 @@ import { useState } from "react";
 import { endpoints } from "@/api/endpoints";
 import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
+import { nextSortState } from "@/components/dashboard/table/sort-cycle";
 import Table from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
+import { formatShortDate } from "@/lib/datetime";
 import {
   useRoleVerificationCsvDownload,
   useRoleVerifications,
 } from "../hooks/use-role-verification";
+import { keepRequestsForRole } from "../lib/role-rows";
 import type { RoleVerificationItem } from "../schemas";
 import { RoleVerificationActions } from "./role-verification-actions";
 
-const COLUMN_ORDER = [
+// Sortable keys must exist in UserVerificationAPI's sort_fields
+// (mulearnbackend/api/dashboard/user/dash_user_views.py) — pinned by
+// features/role-verification/lib/sort-contract.test.ts.
+export const ROLE_REQUEST_COLUMNS = [
   { column: "full_name", Label: "Full Name", isSortable: true },
   { column: "muid", Label: "MuID", isSortable: true },
-  { column: "discord_id", Label: "Discord ID", isSortable: false },
   { column: "email", Label: "Email", isSortable: true },
   { column: "mobile", Label: "Mobile", isSortable: true },
-  { column: "role_title", Label: "Role", isSortable: true },
+  { column: "created_at", Label: "Requested", isSortable: true },
   { column: "verified", Label: "Status", isSortable: false },
 ];
 
-export function RoleVerificationTable() {
+interface RoleVerificationTableProps {
+  /**
+   * Role.title to list, e.g. "Enabler". Not named `role`: Biome's
+   * useValidAriaRole reads a JSX `role` prop as the ARIA attribute.
+   */
+  roleTitle: string;
+}
+
+export function RoleVerificationTable({
+  roleTitle,
+}: RoleVerificationTableProps) {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [search, setSearch] = useState("");
@@ -36,31 +51,28 @@ export function RoleVerificationTable() {
     perPage: perPage,
     search: search.trim(),
     sortBy: sort,
+    role: roleTitle,
   });
 
-  const rows = data?.data || [];
+  const rows = keepRequestsForRole(data?.data || [], roleTitle);
   const pagination = data?.pagination;
 
-  // Transform rows to match the Table Data type
   // biome-ignore lint/suspicious/noExplicitAny: tableRows must satisfy Data[] (Record<string, primitive>) which RoleVerificationItem is structurally compatible with after the spread
   const tableRows: any[] = rows.map((row: RoleVerificationItem) => ({
     ...row,
     discord_id: row.discord_id || "N/A",
     mobile: row.mobile || "N/A",
+    created_at: formatShortDate(row.created_at),
   }));
 
   const handleSort = (column: string) => {
-    if (sort === column) {
-      setSort(`-${column}`);
-    } else if (sort === `-${column}`) {
-      setSort("");
-    } else {
-      setSort(column);
-    }
+    setPage(1);
+    setSort((prev) => nextSortState(prev, column));
   };
 
+  const csvPath = `${endpoints.admin.roleVerification.csv}?${new URLSearchParams({ role: roleTitle })}`;
   const { downloadCsv, isDownloading: isCsvDownloading } =
-    useRoleVerificationCsvDownload();
+    useRoleVerificationCsvDownload(csvPath);
 
   return (
     <div className="space-y-4">
@@ -73,12 +85,12 @@ export function RoleVerificationTable() {
           setPerPage(n);
           setPage(1);
         }}
-        CSV={endpoints.admin.roleVerification.csv}
+        CSV={csvPath}
         onCsvDownload={downloadCsv}
         isCsvDownloading={isCsvDownloading}
         perPage={perPage}
         perPageOptions={[10, 25, 50, 100]}
-        searchPlaceholder="Search Name, Email, MuID, Role..."
+        searchPlaceholder="Search name, email, MuID or mobile…"
         searchSize="sm"
         searchPosition="right"
       />
@@ -88,7 +100,7 @@ export function RoleVerificationTable() {
         isLoading={isLoading}
         page={page}
         perPage={perPage}
-        columnOrder={COLUMN_ORDER}
+        columnOrder={ROLE_REQUEST_COLUMNS}
         id={["id"]}
         customActionRender={(row) => (
           <RoleVerificationActions item={row as RoleVerificationItem} />
@@ -110,9 +122,9 @@ export function RoleVerificationTable() {
         }}
       >
         <THead
-          columnOrder={COLUMN_ORDER}
+          columnOrder={ROLE_REQUEST_COLUMNS}
           onIconClick={handleSort}
-          action={true} // Fixed: Render the Action header in Desktop view
+          action={true}
         />
 
         <div>

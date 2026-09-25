@@ -1,14 +1,7 @@
-import type { Metadata } from "next";
-import { MentorVerificationPage } from "@/features/mentor/admin/components/mentor-verification-page";
-import { ADMIN_ROLES } from "@/lib/auth/roles";
-import { requireRole } from "@/lib/auth/server";
+import { redirect } from "next/navigation";
+import { verificationTabHref } from "@/features/role-verification";
 
-export const metadata: Metadata = {
-  title: "Mentor Verification",
-  description: "Review and verify mentor applications.",
-};
-
-export default async function MentorVerificationRoute() {
-  await requireRole(ADMIN_ROLES);
-  return <MentorVerificationPage />;
+// Merged into the unified Role Verification page (2026-09-25).
+export default function MentorVerificationRoute() {
+  redirect(verificationTabHref("mentor"));
 }

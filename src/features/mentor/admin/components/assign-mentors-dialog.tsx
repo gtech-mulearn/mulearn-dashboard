@@ -28,8 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useDebounce } from "@/hooks/use-debounce";
-import { fetchIgOptions } from "../api/ig-options.api";
-import { useAssignMentors } from "../hooks/use-mentor-verify";
+import { useAssignMentors, useIgOptions } from "../hooks/use-mentor-verify";
 import type { MentorTier } from "../schemas";
 import { AssignMentorsPayloadSchema, MENTOR_TIERS } from "../schemas";
 
@@ -123,12 +122,7 @@ export function AssignMentorsDialog({
     enabled: open && needsOrg && debouncedOrgQuery.length >= 2 && !org,
   });
 
-  const igOptions = useQuery({
-    queryKey: ["mentor-assign-ig-options"],
-    queryFn: fetchIgOptions,
-    enabled: open,
-    staleTime: 10 * 60 * 1000,
-  });
+  const igOptions = useIgOptions(open);
 
   const resetForm = () => {
     setMuidsRaw("");

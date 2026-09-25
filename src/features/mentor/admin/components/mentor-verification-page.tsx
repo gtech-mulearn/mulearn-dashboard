@@ -2,6 +2,7 @@
 
 import {
   CheckCircle,
+  Eye,
   GitPullRequestArrow,
   RefreshCw,
   Search,
@@ -14,6 +15,8 @@ import {
 import { useState } from "react";
 import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
 import Pagination from "@/components/dashboard/table/pagination";
+import { RowActionButton } from "@/components/dashboard/table/row-action-button";
+import { nextSortState } from "@/components/dashboard/table/sort-cycle";
 import type { Data } from "@/components/dashboard/table/Table";
 import Table from "@/components/dashboard/table/Table";
 import THead from "@/components/dashboard/table/Thead";
@@ -22,20 +25,18 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { formatShortDate } from "@/lib/datetime";
 import {
   useMentorChangeRequests,
   useMentorList,
   useReactivateMentor,
   useRevokeMentorAssignment,
 } from "../hooks/use-mentor-verify";
+import { isActionable, resolveStatus, statusBadge } from "../lib/status";
 import type { MentorApplicationListItem } from "../schemas";
 import { AssignMentorsDialog } from "./assign-mentors-dialog";
+import { MentorApplicationSheet } from "./mentor-application-sheet";
 import { MentorGrantsSheet } from "./mentor-grants-sheet";
 import { MentorRosterTab } from "./mentor-roster-tab";
 import { MentorVerifyDialog } from "./mentor-verify-dialog";
@@ -46,47 +47,37 @@ function getDisplayName(m: MentorApplicationListItem): string {
   return m.user_full_name ?? m.full_name ?? "—";
 }
 
-// Doc: status is "PENDING" | "APPROVED" | "REJECTED"
-// Backward compat: fall back to is_verified boolean if status not present
-function resolveStatus(
-  m: MentorApplicationListItem,
-): "PENDING" | "APPROVED" | "REJECTED" {
-  return (
-    m.status ??
-    (m.is_verified === true
-      ? "APPROVED"
-      : m.verification_note
-        ? "REJECTED"
-        : "PENDING")
-  );
-}
-
 function getStatusBadge(m: MentorApplicationListItem) {
-  const status = resolveStatus(m);
-  if (status === "APPROVED") return <Badge variant="success">Approved</Badge>;
-  if (status === "REJECTED")
-    return <Badge variant="destructive">Rejected</Badge>;
-  return <Badge variant="warning">Pending</Badge>;
-}
-
-// Action buttons only make sense for applications still awaiting a decision.
-function isActionable(m: MentorApplicationListItem): boolean {
-  return resolveStatus(m) === "PENDING";
+  const { label, variant } = statusBadge(resolveStatus(m));
+  return <Badge variant={variant}>{label}</Badge>;
 }
 
 // ─── Table Component ──────────────────────────────────────────────────────────
 
-const columnOrder = [
-  { column: "name", Label: "Name", isSortable: false },
+// Sortable keys must exist in MentorListAPI / MentorChangeRequestListAPI
+// sort_fields (mulearnbackend/api/dashboard/mentor/mentor_views.py) — pinned
+// by features/role-verification/lib/sort-contract.test.ts.
+export const APPLICATION_COLUMNS = [
+  { column: "user_full_name", Label: "Name", isSortable: true },
   { column: "email", Label: "Email", isSortable: false },
-  { column: "status", Label: "Status", isSortable: false },
+  { column: "status", Label: "Status", isSortable: true },
   { column: "mentor_tier", Label: "Tier", isSortable: false },
+  { column: "created_at", Label: "Applied", isSortable: true },
 ];
+
+// Change requests can't sort by status (that view only allows created_at
+// and user_full_name), and every change request is PENDING anyway.
+export const CHANGE_REQUEST_COLUMNS = APPLICATION_COLUMNS.map((c) =>
+  c.column === "status" ? { ...c, isSortable: false } : c,
+);
 
 function MentorTable({
   items,
   isLoading,
   showActions,
+  columns,
+  onSort,
+  onView,
   onVerify,
   onScopes,
   onRevokeTier,
@@ -99,6 +90,9 @@ function MentorTable({
   items: MentorApplicationListItem[] | undefined;
   isLoading: boolean;
   showActions: boolean;
+  columns: typeof APPLICATION_COLUMNS;
+  onSort: (column: string) => void;
+  onView: (m: MentorApplicationListItem) => void;
   onVerify: (
     m: MentorApplicationListItem,
     action: "approve" | "reject",
@@ -113,17 +107,18 @@ function MentorTable({
 }) {
   const rows: Data[] = (items ?? []).map((m) => ({
     id: m.id,
-    name: getDisplayName(m),
+    user_full_name: getDisplayName(m),
     muid: m.muid ?? "",
     email: m.user_email ?? m.email ?? "—",
     status: resolveStatus(m),
     mentor_tier: m.mentor_tier ?? "",
+    created_at: formatShortDate(m.created_at),
   }));
 
   const customCellRender = (column: string, row: Data) => {
     const m = items?.find((item) => item.id === row.id);
     if (!m) return null;
-    if (column === "name") {
+    if (column === "user_full_name") {
       return (
         <div>
           <p className="font-medium">{getDisplayName(m)}</p>
@@ -158,7 +153,7 @@ function MentorTable({
         isLoading={isLoading}
         page={page}
         perPage={PER_PAGE}
-        columnOrder={columnOrder}
+        columnOrder={columns}
         id={showActions ? ["id"] : undefined}
         customCellRender={customCellRender}
         customActionRender={
@@ -168,81 +163,50 @@ function MentorTable({
                 if (!m) return null;
                 return (
                   <>
+                    <RowActionButton
+                      icon={Eye}
+                      label="View"
+                      onClick={() => onView(m)}
+                    />
                     {isActionable(m) && (
                       <>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950"
-                              onClick={() => onVerify(m, "approve")}
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Approve</TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                              onClick={() => onVerify(m, "reject")}
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Reject</TooltipContent>
-                        </Tooltip>
+                        <RowActionButton
+                          icon={CheckCircle}
+                          label="Approve"
+                          tone="success"
+                          onClick={() => onVerify(m, "approve")}
+                        />
+                        <RowActionButton
+                          icon={XCircle}
+                          label="Reject"
+                          tone="destructive"
+                          onClick={() => onVerify(m, "reject")}
+                        />
                       </>
                     )}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-foreground hover:bg-muted"
-                          onClick={() => onScopes(m)}
-                        >
-                          <ShieldCheck className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Scopes</TooltipContent>
-                    </Tooltip>
+                    <RowActionButton
+                      icon={ShieldCheck}
+                      label="Scopes"
+                      onClick={() => onScopes(m)}
+                    />
                     {resolveStatus(m) === "APPROVED" && m.muid && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                            onClick={() => onRevokeTier(m)}
-                          >
-                            <ShieldOff className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Revoke tier</TooltipContent>
-                      </Tooltip>
+                      <RowActionButton
+                        icon={ShieldOff}
+                        label="Revoke tier"
+                        tone="destructive"
+                        onClick={() => onRevokeTier(m)}
+                      />
                     )}
                     {/* Reactivate — only shown when the mentor is suspended */}
                     {resolveStatus(m) === "APPROVED" &&
                       m.is_active === false && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950"
-                              onClick={() => onReactivate(m)}
-                              id={`reactivate-btn-${m.id}`}
-                            >
-                              <RefreshCw className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Reactivate mentor</TooltipContent>
-                        </Tooltip>
+                        <RowActionButton
+                          icon={RefreshCw}
+                          label="Reactivate mentor"
+                          tone="success"
+                          onClick={() => onReactivate(m)}
+                          id={`reactivate-btn-${m.id}`}
+                        />
                       )}
                   </>
                 );
@@ -251,8 +215,8 @@ function MentorTable({
         }
       >
         <THead
-          columnOrder={columnOrder}
-          onIconClick={() => {}}
+          columnOrder={columns}
+          onIconClick={onSort}
           action={Boolean(showActions)}
         />
         <div className="p-4">
@@ -275,7 +239,7 @@ function MentorTable({
 
 const PER_PAGE = 10;
 
-export function MentorVerificationPage() {
+export function MentorVerificationPanel() {
   const [search, setSearch] = useState("");
   const [pendingPage, setPendingPage] = useState(1);
   const [allPage, setAllPage] = useState(1);
@@ -293,6 +257,12 @@ export function MentorVerificationPage() {
   );
   const [reactivateFor, setReactivateFor] =
     useState<MentorApplicationListItem | null>(null);
+  const [pendingSort, setPendingSort] = useState("");
+  const [allSort, setAllSort] = useState("");
+  const [changeRequestsSort, setChangeRequestsSort] = useState("");
+  const [viewFor, setViewFor] = useState<MentorApplicationListItem | null>(
+    null,
+  );
   const revokeAssignment = useRevokeMentorAssignment();
   const reactivateMutation = useReactivateMentor();
 
@@ -301,29 +271,26 @@ export function MentorVerificationPage() {
     search: search || undefined,
     page: pendingPage,
     perPage: PER_PAGE,
+    sortBy: pendingSort || undefined,
   });
   const { data: all, isLoading: allLoading } = useMentorList({
     search: search || undefined,
     page: allPage,
     perPage: PER_PAGE,
+    sortBy: allSort || undefined,
   });
   const { data: changeRequests, isLoading: changeRequestsLoading } =
     useMentorChangeRequests({
       search: search || undefined,
       page: changeRequestsPage,
       perPage: PER_PAGE,
+      sortBy: changeRequestsSort || undefined,
     });
 
   return (
     <TooltipProvider delayDuration={200}>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Mentor Verification</h1>
-            <p className="text-sm text-muted-foreground">
-              Review and approve mentor applications
-            </p>
-          </div>
+        <div className="flex items-center justify-end">
           <div className="flex items-center gap-2">
             <div className="relative w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -378,6 +345,12 @@ export function MentorVerificationPage() {
               items={pending?.data}
               isLoading={pendingLoading}
               showActions
+              columns={APPLICATION_COLUMNS}
+              onSort={(column) => {
+                setPendingPage(1);
+                setPendingSort((prev) => nextSortState(prev, column));
+              }}
+              onView={setViewFor}
               onVerify={(m, action) => setVerifyState({ mentor: m, action })}
               onScopes={setGrantsFor}
               onRevokeTier={setRevokeFor}
@@ -394,6 +367,12 @@ export function MentorVerificationPage() {
               items={all?.data}
               isLoading={allLoading}
               showActions
+              columns={APPLICATION_COLUMNS}
+              onSort={(column) => {
+                setAllPage(1);
+                setAllSort((prev) => nextSortState(prev, column));
+              }}
+              onView={setViewFor}
               onVerify={(m, action) => setVerifyState({ mentor: m, action })}
               onScopes={setGrantsFor}
               onRevokeTier={setRevokeFor}
@@ -415,6 +394,12 @@ export function MentorVerificationPage() {
               items={changeRequests?.data}
               isLoading={changeRequestsLoading}
               showActions
+              columns={CHANGE_REQUEST_COLUMNS}
+              onSort={(column) => {
+                setChangeRequestsPage(1);
+                setChangeRequestsSort((prev) => nextSortState(prev, column));
+              }}
+              onView={setViewFor}
               onVerify={(m, action) => setVerifyState({ mentor: m, action })}
               onScopes={setGrantsFor}
               onRevokeTier={setRevokeFor}
@@ -443,6 +428,12 @@ export function MentorVerificationPage() {
           action={verifyState?.action ?? "approve"}
           open={!!verifyState}
           onOpenChange={(v) => !v && setVerifyState(null)}
+        />
+
+        <MentorApplicationSheet
+          application={viewFor}
+          open={Boolean(viewFor)}
+          onOpenChange={(v) => !v && setViewFor(null)}
         />
 
         <MentorGrantsSheet
