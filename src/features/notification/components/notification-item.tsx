@@ -103,9 +103,18 @@ export function NotificationItem({
 
       {/* Footer: timestamp + link */}
       <div className="mt-1 flex items-center justify-between pl-3.5">
-        <span className="text-xs text-muted-foreground">
-          {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-muted-foreground">
+            {formatDistanceToNow(new Date(item.created_at), {
+              addSuffix: true,
+            })}
+          </span>
+          {item.source === "broadcast" && (
+            <span className="rounded bg-muted px-1.5 py-0.2 text-[10px] font-medium text-muted-foreground">
+              Announcement
+            </span>
+          )}
+        </div>
 
         {safeUrl && (
           <Link

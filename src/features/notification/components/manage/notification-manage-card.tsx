@@ -34,13 +34,13 @@ export function NotificationManageCard() {
 
   return (
     <>
-      {/* ── Admin Dispatch Card ── */}
+      {/* ── Platform Announcements Card ── */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex flex-col gap-0.5">
-            <CardTitle className="text-base">Admin Dispatch</CardTitle>
+            <CardTitle className="text-base">Platform Announcements</CardTitle>
             <p className="text-xs text-muted-foreground">
-              Send a platform-wide announcement to every active user.
+              Send announcements and important updates to all platform members.
             </p>
           </div>
           <Button
@@ -50,17 +50,17 @@ export function NotificationManageCard() {
             onClick={() => setAdminDialogOpen(true)}
           >
             <Megaphone className="h-4 w-4" />
-            <span className="ml-1.5">Dispatch broadcast</span>
+            <span className="ml-1.5">New announcement</span>
           </Button>
         </CardHeader>
       </Card>
 
       <Separator />
 
-      {/* ── Active Broadcasts Card ── */}
+      {/* ── Active Announcements Card ── */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Active Broadcasts</CardTitle>
+          <CardTitle className="text-base">Active Announcements</CardTitle>
           {(broadcasts?.length ?? 0) > 0 && (
             <Button
               variant="outline"

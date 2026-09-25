@@ -53,7 +53,7 @@ export const TARGET_TYPES = [
 export type TargetType = (typeof TARGET_TYPES)[number];
 
 export const TARGET_TYPE_LABELS: Record<TargetType, string> = {
-  global: "Global (All Users)",
+  global: "Everyone (All Members)",
   campus: "Campus",
   interest_group: "Interest Group",
   campus_ig: "Campus IG Chapter",

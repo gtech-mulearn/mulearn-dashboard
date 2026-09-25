@@ -87,7 +87,7 @@ export function BroadcastFormDialog({
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? "Edit Broadcast" : "Create Broadcast"}
+            {isEdit ? "Edit Announcement" : "Create Announcement"}
           </DialogTitle>
         </DialogHeader>
 
@@ -100,7 +100,10 @@ export function BroadcastFormDialog({
                 <FormItem>
                   <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="Announcement title" {...field} />
+                    <Input
+                      placeholder="e.g. Community Meetup or System Update"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -115,7 +118,7 @@ export function BroadcastFormDialog({
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Announcement details..."
+                      placeholder="Share the details of your announcement..."
                       rows={3}
                       {...field}
                     />
@@ -130,9 +133,17 @@ export function BroadcastFormDialog({
               name="url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>URL (optional)</FormLabel>
+                  <FormLabel>
+                    Link URL{" "}
+                    <span className="font-normal text-muted-foreground">
+                      (optional)
+                    </span>
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="https://..." {...field} />
+                    <Input
+                      placeholder="https://mulearn.org/announcements"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -158,7 +169,7 @@ export function BroadcastFormDialog({
 
             {isEdit && editTarget && (
               <div className="space-y-1.5">
-                <p className="text-sm font-medium">Target Audience</p>
+                <p className="text-sm font-medium">Audience</p>
                 <div className="flex items-center gap-2">
                   <Badge variant="secondary">
                     {TARGET_TYPE_LABELS[editTarget.target_type as TargetType] ??
@@ -172,7 +183,7 @@ export function BroadcastFormDialog({
                     )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Target is set by the system and cannot be changed.
+                  Audience was set when created and cannot be modified.
                 </p>
               </div>
             )}
@@ -180,8 +191,8 @@ export function BroadcastFormDialog({
             {!isEdit && (
               <div className="rounded-md border border-border bg-muted/40 px-3 py-2">
                 <p className="text-xs text-muted-foreground">
-                  <span className="font-medium text-foreground">Target:</span>{" "}
-                  Global (All Users) — set automatically by the system.
+                  <span className="font-medium text-foreground">Audience:</span>{" "}
+                  All active users across the platform.
                 </p>
               </div>
             )}
@@ -198,11 +209,11 @@ export function BroadcastFormDialog({
               <Button type="submit" disabled={isPending}>
                 {isPending
                   ? isEdit
-                    ? "Saving..."
-                    : "Creating..."
+                    ? "Saving…"
+                    : "Publishing…"
                   : isEdit
                     ? "Save changes"
-                    : "Create"}
+                    : "Post announcement"}
               </Button>
             </DialogFooter>
           </form>

@@ -48,7 +48,8 @@ export function BroadcastTable({
     return (
       <div className="flex flex-col items-center justify-center gap-2 py-16 text-muted-foreground">
         <p className="text-sm">
-          No broadcasts yet — use Dispatch broadcast to create one.
+          No active announcements yet. Click &ldquo;New announcement&rdquo;
+          above to create one.
         </p>
       </div>
     );
@@ -60,7 +61,7 @@ export function BroadcastTable({
         <TableRow>
           <TableHead>Title</TableHead>
           <TableHead className="hidden md:table-cell">Description</TableHead>
-          <TableHead className="hidden lg:table-cell">Target</TableHead>
+          <TableHead className="hidden lg:table-cell">Audience</TableHead>
           <TableHead className="hidden sm:table-cell">Expires</TableHead>
           <TableHead className="hidden lg:table-cell">Created by</TableHead>
           <TableHead className="w-[80px]">Actions</TableHead>
@@ -101,7 +102,7 @@ export function BroadcastTable({
                   size="icon"
                   className="h-7 w-7"
                   onClick={() => onEdit(b)}
-                  aria-label="Edit broadcast"
+                  aria-label="Edit announcement"
                 >
                   <Pencil className="h-3.5 w-3.5" />
                 </Button>
@@ -111,7 +112,7 @@ export function BroadcastTable({
                   className="h-7 w-7 text-destructive hover:text-destructive"
                   onClick={() => deleteBroadcast(b.id)}
                   disabled={isDeleting && deletingId === b.id}
-                  aria-label="Delete broadcast"
+                  aria-label="Delete announcement"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>

@@ -75,14 +75,17 @@ export function NotificationPopover() {
     () => feedData?.pages.flatMap((page) => page.results) ?? [],
     [feedData],
   );
-  const unreadNotifications = notifications.filter((n) => !n.is_read);
+  const unreadPersonalNotifications = notifications.filter(
+    (n) => n.source === "personal" && !n.is_read,
+  );
   const hasUnread = unreadCount > 0;
   const hasPersonalNotifications = notifications.some(
     (n) => n.source === "personal",
   );
 
-  // IDs eligible for selection (unread only; broadcast IDs are silently skipped by the server)
-  const selectableIds = unreadNotifications.map((n) => n.id);
+  // IDs eligible for selection: only unread personal notifications
+  // (broadcast notifications are not supported by the bulk-read endpoint)
+  const selectableIds = unreadPersonalNotifications.map((n) => n.id);
   const allSelected =
     selectableIds.length > 0 &&
     selectableIds.every((id) => selectedIds.has(id));
@@ -179,33 +182,37 @@ export function NotificationPopover() {
 
           {/* Right: action buttons — never shrink */}
           <div className="flex shrink-0 items-center gap-1">
-            {/* Select toggle — only when there are unread items */}
-            {!isLoading && !isError && unreadNotifications.length > 0 && (
-              <Button
-                id="notification-select-toggle"
-                size="sm"
-                variant={selectMode ? "secondary" : "ghost"}
-                className="h-7 px-2 text-xs gap-1.5"
-                onClick={() =>
-                  selectMode ? exitSelectMode() : setSelectMode(true)
-                }
-                aria-label={
-                  selectMode ? "Cancel selection" : "Select notifications"
-                }
-              >
-                {selectMode ? (
-                  <>
-                    <X className="h-3 w-3" />
-                    Cancel
-                  </>
-                ) : (
-                  <>
-                    <ListChecks className="h-3 w-3" />
-                    Select
-                  </>
-                )}
-              </Button>
-            )}
+            {/* Select toggle — only when there are unread personal items */}
+            {!isLoading &&
+              !isError &&
+              unreadPersonalNotifications.length > 0 && (
+                <Button
+                  id="notification-select-toggle"
+                  size="sm"
+                  variant={selectMode ? "secondary" : "ghost"}
+                  className="h-7 px-2 text-xs gap-1.5"
+                  onClick={() =>
+                    selectMode ? exitSelectMode() : setSelectMode(true)
+                  }
+                  aria-label={
+                    selectMode
+                      ? "Cancel selection"
+                      : "Select personal notifications"
+                  }
+                >
+                  {selectMode ? (
+                    <>
+                      <X className="h-3 w-3" />
+                      Cancel
+                    </>
+                  ) : (
+                    <>
+                      <ListChecks className="h-3 w-3" />
+                      Select
+                    </>
+                  )}
+                </Button>
+              )}
 
             {/* Mark all read — only in normal mode */}
             {!selectMode && hasUnread && (
@@ -215,14 +222,14 @@ export function NotificationPopover() {
                 className="h-7 px-2 text-xs gap-1.5"
                 onClick={() => markAllRead()}
                 disabled={isMarkingAll}
-                aria-label="Mark all as read"
+                aria-label="Mark all notifications as read"
               >
                 {isMarkingAll ? (
                   <Loader2 className="h-3 w-3 animate-spin" />
                 ) : (
                   <CheckCheck className="h-3 w-3" />
                 )}
-                Mark all
+                Mark all read
               </Button>
             )}
           </div>
@@ -234,13 +241,19 @@ export function NotificationPopover() {
               id="select-all-notifications"
               checked={allSelected}
               onCheckedChange={toggleSelectAll}
-              aria-label="Select all unread notifications"
+              aria-label={
+                allSelected
+                  ? "Deselect all personal notifications"
+                  : "Select all unread personal notifications"
+              }
             />
             <label
               htmlFor="select-all-notifications"
               className="text-xs text-muted-foreground cursor-pointer select-none"
             >
-              {allSelected ? "Deselect all" : "Select all unread"}
+              {allSelected
+                ? "Deselect all personal"
+                : "Select all unread personal"}
             </label>
           </div>
         )}
@@ -263,7 +276,8 @@ export function NotificationPopover() {
         ) : (
           <div className="flex flex-col gap-2 overflow-y-auto max-h-[360px] pr-1">
             {notifications.map((item) => {
-              const isSelectable = selectMode && !item.is_read;
+              const isSelectable =
+                selectMode && item.source === "personal" && !item.is_read;
               return (
                 <div
                   key={item.id}
@@ -306,7 +320,7 @@ export function NotificationPopover() {
                   className="w-full text-xs text-muted-foreground h-8 hover:text-foreground"
                   onClick={() => fetchNextPage()}
                   disabled={isFetchingNextPage}
-                  aria-label="Load older notifications"
+                  aria-label="Load more notifications"
                 >
                   {isFetchingNextPage ? (
                     <>
@@ -314,7 +328,7 @@ export function NotificationPopover() {
                       Loading more…
                     </>
                   ) : (
-                    "Load older notifications"
+                    "Load more notifications"
                   )}
                 </Button>
               </div>
@@ -322,74 +336,72 @@ export function NotificationPopover() {
           </div>
         )}
         {/* ── Footer ── */}
-        {!isLoading && !isError && (
-          <>
-            {selectMode
-              ? /* Multi-select action bar — appears only when ≥1 item is checked */
-                selectedIds.size > 0 && (
-                  <>
-                    <Separator className="mt-3 mb-2" />
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">
-                        {selectedIds.size} selected
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <Button
-                          id="delete-selected-btn"
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 px-3 text-xs gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={handleDeleteSelected}
-                          aria-label="Delete selected notifications"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                          Delete
-                        </Button>
-                        <Button
-                          id="mark-selected-read-btn"
-                          size="sm"
-                          variant="default"
-                          className="h-7 px-3 text-xs gap-1.5"
-                          onClick={handleMarkSelectedRead}
-                          disabled={isMarkingMany}
-                          aria-label="Mark selected notifications as read"
-                        >
-                          {isMarkingMany ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                          ) : (
-                            <CheckCheck className="h-3 w-3" />
-                          )}
-                          Mark read
-                        </Button>
-                      </div>
-                    </div>
-                  </>
-                )
-              : /* Normal footer: clear personal */
-                hasPersonalNotifications && (
-                  <>
-                    <Separator className="mt-3 mb-2" />
-                    <div className="flex justify-end">
+        {!isLoading &&
+          !isError &&
+          (selectMode
+            ? /* Multi-select action bar — appears only when ≥1 item is checked */
+              selectedIds.size > 0 && (
+                <>
+                  <Separator className="mt-3 mb-2" />
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">
+                      {selectedIds.size} selected
+                    </span>
+                    <div className="flex items-center gap-1.5">
                       <Button
+                        id="delete-selected-btn"
                         size="sm"
                         variant="ghost"
-                        className="h-7 px-2 text-xs text-muted-foreground gap-1.5 hover:text-destructive"
-                        onClick={() => deleteAllPersonal()}
-                        disabled={isDeletingAll}
-                        aria-label="Delete all personal notifications"
+                        className="h-7 px-3 text-xs gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={handleDeleteSelected}
+                        aria-label="Delete selected personal notifications"
                       >
-                        {isDeletingAll ? (
+                        <Trash2 className="h-3 w-3" />
+                        Delete
+                      </Button>
+                      <Button
+                        id="mark-selected-read-btn"
+                        size="sm"
+                        variant="default"
+                        className="h-7 px-3 text-xs gap-1.5"
+                        onClick={handleMarkSelectedRead}
+                        disabled={isMarkingMany}
+                        aria-label="Mark selected personal notifications as read"
+                      >
+                        {isMarkingMany ? (
                           <Loader2 className="h-3 w-3 animate-spin" />
                         ) : (
-                          <Trash2 className="h-3 w-3" />
+                          <CheckCheck className="h-3 w-3" />
                         )}
-                        Clear personal
+                        Mark as read
                       </Button>
                     </div>
-                  </>
-                )}
-          </>
-        )}
+                  </div>
+                </>
+              )
+            : /* Normal footer: clear personal */
+              hasPersonalNotifications && (
+                <>
+                  <Separator className="mt-3 mb-2" />
+                  <div className="flex justify-end">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2 text-xs text-muted-foreground gap-1.5 hover:text-destructive"
+                      onClick={() => deleteAllPersonal()}
+                      disabled={isDeletingAll}
+                      aria-label="Clear personal notifications"
+                    >
+                      {isDeletingAll ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-3 w-3" />
+                      )}
+                      Clear personal notifications
+                    </Button>
+                  </div>
+                </>
+              ))}
       </PopoverContent>
     </Popover>
   );

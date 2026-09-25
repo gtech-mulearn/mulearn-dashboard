@@ -81,12 +81,11 @@ export function AdminBroadcastDialog({
         <DialogHeader>
           <div className="flex items-center gap-2">
             <Megaphone className="h-5 w-5 text-primary" />
-            <DialogTitle>Dispatch Admin Broadcast</DialogTitle>
+            <DialogTitle>Send Platform Announcement</DialogTitle>
           </div>
           <DialogDescription>
-            Sends a platform-wide announcement to every active user as an{" "}
-            <code className="font-mono text-xs">ADMIN_BROADCAST</code>{" "}
-            notification.
+            Share an important update or announcement with everyone on the
+            platform.
           </DialogDescription>
         </DialogHeader>
 
@@ -107,7 +106,7 @@ export function AdminBroadcastDialog({
                   <FormControl>
                     <Input
                       id="admin-broadcast-title"
-                      placeholder="e.g. Platform Maintenance"
+                      placeholder="e.g. Scheduled Maintenance or Feature Update"
                       maxLength={100}
                       {...field}
                     />
@@ -132,7 +131,7 @@ export function AdminBroadcastDialog({
                   <FormControl>
                     <Textarea
                       id="admin-broadcast-description"
-                      placeholder="Full announcement text shown to users…"
+                      placeholder="Share the details of your announcement..."
                       rows={4}
                       maxLength={300}
                       {...field}
@@ -150,7 +149,7 @@ export function AdminBroadcastDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Redirect URL{" "}
+                    Link URL{" "}
                     <span className="font-normal text-muted-foreground">
                       (optional)
                     </span>
@@ -158,15 +157,14 @@ export function AdminBroadcastDialog({
                   <FormControl>
                     <Input
                       id="admin-broadcast-redirect-url"
-                      placeholder="https://mulearn.org/status"
+                      placeholder="https://mulearn.org/announcements"
                       maxLength={255}
                       {...field}
                       value={field.value ?? ""}
                     />
                   </FormControl>
                   <FormDescription>
-                    Deep-link the client navigates to when the notification is
-                    tapped.
+                    Link members will open when they click this notification.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -180,9 +178,9 @@ export function AdminBroadcastDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Expires in (days){" "}
+                    Active duration (days){" "}
                     <span className="font-normal text-muted-foreground">
-                      (optional, default 7)
+                      (optional, default: 7)
                     </span>
                   </FormLabel>
                   <FormControl>
@@ -208,8 +206,8 @@ export function AdminBroadcastDialog({
                     />
                   </FormControl>
                   <FormDescription>
-                    How many days the broadcast stays visible in users' feeds
-                    (1–90).
+                    How many days this announcement stays visible in members'
+                    feeds (1–90).
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -220,7 +218,7 @@ export function AdminBroadcastDialog({
             <div className="rounded-md border border-border bg-muted/40 px-3 py-2">
               <p className="text-xs text-muted-foreground">
                 <span className="font-medium text-foreground">Audience: </span>
-                All active users — cannot be targeted to a subset.
+                All active members across the platform.
               </p>
             </div>
 
@@ -234,7 +232,7 @@ export function AdminBroadcastDialog({
                 Cancel
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Dispatching…" : "Dispatch broadcast"}
+                {isPending ? "Sending…" : "Send announcement"}
               </Button>
             </DialogFooter>
           </form>
