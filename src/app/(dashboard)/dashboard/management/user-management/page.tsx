@@ -10,7 +10,7 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { verificationTabHref } from "@/features/role-verification/lib/tabs";
+import { verificationTabHref } from "@/features/role-verification";
 import { hasAnyRole } from "@/lib/auth/permissions";
 import { ADMIN_ROLES, INTERN_MANAGEMENT_ROLES } from "@/lib/auth/roles";
 import { requireAuth } from "@/lib/auth/server";

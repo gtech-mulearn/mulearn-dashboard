@@ -4,6 +4,7 @@ import { PowerOff } from "lucide-react";
 import { useState } from "react";
 import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
 import Pagination from "@/components/dashboard/table/pagination";
+import { RowActionButton } from "@/components/dashboard/table/row-action-button";
 import { nextSortState } from "@/components/dashboard/table/sort-cycle";
 import type { Data } from "@/components/dashboard/table/Table";
 import Table from "@/components/dashboard/table/Table";
@@ -28,12 +29,7 @@ import {
 } from "@/components/ui/select";
 import { StateDisplay } from "@/components/ui/state-display";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { formatShortDate } from "@/lib/datetime";
 import {
   useDeactivateMentor,
@@ -237,20 +233,13 @@ function RosterTable({
     const m = items?.find((item) => item.id === row.id);
     if (!m) return null;
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive hover:bg-destructive/10"
-            onClick={() => onDeactivate(m)}
-            id={`deactivate-btn-${m.id}`}
-          >
-            <PowerOff className="h-4 w-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>Deactivate mentor</TooltipContent>
-      </Tooltip>
+      <RowActionButton
+        icon={PowerOff}
+        label="Deactivate mentor"
+        tone="destructive"
+        onClick={() => onDeactivate(m)}
+        id={`deactivate-btn-${m.id}`}
+      />
     );
   };
 

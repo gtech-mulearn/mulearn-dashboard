@@ -15,6 +15,7 @@ import {
 import { useState } from "react";
 import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
 import Pagination from "@/components/dashboard/table/pagination";
+import { RowActionButton } from "@/components/dashboard/table/row-action-button";
 import { nextSortState } from "@/components/dashboard/table/sort-cycle";
 import type { Data } from "@/components/dashboard/table/Table";
 import Table from "@/components/dashboard/table/Table";
@@ -24,12 +25,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { formatShortDate } from "@/lib/datetime";
 import {
   useMentorChangeRequests,
@@ -167,95 +163,50 @@ function MentorTable({
                 if (!m) return null;
                 return (
                   <>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-foreground hover:bg-muted"
-                          onClick={() => onView(m)}
-                          aria-label="View application"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>View</TooltipContent>
-                    </Tooltip>
+                    <RowActionButton
+                      icon={Eye}
+                      label="View"
+                      onClick={() => onView(m)}
+                    />
                     {isActionable(m) && (
                       <>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950"
-                              onClick={() => onVerify(m, "approve")}
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Approve</TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                              onClick={() => onVerify(m, "reject")}
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Reject</TooltipContent>
-                        </Tooltip>
+                        <RowActionButton
+                          icon={CheckCircle}
+                          label="Approve"
+                          tone="success"
+                          onClick={() => onVerify(m, "approve")}
+                        />
+                        <RowActionButton
+                          icon={XCircle}
+                          label="Reject"
+                          tone="destructive"
+                          onClick={() => onVerify(m, "reject")}
+                        />
                       </>
                     )}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-foreground hover:bg-muted"
-                          onClick={() => onScopes(m)}
-                        >
-                          <ShieldCheck className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Scopes</TooltipContent>
-                    </Tooltip>
+                    <RowActionButton
+                      icon={ShieldCheck}
+                      label="Scopes"
+                      onClick={() => onScopes(m)}
+                    />
                     {resolveStatus(m) === "APPROVED" && m.muid && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                            onClick={() => onRevokeTier(m)}
-                          >
-                            <ShieldOff className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Revoke tier</TooltipContent>
-                      </Tooltip>
+                      <RowActionButton
+                        icon={ShieldOff}
+                        label="Revoke tier"
+                        tone="destructive"
+                        onClick={() => onRevokeTier(m)}
+                      />
                     )}
                     {/* Reactivate — only shown when the mentor is suspended */}
                     {resolveStatus(m) === "APPROVED" &&
                       m.is_active === false && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950"
-                              onClick={() => onReactivate(m)}
-                              id={`reactivate-btn-${m.id}`}
-                            >
-                              <RefreshCw className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Reactivate mentor</TooltipContent>
-                        </Tooltip>
+                        <RowActionButton
+                          icon={RefreshCw}
+                          label="Reactivate mentor"
+                          tone="success"
+                          onClick={() => onReactivate(m)}
+                          id={`reactivate-btn-${m.id}`}
+                        />
                       )}
                   </>
                 );

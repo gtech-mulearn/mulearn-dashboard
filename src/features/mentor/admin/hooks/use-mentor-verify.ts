@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
+import { fetchIgOptions } from "../api/ig-options.api";
 import {
   assignMentors,
   deactivateMentor,
@@ -29,6 +30,10 @@ export const mentorVerifyKeys = {
     [...mentorVerifyKeys.all, "roster", params] as const,
   changeRequests: (params: Record<string, unknown>) =>
     [...mentorVerifyKeys.all, "change-requests", params] as const,
+  // Interest-group id → name options, shared by the assign dialog, grants
+  // sheet and application sheet. Deliberately outside `all`, so mentor-list
+  // invalidations after verify/revoke don't refetch the IG list.
+  igOptions: () => ["mentor-assign-ig-options"] as const,
 };
 
 interface UseMentorListParams {
@@ -46,6 +51,16 @@ export function useMentorList(params: UseMentorListParams = {}) {
   return useQuery({
     queryKey: mentorVerifyKeys.list(params as Record<string, unknown>),
     queryFn: () => fetchMentorList(params),
+  });
+}
+
+// ─── Interest-group options (id → name) ───────────────────────────────────────
+export function useIgOptions(enabled: boolean) {
+  return useQuery({
+    queryKey: mentorVerifyKeys.igOptions(),
+    queryFn: fetchIgOptions,
+    enabled,
+    staleTime: 10 * 60 * 1000,
   });
 }
 

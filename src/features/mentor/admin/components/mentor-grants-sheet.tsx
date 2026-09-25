@@ -1,6 +1,5 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { ShieldOff } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -15,11 +14,11 @@ import {
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StateDisplay } from "@/components/ui/state-display";
-import { fetchIgOptions } from "../api/ig-options.api";
 import {
   useMentorGrants,
   useRevokeMentorGrant,
 } from "../hooks/use-mentor-grants";
+import { useIgOptions } from "../hooks/use-mentor-verify";
 import type { MentorGrant } from "../schemas";
 
 const SCOPE_LABELS: Record<string, string> = {
@@ -65,12 +64,7 @@ export function MentorGrantsSheet({
   const [confirmGrant, setConfirmGrant] = useState<MentorGrant | null>(null);
 
   // IG id → name map, so IG scopes show their group name (never the id).
-  const igOptions = useQuery({
-    queryKey: ["mentor-assign-ig-options"],
-    queryFn: fetchIgOptions,
-    enabled: open,
-    staleTime: 10 * 60 * 1000,
-  });
+  const igOptions = useIgOptions(open);
   const igNameById = useMemo(
     () => new Map((igOptions.data ?? []).map((ig) => [ig.id, ig.name])),
     [igOptions.data],

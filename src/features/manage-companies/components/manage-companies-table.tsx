@@ -3,11 +3,11 @@
 import { CheckCircle, Eye, XCircle } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
+import { RowActionButton } from "@/components/dashboard/table/row-action-button";
 import Table, { type Data } from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatShortDate } from "@/lib/datetime";
@@ -15,7 +15,6 @@ import { useCompanyVerificationList } from "../hooks/use-manage-companies";
 import type { CompanyStatus, CompanyVerificationItem } from "../schemas";
 import { CompanyDetailSheet } from "./company-detail-sheet";
 import { VerificationActionDialog } from "./verification-action-dialog";
-import { RowActionButton } from "@/components/dashboard/table/row-action-button";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 

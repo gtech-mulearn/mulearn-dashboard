@@ -8,6 +8,13 @@ export {
   useRoleVerifications,
   useVerifyRole,
 } from "./hooks/use-role-verification";
+export {
+  parseVerificationTab,
+  VERIFICATION_TAB_LABELS,
+  VERIFICATION_TABS,
+  type VerificationTab,
+  verificationTabHref,
+} from "./lib/tabs";
 export type {
   Pagination,
   RoleVerificationItem,

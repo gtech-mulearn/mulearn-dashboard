@@ -1,6 +1,5 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { type ReactNode, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -11,7 +10,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { formatShortDate } from "@/lib/datetime";
-import { fetchIgOptions } from "../api/ig-options.api";
+import { useIgOptions } from "../hooks/use-mentor-verify";
 import { resolveStatus, statusBadge } from "../lib/status";
 import type { MentorApplicationListItem } from "../schemas";
 
@@ -37,13 +36,8 @@ export function MentorApplicationSheet({
   open,
   onOpenChange,
 }: MentorApplicationSheetProps) {
-  // Same key as the assign dialog and grants sheet, so the IG list is shared.
-  const igOptions = useQuery({
-    queryKey: ["mentor-assign-ig-options"],
-    queryFn: fetchIgOptions,
-    enabled: open,
-    staleTime: 10 * 60 * 1000,
-  });
+  // Shared with the assign dialog and grants sheet via the key factory.
+  const igOptions = useIgOptions(open);
   const igNameById = useMemo(
     () => new Map((igOptions.data ?? []).map((ig) => [ig.id, ig.name])),
     [igOptions.data],

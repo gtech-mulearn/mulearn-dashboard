@@ -2,15 +2,15 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ManageCompaniesTable } from "@/features/manage-companies";
-import { MentorVerificationPanel } from "@/features/mentor/admin/components/mentor-verification-page";
+import { MentorVerificationPanel } from "@/features/mentor";
 import { VerifyOrgsView } from "@/features/organizations";
-import { RoleVerificationTable } from "@/features/role-verification";
 import {
   parseVerificationTab,
+  RoleVerificationTable,
   VERIFICATION_TAB_LABELS,
   VERIFICATION_TABS,
   type VerificationTab,
-} from "@/features/role-verification/lib/tabs";
+} from "@/features/role-verification";
 import { cn } from "@/lib/utils";
 
 export function RoleVerificationClient() {

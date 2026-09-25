@@ -13,10 +13,13 @@ vi.mock("next/navigation", () => ({
 }));
 
 // Queues are stubbed: this test covers tab selection, not the tables.
-vi.mock("@/features/mentor/admin/components/mentor-verification-page", () => ({
+vi.mock("@/features/mentor", () => ({
   MentorVerificationPanel: () => <div>mentor-panel</div>,
 }));
-vi.mock("@/features/role-verification", () => ({
+// Keep the real tab helpers (parseVerificationTab etc.) from the barrel;
+// stub only the Enabler table.
+vi.mock("@/features/role-verification", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/features/role-verification")>()),
   RoleVerificationTable: ({ roleTitle }: { roleTitle: string }) => (
     <div>role-panel:{roleTitle}</div>
   ),
