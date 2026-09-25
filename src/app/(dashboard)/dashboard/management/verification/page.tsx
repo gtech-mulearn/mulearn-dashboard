@@ -12,8 +12,9 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { verificationTabHref } from "@/features/role-verification/lib/tabs";
 import { hasAnyRole } from "@/lib/auth/permissions";
-import { ADMIN_ROLES, FELLOW_MANAGEMENT_ROLES } from "@/lib/auth/roles";
+import { ADMIN_ROLES } from "@/lib/auth/roles";
 import { requireAuth } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
@@ -34,10 +35,10 @@ const VERIFICATION_ITEMS: VerificationItem[] = [
   {
     title: "Role Verification",
     description: "Verify and assign roles to users.",
-    href: "/dashboard/management/role-verification",
+    href: verificationTabHref("enabler"),
     icon: ShieldCheck,
     iconBg: "bg-warning/15 text-warning",
-    roles: FELLOW_MANAGEMENT_ROLES,
+    roles: ADMIN_ROLES,
   },
   {
     title: "Session Verification",
@@ -58,15 +59,15 @@ const VERIFICATION_ITEMS: VerificationItem[] = [
   {
     title: "Organization Verification",
     description: "Verify legitimacy of registered organizations.",
-    href: "/dashboard/management/organizations/verify",
+    href: verificationTabHref("college"),
     icon: GraduationCap,
     iconBg: "bg-brand-purple/15 text-brand-purple",
-    roles: FELLOW_MANAGEMENT_ROLES,
+    roles: ADMIN_ROLES,
   },
   {
     title: "Company Verification",
     description: "Review and verify company registration requests.",
-    href: "/dashboard/management/manage-companies",
+    href: verificationTabHref("company"),
     icon: Briefcase,
     iconBg: "bg-destructive/15 text-destructive",
     roles: ADMIN_ROLES,
@@ -74,7 +75,7 @@ const VERIFICATION_ITEMS: VerificationItem[] = [
   {
     title: "Mentor Verification",
     description: "Review and verify mentor applications.",
-    href: "/dashboard/management/mentor-verification",
+    href: verificationTabHref("mentor"),
     icon: UserCheck,
     iconBg: "bg-slate-500/15 text-slate-600 dark:text-slate-400",
     roles: ADMIN_ROLES,

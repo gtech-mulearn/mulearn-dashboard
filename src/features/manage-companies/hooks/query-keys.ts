@@ -2,10 +2,10 @@ export const manageCompaniesKeys = {
   all: ["manage-companies"] as const,
   lists: () => [...manageCompaniesKeys.all, "list"] as const,
   list: (params: {
-    page: number;
-    per_page: number;
+    pageIndex: number;
+    perPage: number;
     search: string;
-    sort_by: string;
+    sortBy: string;
     status: string;
     industry_sector?: string;
   }) => [...manageCompaniesKeys.lists(), params] as const,

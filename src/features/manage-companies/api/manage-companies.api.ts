@@ -11,14 +11,12 @@ import {
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface FetchCompanyVerificationParams {
-  page: number;
-  per_page: number;
+  pageIndex: number;
+  perPage: number;
   search?: string;
-  sort_by?: string;
+  sortBy?: string;
   status?: string;
   industry_sector?: string;
-  dateFrom?: string;
-  dateTo?: string;
 }
 
 // ─── Verification Requests ────────────────────────────────────────────────────
@@ -26,22 +24,22 @@ export interface FetchCompanyVerificationParams {
 /**
  * Admin: List companies in the verification queue.
  * Supports filtering by status, industry_sector, search, sort, and pagination.
+ * Pagination/search/sort param names must match CommonUtils.get_paginated_queryset
+ * on the backend (pageIndex, perPage, search, sortBy) — anything else is ignored.
  */
 export async function fetchCompanyVerificationRequests(
   params: FetchCompanyVerificationParams,
 ): Promise<CompanyVerificationListData> {
   const query = new URLSearchParams({
-    page: String(params.page),
-    per_page: String(params.per_page),
+    pageIndex: String(params.pageIndex),
+    perPage: String(params.perPage),
   });
 
   if (params.search?.trim()) query.set("search", params.search.trim());
-  if (params.sort_by?.trim()) query.set("sort_by", params.sort_by.trim());
+  if (params.sortBy?.trim()) query.set("sortBy", params.sortBy.trim());
   if (params.status) query.set("status", params.status);
   if (params.industry_sector)
     query.set("industry_sector", params.industry_sector);
-  if (params.dateFrom) query.set("dateFrom", params.dateFrom);
-  if (params.dateTo) query.set("dateTo", params.dateTo);
 
   const response = await apiClient.get(
     `${endpoints.company.list}?${query.toString()}`,

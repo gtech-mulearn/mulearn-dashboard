@@ -4,6 +4,7 @@ import { PowerOff } from "lucide-react";
 import { useState } from "react";
 import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
 import Pagination from "@/components/dashboard/table/pagination";
+import { nextSortState } from "@/components/dashboard/table/sort-cycle";
 import type { Data } from "@/components/dashboard/table/Table";
 import Table from "@/components/dashboard/table/Table";
 import THead from "@/components/dashboard/table/Thead";
@@ -33,6 +34,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { formatShortDate } from "@/lib/datetime";
 import {
   useDeactivateMentor,
   useMentorRoster,
@@ -52,11 +54,15 @@ const TIER_LABELS: Record<string, string> = {
   CAMPUS_MENTOR: "Campus Mentor",
 };
 
-const columnOrder = [
-  { column: "name", Label: "Name", isSortable: false },
+// Sortable keys must exist in MentorRosterAPI's sort_fields
+// (mulearnbackend/api/dashboard/mentor/mentor_views.py) — pinned by
+// features/role-verification/lib/sort-contract.test.ts.
+export const ROSTER_COLUMNS = [
+  { column: "user_full_name", Label: "Name", isSortable: true },
   { column: "tier_badge", Label: "Status", isSortable: false },
   { column: "avg_rating", Label: "Avg Rating", isSortable: false },
   { column: "rating_count", Label: "Sessions Rated", isSortable: false },
+  { column: "created_at", Label: "Joined", isSortable: true },
 ];
 
 // ─── Star rating visual ────────────────────────────────────────────────────────
@@ -180,6 +186,7 @@ function RosterTable({
   totalItems,
   onPageChange,
   onDeactivate,
+  onSort,
 }: {
   items: MentorRosterItem[] | undefined;
   isLoading: boolean;
@@ -188,20 +195,22 @@ function RosterTable({
   totalItems: number;
   onPageChange: (page: number) => void;
   onDeactivate: (m: MentorRosterItem) => void;
+  onSort: (column: string) => void;
 }) {
   const rows: Data[] = (items ?? []).map((m) => ({
     id: m.id,
-    name: m.user_full_name,
+    user_full_name: m.user_full_name,
     tier_badge: "",
     avg_rating: m.avg_rating ?? null,
     rating_count: m.rating_count,
+    created_at: formatShortDate(m.created_at),
   }));
 
   const customCellRender = (column: string, row: Data) => {
     const m = items?.find((item) => item.id === row.id);
     if (!m) return null;
 
-    if (column === "name") {
+    if (column === "user_full_name") {
       return <p className="font-medium">{m.user_full_name || "—"}</p>;
     }
     if (column === "tier_badge") {
@@ -262,12 +271,16 @@ function RosterTable({
         isLoading={isLoading}
         page={page}
         perPage={PER_PAGE}
-        columnOrder={columnOrder}
+        columnOrder={ROSTER_COLUMNS}
         id={["id"]}
         customCellRender={customCellRender}
         customActionRender={customActionRender}
       >
-        <THead columnOrder={columnOrder} onIconClick={() => {}} action={true} />
+        <THead
+          columnOrder={ROSTER_COLUMNS}
+          onIconClick={onSort}
+          action={true}
+        />
         <div className="p-4">
           <Pagination
             currentPage={page}
@@ -289,6 +302,7 @@ function RosterTable({
 export function MentorRosterTab() {
   const [lowRating, setLowRating] = useState(false);
   const [page, setPage] = useState(1);
+  const [sort, setSort] = useState("");
   const [deactivateFor, setDeactivateFor] = useState<MentorRosterItem | null>(
     null,
   );
@@ -297,6 +311,7 @@ export function MentorRosterTab() {
     low_rating: lowRating || undefined,
     page,
     per_page: PER_PAGE,
+    sortBy: sort || undefined,
   });
 
   function handleLowRatingToggle() {
@@ -352,6 +367,10 @@ export function MentorRosterTab() {
           totalItems={data?.totalItems ?? 0}
           onPageChange={setPage}
           onDeactivate={setDeactivateFor}
+          onSort={(column) => {
+            setPage(1);
+            setSort((prev) => nextSortState(prev, column));
+          }}
         />
 
         {/* Deactivate dialog — custom because reason field is required */}

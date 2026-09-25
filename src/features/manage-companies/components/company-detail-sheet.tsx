@@ -61,6 +61,9 @@ const _STATUS_CONFIG: Record<string, { label: string; className: string }> = {
 };
 
 function StatusBadge({ status }: { status: string }) {
+  if (status === "verified") {
+    return <Badge variant="success">Verified</Badge>;
+  }
   if (status === "active") {
     return <Badge variant="success">Active</Badge>;
   }
@@ -69,12 +72,14 @@ function StatusBadge({ status }: { status: string }) {
     string,
     "default" | "secondary" | "destructive" | "outline" | "warning"
   > = {
+    pending: "warning",
     pending_verification: "warning",
     rejected: "destructive",
     inactive: "outline",
   };
 
   const STATUS_LABELS: Record<string, string> = {
+    pending: "Pending Verification",
     pending_verification: "Pending Verification",
     rejected: "Rejected",
     inactive: "Inactive",

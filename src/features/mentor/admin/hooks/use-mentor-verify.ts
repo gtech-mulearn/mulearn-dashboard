@@ -65,6 +65,7 @@ interface UseMentorRosterParams {
   low_rating?: boolean;
   page?: number;
   per_page?: number;
+  sortBy?: string;
 }
 
 export function useMentorRoster(params: UseMentorRosterParams = {}) {
@@ -82,6 +83,7 @@ interface UseMentorChangeRequestsParams {
   page?: number;
   perPage?: number;
   mentor_tier?: string;
+  sortBy?: string;
 }
 
 export function useMentorChangeRequests(

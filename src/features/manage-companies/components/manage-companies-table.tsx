@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Building2,
-  CheckCircle,
-  ChevronDown,
-  Eye,
-  Filter,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle, Eye, XCircle } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
@@ -15,15 +8,9 @@ import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { formatShortDate } from "@/lib/datetime";
 import { useCompanyVerificationList } from "../hooks/use-manage-companies";
 import type { CompanyStatus, CompanyVerificationItem } from "../schemas";
 import { CompanyDetailSheet } from "./company-detail-sheet";
@@ -31,13 +18,16 @@ import { VerificationActionDialog } from "./verification-action-dialog";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const STATUS_FILTER_OPTIONS: { label: string; value: string }[] = [
-  { label: "All", value: "" },
-  { label: "Pending Verification", value: "pending_verification" },
-  { label: "Active", value: "active" },
+// Values must match what the backend stores in company.status
+// (enum 'pending','verified','rejected'). "all" sends no status filter.
+const STATUS_TABS = [
+  { label: "Pending", value: "pending" },
+  { label: "Verified", value: "verified" },
   { label: "Rejected", value: "rejected" },
-  { label: "Inactive", value: "inactive" },
-];
+  { label: "All", value: "all" },
+] as const;
+
+type StatusTab = (typeof STATUS_TABS)[number]["value"];
 
 const STATUS_CONFIG: Record<
   CompanyStatus | "",
@@ -75,7 +65,7 @@ const STATUS_CONFIG: Record<
 
 // ─── Column Builder ───────────────────────────────────────────────────────────
 
-function buildColumnOrder(
+export function buildColumnOrder(
   onView: (id: string | number | boolean) => void,
   onApproveRow: (id: string | number | boolean) => void,
   onRejectRow: (id: string | number | boolean) => void,
@@ -99,7 +89,7 @@ function buildColumnOrder(
     {
       column: "industry_sector",
       Label: "Industry",
-      isSortable: false,
+      isSortable: true,
       width: "min-w-[130px] hidden lg:table-cell",
       wrap: (data: string | React.ReactElement) => (
         <span className="text-sm text-muted-foreground">{data || "—"}</span>
@@ -117,7 +107,7 @@ function buildColumnOrder(
     {
       column: "status",
       Label: "Status",
-      isSortable: false,
+      isSortable: true,
       width: "min-w-[140px]",
       wrap: (data: string | React.ReactElement) => {
         const status = data as CompanyStatus;
@@ -135,6 +125,17 @@ function buildColumnOrder(
       Label: "Requested",
       isSortable: true,
       width: "min-w-[140px] hidden lg:table-cell",
+      // Format from the raw row value: Table passes wrap() an en-US string,
+      // and the other verification tabs use formatShortDate.
+      wrap: (
+        _data: string | React.ReactElement,
+        _id: string,
+        row: Record<string, unknown>,
+      ) => (
+        <span className="text-sm text-muted-foreground">
+          {formatShortDate(row.verification_requested_at as string | null)}
+        </span>
+      ),
     },
     {
       column: "id",
@@ -146,11 +147,7 @@ function buildColumnOrder(
         id: string,
         row: Record<string, unknown>,
       ) => {
-        const status = row.status as CompanyStatus;
-        const isPending =
-          status === "pending_verification" ||
-          (status as string) === "pending" ||
-          !status;
+        const isPending = (row.status as CompanyStatus) === "pending";
         return (
           <div className="flex items-center gap-1">
             <Button
@@ -205,7 +202,7 @@ export default function ManageCompaniesTable() {
   const [perPage, setPerPage] = useState(20);
   const [sort, setSort] = useState("");
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusTab>("pending");
 
   // ── Dialog / Sheet state ──────────────────────────────────────
   const [detailOpen, setDetailOpen] = useState(false);
@@ -216,11 +213,11 @@ export default function ManageCompaniesTable() {
 
   // ── Data ──────────────────────────────────────────────────────
   const { data, isLoading } = useCompanyVerificationList({
-    page: currentPage,
-    per_page: perPage,
+    pageIndex: currentPage,
+    perPage,
     search,
-    sort_by: sort,
-    status: statusFilter,
+    sortBy: sort,
+    status: statusFilter === "all" ? "" : statusFilter,
   });
 
   const rows = (data?.data ?? []) as CompanyVerificationItem[];
@@ -239,14 +236,17 @@ export default function ManageCompaniesTable() {
     setPerPage(value);
   };
 
+  // asc → desc → off, matching the other verification tables
   const handleSortChange = (column: string) => {
     setCurrentPage(1);
-    setSort((prev) => (prev === column ? `-${column}` : column));
+    setSort((prev) =>
+      prev === column ? `-${column}` : prev === `-${column}` ? "" : column,
+    );
   };
 
   const handleStatusFilterChange = (value: string) => {
     setCurrentPage(1);
-    setStatusFilter(value);
+    setStatusFilter(value as StatusTab);
   };
 
   const handleViewRow = useCallback(
@@ -295,75 +295,42 @@ export default function ManageCompaniesTable() {
     [handleViewRow, handleApproveRow, handleRejectRow],
   );
 
-  // ── Active filter label ───────────────────────────────────────
-  const activeFilterLabel =
-    STATUS_FILTER_OPTIONS.find((o) => o.value === statusFilter)?.label ?? "All";
-
   return (
     <>
       <Card className="overflow-visible rounded-none border-0 bg-transparent shadow-none">
-        <CardHeader className="px-0 py-0 sm:px-0 sm:py-0">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="space-y-1.5">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/6 px-3 py-1 text-xs font-semibold text-primary">
-                <Building2 className="size-3.5" />
-                Management
-              </div>
-              <CardTitle className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                Manage Companies
-              </CardTitle>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-6 bg-transparent p-0 pt-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="flex-1">
-              <TableTop
-                onSearchText={handleSearch}
-                onPerPageNumber={handlePerPageNumber}
-                perPage={perPage}
-                perPageOptions={[10, 20, 50, 100]}
-                CSV=""
-                searchPlaceholder="Search by name, email, location…"
-                searchSize="md"
-                searchPosition="right"
-                searchWrapperClassName="md:max-w-[680px]"
-                searchFieldWrapperClassName="lg:max-w-[380px]"
-                searchInputClassName="h-10 text-sm"
-              />
-            </div>
-
-            {/* Status filter dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5 rounded-xl whitespace-nowrap"
+        <CardContent className="space-y-6 bg-transparent p-0">
+          {/* Status tabs — same pattern as the other verification pages */}
+          <Tabs
+            value={statusFilter}
+            onValueChange={handleStatusFilterChange}
+            className="w-full"
+          >
+            <TabsList className="bg-muted border border-border/60">
+              {STATUS_TABS.map((tab) => (
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className="data-[state=active]:bg-background"
                 >
-                  <Filter className="h-3.5 w-3.5" />
-                  {activeFilterLabel}
-                  <ChevronDown className="h-3.5 w-3.5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuLabel>Filter by status</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {STATUS_FILTER_OPTIONS.map((opt) => (
-                  <DropdownMenuItem
-                    key={opt.value}
-                    onClick={() => handleStatusFilterChange(opt.value)}
-                    className={
-                      statusFilter === opt.value ? "font-semibold" : ""
-                    }
-                  >
-                    {opt.label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+                  {tab.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+
+          <TableTop
+            onSearchText={handleSearch}
+            onPerPageNumber={handlePerPageNumber}
+            perPage={perPage}
+            perPageOptions={[10, 20, 50, 100]}
+            CSV=""
+            searchPlaceholder="Search by name, email, or industry…"
+            searchSize="md"
+            searchPosition="right"
+            searchWrapperClassName="md:max-w-[680px]"
+            searchFieldWrapperClassName="lg:max-w-[380px]"
+            searchInputClassName="h-10 text-sm"
+          />
 
           <Table
             rows={rows as unknown as Data[]}

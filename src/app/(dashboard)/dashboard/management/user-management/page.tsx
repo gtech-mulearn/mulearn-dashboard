@@ -10,12 +10,9 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { verificationTabHref } from "@/features/role-verification/lib/tabs";
 import { hasAnyRole } from "@/lib/auth/permissions";
-import {
-  ADMIN_ROLES,
-  FELLOW_MANAGEMENT_ROLES,
-  INTERN_MANAGEMENT_ROLES,
-} from "@/lib/auth/roles";
+import { ADMIN_ROLES, INTERN_MANAGEMENT_ROLES } from "@/lib/auth/roles";
 import { requireAuth } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
@@ -60,10 +57,10 @@ const USER_MANAGEMENT_ITEMS: UserManagementItem[] = [
   {
     title: "Role Verification",
     description: "Verify and assign roles to users.",
-    href: "/dashboard/management/role-verification",
+    href: verificationTabHref("enabler"),
     icon: ShieldCheck,
     iconBg: "bg-brand-purple/15 text-brand-purple",
-    roles: FELLOW_MANAGEMENT_ROLES,
+    roles: ADMIN_ROLES,
   },
 ];
 

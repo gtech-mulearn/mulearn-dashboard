@@ -35,3 +35,18 @@ export function utcIsoToLocalInput(iso?: string | null): string {
     .toISOString()
     .slice(0, 16);
 }
+
+/**
+ * Short date for table cells ("25 Sept 2026"). Returns "—" when the value is
+ * missing or unparseable, so a null backend date never renders "Invalid Date".
+ */
+export function formatShortDate(iso?: string | null): string {
+  if (!iso) return "—";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}

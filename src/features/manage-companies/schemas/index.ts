@@ -127,7 +127,9 @@ export const CompanyDetailsSchema = z
     tech_stack: z.array(z.string()).nullable().optional(),
     perks: z.array(z.string()).nullable().optional(),
     testimonials: z.array(z.unknown()).nullable().optional(),
-    gallery: z.array(z.string()).nullable().optional(),
+    // Backend stores gallery items as objects (validate_gallery); the sheet
+    // never reads them, so their shape is left open.
+    gallery: z.array(z.unknown()).nullable().optional(),
     status: z.string(),
     rejection_reason: z.string().nullable().optional(),
     company_user_id: z.string().nullable().optional(),
