@@ -15,6 +15,7 @@ import { useCompanyVerificationList } from "../hooks/use-manage-companies";
 import type { CompanyStatus, CompanyVerificationItem } from "../schemas";
 import { CompanyDetailSheet } from "./company-detail-sheet";
 import { VerificationActionDialog } from "./verification-action-dialog";
+import { RowActionButton } from "@/components/dashboard/table/row-action-button";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -150,41 +151,25 @@ export function buildColumnOrder(
         const isPending = (row.status as CompanyStatus) === "pending";
         return (
           <div className="flex items-center gap-1">
-            <Button
-              type="button"
-              variant="secondary"
+            <RowActionButton
+              icon={Eye}
+              label="View"
               onClick={() => onView(id)}
-              className="inline-flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/10 px-2 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary/20 h-7"
-              title="View details"
-              aria-label="View company details"
-            >
-              <Eye className="h-3 w-3" />
-              <span className="hidden sm:inline">View</span>
-            </Button>
+            />
             {isPending && (
               <>
-                <Button
-                  type="button"
-                  variant="secondary"
+                <RowActionButton
+                  icon={CheckCircle}
+                  label="Approve"
+                  tone="success"
                   onClick={() => onApproveRow(id)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-success/40 bg-success/10 px-2 py-1 text-xs font-semibold text-success transition-colors hover:bg-success/20 h-7"
-                  title="Verify"
-                  aria-label="Verify company"
-                >
-                  <CheckCircle className="h-3 w-3" />
-                  <span className="hidden sm:inline">Verify</span>
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
+                />
+                <RowActionButton
+                  icon={XCircle}
+                  label="Reject"
+                  tone="destructive"
                   onClick={() => onRejectRow(id)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-destructive/40 bg-destructive/10 px-2 py-1 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/20 h-7"
-                  title="Reject"
-                  aria-label="Reject company"
-                >
-                  <XCircle className="h-3 w-3" />
-                  <span className="hidden sm:inline">Reject</span>
-                </Button>
+                />
               </>
             )}
           </div>

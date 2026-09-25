@@ -21,16 +21,14 @@ import {
   type UnverifiedOrgItem,
 } from "../../schemas/verification.schema";
 
-export type OrgRequestDialogMode = "view" | "approve" | "reject";
+// "View" is the OrgRequestSheet, like the Mentor and Company tabs; this
+// dialog only confirms a decision.
+export type OrgRequestDialogMode = "approve" | "reject";
 
 const COPY: Record<
   OrgRequestDialogMode,
   { title: string; description: string }
 > = {
-  view: {
-    title: "Organization Request",
-    description: "Details submitted with this organization request.",
-  },
   approve: {
     title: "Approve Organization Request",
     description:
@@ -186,7 +184,7 @@ export function VerifyActionDialog({
             onClick={handleClose}
             disabled={mutation.isPending}
           >
-            {mode === "view" ? "Close" : "Cancel"}
+            Cancel
           </Button>
           {mode === "reject" && (
             <Button

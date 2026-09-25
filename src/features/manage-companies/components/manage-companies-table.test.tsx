@@ -1,5 +1,5 @@
-import { render } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { buildColumnOrder } from "./manage-companies-table";
 
 const noop = () => {};
@@ -25,5 +25,36 @@ describe("Company tab — Requested column", () => {
 
   it("shows an em dash when the company never requested verification", () => {
     expect(renderCell(null)).toBe("—");
+  });
+});
+
+// Row actions use the Mentor tab's icon buttons (RowActionButton).
+describe("Company tab — row actions", () => {
+  const renderActions = (status: string) => {
+    const handlers = { onView: vi.fn(), onApprove: vi.fn(), onReject: vi.fn() };
+    const actions = buildColumnOrder(
+      handlers.onView,
+      handlers.onApprove,
+      handlers.onReject,
+    ).find((c) => c.column === "id");
+    render(<div>{actions?.wrap?.("", "c1", { status })}</div>);
+    return handlers;
+  };
+
+  it("offers View, Approve and Reject on a pending company", () => {
+    const handlers = renderActions("pending");
+    fireEvent.click(screen.getByRole("button", { name: "View" }));
+    fireEvent.click(screen.getByRole("button", { name: "Approve" }));
+    fireEvent.click(screen.getByRole("button", { name: "Reject" }));
+    expect(handlers.onView).toHaveBeenCalledWith("c1");
+    expect(handlers.onApprove).toHaveBeenCalledWith("c1");
+    expect(handlers.onReject).toHaveBeenCalledWith("c1");
+  });
+
+  it("only offers View once a company is decided", () => {
+    renderActions("verified");
+    expect(screen.getByRole("button", { name: "View" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Approve" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Reject" })).toBeNull();
   });
 });

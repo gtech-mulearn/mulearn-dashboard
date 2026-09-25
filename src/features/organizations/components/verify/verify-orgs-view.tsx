@@ -3,12 +3,12 @@
 import { CheckCircle, Eye, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
+import { RowActionButton } from "@/components/dashboard/table/row-action-button";
 import { nextSortState } from "@/components/dashboard/table/sort-cycle";
 import Table, { type Data } from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -22,6 +22,7 @@ import {
   OrgTypeSchema,
   type UnverifiedOrgItem,
 } from "../../schemas/verification.schema";
+import { OrgRequestSheet } from "./org-request-sheet";
 import {
   type OrgRequestDialogMode,
   VerifyActionDialog,
@@ -49,6 +50,7 @@ export default function VerifyOrgsView() {
   const [perPage, setPerPage] = useState(DEFAULT_PER_PAGE);
   const [sortBy, setSortBy] = useState("");
   const [orgType, setOrgType] = useState<OrgType>("College");
+  const [viewing, setViewing] = useState<UnverifiedOrgItem | null>(null);
   const [dialog, setDialog] = useState<{
     org: UnverifiedOrgItem;
     mode: OrgRequestDialogMode;
@@ -110,41 +112,25 @@ export default function VerifyOrgsView() {
   const renderActions = (row: Data) => {
     const org = row._raw as unknown as UnverifiedOrgItem;
     return (
-      <div className="flex items-center gap-1">
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => setDialog({ org, mode: "view" })}
-          className="inline-flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/10 px-2 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary/20 h-7"
-          title="View details"
-          aria-label="View request details"
-        >
-          <Eye className="h-3 w-3" />
-          <span className="hidden sm:inline">View</span>
-        </Button>
-        <Button
-          type="button"
-          variant="secondary"
+      <>
+        <RowActionButton
+          icon={Eye}
+          label="View"
+          onClick={() => setViewing(org)}
+        />
+        <RowActionButton
+          icon={CheckCircle}
+          label="Approve"
+          tone="success"
           onClick={() => setDialog({ org, mode: "approve" })}
-          className="inline-flex items-center gap-1 rounded-lg border border-success/40 bg-success/10 px-2 py-1 text-xs font-semibold text-success transition-colors hover:bg-success/20 h-7"
-          title="Approve"
-          aria-label="Approve request"
-        >
-          <CheckCircle className="h-3 w-3" />
-          <span className="hidden sm:inline">Approve</span>
-        </Button>
-        <Button
-          type="button"
-          variant="secondary"
+        />
+        <RowActionButton
+          icon={XCircle}
+          label="Reject"
+          tone="destructive"
           onClick={() => setDialog({ org, mode: "reject" })}
-          className="inline-flex items-center gap-1 rounded-lg border border-destructive/40 bg-destructive/10 px-2 py-1 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/20 h-7"
-          title="Reject"
-          aria-label="Reject request"
-        >
-          <XCircle className="h-3 w-3" />
-          <span className="hidden sm:inline">Reject</span>
-        </Button>
-      </div>
+        />
+      </>
     );
   };
 
@@ -235,11 +221,19 @@ export default function VerifyOrgsView() {
         </Table>
       </div>
 
+      <OrgRequestSheet
+        org={viewing}
+        open={viewing !== null}
+        onOpenChange={(open) => !open && setViewing(null)}
+        onApprove={(org) => setDialog({ org, mode: "approve" })}
+        onReject={(org) => setDialog({ org, mode: "reject" })}
+      />
+
       <VerifyActionDialog
         isOpen={dialog !== null}
         onClose={() => setDialog(null)}
         org={dialog?.org ?? null}
-        mode={dialog?.mode ?? "view"}
+        mode={dialog?.mode ?? "approve"}
       />
     </div>
   );

@@ -59,7 +59,8 @@ export function MentorApplicationSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="flex w-full flex-col gap-0 overflow-y-auto sm:max-w-lg">
-        <SheetHeader className="border-b pb-4">
+        {/* pr-10 keeps long names clear of the close button (top-4 right-4). */}
+        <SheetHeader className="border-b pb-4 pr-10">
           <SheetTitle>
             {application.user_full_name ||
               application.full_name ||
