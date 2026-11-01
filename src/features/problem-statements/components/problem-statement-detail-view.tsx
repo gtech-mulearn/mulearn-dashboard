@@ -43,7 +43,15 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StateDisplay } from "@/components/ui/state-display";
-import { useUserInfo } from "@/features/auth/hooks";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useUserInfo } from "@/features/auth";
 import { authStore } from "@/lib/auth";
 import { ROLES } from "@/lib/auth/roles";
 import {
@@ -122,6 +130,23 @@ export function ProblemStatementDetailView({
   const removeMutation = useRemoveInteraction(statementId);
   const withdrawSubmissionMutation = useWithdrawSubmission(statementId);
 
+  const userCompanyId =
+    userInfo?.company &&
+    typeof userInfo.company === "object" &&
+    "id" in userInfo.company
+      ? (userInfo.company as { id: string }).id
+      : typeof userInfo?.company === "string"
+        ? userInfo.company
+        : null;
+
+  const isOwnCompany = Boolean(
+    userCompanyId &&
+      statement?.company?.id &&
+      userCompanyId === statement.company.id,
+  );
+
+  const canManage = isAdmin || (isCompany && isOwnCompany);
+
   // For admins / company owners: query interactions to show who joined
   const adminInteractionsQuery = useAdminInteractions(
     statementId,
@@ -131,13 +156,16 @@ export function ProblemStatementDetailView({
   const companyInteractionsQuery = useCompanyInteractions(
     statementId,
     { pageIndex: 1, perPage: 50 },
-    { enabled: Boolean(userInfo && !isAdmin && isCompany && statement?.id) },
+    {
+      enabled: Boolean(
+        userInfo && !isAdmin && isCompany && statement?.id && isOwnCompany,
+      ),
+    },
   );
   const interactionsQuery = isAdmin
     ? adminInteractionsQuery
     : companyInteractionsQuery;
   const interactions = interactionsQuery.data?.data ?? [];
-  const canManage = isAdmin || (isCompany && Boolean(statement?.company?.id));
 
   // Loading skeleton matching event detail skeleton structure
   if (isLoading) {
@@ -495,50 +523,47 @@ export function ProblemStatementDetailView({
 
               <div className="p-5">
                 {canManage && interactions.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                      <thead className="border-b border-border/60 bg-muted/30 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        <tr>
-                          <th scope="col" className="px-4 py-3">
-                            Learner
-                          </th>
-                          <th scope="col" className="px-4 py-3">
-                            MUID
-                          </th>
-                          <th scope="col" className="px-4 py-3">
-                            Status
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border/50">
-                        {interactions.slice(0, 10).map((item) => (
-                          <tr
-                            key={item.user_id}
-                            className="hover:bg-muted/30 transition-colors"
-                          >
-                            <td className="px-4 py-3 text-xs font-semibold text-foreground whitespace-nowrap">
-                              {item.full_name}
-                            </td>
-                            <td className="px-4 py-3 text-xs text-muted-foreground font-mono whitespace-nowrap">
-                              @{item.muid}
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                              <span
-                                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold border ${
-                                  item.status === "Submitted"
-                                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                                    : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
-                                }`}
-                              >
-                                <CheckCircle2 className="size-3" />{" "}
-                                {item.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-b border-border/60 bg-muted/30">
+                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          Learner
+                        </TableHead>
+                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          MUID
+                        </TableHead>
+                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          Status
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {interactions.slice(0, 10).map((item) => (
+                        <TableRow
+                          key={item.user_id}
+                          className="hover:bg-muted/30 transition-colors"
+                        >
+                          <TableCell className="px-4 py-3 text-xs font-semibold text-foreground whitespace-nowrap">
+                            {item.full_name}
+                          </TableCell>
+                          <TableCell className="px-4 py-3 text-xs text-muted-foreground font-mono whitespace-nowrap">
+                            @{item.muid}
+                          </TableCell>
+                          <TableCell className="px-4 py-3 whitespace-nowrap">
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold border ${
+                                item.status === "Submitted"
+                                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                                  : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+                              }`}
+                            >
+                              <CheckCircle2 className="size-3" /> {item.status}
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 ) : (
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-dashed border-border bg-muted/20 p-4">
                     <div className="space-y-1">
@@ -816,13 +841,23 @@ export function ProblemStatementDetailView({
               </p>
             </div>
             {isSubmitted ? (
-              <Button
-                size="sm"
-                onClick={() => setShowSubmitDialog(true)}
-                className="shrink-0 rounded-full px-5 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
-              >
-                Update Link
-              </Button>
+              isOpen ? (
+                <Button
+                  size="sm"
+                  onClick={() => setShowSubmitDialog(true)}
+                  className="shrink-0 rounded-full px-5 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  Update Link
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  disabled
+                  className="shrink-0 rounded-full px-5 py-2 text-xs font-semibold"
+                >
+                  Submitted (Closed)
+                </Button>
+              )
             ) : isTrying && isOpen ? (
               <Button
                 size="sm"

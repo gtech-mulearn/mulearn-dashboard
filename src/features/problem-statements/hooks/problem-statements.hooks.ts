@@ -271,6 +271,14 @@ export function useCreateCompanyStatement() {
       await queryClient.invalidateQueries({
         queryKey: problemStatementKeys.company(),
       });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.feeds(),
+      });
+    },
+    onError: (error: unknown) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to create statement" }),
+      );
     },
   });
 }
@@ -294,6 +302,15 @@ export function useUpdateCompanyStatement() {
       await queryClient.invalidateQueries({
         queryKey: problemStatementKeys.companyLists(),
       });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.feeds(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.detail(id, false),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.detail(id, true),
+      });
     },
     onError: (error: unknown) => {
       toast.error(
@@ -309,10 +326,19 @@ export function useDeleteCompanyStatement() {
 
   return useMutation({
     mutationFn: (id: string) => deleteCompanyStatement(id),
-    onSuccess: async () => {
+    onSuccess: async (_data, id) => {
       toast.success("Problem statement deleted.");
       await queryClient.invalidateQueries({
         queryKey: problemStatementKeys.company(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.feeds(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.detail(id, false),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.detail(id, true),
       });
     },
     onError: (error: unknown) => {
@@ -329,10 +355,24 @@ export function usePublishCompanyStatement() {
 
   return useMutation({
     mutationFn: (id: string) => publishCompanyStatement(id),
-    onSuccess: async () => {
+    onSuccess: async (_data, id) => {
       await queryClient.invalidateQueries({
         queryKey: problemStatementKeys.company(),
       });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.feeds(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.detail(id, false),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.detail(id, true),
+      });
+    },
+    onError: (error: unknown) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to publish statement" }),
+      );
     },
   });
 }
@@ -343,10 +383,26 @@ export function useUnpublishCompanyStatement() {
 
   return useMutation({
     mutationFn: (id: string) => unpublishCompanyStatement(id),
-    onSuccess: async () => {
+    onSuccess: async (_data, id) => {
       await queryClient.invalidateQueries({
         queryKey: problemStatementKeys.company(),
       });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.feeds(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.detail(id, false),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.detail(id, true),
+      });
+    },
+    onError: (error: unknown) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to unpublish statement",
+        }),
+      );
     },
   });
 }
@@ -400,6 +456,14 @@ export function useAdminCreateStatement() {
       await queryClient.invalidateQueries({
         queryKey: problemStatementKeys.admin(),
       });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.feeds(),
+      });
+    },
+    onError: (error: unknown) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to create statement" }),
+      );
     },
   });
 }
@@ -422,6 +486,15 @@ export function useAdminUpdateStatement() {
       await queryClient.invalidateQueries({
         queryKey: problemStatementKeys.adminLists(),
       });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.feeds(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.detail(id, false),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.detail(id, true),
+      });
     },
     onError: (error: unknown) => {
       toast.error(
@@ -436,10 +509,19 @@ export function useAdminDeleteStatement() {
 
   return useMutation({
     mutationFn: (id: string) => adminDeleteStatement(id),
-    onSuccess: async () => {
+    onSuccess: async (_data, id) => {
       toast.success("Problem statement deleted.");
       await queryClient.invalidateQueries({
         queryKey: problemStatementKeys.admin(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.feeds(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.detail(id, false),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.detail(id, true),
       });
     },
     onError: (error: unknown) => {
@@ -455,10 +537,24 @@ export function useAdminPublishStatement() {
 
   return useMutation({
     mutationFn: (id: string) => adminPublishStatement(id),
-    onSuccess: async () => {
+    onSuccess: async (_data, id) => {
       await queryClient.invalidateQueries({
         queryKey: problemStatementKeys.admin(),
       });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.feeds(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.detail(id, false),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.detail(id, true),
+      });
+    },
+    onError: (error: unknown) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to publish statement" }),
+      );
     },
   });
 }
@@ -468,10 +564,26 @@ export function useAdminUnpublishStatement() {
 
   return useMutation({
     mutationFn: (id: string) => adminUnpublishStatement(id),
-    onSuccess: async () => {
+    onSuccess: async (_data, id) => {
       await queryClient.invalidateQueries({
         queryKey: problemStatementKeys.admin(),
       });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.feeds(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.detail(id, false),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: problemStatementKeys.detail(id, true),
+      });
+    },
+    onError: (error: unknown) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to unpublish statement",
+        }),
+      );
     },
   });
 }

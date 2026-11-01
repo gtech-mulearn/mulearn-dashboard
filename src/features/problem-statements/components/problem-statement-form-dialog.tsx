@@ -25,7 +25,7 @@ import {
   Plus,
   X,
 } from "lucide-react";
-import { Fragment, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
@@ -40,7 +40,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   CATEGORY_SUGGESTIONS,
   STATEMENT_FORM_DEFAULTS,
@@ -224,6 +223,7 @@ export function ProblemStatementFormDialog({
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -240,6 +240,23 @@ export function ProblemStatementFormDialog({
         : {}),
     } as FormValues,
   });
+
+  useEffect(() => {
+    if (open) {
+      reset({
+        ...STATEMENT_FORM_DEFAULTS,
+        ...(isEditing && statement
+          ? {
+              title: statement.title,
+              description: statement.description,
+              category: statement.category,
+              skills: statement.skills,
+              deadline: statement.deadline ?? null,
+            }
+          : {}),
+      } as FormValues);
+    }
+  }, [open, isEditing, statement, reset]);
 
   const skills = (watch("skills" as keyof FormValues) ?? []) as string[];
 
@@ -289,16 +306,11 @@ export function ProblemStatementFormDialog({
         return;
       }
 
+      reset(STATEMENT_FORM_DEFAULTS as FormValues);
       onSuccess?.(result);
       onClose();
-    } catch (err) {
-      toast.error(
-        getApiResponseError(err, {
-          fallback: isEditing
-            ? "Failed to update problem statement."
-            : "Failed to create problem statement.",
-        }),
-      );
+    } catch {
+      // Error notifications are handled by the mutation hook's onError callback
     }
   };
 
@@ -323,153 +335,6 @@ export function ProblemStatementFormDialog({
           className="flex flex-col flex-1 min-h-0"
         >
           <div className="flex-1 overflow-y-auto px-6 py-6 sm:px-8 space-y-5 bg-muted/10">
-            {/* Admin notice: authored directly for muLearn */}
-            {isAdmin && !isEditing && (
-              <div className="flex items-start gap-3 rounded-xl border border-brand-blue/20 bg-brand-blue/5 p-3.5 text-xs text-brand-blue dark:border-brand-blue/30 dark:bg-brand-blue/10">
-                <Info className="h-4 w-4 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-foreground">
-                    Creating on behalf of μLearn
-                  </p>
-                  <p className="mt-0.5 text-muted-foreground text-[11px] leading-relaxed">
-                    This problem statement will be published under the μLearn
-                    platform directly without requiring company attribution.
-                  </p>
-                </div>
-              </div>
-            )}
-            {/* Title */}
-            <div>
-              <FieldLabel
-                htmlFor="title"
-                required
-                hint={`${(watch("title" as keyof FormValues) as string)?.length ?? 0}/150`}
-              >
-                Title
-              </FieldLabel>
-              <Input
-                id="title"
-                placeholder="A clear, compelling problem title"
-                {...register("title" as keyof FormValues)}
-                className={errors.title ? "border-destructive" : ""}
-              />
-              <FieldError
-                message={errors.title?.message as string | undefined}
-              />
-            </div>
-            {/* Category */}
-            <div>
-              <FieldLabel htmlFor="category" required>
-                Category
-              </FieldLabel>
-              <Input
-                id="category"
-                placeholder="e.g. AI / ML, Sustainability, Web Development"
-                {...register("category" as keyof FormValues)}
-                className={
-                  (errors as Record<string, unknown>).category
-                    ? "border-destructive"
-                    : ""
-                }
-              />
-              {/* Suggestion pills */}
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {CATEGORY_SUGGESTIONS.slice(0, 8).map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() =>
-                      setValue(
-                        "category" as keyof FormValues,
-                        cat as FormValues[keyof FormValues],
-                        {
-                          shouldValidate: true,
-                        },
-                      )
-                    }
-                    className={`rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
-                      watch("category" as keyof FormValues) === cat
-                        ? "bg-brand-blue/10 text-brand-blue border-brand-blue/30"
-                        : "bg-muted/60 text-muted-foreground border-border hover:bg-muted"
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-              <FieldError
-                message={
-                  (errors as Record<string, { message?: string }>).category
-                    ?.message
-                }
-              />
-            </div>
-            {/* Skills */}
-            <div>
-              <FieldLabel hint={`${skills.length}/15`}>Skills</FieldLabel>
-              <SkillsInput
-                value={skills}
-                onChange={(v) =>
-                  setValue(
-                    "skills" as keyof FormValues,
-                    v as FormValues[keyof FormValues],
-                    {
-                      shouldValidate: true,
-                    },
-                  )
-                }
-                error={
-                  (errors as Record<string, { message?: string }>).skills
-                    ?.message
-                }
-              />
-            </div>
-            {/* Deadline */}
-            <div>
-              <FieldLabel htmlFor="deadline">Deadline</FieldLabel>
-              <div className="relative">
-                <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                <input
-                  id="deadline"
-                  type="datetime-local"
-                  {...register("deadline" as keyof FormValues)}
-                  className="flex h-10 w-full rounded-xl border border-input bg-background pl-9 pr-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                />
-              </div>
-              <p className="mt-1 text-[11px] text-muted-foreground">
-                Leave empty for no deadline (continuous). Must be a future date.
-              </p>
-              <FieldError
-                message={
-                  (errors as Record<string, { message?: string }>).deadline
-                    ?.message
-                }
-              />
-            </div>
-            {/* Description */}
-            <div>
-              <FieldLabel
-                htmlFor="description"
-                required
-                hint={`${(watch("description" as keyof FormValues) as string)?.length ?? 0}/20,000`}
-              >
-                Description
-              </FieldLabel>
-              <Textarea
-                id="description"
-                placeholder="Detailed description of the problem, context, and what you're looking for. Markdown is supported."
-                rows={8}
-                {...register("description" as keyof FormValues)}
-                className={`font-mono text-xs resize-y ${(errors as Record<string, unknown>).description ? "border-destructive" : ""}`}
-              />
-              <FieldError
-                message={
-                  (errors as Record<string, { message?: string }>).description
-                    ?.message
-                }
-              />
-            </div>
-            =======
             {/* Admin notice: authored directly for muLearn */}
             {isAdmin && !isEditing && (
               <div className="flex items-start gap-3 rounded-xl border border-brand-blue/20 bg-brand-blue/5 p-3.5 text-xs text-brand-blue dark:border-brand-blue/30 dark:bg-brand-blue/10">

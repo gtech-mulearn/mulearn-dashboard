@@ -6,7 +6,8 @@ import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useUserInfo } from "@/features/auth/hooks";
+import { StateDisplay } from "@/components/ui/state-display";
+import { useUserInfo } from "@/features/auth";
 import { authStore } from "@/lib/auth";
 import { ROLES } from "@/lib/auth/roles";
 import {
@@ -50,10 +51,13 @@ export function ProblemStatementsClient() {
   const canManage =
     userRoles.includes(ROLES.COMPANY) || isAdmin || Boolean(userInfo?.company);
 
+  const isPersonalTab =
+    statusFilter === "trying" || statusFilter === "submitted";
+
   // Query parameters for public/learner feed
   const feedParams: FeedQueryParams = {
-    pageIndex: currentPage,
-    perPage: 12,
+    pageIndex: isPersonalTab ? 1 : currentPage,
+    perPage: isPersonalTab ? 100 : 12,
     search: search || undefined,
     category: selectedCategory !== "all" ? selectedCategory : undefined,
     open_only: statusFilter === "open" ? true : undefined,
@@ -61,11 +65,16 @@ export function ProblemStatementsClient() {
   };
 
   // Feed query
-  const { data: feedData, isLoading } = useProblemStatementFeed(feedParams);
+  const {
+    data: feedData,
+    isLoading,
+    isError,
+    refetch,
+  } = useProblemStatementFeed(feedParams);
 
-  // If user selected "I'm Trying" tab, filter by my_interaction === "Trying"
+  // If user selected personal tab, filter full fetched set before paging
   const rawStatements = feedData?.data ?? [];
-  const statements = useMemo(() => {
+  const matchingStatements = useMemo(() => {
     if (statusFilter === "trying") {
       return rawStatements.filter((s) => s.my_interaction === "Trying");
     }
@@ -75,7 +84,29 @@ export function ProblemStatementsClient() {
     return rawStatements;
   }, [rawStatements, statusFilter]);
 
-  const pagination = feedData?.pagination;
+  const statements = useMemo(() => {
+    if (!isPersonalTab) return matchingStatements;
+    const startIndex = (currentPage - 1) * 12;
+    return matchingStatements.slice(startIndex, startIndex + 12);
+  }, [isPersonalTab, matchingStatements, currentPage]);
+
+  const pagination = useMemo(() => {
+    if (!isPersonalTab) return feedData?.pagination;
+    const totalCount = matchingStatements.length;
+    const totalPages = Math.max(1, Math.ceil(totalCount / 12));
+    return {
+      count: totalCount,
+      totalPages,
+      isNext: currentPage < totalPages,
+      isPrev: currentPage > 1,
+      nextPage: currentPage < totalPages ? currentPage + 1 : null,
+    };
+  }, [
+    isPersonalTab,
+    feedData?.pagination,
+    matchingStatements.length,
+    currentPage,
+  ]);
 
   // Categories list from suggestions
   const categories = useMemo(() => {
@@ -180,7 +211,24 @@ export function ProblemStatementsClient() {
       </div>
 
       {/* Main Board View: Grid vs Table */}
-      {isLoading ? (
+      {isError ? (
+        <StateDisplay
+          variant="no-results"
+          className="rounded-2xl border border-dashed border-border bg-muted/40 py-12"
+          title="Failed to load problem statements"
+          description="We couldn't load the problem statements feed. Please check your connection and try again."
+          action={
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              className="rounded-xl"
+            >
+              Try Again
+            </Button>
+          }
+        />
+      ) : isLoading ? (
         viewMode === "board" ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <Skeleton className="h-80 rounded-2xl" />

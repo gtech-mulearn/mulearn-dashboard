@@ -13,6 +13,12 @@
 
 import { endpoints } from "@/api";
 import { ApiError, apiClient } from "@/api/client";
+import {
+  GenericResponseSchema,
+  InteractionsListResponseSchema,
+  ProblemStatementDetailResponseSchema,
+  ProblemStatementListResponseSchema,
+} from "../schemas";
 import type {
   AdminCreateStatementPayload,
   AdminQueryParams,
@@ -43,7 +49,8 @@ export async function adminFetchStatements(
     ? `${endpoints.problemStatements.adminList}?${query}`
     : endpoints.problemStatements.adminList;
   try {
-    return await apiClient.get<PaginatedResponse<ProblemStatement>>(url);
+    const res = await apiClient.get(url, ProblemStatementListResponseSchema);
+    return res.response;
   } catch (error) {
     if (
       error instanceof ApiError &&
@@ -70,9 +77,11 @@ export async function adminFetchStatements(
 export async function adminFetchStatementDetail(
   id: string,
 ): Promise<ProblemStatement> {
-  return apiClient.get<ProblemStatement>(
+  const res = await apiClient.get(
     endpoints.problemStatements.adminDetail(id),
+    ProblemStatementDetailResponseSchema,
   );
+  return res.response;
 }
 
 // ─── Create ───────────────────────────────────────────────────────────────────
@@ -81,10 +90,12 @@ export async function adminFetchStatementDetail(
 export async function adminCreateStatement(
   payload: AdminCreateStatementPayload,
 ): Promise<ProblemStatement> {
-  return apiClient.post<ProblemStatement>(
+  const res = await apiClient.post(
     endpoints.problemStatements.adminCreate,
     payload,
+    ProblemStatementDetailResponseSchema,
   );
+  return res.response;
 }
 
 // ─── Update ───────────────────────────────────────────────────────────────────
@@ -94,29 +105,42 @@ export async function adminUpdateStatement(
   id: string,
   payload: UpdateStatementPayload,
 ): Promise<ProblemStatement> {
-  return apiClient.patch<ProblemStatement>(
+  const res = await apiClient.patch(
     endpoints.problemStatements.adminUpdate(id),
     payload,
+    ProblemStatementDetailResponseSchema,
   );
+  return res.response;
 }
 
 // ─── Delete ───────────────────────────────────────────────────────────────────
 
 /** DELETE admin/<id>/ — delete any statement with its interactions. */
 export async function adminDeleteStatement(id: string): Promise<void> {
-  await apiClient.delete(endpoints.problemStatements.adminDelete(id));
+  await apiClient.delete(
+    endpoints.problemStatements.adminDelete(id),
+    GenericResponseSchema,
+  );
 }
 
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 /** POST admin/<id>/publish/ */
 export async function adminPublishStatement(id: string): Promise<void> {
-  await apiClient.post(endpoints.problemStatements.adminPublish(id), {});
+  await apiClient.post(
+    endpoints.problemStatements.adminPublish(id),
+    {},
+    GenericResponseSchema,
+  );
 }
 
 /** POST admin/<id>/unpublish/ */
 export async function adminUnpublishStatement(id: string): Promise<void> {
-  await apiClient.post(endpoints.problemStatements.adminUnpublish(id), {});
+  await apiClient.post(
+    endpoints.problemStatements.adminUnpublish(id),
+    {},
+    GenericResponseSchema,
+  );
 }
 
 // ─── Interactions (Learners Trying) ──────────────────────────────────────────
@@ -143,7 +167,8 @@ export async function adminFetchInteractions(
   const url = query
     ? `${endpoints.problemStatements.adminInteractions(id)}?${query}`
     : endpoints.problemStatements.adminInteractions(id);
-  return apiClient.get(url);
+  const res = await apiClient.get(url, InteractionsListResponseSchema);
+  return res.response;
 }
 
 /**
@@ -156,5 +181,6 @@ export async function adminDeleteUserInteraction(
 ): Promise<void> {
   await apiClient.delete(
     endpoints.problemStatements.adminDeleteInteraction(statementId, userId),
+    GenericResponseSchema,
   );
 }

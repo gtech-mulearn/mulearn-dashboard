@@ -111,37 +111,53 @@ export const InteractionUserSchema = z.object({
 
 /** Response shape for GET company/<id>/interactions/ and admin equivalent */
 export const InteractionsResponseSchema = z.object({
-  counts: z.record(z.string(), z.number()),
+  counts: z.record(z.string(), z.number()).optional().default({}),
   data: z.array(InteractionUserSchema),
   pagination: PaginationSchema,
 });
 
 // ─── Response Envelopes ──────────────────────────────────────────────────────
 
-export const ProblemStatementListResponseSchema = z.object({
-  hasError: z.boolean(),
-  statusCode: z.number(),
-  message: z.record(z.string(), z.array(z.string())).optional().nullable(),
-  response: z.object({
+export const DjangoResponse = <T extends z.ZodTypeAny>(dataSchema: T) =>
+  z.object({
+    hasError: z.boolean().optional(),
+    statusCode: z.number().optional(),
+    message: z.unknown().optional(),
+    response: dataSchema,
+  });
+
+export const ProblemStatementListResponseSchema = DjangoResponse(
+  z.object({
     data: z.array(ProblemStatementSchema),
     pagination: PaginationSchema,
   }),
-});
+);
 
-export const ProblemStatementDetailResponseSchema = z.object({
-  hasError: z.boolean(),
-  statusCode: z.number(),
-  message: z.record(z.string(), z.array(z.string())).optional().nullable(),
-  response: ProblemStatementSchema,
-});
+export const ProblemStatementDetailResponseSchema = DjangoResponse(
+  ProblemStatementSchema,
+);
+
+export const InteractionsListResponseSchema = DjangoResponse(
+  InteractionsResponseSchema,
+);
+
+export const LearnerInteractionResponseSchema = DjangoResponse(
+  LearnerInteractionSchema,
+);
+
+export const SetInteractionResponseSchema = DjangoResponse(
+  z.object({
+    status: z.string(),
+    counts: z.record(z.string(), z.number()),
+  }),
+);
+
+export const InteractionCountsResponseSchema = DjangoResponse(
+  z.record(z.string(), z.number()),
+);
 
 /** Generic success response with no typed payload */
-export const GenericResponseSchema = z.object({
-  hasError: z.boolean(),
-  statusCode: z.number(),
-  message: z.record(z.string(), z.array(z.string())).optional().nullable(),
-  response: z.unknown().optional(),
-});
+export const GenericResponseSchema = DjangoResponse(z.unknown().optional());
 
 // ─── Form Payloads (strictly whitelisted — extra fields → 400) ───────────────
 

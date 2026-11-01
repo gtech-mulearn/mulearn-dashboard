@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StateDisplay } from "@/components/ui/state-display";
-import { useUserInfo } from "@/features/auth/hooks";
+import { useUserInfo } from "@/features/auth";
 import { ROLES } from "@/lib/auth/roles";
 import {
   MANAGE_SORT_DEFAULT,

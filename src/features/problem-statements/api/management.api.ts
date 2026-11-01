@@ -15,6 +15,12 @@
 
 import { endpoints } from "@/api";
 import { ApiError, apiClient } from "@/api/client";
+import {
+  GenericResponseSchema,
+  InteractionsListResponseSchema,
+  ProblemStatementDetailResponseSchema,
+  ProblemStatementListResponseSchema,
+} from "../schemas";
 import type {
   CompanyCreateStatementPayload,
   CompanyQueryParams,
@@ -43,7 +49,8 @@ export async function fetchCompanyStatements(
     ? `${endpoints.problemStatements.companyList}?${query}`
     : endpoints.problemStatements.companyList;
   try {
-    return await apiClient.get<PaginatedResponse<ProblemStatement>>(url);
+    const res = await apiClient.get(url, ProblemStatementListResponseSchema);
+    return res.response;
   } catch (error) {
     if (
       error instanceof ApiError &&
@@ -70,9 +77,11 @@ export async function fetchCompanyStatements(
 export async function fetchCompanyStatementDetail(
   id: string,
 ): Promise<ProblemStatement> {
-  return apiClient.get<ProblemStatement>(
+  const res = await apiClient.get(
     endpoints.problemStatements.companyDetail(id),
+    ProblemStatementDetailResponseSchema,
   );
+  return res.response;
 }
 
 // ─── Create ───────────────────────────────────────────────────────────────────
@@ -81,10 +90,12 @@ export async function fetchCompanyStatementDetail(
 export async function createCompanyStatement(
   payload: CompanyCreateStatementPayload,
 ): Promise<ProblemStatement> {
-  return apiClient.post<ProblemStatement>(
+  const res = await apiClient.post(
     endpoints.problemStatements.companyCreate,
     payload,
+    ProblemStatementDetailResponseSchema,
   );
+  return res.response;
 }
 
 // ─── Update ───────────────────────────────────────────────────────────────────
@@ -94,29 +105,42 @@ export async function updateCompanyStatement(
   id: string,
   payload: UpdateStatementPayload,
 ): Promise<ProblemStatement> {
-  return apiClient.patch<ProblemStatement>(
+  const res = await apiClient.patch(
     endpoints.problemStatements.companyUpdate(id),
     payload,
+    ProblemStatementDetailResponseSchema,
   );
+  return res.response;
 }
 
 // ─── Delete ───────────────────────────────────────────────────────────────────
 
 /** Permanently deletes the statement and all its interactions. Confirm before calling. */
 export async function deleteCompanyStatement(id: string): Promise<void> {
-  await apiClient.delete(endpoints.problemStatements.companyDelete(id));
+  await apiClient.delete(
+    endpoints.problemStatements.companyDelete(id),
+    GenericResponseSchema,
+  );
 }
 
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 /** Draft / Unpublished → Published. 409 if already published or deadline passed. */
 export async function publishCompanyStatement(id: string): Promise<void> {
-  await apiClient.post(endpoints.problemStatements.companyPublish(id), {});
+  await apiClient.post(
+    endpoints.problemStatements.companyPublish(id),
+    {},
+    GenericResponseSchema,
+  );
 }
 
 /** Published → Unpublished. 409 if not currently Published. */
 export async function unpublishCompanyStatement(id: string): Promise<void> {
-  await apiClient.post(endpoints.problemStatements.companyUnpublish(id), {});
+  await apiClient.post(
+    endpoints.problemStatements.companyUnpublish(id),
+    {},
+    GenericResponseSchema,
+  );
 }
 
 // ─── Interactions (Learners Trying) ──────────────────────────────────────────
@@ -144,5 +168,6 @@ export async function fetchCompanyInteractions(
   const url = query
     ? `${endpoints.problemStatements.companyInteractions(id)}?${query}`
     : endpoints.problemStatements.companyInteractions(id);
-  return apiClient.get(url);
+  const res = await apiClient.get(url, InteractionsListResponseSchema);
+  return res.response;
 }

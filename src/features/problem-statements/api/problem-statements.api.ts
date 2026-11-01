@@ -14,6 +14,14 @@
 
 import { endpoints } from "@/api";
 import { apiClient, publicApiClient } from "@/api/client";
+import {
+  GenericResponseSchema,
+  InteractionCountsResponseSchema,
+  LearnerInteractionResponseSchema,
+  ProblemStatementDetailResponseSchema,
+  ProblemStatementListResponseSchema,
+  SetInteractionResponseSchema,
+} from "../schemas";
 import type {
   FeedQueryParams,
   LearnerInteraction,
@@ -40,7 +48,8 @@ export async function fetchProblemStatementFeed(
     : endpoints.problemStatements.feed;
 
   const client = authenticated ? apiClient : publicApiClient;
-  return client.get<PaginatedResponse<ProblemStatement>>(url);
+  const res = await client.get(url, ProblemStatementListResponseSchema);
+  return res.response;
 }
 
 function buildFeedQuery(params?: FeedQueryParams): string {
@@ -66,7 +75,11 @@ export async function fetchProblemStatementDetail(
   authenticated = false,
 ): Promise<ProblemStatement> {
   const client = authenticated ? apiClient : publicApiClient;
-  return client.get<ProblemStatement>(endpoints.problemStatements.detail(id));
+  const res = await client.get(
+    endpoints.problemStatements.detail(id),
+    ProblemStatementDetailResponseSchema,
+  );
+  return res.response;
 }
 
 // ─── Learner Interaction ──────────────────────────────────────────────────────
@@ -75,9 +88,11 @@ export async function fetchProblemStatementDetail(
 export async function fetchMyInteraction(
   id: string,
 ): Promise<LearnerInteraction> {
-  return apiClient.get<LearnerInteraction>(
+  const res = await apiClient.get(
     endpoints.problemStatements.interaction(id),
+    LearnerInteractionResponseSchema,
   );
+  return res.response;
 }
 
 /**
@@ -88,10 +103,12 @@ export async function setInteraction(
   id: string,
   payload: SetInteractionPayload = { status: "Trying" },
 ): Promise<{ status: string; counts: Record<string, number> }> {
-  return apiClient.put<{ status: string; counts: Record<string, number> }>(
+  const res = await apiClient.put(
     endpoints.problemStatements.interactionPut(id),
     payload,
+    SetInteractionResponseSchema,
   );
+  return res.response;
 }
 
 /**
@@ -99,7 +116,10 @@ export async function setInteraction(
  * Still allowed after deadline (unless submitted after deadline, which returns 409).
  */
 export async function removeInteraction(id: string): Promise<void> {
-  await apiClient.delete(endpoints.problemStatements.interactionDelete(id));
+  await apiClient.delete(
+    endpoints.problemStatements.interactionDelete(id),
+    GenericResponseSchema,
+  );
 }
 
 /**
@@ -117,7 +137,19 @@ export async function submitSolution(
   updated_at: string;
   counts: Record<string, number>;
 }> {
-  return apiClient.put(endpoints.problemStatements.submissionPut(id), payload);
+  const res = await apiClient.put(
+    endpoints.problemStatements.submissionPut(id),
+    payload,
+    GenericResponseSchema,
+  );
+  return res.response as {
+    status: "Submitted";
+    submission_url: string;
+    submitted_at: string;
+    created_at: string;
+    updated_at: string;
+    counts: Record<string, number>;
+  };
 }
 
 /**
@@ -125,14 +157,19 @@ export async function submitSolution(
  * Returns 409 after deadline (submissions are locked).
  */
 export async function withdrawSubmission(id: string): Promise<void> {
-  await apiClient.delete(endpoints.problemStatements.submissionDelete(id));
+  await apiClient.delete(
+    endpoints.problemStatements.submissionDelete(id),
+    GenericResponseSchema,
+  );
 }
 
 /** GET <id>/interaction/counts/ — interaction counts object. */
 export async function fetchInteractionCounts(
   id: string,
 ): Promise<Record<string, number>> {
-  return apiClient.get<Record<string, number>>(
+  const res = await apiClient.get(
     endpoints.problemStatements.interactionCounts(id),
+    InteractionCountsResponseSchema,
   );
+  return res.response;
 }

@@ -43,7 +43,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,7 +51,15 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StateDisplay } from "@/components/ui/state-display";
-import { useUserInfo } from "@/features/auth/hooks";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useUserInfo } from "@/features/auth";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { ROLES } from "@/lib/auth/roles";
 import {
@@ -67,9 +75,11 @@ import {
   usePublishCompanyStatement,
   useUnpublishCompanyStatement,
 } from "../hooks";
+import type { InteractionsQueryParams } from "../types/problem-statement.types";
 import { ProblemStatementAboutSection } from "./problem-statement-about-section";
 import { ProblemStatementFormDialog } from "./problem-statement-form-dialog";
 import { ProblemStatementStatusBadge } from "./problem-statement-status-badge";
+import { ProblemStatementsPagination } from "./problem-statements-pagination";
 
 interface ManageProblemStatementDetailViewProps {
   statementId: string;
@@ -115,6 +125,7 @@ export function ManageProblemStatementDetailView({
   const [interactionStatusFilter, setInteractionStatusFilter] = useState<
     "all" | "Submitted" | "Trying"
   >("all");
+  const [rosterPage, setRosterPage] = useState(1);
   const [deletingUser, setDeletingUser] = useState<{
     userId: string;
     fullName: string;
@@ -135,14 +146,22 @@ export function ManageProblemStatementDetailView({
   const detailQuery = isAdmin ? adminDetailQuery : companyDetailQuery;
   const { data: statement, isLoading: isDetailLoading, isError } = detailQuery;
 
+  const interactionsParams: InteractionsQueryParams = {
+    pageIndex: rosterPage,
+    perPage: 20,
+    search: searchQuery.trim() || undefined,
+    status:
+      interactionStatusFilter === "all" ? undefined : interactionStatusFilter,
+  };
+
   const companyInteractionsQuery = useCompanyInteractions(
     statementId,
-    { pageIndex: 1, perPage: 100 },
+    interactionsParams,
     { enabled: Boolean(userInfo && !isAdmin && isCompany) },
   );
   const adminInteractionsQuery = useAdminInteractions(
     statementId,
-    { pageIndex: 1, perPage: 100 },
+    interactionsParams,
     { enabled: Boolean(userInfo && isAdmin) },
   );
   const interactionsQuery = isAdmin
@@ -182,21 +201,9 @@ export function ManageProblemStatementDetailView({
     statement?.interaction_counts?.Submitted ??
     0;
   const deadlineText = formatDeadline(statement?.deadline ?? null);
-
-  // Filtered interactions by user search query and status filter
-  const filteredInteractions = useMemo(() => {
-    let list = interactions;
-    if (interactionStatusFilter !== "all") {
-      list = list.filter((item) => item.status === interactionStatusFilter);
-    }
-    if (!searchQuery.trim()) return list;
-    const q = searchQuery.toLowerCase().trim();
-    return list.filter(
-      (item) =>
-        item.full_name?.toLowerCase().includes(q) ||
-        item.muid?.toLowerCase().includes(q),
-    );
-  }, [interactions, searchQuery, interactionStatusFilter]);
+  const hasActiveFilter = Boolean(
+    searchQuery.trim() || interactionStatusFilter !== "all",
+  );
 
   const handleConfirmDeleteUser = async () => {
     if (!deletingUser || !statement) return;
@@ -520,7 +527,8 @@ export function ManageProblemStatementDetailView({
                           variant="secondary"
                           className="rounded-full px-2 py-0.5 text-xs font-semibold"
                         >
-                          {interactions.length}
+                          {interactionsData?.pagination?.count ??
+                            tryingCount + submittedCount}
                         </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground">
@@ -531,13 +539,16 @@ export function ManageProblemStatementDetailView({
                   </div>
 
                   {/* Real-time search filter */}
-                  {interactions.length > 0 && (
+                  {(interactions.length > 0 || hasActiveFilter) && (
                     <div className="relative w-full sm:w-64">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
                       <Input
                         placeholder="Search by name or MUID..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={(e) => {
+                          setSearchQuery(e.target.value);
+                          setRosterPage(1);
+                        }}
                         className="pl-9 h-8 text-xs rounded-xl bg-background"
                       />
                     </div>
@@ -545,13 +556,13 @@ export function ManageProblemStatementDetailView({
                 </div>
 
                 {/* Status Filter Tabs */}
-                {interactions.length > 0 && (
+                {(interactions.length > 0 || hasActiveFilter) && (
                   <div className="flex items-center gap-1.5 self-start rounded-xl bg-muted/50 p-1 border border-border/60">
                     {[
                       {
                         label: "All",
                         value: "all",
-                        count: interactions.length,
+                        count: tryingCount + submittedCount,
                       },
                       {
                         label: "Submitted",
@@ -563,11 +574,12 @@ export function ManageProblemStatementDetailView({
                       <button
                         key={tab.value}
                         type="button"
-                        onClick={() =>
+                        onClick={() => {
                           setInteractionStatusFilter(
                             tab.value as "all" | "Submitted" | "Trying",
-                          )
-                        }
+                          );
+                          setRosterPage(1);
+                        }}
                         className={`rounded-lg px-3 py-1 text-xs font-semibold transition-all cursor-pointer ${
                           interactionStatusFilter === tab.value
                             ? "bg-background text-foreground shadow-xs ring-1 ring-border"
@@ -590,75 +602,82 @@ export function ManageProblemStatementDetailView({
                     <Skeleton className="h-12 w-full rounded-xl" />
                   </div>
                 ) : interactions.length === 0 ? (
-                  <div className="p-6">
-                    <StateDisplay
-                      variant="no-results"
-                      className="rounded-2xl border border-dashed border-border bg-muted/20 py-10"
-                      title="No learners participating yet"
-                      description="When learners click 'I'm Trying It' or submit solution links, they'll appear here automatically."
-                    />
-                  </div>
-                ) : filteredInteractions.length === 0 ? (
-                  <div className="p-6">
-                    <StateDisplay
-                      variant="no-results"
-                      className="rounded-2xl border border-dashed border-border bg-muted/20 py-8"
-                      title="No matches found"
-                      description={`No learners matching "${searchQuery}". Try a different name or MUID.`}
-                      action={
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSearchQuery("");
-                            setInteractionStatusFilter("all");
-                          }}
-                          className="rounded-xl text-xs"
-                        >
-                          Clear Filters
-                        </Button>
-                      }
-                    />
-                  </div>
+                  hasActiveFilter ? (
+                    <div className="p-6">
+                      <StateDisplay
+                        variant="no-results"
+                        className="rounded-2xl border border-dashed border-border bg-muted/20 py-8"
+                        title="No matches found"
+                        description={
+                          searchQuery.trim()
+                            ? `No learners matching "${searchQuery}". Try a different name or MUID.`
+                            : `No learners found with status "${interactionStatusFilter}".`
+                        }
+                        action={
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSearchQuery("");
+                              setInteractionStatusFilter("all");
+                              setRosterPage(1);
+                            }}
+                            className="rounded-xl text-xs"
+                          >
+                            Clear Filters
+                          </Button>
+                        }
+                      />
+                    </div>
+                  ) : (
+                    <div className="p-6">
+                      <StateDisplay
+                        variant="no-results"
+                        className="rounded-2xl border border-dashed border-border bg-muted/20 py-10"
+                        title="No learners participating yet"
+                        description="When learners click 'I'm Trying It' or submit solution links, they'll appear here automatically."
+                      />
+                    </div>
+                  )
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                      <thead className="border-b border-border/60 bg-muted/30 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        <tr>
-                          <th scope="col" className="px-5 py-3.5">
+                  <>
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-b border-border/60 bg-muted/30 hover:bg-muted/30">
+                          <TableHead className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                             Learner
-                          </th>
-                          <th scope="col" className="px-4 py-3.5">
+                          </TableHead>
+                          <TableHead className="px-4 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                             MUID
-                          </th>
-                          <th scope="col" className="px-4 py-3.5">
+                          </TableHead>
+                          <TableHead className="px-4 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                             Status
-                          </th>
-                          <th scope="col" className="px-4 py-3.5">
+                          </TableHead>
+                          <TableHead className="px-4 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                             Submission Link
-                          </th>
-                          <th scope="col" className="px-5 py-3.5 text-right">
+                          </TableHead>
+                          <TableHead className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
                             Timestamp
-                          </th>
+                          </TableHead>
                           {isAdmin && (
-                            <th scope="col" className="px-4 py-3.5 text-right">
+                            <TableHead className="px-4 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
                               Action
-                            </th>
+                            </TableHead>
                           )}
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border/50">
-                        {filteredInteractions.map((interaction) => {
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {interactions.map((interaction) => {
                           const initials = (interaction.full_name || "L")
                             .slice(0, 2)
                             .toUpperCase();
                           const isSub = interaction.status === "Submitted";
                           return (
-                            <tr
+                            <TableRow
                               key={interaction.user_id}
                               className="transition-colors hover:bg-muted/40"
                             >
-                              <td className="px-5 py-3.5 whitespace-nowrap">
+                              <TableCell className="px-5 py-3.5 whitespace-nowrap">
                                 <div className="flex items-center gap-3">
                                   <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-xs">
                                     {initials}
@@ -672,11 +691,11 @@ export function ManageProblemStatementDetailView({
                                     </p>
                                   </div>
                                 </div>
-                              </td>
-                              <td className="px-4 py-3.5 whitespace-nowrap text-xs text-muted-foreground font-mono">
+                              </TableCell>
+                              <TableCell className="px-4 py-3.5 whitespace-nowrap text-xs text-muted-foreground font-mono">
                                 @{interaction.muid}
-                              </td>
-                              <td className="px-4 py-3.5 whitespace-nowrap">
+                              </TableCell>
+                              <TableCell className="px-4 py-3.5 whitespace-nowrap">
                                 <span
                                   className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${
                                     isSub
@@ -691,8 +710,8 @@ export function ManageProblemStatementDetailView({
                                   )}
                                   {interaction.status}
                                 </span>
-                              </td>
-                              <td className="px-4 py-3.5">
+                              </TableCell>
+                              <TableCell className="px-4 py-3.5">
                                 {interaction.submission_url ? (
                                   <a
                                     href={interaction.submission_url}
@@ -711,8 +730,8 @@ export function ManageProblemStatementDetailView({
                                     No submission link
                                   </span>
                                 )}
-                              </td>
-                              <td className="px-5 py-3.5 whitespace-nowrap text-right">
+                              </TableCell>
+                              <TableCell className="px-5 py-3.5 whitespace-nowrap text-right">
                                 {interaction.submitted_at ? (
                                   <div>
                                     <p className="text-xs font-medium text-foreground">
@@ -732,9 +751,9 @@ export function ManageProblemStatementDetailView({
                                     </p>
                                   </div>
                                 )}
-                              </td>
+                              </TableCell>
                               {isAdmin && (
-                                <td className="px-4 py-3.5 whitespace-nowrap text-right">
+                                <TableCell className="px-4 py-3.5 whitespace-nowrap text-right">
                                   <Button
                                     variant="ghost"
                                     size="sm"
@@ -749,14 +768,26 @@ export function ManageProblemStatementDetailView({
                                   >
                                     <Trash2 className="size-3.5" />
                                   </Button>
-                                </td>
+                                </TableCell>
                               )}
-                            </tr>
+                            </TableRow>
                           );
                         })}
-                      </tbody>
-                    </table>
-                  </div>
+                      </TableBody>
+                    </Table>
+
+                    {interactionsData?.pagination &&
+                      interactionsData.pagination.count > 0 && (
+                        <div className="border-t border-border/50 p-4">
+                          <ProblemStatementsPagination
+                            pagination={interactionsData.pagination}
+                            currentPage={rosterPage}
+                            onPageChange={setRosterPage}
+                            currentCount={interactions.length}
+                          />
+                        </div>
+                      )}
+                  </>
                 )}
               </div>
             </div>
