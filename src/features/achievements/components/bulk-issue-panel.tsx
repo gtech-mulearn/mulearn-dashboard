@@ -69,6 +69,11 @@ export function BulkIssuePanel() {
   };
 
   const handleFileChange = (file: File | null) => {
+    if (file && file.size > 10 * 1024 * 1024) {
+      toast.error("File size exceeds 10MB limit");
+      setCsvFile(null);
+      return;
+    }
     setCsvFile(file);
     if (bulkIssueMutation.data) {
       bulkIssueMutation.reset();
