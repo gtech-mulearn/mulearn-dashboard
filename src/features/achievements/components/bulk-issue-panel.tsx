@@ -8,6 +8,7 @@ import {
   Copy,
   Download,
   Loader2,
+  RotateCcw,
 } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
@@ -211,6 +212,21 @@ export function BulkIssuePanel() {
                   </>
                 )}
               </Button>
+
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSelectedAchievementId("");
+                  setCopiedId(null);
+                }}
+                className="h-8 rounded-lg px-2 gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+                data-testid="reset-achievement-lookup-btn"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>Reset</span>
+              </Button>
             </div>
           )}
         </div>
@@ -395,7 +411,6 @@ export function BulkIssuePanel() {
                   page={1}
                   perPage={failedRowsTableData.length || 10}
                   columnOrder={FAILED_ROWS_COLUMNS}
-                  id={["id"]}
                   customCellRender={customCellRender}
                 >
                   <THead
