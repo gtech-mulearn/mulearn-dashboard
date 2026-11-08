@@ -28,6 +28,8 @@ export const problemStatementKeys = {
       authenticated ? "auth" : "public",
       params,
     ] as const,
+  feedPersonal: (params: Omit<FeedQueryParams, "pageIndex" | "perPage">) =>
+    [...problemStatementKeys.feeds(), "personal", params] as const,
 
   // ── Detail ────────────────────────────────────────────────────
   details: () => [...problemStatementKeys.all, "detail"] as const,

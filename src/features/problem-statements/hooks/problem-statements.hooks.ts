@@ -35,6 +35,7 @@ import {
   fetchCompanyStatements,
   fetchInteractionCounts,
   fetchMyInteraction,
+  fetchPersonalProblemStatements,
   fetchProblemStatementDetail,
   fetchProblemStatementFeed,
   publishCompanyStatement,
@@ -61,11 +62,28 @@ import { problemStatementKeys } from "./query-keys";
 // ─── Public / Learner Feed ────────────────────────────────────────────────────
 
 /** Browse the published problem statements feed (public, optionally authenticated). */
-export function useProblemStatementFeed(params?: FeedQueryParams) {
+export function useProblemStatementFeed(
+  params?: FeedQueryParams,
+  options?: { enabled?: boolean },
+) {
   const authenticated = authStore.isAuthenticated();
   return useQuery({
     queryKey: problemStatementKeys.feed(params ?? {}, authenticated),
     queryFn: () => fetchProblemStatementFeed(params, authenticated),
+    enabled: options?.enabled,
+  });
+}
+
+/** Fetch all published problem statements across pages for personal interaction tabs. */
+export function usePersonalProblemStatementsFeed(
+  params?: Omit<FeedQueryParams, "pageIndex" | "perPage">,
+  options?: { enabled?: boolean },
+) {
+  return useQuery({
+    queryKey: problemStatementKeys.feedPersonal(params ?? {}),
+    queryFn: () => fetchPersonalProblemStatements(params),
+    enabled: options?.enabled,
+    staleTime: 60_000,
   });
 }
 

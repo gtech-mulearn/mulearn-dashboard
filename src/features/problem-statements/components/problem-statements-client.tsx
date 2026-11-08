@@ -14,7 +14,11 @@ import {
   CATEGORY_SUGGESTIONS,
   FEED_SORT_DEFAULT,
 } from "../constants/problem-statement.constants";
-import { problemStatementKeys, useProblemStatementFeed } from "../hooks";
+import {
+  problemStatementKeys,
+  usePersonalProblemStatementsFeed,
+  useProblemStatementFeed,
+} from "../hooks";
 import type {
   FeedQueryParams,
   FeedStatusFilter,
@@ -51,41 +55,57 @@ export function ProblemStatementsClient() {
   const canManage =
     userRoles.includes(ROLES.COMPANY) || isAdmin || Boolean(userInfo?.company);
 
-  // Query parameters for public/learner feed
-  // Fetch a 100-item batch so open challenges can be prioritized forward
-  // across the feed while personal tabs and pagination remain in sync.
+  const isPersonalTab =
+    statusFilter === "trying" || statusFilter === "submitted";
+
+  // 1. General browsing query params (server-side paging: 12 per page)
   const feedParams: FeedQueryParams = {
-    pageIndex: 1,
-    perPage: 100,
+    pageIndex: currentPage,
+    perPage: 12,
     search: search || undefined,
     category: selectedCategory !== "all" ? selectedCategory : undefined,
     open_only: statusFilter === "open" ? true : undefined,
     sortBy,
   };
 
-  // Feed query
+  // General browsing query ("All Challenges" & "Open Submissions")
   const {
     data: feedData,
-    isLoading,
-    isError,
-    refetch,
-  } = useProblemStatementFeed(feedParams);
+    isLoading: isFeedLoading,
+    isError: isFeedError,
+    refetch: refetchFeed,
+  } = useProblemStatementFeed(feedParams, { enabled: !isPersonalTab });
 
-  // Filter full fetched set by personal interaction tabs if active
-  const rawStatements = feedData?.data ?? [];
-  const matchingStatements = useMemo(() => {
-    if (statusFilter === "trying") {
-      return rawStatements.filter((s) => s.my_interaction === "Trying");
-    }
-    if (statusFilter === "submitted") {
-      return rawStatements.filter((s) => s.my_interaction === "Submitted");
-    }
-    return rawStatements;
-  }, [rawStatements, statusFilter]);
+  // 2. Personal interaction query ("I'm Trying" & "Submitted")
+  // Fetches full platform catalog across pages so no joined challenge is ever missed
+  const personalParams = useMemo(
+    () => ({
+      search: search || undefined,
+      category: selectedCategory !== "all" ? selectedCategory : undefined,
+      sortBy,
+    }),
+    [search, selectedCategory, sortBy],
+  );
 
-  // Silently move closed submissions to the back, letting open challenges come forward
-  const sortedStatements = useMemo(() => {
-    return [...matchingStatements].sort((a, b) => {
+  const {
+    data: personalData,
+    isLoading: isPersonalLoading,
+    isError: isPersonalError,
+    refetch: refetchPersonal,
+  } = usePersonalProblemStatementsFeed(personalParams, {
+    enabled: isPersonalTab && isAuthenticated,
+  });
+
+  const isLoading = isPersonalTab ? isPersonalLoading : isFeedLoading;
+  const isError = isPersonalTab ? isPersonalError : isFeedError;
+  const refetch = isPersonalTab ? refetchPersonal : refetchFeed;
+
+  // General browsing statements: server returns 12 items.
+  // Silently move closed submissions to the back of the current page for "all"
+  const generalStatements = useMemo(() => {
+    const list = feedData?.data ?? [];
+    if (statusFilter !== "all") return list;
+    return [...list].sort((a, b) => {
       const aOpen = Boolean(a.is_open);
       const bOpen = Boolean(b.is_open);
       if (aOpen !== bOpen) {
@@ -93,15 +113,38 @@ export function ProblemStatementsClient() {
       }
       return 0;
     });
-  }, [matchingStatements]);
+  }, [feedData?.data, statusFilter]);
 
-  const statements = useMemo(() => {
+  // Personal tabs statements: filter the full set, sort open first, and slice 12 per page
+  const personalMatchingStatements = useMemo(() => {
+    if (!isPersonalTab) return [];
+    const list = personalData ?? [];
+    const filtered = list.filter((s) =>
+      statusFilter === "trying"
+        ? s.my_interaction === "Trying"
+        : s.my_interaction === "Submitted",
+    );
+    return [...filtered].sort((a, b) => {
+      const aOpen = Boolean(a.is_open);
+      const bOpen = Boolean(b.is_open);
+      if (aOpen !== bOpen) {
+        return aOpen ? -1 : 1;
+      }
+      return 0;
+    });
+  }, [isPersonalTab, personalData, statusFilter]);
+
+  const personalStatements = useMemo(() => {
     const startIndex = (currentPage - 1) * 12;
-    return sortedStatements.slice(startIndex, startIndex + 12);
-  }, [sortedStatements, currentPage]);
+    return personalMatchingStatements.slice(startIndex, startIndex + 12);
+  }, [personalMatchingStatements, currentPage]);
 
+  const statements = isPersonalTab ? personalStatements : generalStatements;
+
+  // Pagination: server pagination for general browsing; computed local pagination for personal tabs
   const pagination = useMemo(() => {
-    const totalCount = sortedStatements.length;
+    if (!isPersonalTab) return feedData?.pagination;
+    const totalCount = personalMatchingStatements.length;
     const totalPages = Math.max(1, Math.ceil(totalCount / 12));
     return {
       count: totalCount,
@@ -110,7 +153,12 @@ export function ProblemStatementsClient() {
       isPrev: currentPage > 1,
       nextPage: currentPage < totalPages ? currentPage + 1 : null,
     };
-  }, [sortedStatements.length, currentPage]);
+  }, [
+    isPersonalTab,
+    feedData?.pagination,
+    personalMatchingStatements.length,
+    currentPage,
+  ]);
 
   // Categories list from suggestions
   const categories = useMemo(() => {

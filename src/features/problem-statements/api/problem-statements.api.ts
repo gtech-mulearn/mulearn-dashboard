@@ -52,6 +52,42 @@ export async function fetchProblemStatementFeed(
   return res.response;
 }
 
+/**
+ * Fetches all problem statements across all pages for authenticated personal interaction tabs
+ * ("I'm Trying" and "Submitted"), ensuring learners never miss challenges outside page 1.
+ */
+export async function fetchPersonalProblemStatements(
+  params?: Omit<FeedQueryParams, "pageIndex" | "perPage">,
+): Promise<ProblemStatement[]> {
+  const firstPage = await fetchProblemStatementFeed(
+    { ...params, pageIndex: 1, perPage: 100 },
+    true,
+  );
+
+  const all = [...firstPage.data];
+  const totalPages = firstPage.pagination.totalPages;
+
+  if (totalPages > 1) {
+    const remainingPages = Array.from(
+      { length: totalPages - 1 },
+      (_, i) => i + 2,
+    );
+    const rest = await Promise.all(
+      remainingPages.map((page) =>
+        fetchProblemStatementFeed(
+          { ...params, pageIndex: page, perPage: 100 },
+          true,
+        ),
+      ),
+    );
+    for (const res of rest) {
+      all.push(...res.data);
+    }
+  }
+
+  return all;
+}
+
 function buildFeedQuery(params?: FeedQueryParams): string {
   if (!params) return "";
   const q = new URLSearchParams();
