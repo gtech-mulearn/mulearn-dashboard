@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { LayoutGrid, List, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { ApiError } from "@/api/client";
@@ -36,6 +36,7 @@ import type {
 import { ProblemStatementFormDialog } from "./problem-statement-form-dialog";
 import { ProblemStatementsGrid } from "./problem-statements-grid";
 import { ProblemStatementsPagination } from "./problem-statements-pagination";
+import { ProblemStatementsTable } from "./problem-statements-table";
 
 export default function ManageProblemStatementsDashboard() {
   const router = useRouter();
@@ -51,6 +52,7 @@ export default function ManageProblemStatementsDashboard() {
   const [statusFilter, setStatusFilter] = useState<
     ProblemStatementStatus | "all"
   >("all");
+  const [viewMode, setViewMode] = useState<"board" | "table">("board");
   const [showForm, setShowForm] = useState(false);
 
   const listParams: CompanyQueryParams = {
@@ -132,27 +134,61 @@ export default function ManageProblemStatementsDashboard() {
 
       {/* Controls row */}
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <Select
-          value={sortBy}
-          onValueChange={(value) => {
-            setSortBy(value);
-            setPage(1);
-          }}
-        >
-          <SelectTrigger
-            className="w-full rounded-full md:w-48"
-            aria-label="Sort problem statements"
+        <div className="flex flex-wrap items-center gap-3">
+          <Select
+            value={sortBy}
+            onValueChange={(value) => {
+              setSortBy(value);
+              setPage(1);
+            }}
           >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {MANAGE_SORT_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+            <SelectTrigger
+              className="w-full rounded-full md:w-48"
+              aria-label="Sort problem statements"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {MANAGE_SORT_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* View Mode Toggle: Board vs Table */}
+          <div className="flex items-center gap-1 rounded-xl bg-muted/60 p-1 border border-border/50">
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="Switch to board view"
+              onClick={() => setViewMode("board")}
+              className={`h-8 px-2.5 rounded-lg text-xs font-medium gap-1.5 ${
+                viewMode === "board"
+                  ? "bg-background text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              <span>Board</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="Switch to table view"
+              onClick={() => setViewMode("table")}
+              className={`h-8 px-2.5 rounded-lg text-xs font-medium gap-1.5 ${
+                viewMode === "table"
+                  ? "bg-background text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <List className="h-3.5 w-3.5" />
+              <span>Table</span>
+            </Button>
+          </div>
+        </div>
 
         <SearchBar
           onSearch={(val) => {
@@ -166,14 +202,23 @@ export default function ManageProblemStatementsDashboard() {
         />
       </div>
 
-      {/* Grid */}
+      {/* Grid or Table View */}
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          <Skeleton className="h-80 rounded-xl" />
-          <Skeleton className="h-80 rounded-xl" />
-          <Skeleton className="h-80 rounded-xl" />
-          <Skeleton className="h-80 rounded-xl" />
-        </div>
+        viewMode === "board" ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <Skeleton className="h-80 rounded-xl" />
+            <Skeleton className="h-80 rounded-xl" />
+            <Skeleton className="h-80 rounded-xl" />
+            <Skeleton className="h-80 rounded-xl" />
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <Skeleton className="h-12 w-full rounded-xl" />
+            <Skeleton className="h-16 w-full rounded-xl" />
+            <Skeleton className="h-16 w-full rounded-xl" />
+            <Skeleton className="h-16 w-full rounded-xl" />
+          </div>
+        )
       ) : is403 ? (
         <StateDisplay
           variant="not-found"
@@ -203,22 +248,40 @@ export default function ManageProblemStatementsDashboard() {
         />
       ) : (
         <>
-          <ProblemStatementsGrid
-            statements={statements}
-            isManageView
-            onCreateStatement={handleCreate}
-            onView={handleView}
-            emptyTitle={
-              statusFilter === "all"
-                ? "No problem statements yet"
-                : `No ${statusFilter} statements`
-            }
-            emptyDescription={
-              statusFilter === "all"
-                ? "Create your first problem statement to start connecting with learners."
-                : "No problem statements match the current filter."
-            }
-          />
+          {viewMode === "board" ? (
+            <ProblemStatementsGrid
+              statements={statements}
+              isManageView
+              onCreateStatement={handleCreate}
+              onView={handleView}
+              emptyTitle={
+                statusFilter === "all"
+                  ? "No problem statements yet"
+                  : `No ${statusFilter} statements`
+              }
+              emptyDescription={
+                statusFilter === "all"
+                  ? "Create your first problem statement to start connecting with learners."
+                  : "No problem statements match the current filter."
+              }
+            />
+          ) : (
+            <ProblemStatementsTable
+              statements={statements}
+              isManageView
+              onView={handleView}
+              emptyTitle={
+                statusFilter === "all"
+                  ? "No problem statements yet"
+                  : `No ${statusFilter} statements`
+              }
+              emptyDescription={
+                statusFilter === "all"
+                  ? "Create your first problem statement to start connecting with learners."
+                  : "No problem statements match the current filter."
+              }
+            />
+          )}
           {data?.pagination && data.pagination.count > 0 && (
             <ProblemStatementsPagination
               pagination={data.pagination}

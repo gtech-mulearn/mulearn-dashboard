@@ -43,7 +43,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -200,6 +200,19 @@ export function ManageProblemStatementDetailView({
     interactionsData?.counts?.Submitted ??
     statement?.interaction_counts?.Submitted ??
     0;
+  const totalRosterCount =
+    interactionsData?.pagination?.count ?? tryingCount + submittedCount;
+  const totalRosterPages = interactionsData?.pagination?.totalPages ?? 1;
+
+  // Prevent admin from being trapped on empty pages if roster count shrinks
+  useEffect(() => {
+    if (!interactionsLoading && interactions.length === 0 && rosterPage > 1) {
+      if (totalRosterPages >= 1 && rosterPage > totalRosterPages) {
+        setRosterPage(Math.max(1, totalRosterPages));
+      }
+    }
+  }, [interactions.length, rosterPage, totalRosterPages, interactionsLoading]);
+
   const deadlineText = formatDeadline(statement?.deadline ?? null);
   const hasActiveFilter = Boolean(
     searchQuery.trim() || interactionStatusFilter !== "all",
@@ -213,20 +226,24 @@ export function ManageProblemStatementDetailView({
         userId: deletingUser.userId,
       });
       setDeletingUser(null);
+      // Clamp rosterPage back if deleting the sole participant on a page > 1
+      if (interactions.length <= 1 && rosterPage > 1) {
+        setRosterPage((p) => Math.max(1, p - 1));
+      }
     } catch {
       // toast is handled by mutation hook
     }
   };
 
-  // Lifecycle handlers
+  // Lifecycle handlers — mutation hook owns error toasts per repo rule
   const handlePublish = async () => {
     if (!statement) return;
     try {
       await publishMutation.mutateAsync(statement.id);
       toast.success("Problem statement published! Learners can now see it.");
       setShowPublishDialog(false);
-    } catch (err) {
-      toast.error(getApiResponseError(err, { fallback: "Failed to publish" }));
+    } catch {
+      // error toast is handled by mutation hook onError
     }
   };
 
@@ -236,10 +253,8 @@ export function ManageProblemStatementDetailView({
       await unpublishMutation.mutateAsync(statement.id);
       toast.success("Problem statement unpublished. Hidden from learners.");
       setShowUnpublishDialog(false);
-    } catch (err) {
-      toast.error(
-        getApiResponseError(err, { fallback: "Failed to unpublish" }),
-      );
+    } catch {
+      // error toast is handled by mutation hook onError
     }
   };
 
@@ -539,7 +554,9 @@ export function ManageProblemStatementDetailView({
                   </div>
 
                   {/* Real-time search filter */}
-                  {(interactions.length > 0 || hasActiveFilter) && (
+                  {(totalRosterCount > 0 ||
+                    interactions.length > 0 ||
+                    hasActiveFilter) && (
                     <div className="relative w-full sm:w-64">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
                       <Input
@@ -556,7 +573,9 @@ export function ManageProblemStatementDetailView({
                 </div>
 
                 {/* Status Filter Tabs */}
-                {(interactions.length > 0 || hasActiveFilter) && (
+                {(totalRosterCount > 0 ||
+                  interactions.length > 0 ||
+                  hasActiveFilter) && (
                   <div className="flex items-center gap-1.5 self-start rounded-xl bg-muted/50 p-1 border border-border/60">
                     {[
                       {
@@ -629,6 +648,25 @@ export function ManageProblemStatementDetailView({
                         }
                       />
                     </div>
+                  ) : rosterPage > 1 ? (
+                    <div className="p-6">
+                      <StateDisplay
+                        variant="no-results"
+                        className="rounded-2xl border border-dashed border-border bg-muted/20 py-8"
+                        title="Page is empty"
+                        description="There are no learners on this page."
+                        action={
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setRosterPage(1)}
+                            className="rounded-xl text-xs"
+                          >
+                            Return to First Page
+                          </Button>
+                        }
+                      />
+                    </div>
                   ) : (
                     <div className="p-6">
                       <StateDisplay
@@ -640,155 +678,155 @@ export function ManageProblemStatementDetailView({
                     </div>
                   )
                 ) : (
-                  <>
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="border-b border-border/60 bg-muted/30 hover:bg-muted/30">
-                          <TableHead className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                            Learner
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-b border-border/60 bg-muted/30 hover:bg-muted/30">
+                        <TableHead className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          Learner
+                        </TableHead>
+                        <TableHead className="px-4 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          MUID
+                        </TableHead>
+                        <TableHead className="px-4 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          Status
+                        </TableHead>
+                        <TableHead className="px-4 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          Submission Link
+                        </TableHead>
+                        <TableHead className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
+                          Timestamp
+                        </TableHead>
+                        {isAdmin && (
+                          <TableHead className="px-4 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
+                            Action
                           </TableHead>
-                          <TableHead className="px-4 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                            MUID
-                          </TableHead>
-                          <TableHead className="px-4 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                            Status
-                          </TableHead>
-                          <TableHead className="px-4 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                            Submission Link
-                          </TableHead>
-                          <TableHead className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
-                            Timestamp
-                          </TableHead>
-                          {isAdmin && (
-                            <TableHead className="px-4 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
-                              Action
-                            </TableHead>
-                          )}
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {interactions.map((interaction) => {
-                          const initials = (interaction.full_name || "L")
-                            .slice(0, 2)
-                            .toUpperCase();
-                          const isSub = interaction.status === "Submitted";
-                          return (
-                            <TableRow
-                              key={interaction.user_id}
-                              className="transition-colors hover:bg-muted/40"
-                            >
-                              <TableCell className="px-5 py-3.5 whitespace-nowrap">
-                                <div className="flex items-center gap-3">
-                                  <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-xs">
-                                    {initials}
-                                  </div>
-                                  <div>
-                                    <p className="font-semibold text-xs text-foreground">
-                                      {interaction.full_name}
-                                    </p>
-                                    <p className="text-[11px] text-muted-foreground">
-                                      Participant
-                                    </p>
-                                  </div>
+                        )}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {interactions.map((interaction) => {
+                        const initials = (interaction.full_name || "L")
+                          .slice(0, 2)
+                          .toUpperCase();
+                        const isSub = interaction.status === "Submitted";
+                        return (
+                          <TableRow
+                            key={interaction.user_id}
+                            className="transition-colors hover:bg-muted/40"
+                          >
+                            <TableCell className="px-5 py-3.5 whitespace-nowrap">
+                              <div className="flex items-center gap-3">
+                                <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-xs">
+                                  {initials}
                                 </div>
-                              </TableCell>
-                              <TableCell className="px-4 py-3.5 whitespace-nowrap text-xs text-muted-foreground font-mono">
-                                @{interaction.muid}
-                              </TableCell>
-                              <TableCell className="px-4 py-3.5 whitespace-nowrap">
-                                <span
-                                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${
-                                    isSub
-                                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                                      : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
-                                  }`}
+                                <div>
+                                  <p className="font-semibold text-xs text-foreground">
+                                    {interaction.full_name}
+                                  </p>
+                                  <p className="text-[11px] text-muted-foreground">
+                                    Participant
+                                  </p>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="px-4 py-3.5 whitespace-nowrap text-xs text-muted-foreground font-mono">
+                              @{interaction.muid}
+                            </TableCell>
+                            <TableCell className="px-4 py-3.5 whitespace-nowrap">
+                              <span
+                                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${
+                                  isSub
+                                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                                    : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+                                }`}
+                              >
+                                {isSub ? (
+                                  <CheckCircle className="size-3" />
+                                ) : (
+                                  <Clock className="size-3" />
+                                )}
+                                {interaction.status}
+                              </span>
+                            </TableCell>
+                            <TableCell className="px-4 py-3.5">
+                              {interaction.submission_url ? (
+                                <a
+                                  href={interaction.submission_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 font-mono text-xs text-primary hover:underline max-w-[260px] truncate"
+                                  title={interaction.submission_url}
                                 >
-                                  {isSub ? (
-                                    <CheckCircle className="size-3" />
-                                  ) : (
-                                    <Clock className="size-3" />
-                                  )}
-                                  {interaction.status}
-                                </span>
-                              </TableCell>
-                              <TableCell className="px-4 py-3.5">
-                                {interaction.submission_url ? (
-                                  <a
-                                    href={interaction.submission_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1.5 font-mono text-xs text-primary hover:underline max-w-[260px] truncate"
-                                    title={interaction.submission_url}
-                                  >
-                                    <ExternalLink className="size-3 shrink-0 text-muted-foreground" />
-                                    <span className="truncate">
-                                      {interaction.submission_url}
-                                    </span>
-                                  </a>
-                                ) : (
-                                  <span className="text-xs text-muted-foreground italic">
-                                    No submission link
+                                  <ExternalLink className="size-3 shrink-0 text-muted-foreground" />
+                                  <span className="truncate">
+                                    {interaction.submission_url}
                                   </span>
-                                )}
-                              </TableCell>
-                              <TableCell className="px-5 py-3.5 whitespace-nowrap text-right">
-                                {interaction.submitted_at ? (
-                                  <div>
-                                    <p className="text-xs font-medium text-foreground">
-                                      {formatDate(interaction.submitted_at)}
-                                    </p>
-                                    <p className="text-[10px] text-muted-foreground">
-                                      Submitted
-                                    </p>
-                                  </div>
-                                ) : (
-                                  <div>
-                                    <p className="text-xs text-muted-foreground">
-                                      {formatDate(interaction.created_at)}
-                                    </p>
-                                    <p className="text-[10px] text-muted-foreground">
-                                      Joined
-                                    </p>
-                                  </div>
-                                )}
-                              </TableCell>
-                              {isAdmin && (
-                                <TableCell className="px-4 py-3.5 whitespace-nowrap text-right">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() =>
-                                      setDeletingUser({
-                                        userId: interaction.user_id,
-                                        fullName: interaction.full_name,
-                                      })
-                                    }
-                                    className="size-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
-                                    title="Remove learner interaction"
-                                  >
-                                    <Trash2 className="size-3.5" />
-                                  </Button>
-                                </TableCell>
+                                </a>
+                              ) : (
+                                <span className="text-xs text-muted-foreground italic">
+                                  No submission link
+                                </span>
                               )}
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-
-                    {interactionsData?.pagination &&
-                      interactionsData.pagination.count > 0 && (
-                        <div className="border-t border-border/50 p-4">
-                          <ProblemStatementsPagination
-                            pagination={interactionsData.pagination}
-                            currentPage={rosterPage}
-                            onPageChange={setRosterPage}
-                            currentCount={interactions.length}
-                          />
-                        </div>
-                      )}
-                  </>
+                            </TableCell>
+                            <TableCell className="px-5 py-3.5 whitespace-nowrap text-right">
+                              {interaction.submitted_at ? (
+                                <div>
+                                  <p className="text-xs font-medium text-foreground">
+                                    {formatDate(interaction.submitted_at)}
+                                  </p>
+                                  <p className="text-[10px] text-muted-foreground">
+                                    Submitted
+                                  </p>
+                                </div>
+                              ) : (
+                                <div>
+                                  <p className="text-xs text-muted-foreground">
+                                    {formatDate(interaction.created_at)}
+                                  </p>
+                                  <p className="text-[10px] text-muted-foreground">
+                                    Joined
+                                  </p>
+                                </div>
+                              )}
+                            </TableCell>
+                            {isAdmin && (
+                              <TableCell className="px-4 py-3.5 whitespace-nowrap text-right">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() =>
+                                    setDeletingUser({
+                                      userId: interaction.user_id,
+                                      fullName: interaction.full_name,
+                                    })
+                                  }
+                                  className="size-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
+                                  title="Remove learner interaction"
+                                >
+                                  <Trash2 className="size-3.5" />
+                                </Button>
+                              </TableCell>
+                            )}
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
                 )}
+
+                {/* Pagination — available whenever total items exist, even if current page slice is empty */}
+                {!interactionsLoading &&
+                  interactionsData?.pagination &&
+                  interactionsData.pagination.count > 0 && (
+                    <div className="border-t border-border/50 p-4">
+                      <ProblemStatementsPagination
+                        pagination={interactionsData.pagination}
+                        currentPage={rosterPage}
+                        onPageChange={setRosterPage}
+                        currentCount={interactions.length}
+                      />
+                    </div>
+                  )}
               </div>
             </div>
           </div>

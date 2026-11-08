@@ -51,13 +51,12 @@ export function ProblemStatementsClient() {
   const canManage =
     userRoles.includes(ROLES.COMPANY) || isAdmin || Boolean(userInfo?.company);
 
-  const isPersonalTab =
-    statusFilter === "trying" || statusFilter === "submitted";
-
   // Query parameters for public/learner feed
+  // Fetch a 100-item batch so open challenges can be prioritized forward
+  // across the feed while personal tabs and pagination remain in sync.
   const feedParams: FeedQueryParams = {
-    pageIndex: isPersonalTab ? 1 : currentPage,
-    perPage: isPersonalTab ? 100 : 12,
+    pageIndex: 1,
+    perPage: 100,
     search: search || undefined,
     category: selectedCategory !== "all" ? selectedCategory : undefined,
     open_only: statusFilter === "open" ? true : undefined,
@@ -72,7 +71,7 @@ export function ProblemStatementsClient() {
     refetch,
   } = useProblemStatementFeed(feedParams);
 
-  // If user selected personal tab, filter full fetched set before paging
+  // Filter full fetched set by personal interaction tabs if active
   const rawStatements = feedData?.data ?? [];
   const matchingStatements = useMemo(() => {
     if (statusFilter === "trying") {
@@ -84,15 +83,25 @@ export function ProblemStatementsClient() {
     return rawStatements;
   }, [rawStatements, statusFilter]);
 
+  // Silently move closed submissions to the back, letting open challenges come forward
+  const sortedStatements = useMemo(() => {
+    return [...matchingStatements].sort((a, b) => {
+      const aOpen = Boolean(a.is_open);
+      const bOpen = Boolean(b.is_open);
+      if (aOpen !== bOpen) {
+        return aOpen ? -1 : 1;
+      }
+      return 0;
+    });
+  }, [matchingStatements]);
+
   const statements = useMemo(() => {
-    if (!isPersonalTab) return matchingStatements;
     const startIndex = (currentPage - 1) * 12;
-    return matchingStatements.slice(startIndex, startIndex + 12);
-  }, [isPersonalTab, matchingStatements, currentPage]);
+    return sortedStatements.slice(startIndex, startIndex + 12);
+  }, [sortedStatements, currentPage]);
 
   const pagination = useMemo(() => {
-    if (!isPersonalTab) return feedData?.pagination;
-    const totalCount = matchingStatements.length;
+    const totalCount = sortedStatements.length;
     const totalPages = Math.max(1, Math.ceil(totalCount / 12));
     return {
       count: totalCount,
@@ -101,12 +110,7 @@ export function ProblemStatementsClient() {
       isPrev: currentPage > 1,
       nextPage: currentPage < totalPages ? currentPage + 1 : null,
     };
-  }, [
-    isPersonalTab,
-    feedData?.pagination,
-    matchingStatements.length,
-    currentPage,
-  ]);
+  }, [sortedStatements.length, currentPage]);
 
   // Categories list from suggestions
   const categories = useMemo(() => {
@@ -281,7 +285,7 @@ export function ProblemStatementsClient() {
       )}
 
       {/* Pagination */}
-      {pagination && (
+      {pagination && pagination.count > 0 && (
         <ProblemStatementsPagination
           pagination={pagination}
           currentPage={currentPage}
