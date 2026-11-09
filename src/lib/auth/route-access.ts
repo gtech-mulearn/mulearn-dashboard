@@ -116,6 +116,13 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   "/dashboard/management/system/features": {
     roles: MANAGEMENT_ROLES,
   },
+  // "Sign in with µLearn" admin console. The backend also requires a verified Admins link.
+  "/dashboard/management/system/applications": {
+    roles: ADMIN_ROLES,
+  },
+  "/dashboard/management/system/sign-in": {
+    roles: ADMIN_ROLES,
+  },
   "/dashboard/management/notifications": {
     roles: ADMIN_ROLES,
   },

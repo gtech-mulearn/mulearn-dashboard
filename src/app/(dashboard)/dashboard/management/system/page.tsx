@@ -1,9 +1,11 @@
 import {
   AlertTriangle,
+  AppWindow,
   ChevronLeft,
   ChevronRight,
   type LucideIcon,
   Settings2,
+  ShieldCheck,
   Ticket,
   ToggleRight,
 } from "lucide-react";
@@ -41,6 +43,23 @@ const SYSTEM_ITEMS: SystemItem[] = [
     icon: ToggleRight,
     iconBg: "bg-emerald-500/15 text-emerald-500",
     roles: MANAGEMENT_ROLES,
+  },
+  {
+    title: "Connected apps",
+    description: "Register and manage the apps that use Sign in with µLearn.",
+    href: "/dashboard/management/system/applications",
+    icon: AppWindow,
+    iconBg: "bg-brand-blue/15 text-brand-blue",
+    roles: ADMIN_ROLES,
+  },
+  {
+    title: "Sign-in security",
+    description:
+      "Lockout policy, recent sign-ins, and signing a member out everywhere.",
+    href: "/dashboard/management/system/sign-in",
+    icon: ShieldCheck,
+    iconBg: "bg-purple-500/15 text-purple-500",
+    roles: ADMIN_ROLES,
   },
   {
     title: "Karma Voucher",
