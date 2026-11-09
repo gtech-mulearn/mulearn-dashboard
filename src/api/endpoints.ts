@@ -1647,6 +1647,91 @@ export const endpoints = {
     verification: (uorgId: string) =>
       `/api/v1/dashboard/organisation/verify/${uorgId}/`,
   },
+
+  // ============================================
+  // Problem Statements
+  // Base: /api/v1/dashboard/problem-statements/
+  // All paths relative to /api/v1/dashboard/problem-statements/
+  // Roles: Learner (no prefix) | Company (company/) | Admin (admin/)
+  // ============================================
+  problemStatements: {
+    // ── §1 Learner / Public ──────────────────────────────────────
+    /** GET - Paginated feed of Published statements (🌐 Public, optional auth for my_interaction) */
+    feed: "/api/v1/dashboard/problem-statements/",
+    /** GET - Single statement by UUID (🌐 Public; Draft/Unpublished returns 404 to learners) */
+    detail: (id: string) => `/api/v1/dashboard/problem-statements/${id}/`,
+    /** GET - Learner's current interaction ({ status, created_at, updated_at }); null if none */
+    interaction: (id: string) =>
+      `/api/v1/dashboard/problem-statements/${id}/interaction/`,
+    /** PUT - Add / change interaction ({ status: "Trying" }) */
+    interactionPut: (id: string) =>
+      `/api/v1/dashboard/problem-statements/${id}/interaction/`,
+    /** DELETE - Remove own interaction (still allowed after deadline) */
+    interactionDelete: (id: string) =>
+      `/api/v1/dashboard/problem-statements/${id}/interaction/`,
+    /** GET - Interaction counts object ({ "Trying": N, "Submitted": M }) */
+    interactionCounts: (id: string) =>
+      `/api/v1/dashboard/problem-statements/${id}/interaction/counts/`,
+    /** PUT - Submit or replace solution link ({ submission_url: "https://..." }) */
+    submissionPut: (id: string) =>
+      `/api/v1/dashboard/problem-statements/${id}/submission/`,
+    /** DELETE - Withdraw submission (clears link and reverts status to Trying) */
+    submissionDelete: (id: string) =>
+      `/api/v1/dashboard/problem-statements/${id}/submission/`,
+
+    // ── §2 Company Endpoints (company/) ─────────────────────────
+    // Requires Company role + verified company. Only own company's statements.
+    /** GET - Paginated list of company's own statements */
+    companyList: "/api/v1/dashboard/problem-statements/company/",
+    /** POST - Create a new problem statement (always created as Draft) */
+    companyCreate: "/api/v1/dashboard/problem-statements/company/",
+    /** GET - Single statement detail (own company only; another company's returns 404) */
+    companyDetail: (id: string) =>
+      `/api/v1/dashboard/problem-statements/company/${id}/`,
+    /** PATCH - Partial update (same fields as create; works in any status) */
+    companyUpdate: (id: string) =>
+      `/api/v1/dashboard/problem-statements/company/${id}/`,
+    /** DELETE - Permanently delete statement and all its interactions (confirm first) */
+    companyDelete: (id: string) =>
+      `/api/v1/dashboard/problem-statements/company/${id}/`,
+    /** POST - Transition to Published; 409 if already published or deadline passed */
+    companyPublish: (id: string) =>
+      `/api/v1/dashboard/problem-statements/company/${id}/publish/`,
+    /** POST - Transition to Unpublished; 409 if not currently Published */
+    companyUnpublish: (id: string) =>
+      `/api/v1/dashboard/problem-statements/company/${id}/unpublish/`,
+    /** GET - Counts + paginated list of learners trying this statement */
+    companyInteractions: (id: string) =>
+      `/api/v1/dashboard/problem-statements/company/${id}/interactions/`,
+
+    // ── §3 Admin Endpoints (admin/) ──────────────────────────────
+    // Requires Admins role. Can act on any statement in any status.
+    /** GET - All statements across all companies (extra filter: company_id) */
+    adminList: "/api/v1/dashboard/problem-statements/admin/",
+    /** POST - Create statement for any company (body must include company_id) */
+    adminCreate: "/api/v1/dashboard/problem-statements/admin/",
+    /** GET - Any single statement detail */
+    adminDetail: (id: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/`,
+    /** PATCH - Update any statement (company cannot be changed) */
+    adminUpdate: (id: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/`,
+    /** DELETE - Delete any statement (with its interactions) */
+    adminDelete: (id: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/`,
+    /** POST - Publish any statement */
+    adminPublish: (id: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/publish/`,
+    /** POST - Unpublish any statement */
+    adminUnpublish: (id: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/unpublish/`,
+    /** GET - Counts + list of learners trying a statement */
+    adminInteractions: (id: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/interactions/`,
+    /** DELETE - Remove a specific user's interaction (404 if it does not exist) */
+    adminDeleteInteraction: (id: string, userId: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/interactions/${userId}/`,
+  },
 } as const;
 
 // Type for type-safe endpoint access

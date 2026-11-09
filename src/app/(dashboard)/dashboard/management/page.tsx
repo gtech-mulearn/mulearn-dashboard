@@ -1,6 +1,7 @@
 import {
   ArrowRight,
   Bell,
+  BookOpen,
   Building,
   Home,
   ListTodo,
@@ -19,6 +20,7 @@ import {
   ADMIN_ROLES,
   COMMUNITY_SETTINGS_HUB_ROLES,
   MANAGEMENT_ROLES,
+  ROLES,
   SYSTEM_CONFIG_HUB_ROLES,
   USER_MANAGEMENT_HUB_ROLES,
 } from "@/lib/auth/roles";
@@ -75,6 +77,15 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
     path: "/dashboard/management/tasks",
     color: "bg-primary/10 text-primary",
     roles: ADMIN_ROLES,
+  },
+  {
+    icon: BookOpen,
+    title: "Problem Statements",
+    description:
+      "Create and manage problem statements, view submissions, and candidates.",
+    path: "/dashboard/manage-problem-statements",
+    color: "bg-chart-3/10 text-chart-3",
+    roles: [ROLES.ADMIN, ROLES.COMPANY],
   },
   {
     icon: Building,

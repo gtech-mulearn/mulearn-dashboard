@@ -177,6 +177,13 @@ export const NAV_ITEMS: readonly NavItem[] = [
     section: "main",
   },
   {
+    id: "problem-statements",
+    title: "Problem Statements",
+    href: "/dashboard/problem-statements",
+    icon: BookOpen,
+    section: "main",
+  },
+  {
     id: "weekly-twitches",
     title: "Weekly Twitches",
     href: "/dashboard/weekly-twitches",
@@ -270,6 +277,15 @@ export const NAV_ITEMS: readonly NavItem[] = [
     section: "management",
     roles: [ROLES.COMPANY],
   },
+  {
+    id: "company-problem-statements",
+    title: "Problem Statements",
+    href: "/dashboard/manage-problem-statements",
+    icon: BookOpen,
+    section: "management",
+    roles: [ROLES.COMPANY, ROLES.ADMIN],
+  },
+
   {
     id: "company-mentors",
     title: "Mentor Management",

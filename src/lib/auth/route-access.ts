@@ -58,6 +58,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   "/dashboard/settings/organization": { roles: CAMPUS_SETTINGS_ROLES },
   "/dashboard/hackathon": { roles: [] },
   "/dashboard/events": { roles: [] },
+  "/dashboard/problem-statements": { roles: [] },
   "/dashboard/connect-discord": { roles: [] },
   "/dashboard/refer": { roles: [] },
   "/dashboard/weekly-twitches": { roles: [] },
@@ -255,6 +256,11 @@ export const routeAccessMap: Record<string, RouteConfig> = {
     ],
     dynamicCheck: (roles) =>
       roles.some((r) => r.endsWith(" IGLead") || r.endsWith(" CampusLead")),
+  },
+
+  // ── Problem Statements Management ────────────────────────
+  "/dashboard/manage-problem-statements": {
+    roles: [ROLES.ADMIN, ROLES.COMPANY],
   },
 
   // ── Jobs Dashboard ───────────────────────────────────────
