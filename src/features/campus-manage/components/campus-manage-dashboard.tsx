@@ -123,6 +123,7 @@ import {
   useIgChapters,
   useKarmaByCluster,
   useRemoveExecomMember,
+  useUnverifiedOrgLinks,
   useUpsertSocialLink,
 } from "../hooks";
 import type {
@@ -138,6 +139,7 @@ import { IgChapterFormDialog } from "./ig-chapter-form-dialog";
 import { StudentLevelsCard } from "./student-levels-card";
 import { TransferEnablerDialog } from "./transfer-enabler-dialog";
 import { TransferLeadDialog } from "./transfer-lead-dialog";
+import { UnverifiedOrgLinksTable } from "./unverified-org-links-table";
 
 const PAGE_SIZE = 10;
 
@@ -611,6 +613,12 @@ export function CampusManageDashboard() {
   const { data: chapters = [], isLoading: isChaptersLoading } = useIgChapters();
 
   const { data: execomRoles = [] } = useExecomRoles();
+
+  const { data: unverifiedData } = useUnverifiedOrgLinks({
+    page: 1,
+    perPage: 1,
+  });
+  const unverifiedCount = unverifiedData?.pagination?.count ?? 0;
 
   const socialLinks = overview?.socialLinks;
 
@@ -1361,13 +1369,23 @@ export function CampusManageDashboard() {
                         ? [{ value: "execom", label: "Execom" }]
                         : []),
                       { value: "ig", label: "IG Chapters" },
+                      {
+                        value: "verification",
+                        label: "Link Verification",
+                        badge: unverifiedCount,
+                      },
                     ].map((tab) => (
                       <TabsTrigger
                         key={tab.value}
                         value={tab.value}
-                        className="relative shrink-0 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-card/50 data-[state=inactive]:hover:text-foreground"
+                        className="relative shrink-0 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-card/50 data-[state=inactive]:hover:text-foreground inline-flex items-center gap-2"
                       >
-                        {tab.label}
+                        <span>{tab.label}</span>
+                        {typeof tab.badge === "number" && tab.badge > 0 && (
+                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-warning/15 px-1.5 text-[10px] font-bold text-warning">
+                            {tab.badge}
+                          </span>
+                        )}
                       </TabsTrigger>
                     ))}
                   </TabsList>
@@ -2247,6 +2265,13 @@ export function CampusManageDashboard() {
                         trigger={null}
                       />
                     )}
+                  </TabsContent>
+
+                  <TabsContent
+                    value="verification"
+                    className="mt-0 min-w-0 animate-in fade-in slide-in-from-bottom-2"
+                  >
+                    <UnverifiedOrgLinksTable />
                   </TabsContent>
                 </Tabs>
               </div>

@@ -4,7 +4,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { campusManageApi } from "../api";
-import type { CampusEventFilters, CampusLeaderboardFilters } from "../types";
+import type {
+  CampusEventFilters,
+  CampusLeaderboardFilters,
+  UnverifiedOrgLinksFilters,
+} from "../types";
 import { campusManageKeys } from "./query-keys";
 
 export function useCampusOverview() {
@@ -395,5 +399,45 @@ export function useUserProfile(muid: string) {
     queryFn: () => campusManageApi.getUserProfile(muid),
     enabled: !!muid && muid.includes("@"),
     retry: false,
+  });
+}
+
+export function useUnverifiedOrgLinks(filters: UnverifiedOrgLinksFilters) {
+  return useQuery({
+    queryKey: campusManageKeys.unverifiedOrgLinks(filters),
+    queryFn: () => campusManageApi.getUnverifiedOrgLinks(filters),
+  });
+}
+
+export function useUpdateOrgLinkVerification() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ linkId, verified }: { linkId: string; verified: boolean }) =>
+      campusManageApi.updateOrgLinkVerification(linkId, verified),
+    onSuccess: (_, variables) => {
+      toast.success(
+        variables.verified
+          ? "Organization link verified successfully."
+          : "Verification status updated.",
+      );
+      void Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: [...campusManageKeys.all, "unverified-org-links"],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: campusManageKeys.leaderboards(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: campusManageKeys.overview(),
+        }),
+      ]);
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to update organization link verification status.",
+        }),
+      );
+    },
   });
 }

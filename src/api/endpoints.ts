@@ -697,6 +697,13 @@ export const endpoints = {
     /** DELETE - Delete a specific social link record (requires bearer token) */
     socialLinkDetail: (linkId: string) =>
       `/api/v1/dashboard/campus/social-links/${linkId}/`,
+
+    // --- Organization Link Verification ---
+    /** GET - Paginated list of unverified organization link users (Admin / Campus Lead) */
+    unverifiedOrgLinks: "/api/v1/dashboard/user/unverified-org-links/",
+    /** PATCH - Update verification status of a specific organization link */
+    updateOrgLinkVerification: (linkId: string) =>
+      `/api/v1/dashboard/user/unverified-org-links/${linkId}/`,
   },
 
   // ============================================
