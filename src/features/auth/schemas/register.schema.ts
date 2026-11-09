@@ -80,6 +80,11 @@ export const RegisterRequestSchema = z.object({
    * When present, mulearnbackend verifies it and skips password auth.
    */
   tempToken: z.string().optional(),
+  /**
+   * Signed proof that this email's signup code was entered (spec A §3.3).
+   * Always required for a password signup (spec C D2).
+   */
+  email_verification_token: z.string().optional(),
 });
 
 /**

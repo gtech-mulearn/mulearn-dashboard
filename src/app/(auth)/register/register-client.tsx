@@ -3,10 +3,8 @@
  *
  * 📍 src/app/(auth)/register/register-client.tsx
  *
- * Orchestrates the 3-step signup flow:
- *   Step 1 — Basic info (name, email, password)
- *   Step 2 — Role selection
- *   Step 3 — Role-specific details
+ * Orchestrates the signup flow:
+ *   Step 1: Basic info · Step 1b: Verify email (not for Google) · Step 2: Role · Step 3: Details
  *
  * Routing after signup:
  *   Company  → POST /api/v1/dashboard/company/create/  → /dashboard  (own verification flow)
@@ -18,6 +16,13 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { getApiErrorCode } from "@/api/errors";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   type CompanyDetailsValues,
   RegisterForm,
@@ -27,6 +32,7 @@ import {
   useCompanyRegister,
   useRegister,
 } from "@/features/auth";
+import { SignupEmailVerifyStep } from "@/features/email-verification";
 import {
   useCollegeSearch,
   useCompanies,
@@ -45,7 +51,7 @@ interface RegisterClientProps {
   initialTempToken?: string | null;
 }
 
-type RegistrationStep = "basic" | "role" | "details";
+type RegistrationStep = "basic" | "verify" | "role" | "details";
 
 export function RegisterClient({
   redirectUri,
@@ -78,6 +84,11 @@ export function RegisterClient({
     }
     return null;
   });
+  // Spec A §3.3: in memory only; never stored in the browser.
+  const [emailVerificationToken, setEmailVerificationToken] = useState<
+    string | null
+  >(null);
+  const [reverifyOpen, setReverifyOpen] = useState(false);
   const searchParams = useSearchParams();
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const hasClearedParams = useRef(false);
@@ -118,8 +129,24 @@ export function RegisterClient({
     email: string;
     password: string;
   }) => {
+    const sameEmail =
+      basicData?.email.trim().toLowerCase() ===
+      values.email.trim().toLowerCase();
+    const keepToken = Boolean(sameEmail && emailVerificationToken);
+    if (!keepToken) setEmailVerificationToken(null);
     setBasicData(values);
+    setStep(keepToken ? "role" : "verify");
+  };
+
+  const handleEmailVerified = (token: string) => {
+    setEmailVerificationToken(token);
     setStep("role");
+  };
+
+  const handleReverified = (token: string) => {
+    setEmailVerificationToken(token);
+    setReverifyOpen(false);
+    toast.success("Email confirmed. Submit again to create your account.");
   };
 
   const handleRoleSubmit = (role: Role) => {
@@ -163,9 +190,16 @@ export function RegisterClient({
 
       // ── Student / Mentor / Enabler: generic register endpoint ─
       await handleGenericSignup(values);
-    } catch {
-      // Handled by useRegister/useCompanyRegister/useCreateOrganization/
-      // useSelectOrganization's own onError toasts.
+    } catch (error) {
+      if (getApiErrorCode(error) === "email_verification_required") {
+        // The 60-minute token expired. Confirm the email again in a dialog
+        // over the details form, which stays mounted so nothing typed is
+        // lost (spec A §3.3).
+        setEmailVerificationToken(null);
+        setReverifyOpen(true);
+      }
+      // Anything else: handled by useRegister/useCompanyRegister/
+      // useCreateOrganization/useSelectOrganization's own onError toasts.
     }
   };
 
@@ -196,6 +230,9 @@ export function RegisterClient({
       },
       referral: referralId ? { muid: referralId } : undefined,
       ...(isGoogleSignup && tempToken ? { tempToken } : {}),
+      ...(!isGoogleSignup && emailVerificationToken
+        ? { email_verification_token: emailVerificationToken }
+        : {}),
     });
 
     // Helper to normalize URLs to valid http(s):// strings for Django URLValidator
@@ -307,6 +344,9 @@ export function RegisterClient({
       },
       referral: referralId ? { muid: referralId } : undefined,
       ...(isGoogleSignup && tempToken ? { tempToken } : {}),
+      ...(!isGoogleSignup && emailVerificationToken
+        ? { email_verification_token: emailVerificationToken }
+        : {}),
     });
 
     // 3. Now authenticated — handle org linking for student / enabler
@@ -474,6 +514,16 @@ export function RegisterClient({
     );
   }
 
+  if (step === "verify" && basicData) {
+    return (
+      <SignupEmailVerifyStep
+        email={basicData.email}
+        onVerified={handleEmailVerified}
+        onEditEmail={handleBackToBasic}
+      />
+    );
+  }
+
   if (step === "role") {
     return (
       <RegisterRoleSelection
@@ -487,20 +537,43 @@ export function RegisterClient({
 
   if (step === "details" && selectedRole) {
     return (
-      <RegisterRoleDetails
-        role={selectedRole}
-        onSubmit={handleDetailsSubmit}
-        onBack={handleBackToRole}
-        isLoading={isLoading}
-        colleges={colleges.data ?? []}
-        departments={departments.data ?? []}
-        companies={companies.data ?? []}
-        isLoadingColleges={colleges.isFetching}
-        isLoadingDepartments={departments.isFetching}
-        isLoadingCompanies={companies.isLoading}
-        onCollegeSearchChange={setCollegeSearch}
-        onDepartmentSearchChange={setDepartmentSearch}
-      />
+      <>
+        <RegisterRoleDetails
+          role={selectedRole}
+          onSubmit={handleDetailsSubmit}
+          onBack={handleBackToRole}
+          isLoading={isLoading}
+          colleges={colleges.data ?? []}
+          departments={departments.data ?? []}
+          companies={companies.data ?? []}
+          isLoadingColleges={colleges.isFetching}
+          isLoadingDepartments={departments.isFetching}
+          isLoadingCompanies={companies.isLoading}
+          onCollegeSearchChange={setCollegeSearch}
+          onDepartmentSearchChange={setDepartmentSearch}
+        />
+        <Dialog open={reverifyOpen} onOpenChange={setReverifyOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogTitle className="sr-only">
+              Confirm your email again
+            </DialogTitle>
+            <DialogDescription>
+              Your email confirmation expired after an hour. Enter the new code
+              to finish. Your details are kept.
+            </DialogDescription>
+            {basicData ? (
+              <SignupEmailVerifyStep
+                email={basicData.email}
+                onVerified={handleReverified}
+                onEditEmail={() => {
+                  setReverifyOpen(false);
+                  handleBackToBasic();
+                }}
+              />
+            ) : null}
+          </DialogContent>
+        </Dialog>
+      </>
     );
   }
 

@@ -92,3 +92,19 @@ export function extractDjangoMessage(data: unknown): string | null {
 
   return null;
 }
+
+/** The backend's machine-readable `message.error_code`, if any. */
+export function getApiErrorCode(error: unknown): string | null {
+  if (!(error instanceof ApiError)) return null;
+  const data = error.data as { message?: { error_code?: unknown } } | undefined;
+  const code = data?.message?.error_code;
+  return typeof code === "string" ? code : null;
+}
+
+/** A numeric hint from a failure's `response`, such as retry_after or attempts_left. */
+export function getApiErrorNumber(error: unknown, key: string): number | null {
+  if (!(error instanceof ApiError)) return null;
+  const data = error.data as { response?: Record<string, unknown> } | undefined;
+  const value = data?.response?.[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}

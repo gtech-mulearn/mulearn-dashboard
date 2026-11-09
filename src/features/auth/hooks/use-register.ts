@@ -10,6 +10,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { getApiErrorCode } from "@/api/errors";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { authStore } from "@/lib/auth";
 import {
@@ -49,6 +50,9 @@ export function useRegister() {
       queryClient.setQueryData(authKeys.userInfo(), data.userInfo);
     },
     onError: (error) => {
+      // An expired verification sends the user back to the code step
+      // (register-client), which explains itself; no second toast.
+      if (getApiErrorCode(error) === "email_verification_required") return;
       toast.error(
         getApiResponseError(error, { fallback: "Registration failed" }),
       );

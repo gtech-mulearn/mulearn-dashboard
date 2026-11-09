@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -40,6 +41,7 @@ import {
   MAX_IMAGE_UPLOAD_MB,
   validateImageFile,
 } from "@/lib/constants/upload";
+import { cn } from "@/lib/utils";
 import {
   useCommunities,
   useCountries,
@@ -457,9 +459,24 @@ export function EditProfileModal({
                           <Input
                             {...field}
                             type="email"
-                            className={fieldClassName}
+                            readOnly
+                            aria-readonly="true"
+                            className={cn(
+                              fieldClassName,
+                              "cursor-not-allowed opacity-80",
+                            )}
                           />
                         </FormControl>
+                        <p className="text-xs text-muted-foreground">
+                          To change it, go to{" "}
+                          <Link
+                            href="/dashboard/settings/account"
+                            className="font-medium text-primary hover:underline"
+                          >
+                            Account settings
+                          </Link>
+                          .
+                        </p>
                         <FormMessage />
                       </FormItem>
                     )}

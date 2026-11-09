@@ -18,6 +18,7 @@ import Link from "next/link";
 import { useState } from "react";
 import Loader from "@/app/loading";
 import { StatCard } from "@/components/ui/stat-card";
+import { PartnerConnectCard } from "@/features/integrations";
 import { ShareProfileModal } from "@/features/profile";
 import { useCompanyProfile } from "../../hooks/use-company-profile";
 import { useJobs } from "../../hooks/use-jobs";
@@ -114,6 +115,12 @@ function CompanyProfileSidebar({
           )}
         </div>
       </div>
+
+      <PartnerConnectCard
+        provider="futuremug"
+        accountType="company"
+        title="Connected apps"
+      />
 
       {/* Company Details */}
       <div className="rounded-2xl bg-card p-4 shadow-sm">

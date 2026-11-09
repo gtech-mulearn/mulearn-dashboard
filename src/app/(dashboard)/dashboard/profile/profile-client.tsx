@@ -11,6 +11,7 @@ import { Clock } from "lucide-react";
 import { useState } from "react";
 import Loader from "@/app/loading";
 import { CompanyProfilePage } from "@/features/company-jobs/components";
+import { EmailVerificationNudge } from "@/features/email-verification";
 import {
   useMentorOverview,
   usePersonaCurrent,
@@ -38,7 +39,6 @@ import {
   type ProfileTab,
   ProfileTabs,
   ShareProfileModal,
-  type UpdateProfileRequest,
   updateInterestGroups,
   useDeleteCoverPic,
   useEditableProfile,
@@ -50,6 +50,7 @@ import {
   useUserLog,
   useUserProfile,
 } from "@/features/profile";
+import { buildProfileUpdate } from "@/features/profile/utils/profile-update.utils";
 import { ProjectsTab } from "@/features/projects";
 import {
   type ChangeOrganizationFormValues,
@@ -141,45 +142,13 @@ export function ProfilePageClient() {
   ) => {
     if (!profile) return;
 
-    const hasProfileUpdates = Boolean(
-      dirtyFields.full_name ||
-        dirtyFields.email ||
-        dirtyFields.mobile ||
-        dirtyFields.gender ||
-        dirtyFields.dob ||
-        dirtyFields.district_id ||
-        dirtyFields.communities,
+    const profilePayload = buildProfileUpdate(
+      data,
+      dirtyFields,
+      editableProfile,
+      profile,
     );
-
-    if (hasProfileUpdates) {
-      const baseFullName =
-        editableProfile?.full_name?.trim() || profile.full_name?.trim() || "";
-      const finalFullName = data.full_name?.trim() || baseFullName;
-
-      const baseEmail = editableProfile?.email?.trim() || profile.email || "";
-      const baseMobile =
-        editableProfile?.mobile?.trim() || profile.mobile || "";
-      const baseGender =
-        editableProfile?.gender?.trim() || profile.gender || "";
-      const baseDob = editableProfile?.dob?.trim() || profile.dob || "";
-      const baseDistrictId =
-        editableProfile?.district?.id || profile.org_district_id || null;
-      const baseCommunities = editableProfile?.communities ?? [];
-
-      const profilePayload: UpdateProfileRequest = {
-        full_name: finalFullName,
-        email: data.email?.trim() || baseEmail,
-        mobile: data.mobile?.trim() || baseMobile,
-        gender: data.gender?.trim() || baseGender,
-        dob: data.dob?.trim() || baseDob,
-        district_id: dirtyFields.district_id
-          ? data.district_id || null
-          : baseDistrictId,
-        communities: dirtyFields.communities
-          ? (data.communities ?? [])
-          : baseCommunities,
-      };
-
+    if (profilePayload) {
       await updateProfileMutation.mutateAsync(profilePayload);
     }
 
@@ -238,17 +207,25 @@ export function ProfilePageClient() {
 
   // Company users see the company profile, not the student layout
   if (profile.roles.includes(ROLES.COMPANY)) {
-    return <CompanyProfilePage />;
+    return (
+      <div className="space-y-4">
+        <EmailVerificationNudge />
+        <CompanyProfilePage />
+      </div>
+    );
   }
 
   // Mentor users see the mentor profile by default, with a toggle to switch back
   if (isMentor && mentorProfile) {
     return (
-      <MentorProfilePage
-        onSwitchToLearner={() =>
-          switchPersonaMutation.mutate({ persona: "learner" })
-        }
-      />
+      <div className="space-y-4">
+        <EmailVerificationNudge />
+        <MentorProfilePage
+          onSwitchToLearner={() =>
+            switchPersonaMutation.mutate({ persona: "learner" })
+          }
+        />
+      </div>
     );
   }
 
@@ -260,6 +237,7 @@ export function ProfilePageClient() {
 
   return (
     <div className="w-full max-w-full space-y-6 overflow-x-hidden">
+      <EmailVerificationNudge />
       {isPendingMentor && activePersona === "learner" && (
         <div className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-amber-500/90 shadow-sm backdrop-blur-sm">
           <Clock className="h-5 w-5 shrink-0" />

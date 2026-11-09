@@ -55,6 +55,10 @@ export const endpoints = {
     validate: "/api/v1/register/validate/",
     /** POST - Verify email doesn't exist */
     emailVerification: "/api/v1/register/email-verification/",
+    /** POST - Email a 6-digit code to a signup address (spec A §3.3) */
+    emailCode: "/api/v1/register/email-code/",
+    /** POST - Exchange a signup code for an email_verification_token */
+    emailCodeVerify: "/api/v1/register/email-code/verify/",
     /** POST - Validate Learning Circle user before registration */
     lcUserValidation: "/api/v1/register/lc/user-validation/",
     /** GET - Initiate Discord connection during registration */
@@ -65,6 +69,22 @@ export const endpoints = {
     userState: "/api/v1/register/user-state/",
     /** GET - Detect user's zone from IP */
     userZone: "/api/v1/register/user-zone/",
+  },
+
+  // ============================================
+  // Email Verification Endpoints (spec A §4)
+  // ============================================
+  emailVerification: {
+    /** GET - Is the current email verified? */
+    status: "/api/v1/email-verification/status/",
+    /** POST - Email a code to the current address */
+    verifyRequest: "/api/v1/email-verification/verify/request/",
+    /** POST - Confirm the current address with its code */
+    verifyConfirm: "/api/v1/email-verification/verify/confirm/",
+    /** POST - Start an email change (code goes to the new address) */
+    changeRequest: "/api/v1/email-verification/change/request/",
+    /** POST - Finish an email change with its code */
+    changeConfirm: "/api/v1/email-verification/change/confirm/",
   },
 
   // ============================================
@@ -966,6 +986,17 @@ export const endpoints = {
       /** POST - Enroll/Login to course */
       enroll: "/api/v1/integrations/OpenGrad/user-login/",
     },
+    /** Futuremug SSO (spec B §4). type: candidate | company | college */
+    futuremug: {
+      /** GET - connection status | DELETE - disconnect */
+      connection: (type: string) => `/api/v1/integrations/futuremug/${type}/`,
+      /** POST - record consent, then sign in */
+      authorize: (type: string) =>
+        `/api/v1/integrations/futuremug/${type}/authorize/`,
+      /** POST - sign in (contact details are reconciled first) */
+      signIn: (type: string) =>
+        `/api/v1/integrations/futuremug/${type}/sign-in/`,
+    },
   },
 
   // ============================================
@@ -1022,7 +1053,30 @@ export const endpoints = {
   // ============================================
   admin: {
     features: {
-      gritMeter: "/api/v1/dashboard/feature/grit-meter/",
+      /** GET {enabled, configured?} · POST {enabled} (Admins). Slugs: grit-meter, futuremug */
+      flag: (slug: string) => `/api/v1/dashboard/feature/${slug}/`,
+    },
+    /** "Sign in with µLearn" admin console (Admins with a verified role link). */
+    authAdmin: {
+      /** GET {items} · POST {name, client_id, client_type, redirect_uris, post_logout_redirect_uris?, skip_authorization?} */
+      clients: "/api/v1/dashboard/auth-admin/clients/",
+      /** GET · PATCH {name?, redirect_uris?, post_logout_redirect_uris?, skip_authorization?} */
+      client: (clientId: string) =>
+        `/api/v1/dashboard/auth-admin/clients/${encodeURIComponent(clientId)}/`,
+      /** POST {reason?}: also revokes every token the app holds */
+      clientDisable: (clientId: string) =>
+        `/api/v1/dashboard/auth-admin/clients/${encodeURIComponent(clientId)}/disable/`,
+      /** POST {reason?} */
+      clientEnable: (clientId: string) =>
+        `/api/v1/dashboard/auth-admin/clients/${encodeURIComponent(clientId)}/enable/`,
+      /** GET {policy, bounds} · PUT {attempts_limit?, block_minutes?} */
+      signinPolicy: "/api/v1/dashboard/auth-admin/signin-policy/",
+      /** GET read-only identity-provider settings */
+      securityPosture: "/api/v1/dashboard/auth-admin/security-posture/",
+      /** GET ?identifier=&result=success|failure&before=<iso>&limit= */
+      loginAttempts: "/api/v1/dashboard/auth-admin/login-attempts/",
+      /** POST {muid | user_id, reason?} */
+      sessionsRevoke: "/api/v1/dashboard/auth-admin/sessions/revoke/",
     },
     errorLog: {
       /** GET - List all error log entries */

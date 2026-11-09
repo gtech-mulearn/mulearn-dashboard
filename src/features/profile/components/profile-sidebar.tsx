@@ -9,6 +9,7 @@
 "use client";
 
 import { ChevronRight, Settings } from "lucide-react";
+import { PartnerConnectCard } from "@/features/integrations";
 import type { UserProfile } from "../schemas";
 import { ProfileSettings } from "./profile-settings";
 import { RolesDisplay } from "./roles-display";
@@ -53,6 +54,15 @@ export function ProfileSidebar({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Connected apps: renders nothing unless the backend says this learner can use it */}
+      {isOwnProfile && (
+        <PartnerConnectCard
+          provider="futuremug"
+          accountType="candidate"
+          title="Connected apps"
+        />
       )}
 
       {/* Profile Visibility */}

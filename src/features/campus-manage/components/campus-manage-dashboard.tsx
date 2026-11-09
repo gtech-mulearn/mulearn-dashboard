@@ -105,6 +105,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAssignCampusMentor } from "@/features/campus/hooks/campus.hooks";
+import { PartnerConnectCard } from "@/features/integrations";
 import { IGIcon } from "@/features/interest-groups";
 import { chipColor } from "@/lib/chip-colors";
 import { cn } from "@/lib/utils";
@@ -1054,6 +1055,19 @@ export function CampusManageDashboard() {
                     accentVar="var(--chart-5)"
                   />
                 </div>
+
+                {/* ── Partner integrations ──
+                    In the overview, with the campus's other account-level
+                    actions (Lead/Enabler transfer), so a Lead Enabler sees it
+                    without scrolling past the leaderboard. Renders nothing
+                    unless Futuremug applies to this viewer. */}
+                <PartnerConnectCard
+                  provider="futuremug"
+                  accountType="college"
+                  title="Partner integrations"
+                  className="mt-4 rounded-xl border border-border/60"
+                  titleClassName="text-[10px] font-black tracking-widest"
+                />
 
                 {/* ── Karma Trend Chart ── */}
                 <Card className="mt-4 border-border/60">
@@ -2252,7 +2266,7 @@ export function CampusManageDashboard() {
               </div>
 
               {/* Right Column: Social Presence Sidebar */}
-              <div className="w-full xl:w-[320px] 2xl:w-[340px] xl:shrink-0">
+              <div className="w-full space-y-4 xl:w-[320px] 2xl:w-[340px] xl:shrink-0">
                 <Card className="h-full border-border/60 shadow-sm transition-shadow hover:shadow-md/20">
                   <CardHeader className="pb-4">
                     <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
