@@ -83,10 +83,21 @@ export function CampusesSearchClient() {
     isLoading: isFetchingNextPage,
   });
 
-  const { data: countries = [] } = useCountriesDropdown(filtersOpen);
-  const { data: states = [] } = useStatesDropdown(filtersOpen);
-  const { data: zones = [] } = useZoneDropdown(filtersOpen);
-  const { data: affiliations = [] } = useAffiliations(filtersOpen);
+  // Filter options load lazily: once a filter is touched (pointer or keyboard
+  // focus), or straight away when a filter arrives preset from the URL so its
+  // select can show the chosen option's name.
+  const loadFilterOptions =
+    filtersOpen ||
+    Boolean(
+      filters.countryId ||
+        filters.stateId ||
+        filters.zoneId ||
+        filters.affiliationId,
+    );
+  const { data: countries = [] } = useCountriesDropdown(loadFilterOptions);
+  const { data: states = [] } = useStatesDropdown(loadFilterOptions);
+  const { data: zones = [] } = useZoneDropdown(loadFilterOptions);
+  const { data: affiliations = [] } = useAffiliations(loadFilterOptions);
 
   return (
     <>
@@ -119,6 +130,7 @@ export function CampusesSearchClient() {
         {/* Location / affiliation filters + sort */}
         <div
           className="flex flex-wrap gap-2 w-full"
+          onFocusCapture={() => setFiltersOpen(true)}
           onPointerDownCapture={() => setFiltersOpen(true)}
         >
           <Select

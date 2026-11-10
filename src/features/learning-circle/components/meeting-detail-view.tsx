@@ -45,7 +45,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { useUserInfo } from "@/features/auth/hooks";
+import { useUserInfo } from "@/features/auth";
 import { useCsvDownload } from "@/hooks/use-csv-download";
 import {
   useCircleDetail,

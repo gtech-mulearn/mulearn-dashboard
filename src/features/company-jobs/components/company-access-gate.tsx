@@ -2,11 +2,11 @@
 
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { useCompanyAccess } from "../hooks/use-company-access";
 import {
   type CompanyCapability,
   canOpenCompanyPage,
-} from "../lib/company-access";
+} from "@/lib/auth/company-access";
+import { useCompanyAccess } from "../hooks/use-company-access";
 import { CompanyInvitationsPanel } from "./admin/company-invitations-panel";
 import {
   CompanyForbiddenState,

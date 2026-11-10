@@ -154,6 +154,7 @@ export async function setInteraction(
 export async function removeInteraction(id: string): Promise<void> {
   await apiClient.delete(
     endpoints.problemStatements.interactionDelete(id),
+    undefined,
     GenericResponseSchema,
   );
 }
@@ -195,6 +196,7 @@ export async function submitSolution(
 export async function withdrawSubmission(id: string): Promise<void> {
   await apiClient.delete(
     endpoints.problemStatements.submissionDelete(id),
+    undefined,
     GenericResponseSchema,
   );
 }

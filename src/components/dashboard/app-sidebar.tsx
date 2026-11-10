@@ -23,6 +23,9 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { VersionBadge } from "@/components/ui/version-badge";
+// Direct imports on purpose: the sidebar renders on every page, and feature
+// barrels aren't tree-shaken in this build (no package.json "sideEffects"), so
+// importing @/features/company-jobs here would add ~800 KB of JS to most routes.
 import { useCompanyAccess } from "@/features/company-jobs/hooks/use-company-access";
 import { useCompanyProfile } from "@/features/company-jobs/hooks/use-company-profile";
 import { useFilteredNav } from "@/hooks/use-filtered-nav";
