@@ -15,6 +15,7 @@ import { Combobox } from "@/components/ui/combobox";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -33,13 +34,18 @@ import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
 import { useInterestGroupsList } from "@/features/home/hooks";
 import { useCompanies } from "@/features/onboarding/hooks";
+import { MENTOR_HOURS_OPTIONS, toMentorHours } from "../../lib/hours";
 import { useOnboardingDraftStore } from "../hooks/use-draft-store";
 import {
   useSubmitMentorApplication,
   useUpdateMentorApplication,
 } from "../hooks/use-onboarding";
-import type { MentorApplication, MentorProfileWrite } from "../schemas";
+import { buildMentorApplicationPayload } from "../lib/build-payload";
+import type { MentorApplication } from "../schemas";
 import { OnboardingFormSchema, type OnboardingFormValues } from "../schemas";
+
+/** Select sentinel for "no hours picked" (Radix items can't use an empty value). */
+const HOURS_UNSET = "__unset__";
 
 interface MentorOnboardingFormProps {
   existing?: MentorApplication;
@@ -141,6 +147,8 @@ export function MentorOnboardingForm({
       fallbackSource?.linkedin_url ??
       "",
     reason: existing?.reason ?? fallbackSource?.reason ?? "",
+    hours:
+      toMentorHours(existing?.hours) ?? toMentorHours(fallbackSource?.hours),
     preferred_ig_ids:
       existing?.preferred_ig_ids ?? fallbackSource?.preferred_ig_ids ?? [],
   };
@@ -174,49 +182,13 @@ export function MentorOnboardingForm({
   };
 
   function onSubmit(values: OnboardingFormValues) {
-    // Join expertise chips into the comma string the backend stores.
-    // Strip `company` (display-only name) — the API only accepts `org` (UUID).
-    // Map `linkedin_url` to `linkedin` to match the API expectation.
-    // Always send `hours` (even as 0) — the backend DB column is NOT NULL with
-    // no default, so omitting it causes a 500 IntegrityError.
-    const { company: _company, linkedin_url, ...rest } = values;
-    let sanitizedOrg = rest.org;
-    if (isReapply && sanitizedOrg) {
-      const isUUID =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-          sanitizedOrg,
-        );
-      if (!isUUID) {
-        const matchedCompany = companies.find(
-          (c) => c.title.toLowerCase() === sanitizedOrg?.toLowerCase(),
-        );
-        if (matchedCompany) {
-          sanitizedOrg = matchedCompany.id;
-        } else {
-          sanitizedOrg = undefined;
-        }
-      }
-    }
-
-    const payload = {
-      ...rest,
-      org: sanitizedOrg,
-      // Only include the existing ID if it's a pure edit.
-      // If it's a reapply, we want a fresh application row created.
-      ...(existing?.id && !isReapply ? { id: existing.id } : {}),
-      hours: values.hours ?? 0,
-      linkedin: linkedin_url,
-      expertise: (values.expertise ?? []).join(", "),
-    } as MentorProfileWrite & { id?: string };
-
-    if (!payload.org) {
-      delete payload.org;
-    }
-
-    if (isPendingEdit) {
-      delete payload.org;
-      delete payload.mentor_tier;
-    }
+    const payload = buildMentorApplicationPayload(values, {
+      existingId: existing?.id,
+      isEdit,
+      isReapply,
+      isPendingEdit,
+      companies,
+    });
 
     // If it's purely an edit of an existing profile, use PATCH (update).
     // If it's a new application OR a reapplication, use POST (submit) as requested.
@@ -377,6 +349,46 @@ export function MentorOnboardingForm({
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="hours"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Weekly availability{" "}
+                    <span className="font-normal text-muted-foreground">
+                      (optional)
+                    </span>
+                  </FormLabel>
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={(value) =>
+                      field.onChange(value === HOURS_UNSET ? undefined : value)
+                    }
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="How much time can you give each week?" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value={HOURS_UNSET}>Not sure yet</SelectItem>
+                      {MENTOR_HOURS_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label} per week
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Helps learners and reviewers know what to expect. You can
+                    change it later from your profile.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

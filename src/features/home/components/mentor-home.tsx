@@ -25,6 +25,7 @@ import {
   useAvailabilitySlots,
   useCreateAvailabilitySlots,
   useMentorOverview,
+  useMentorPersonalAnalytics,
 } from "@/features/mentor/hooks";
 import { MentorOnboardingForm } from "@/features/mentor/onboarding/components/mentor-onboarding-form";
 import {
@@ -75,6 +76,10 @@ export function MentorHome() {
   const { data: mentorProfile, isLoading: profileLoading } = useMentorProfile(
     onboardingState === "rejected" ||
       onboardingState === "pending_verification",
+  );
+
+  const { data: personalAnalytics } = useMentorPersonalAnalytics(
+    onboardingState === "verified",
   );
 
   const {
@@ -316,7 +321,9 @@ export function MentorHome() {
     {
       key: "volunteer_hours",
       label: "Hours Mentored",
-      value: mentorProfile?.hours ?? 0,
+      // Logged session time from the backend (hours, 2 dp). `profile.hours`
+      // is the mentor's weekly-availability range, not time mentored.
+      value: Math.round((personalAnalytics?.hours_contributed ?? 0) * 10) / 10,
       delta: 0,
       delta_type: "neutral" as const,
       period: "all_time",

@@ -22,6 +22,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { MentorSession } from "@/features/home/schemas";
+import { formatMentorHours } from "@/features/mentor/lib/hours";
 import type {
   MentorApplication,
   MentorStatusData,
@@ -139,11 +140,13 @@ export function MentorProfileSidebar({
           </div>
 
           {/* Hours */}
-          {typeof mentorProfile.hours === "number" && (
+          {formatMentorHours(mentorProfile.hours) && (
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <span className="text-muted-foreground">Total hours</span>
-              <span className="ml-auto font-medium">{mentorProfile.hours}</span>
+              <span className="text-muted-foreground">Availability</span>
+              <span className="ml-auto font-medium">
+                {formatMentorHours(mentorProfile.hours)} / week
+              </span>
             </div>
           )}
         </CardContent>

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ApiResponseSchema } from "@/lib/schemas/api-response";
+import { MentorHoursSchema } from "../../lib/hours";
 
 // ─── Mentor application status (doc: PENDING | APPROVED | REJECTED) ──────────
 export const MENTOR_STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const;
@@ -14,11 +15,8 @@ export const MentorApplicationSchema = z.object({
   about: z.string().nullable().optional(),
   expertise: z.string().nullable().optional(),
   reason: z.string().nullable().optional(),
-  hours: z
-    .number()
-    .nullable()
-    .optional()
-    .transform((v) => v ?? 0),
+  // A weekly-hours range ("2-5"); null when the mentor never picked one.
+  hours: z.string().nullable().optional(),
   mentor_tier: z.string().nullable().optional(),
   status: z.enum(MENTOR_STATUSES).optional(),
   preferred_ig_ids: z.array(z.string()).optional().default([]),
@@ -156,7 +154,7 @@ export const OnboardingFormSchema = z.object({
       },
     ),
   reason: z.string().trim().min(30, "Reason must be at least 30 characters"),
-  hours: z.number().min(0).optional(),
+  hours: MentorHoursSchema.optional(),
   preferred_ig_ids: z
     .array(z.string())
     .min(1, "Select at least one Interest Group"),

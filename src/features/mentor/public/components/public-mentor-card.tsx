@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatMentorHours } from "@/features/mentor/lib/hours";
 import { chipColor } from "@/lib/chip-colors";
 import {
   usePublicMentorAvailability,
@@ -138,10 +139,10 @@ export function PublicMentorCard({ mentorId }: PublicMentorCardProps) {
               <span>{profile.company ?? profile.org}</span>
             </div>
           )}
-          {typeof profile.hours === "number" && (
+          {formatMentorHours(profile.hours) && (
             <div className="flex items-center gap-1.5 text-muted-foreground">
               <Clock className="h-4 w-4" />
-              <span>{profile.hours} hrs</span>
+              <span>Available {formatMentorHours(profile.hours)} / week</span>
             </div>
           )}
         </div>

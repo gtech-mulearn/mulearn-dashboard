@@ -70,9 +70,10 @@ export function useCreateAvailabilitySlots() {
 
 // ─── Analytics ───────────────────────────────────────────────────────────────
 
-export function useMentorPersonalAnalytics() {
+export function useMentorPersonalAnalytics(enabled = true) {
   return useQuery({
     queryKey: mentorKeys.analytics(),
     queryFn: fetchMentorPersonalAnalytics,
+    enabled,
   });
 }

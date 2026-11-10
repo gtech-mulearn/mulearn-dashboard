@@ -22,6 +22,7 @@ import type {
   ProfileCompletionChecklist,
   ProfileCompletionData,
 } from "../../api/mentor.api";
+import { applicableChecklistEntries } from "../lib/completion";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -89,10 +90,7 @@ export function MentorProfileCompletion({
     return () => clearTimeout(t);
   }, [percentage]);
 
-  const checklistEntries = Object.entries(checklist) as [
-    keyof ProfileCompletionChecklist,
-    boolean,
-  ][];
+  const checklistEntries = applicableChecklistEntries(checklist);
   const completedCount = checklistEntries.filter(([, v]) => v).length;
   const totalCount = checklistEntries.length;
 

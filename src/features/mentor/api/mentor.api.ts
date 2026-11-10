@@ -313,7 +313,8 @@ export interface ProfileCompletionChecklist {
   expertise: boolean;
   hours?: boolean;
   linkedin: boolean;
-  preferred_igs: boolean;
+  /** `null` when the mentor holds no approved IG_MENTOR application. */
+  preferred_igs: boolean | null;
 }
 
 export interface ProfileCompletionData {
@@ -329,7 +330,7 @@ const ProfileCompletionSchema = ApiResponseOf(
       expertise: z.boolean(),
       hours: z.boolean().optional(),
       linkedin: z.boolean(),
-      preferred_igs: z.boolean(),
+      preferred_igs: z.boolean().nullable(),
     }),
   }),
 );
@@ -379,11 +380,8 @@ const MentorPersonalAnalyticsSchema = z
       .nullable()
       .optional()
       .transform((v) => v ?? 0),
-    profile_hours: z
-      .number()
-      .nullable()
-      .optional()
-      .transform((v) => v ?? 0),
+    // The mentor's chosen weekly-hours range ("2-5"); null when never set.
+    profile_hours: z.string().nullable().optional(),
     rating: z
       .object({
         average: z

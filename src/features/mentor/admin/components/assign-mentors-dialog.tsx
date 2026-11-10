@@ -28,7 +28,12 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useDebounce } from "@/hooks/use-debounce";
+import { MENTOR_HOURS_OPTIONS } from "../../lib/hours";
 import { useAssignMentors, useIgOptions } from "../hooks/use-mentor-verify";
+
+/** Select sentinel for "no hours" (Radix items can't use an empty value). */
+const HOURS_UNSET = "__unset__";
+
 import type { MentorTier } from "../schemas";
 import { AssignMentorsPayloadSchema, MENTOR_TIERS } from "../schemas";
 
@@ -147,7 +152,7 @@ export function AssignMentorsDialog({
       mentor_tier: tier,
       org_id: needsOrg ? (org?.id ?? null) : null,
       ig_ids: igIds,
-      hours: hours ? Number(hours) : undefined,
+      hours: hours || undefined,
     };
     const parsed = AssignMentorsPayloadSchema.safeParse(payload);
     if (!parsed.success) {
@@ -339,15 +344,25 @@ export function AssignMentorsDialog({
 
           {/* hours */}
           <div className="space-y-1.5">
-            <Label htmlFor="assign-hours">Weekly hours (optional)</Label>
-            <Input
-              id="assign-hours"
-              type="number"
-              min={0}
-              placeholder="e.g. 4"
+            <Label htmlFor="assign-hours">Weekly availability (optional)</Label>
+            <Select
               value={hours}
-              onChange={(e) => setHours(e.target.value)}
-            />
+              onValueChange={(value) =>
+                setHours(value === HOURS_UNSET ? "" : value)
+              }
+            >
+              <SelectTrigger id="assign-hours">
+                <SelectValue placeholder="Not specified" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={HOURS_UNSET}>Not specified</SelectItem>
+                {MENTOR_HOURS_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label} per week
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
