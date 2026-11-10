@@ -93,3 +93,27 @@ describe("buildMentorApplicationPayload", () => {
     expect(payload.org).toBe("org-1");
   });
 });
+
+describe("buildMentorApplicationPayload — Campus Mentor", () => {
+  it("sends the campus tier with the chosen college", () => {
+    expect(
+      buildMentorApplicationPayload(
+        { ...base, mentor_tier: "CAMPUS_MENTOR", org: "col1" },
+        ctx,
+      ),
+    ).toMatchObject({ mentor_tier: "CAMPUS_MENTOR", org: "col1" });
+  });
+
+  it("resolves a reapply college saved by name to its id", () => {
+    expect(
+      buildMentorApplicationPayload(
+        { ...base, mentor_tier: "CAMPUS_MENTOR", org: "GEC Thrissur" },
+        {
+          ...ctx,
+          isReapply: true,
+          colleges: [{ id: "col1", title: "GEC Thrissur" }],
+        },
+      ).org,
+    ).toBe("col1");
+  });
+});

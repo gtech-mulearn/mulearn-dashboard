@@ -8,20 +8,25 @@ export interface BuildPayloadContext {
   isPendingEdit: boolean;
   /** Known organisations, used to resolve a reapply org typed as a name. */
   companies: ReadonlyArray<{ id: string; title: string }>;
+  /** Colleges (Campus Mentor), resolved the same way. */
+  colleges?: ReadonlyArray<{ id: string; title: string }>;
 }
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Resolve a reapply org that was saved as a company name back to its id. */
+/**
+ * Resolve a reapply org that was saved as a display name back to its id —
+ * among colleges for a Campus Mentor, among companies otherwise.
+ */
 function resolveOrg(
   org: string | undefined,
+  tier: string | undefined,
   ctx: BuildPayloadContext,
 ): string | undefined {
   if (!org || !ctx.isReapply || UUID_RE.test(org)) return org || undefined;
-  const match = ctx.companies.find(
-    (c) => c.title.toLowerCase() === org.toLowerCase(),
-  );
+  const pool = tier === "CAMPUS_MENTOR" ? (ctx.colleges ?? []) : ctx.companies;
+  const match = pool.find((c) => c.title.toLowerCase() === org.toLowerCase());
   return match?.id;
 }
 
@@ -61,7 +66,7 @@ export function buildMentorApplicationPayload(
 
   if (!ctx.isPendingEdit) {
     if (mentor_tier) payload.mentor_tier = mentor_tier;
-    const resolvedOrg = resolveOrg(org, ctx);
+    const resolvedOrg = resolveOrg(org, mentor_tier, ctx);
     if (resolvedOrg) payload.org = resolvedOrg;
   }
 

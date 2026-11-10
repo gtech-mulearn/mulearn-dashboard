@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +33,7 @@ import {
 import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
 import { useInterestGroupsList } from "@/features/home/hooks";
-import { useCompanies } from "@/features/onboarding/hooks";
+import { useCollegeSearch, useCompanies } from "@/features/onboarding/hooks";
 import { MENTOR_HOURS_OPTIONS, toMentorHours } from "../../lib/hours";
 import { useOnboardingDraftStore } from "../hooks/use-draft-store";
 import {
@@ -72,6 +72,10 @@ export function MentorOnboardingForm({
 }: MentorOnboardingFormProps) {
   const { data: igList = [] } = useInterestGroupsList();
   const { data: companies = [] } = useCompanies();
+  // Campus Mentor: colleges are searched server-side as the user types.
+  const [collegeSearch, setCollegeSearch] = useState("");
+  const { data: colleges = [], isFetching: isSearchingColleges } =
+    useCollegeSearch(collegeSearch);
   const { mutate: submit, isPending: isSubmitting } =
     useSubmitMentorApplication();
   const { mutate: update, isPending: isUpdating } =
@@ -102,7 +106,9 @@ export function MentorOnboardingForm({
       ? "IG_MENTOR"
       : rawDraftTier === "Company Mentor"
         ? "COMPANY_MENTOR"
-        : rawDraftTier;
+        : rawDraftTier === "Campus Mentor"
+          ? "CAMPUS_MENTOR"
+          : rawDraftTier;
 
   // When reapplying or editing pending, the backend profile endpoint (/mentor/profile/) returns
   // 403 for rejected/pending users, so `existing` will be undefined. We fall back to
@@ -188,6 +194,7 @@ export function MentorOnboardingForm({
       isReapply,
       isPendingEdit,
       companies,
+      colleges,
     });
 
     // If it's purely an edit of an existing profile, use PATCH (update).
@@ -233,11 +240,13 @@ export function MentorOnboardingForm({
                     <FormLabel>Mentor Tier</FormLabel>
                     <Select
                       onValueChange={(val) => {
-                        field.onChange(val);
-                        if (val === "IG_MENTOR") {
+                        // Company and campus tiers take different kinds of
+                        // organisation, so a tier change clears the pick.
+                        if (val !== field.value) {
                           form.setValue("org", "");
                           form.setValue("company", "");
                         }
+                        field.onChange(val);
                       }}
                       defaultValue={field.value}
                       value={field.value}
@@ -252,6 +261,9 @@ export function MentorOnboardingForm({
                         <SelectItem value="COMPANY_MENTOR">
                           Company Mentor
                         </SelectItem>
+                        <SelectItem value="CAMPUS_MENTOR">
+                          Campus Mentor
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -261,38 +273,72 @@ export function MentorOnboardingForm({
 
               {/* Company field — visible if the user selected a company during registration 
                   OR if the mentor tier is explicitly set to COMPANY_MENTOR. */}
-              {(!!form.watch("company") ||
-                !!form.watch("org") ||
-                form.watch("mentor_tier") === "COMPANY_MENTOR") && (
+              {form.watch("mentor_tier") === "CAMPUS_MENTOR" && (
                 <FormField
                   control={form.control}
                   name="org"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Company</FormLabel>
+                      <FormLabel>College</FormLabel>
                       <FormControl>
                         <Combobox
-                          options={companyOptions}
+                          options={colleges}
                           value={field.value ?? ""}
+                          selectedLabel={form.watch("company") || undefined}
                           onValueChange={(val: string) => {
                             field.onChange(val);
-                            const selected = companies.find(
-                              (c) => c.id === val,
-                            );
-                            if (selected) {
-                              form.setValue("company", selected.title);
-                            } else {
-                              form.setValue("company", "");
-                            }
+                            const selected = colleges.find((c) => c.id === val);
+                            form.setValue("company", selected?.title ?? "");
                           }}
-                          placeholder="Select your company..."
+                          onSearchChange={setCollegeSearch}
+                          loading={isSearchingColleges}
+                          placeholder="Search your college..."
+                          searchPlaceholder="Type your college name"
+                          emptyText="No colleges found."
                         />
                       </FormControl>
+                      <FormDescription>
+                        Campus mentors support learners at one college.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               )}
+
+              {form.watch("mentor_tier") !== "CAMPUS_MENTOR" &&
+                (!!form.watch("company") ||
+                  !!form.watch("org") ||
+                  form.watch("mentor_tier") === "COMPANY_MENTOR") && (
+                  <FormField
+                    control={form.control}
+                    name="org"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Company</FormLabel>
+                        <FormControl>
+                          <Combobox
+                            options={companyOptions}
+                            value={field.value ?? ""}
+                            onValueChange={(val: string) => {
+                              field.onChange(val);
+                              const selected = companies.find(
+                                (c) => c.id === val,
+                              );
+                              if (selected) {
+                                form.setValue("company", selected.title);
+                              } else {
+                                form.setValue("company", "");
+                              }
+                            }}
+                            placeholder="Select your company..."
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
             </div>
 
             <FormField
