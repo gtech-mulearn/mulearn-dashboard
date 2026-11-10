@@ -125,6 +125,7 @@ export async function updateDynamicRole(
 export async function deleteDynamicRole(id: string): Promise<void> {
   await apiClient.delete(
     endpoints.admin.dynamicType.deleteDynamicRole(id),
+    undefined,
     EmptyResponseSchema,
   );
 }
@@ -167,6 +168,7 @@ export async function updateDynamicUser(
 export async function deleteDynamicUser(id: string): Promise<void> {
   await apiClient.delete(
     endpoints.admin.dynamicType.deleteDynamicUser(id),
+    undefined,
     EmptyResponseSchema,
   );
 }

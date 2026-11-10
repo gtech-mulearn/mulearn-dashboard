@@ -106,6 +106,7 @@ export async function updateManageUser(
 export async function deleteManageUser(id: string): Promise<void> {
   await apiClient.delete(
     endpoints.manageUsers.delete(id),
+    undefined,
     GenericMutationResponseSchema,
   );
 }

@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
+import { authStore } from "@/lib/auth";
 import {
   createBroadcast,
   deleteAllBroadcasts,
@@ -36,6 +37,16 @@ import { notificationKeys } from "./query-keys";
 
 const REFETCH_INTERVAL = 60 * 1000;
 
+/**
+ * Notifications belong to a signed-in user. Without a session the API answers
+ * 401, which `apiClient` turns into a redirect to /login — so these queries
+ * must never run for visitors on public pages. Same session signal as
+ * `useUserInfo`.
+ */
+function hasSession() {
+  return typeof window !== "undefined" && authStore.isAuthenticated();
+}
+
 // ─── New unified feed hooks ───────────────────────────────────────────────────
 
 export function useNotificationFeed(enabled = true, pageSize = 20) {
@@ -48,7 +59,7 @@ export function useNotificationFeed(enabled = true, pageSize = 20) {
       const hasMore = lastPage.page * lastPage.page_size < lastPage.count;
       return hasMore ? lastPage.page + 1 : undefined;
     },
-    enabled,
+    enabled: enabled && hasSession(),
     staleTime: 30 * 1000,
     refetchInterval: REFETCH_INTERVAL,
     refetchIntervalInBackground: false,
@@ -59,6 +70,7 @@ export function useUnreadCount() {
   return useQuery({
     queryKey: notificationKeys.unreadCount(),
     queryFn: getUnreadCount,
+    enabled: hasSession(),
     refetchInterval: REFETCH_INTERVAL,
     refetchIntervalInBackground: false,
     staleTime: 30 * 1000,

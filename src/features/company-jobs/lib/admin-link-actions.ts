@@ -1,5 +1,5 @@
+import type { CompanyAccessRole } from "@/lib/auth/company-access";
 import type { CompanyAdminLink } from "../types";
-import type { CompanyAccessRole } from "./company-access";
 
 /** Backend cap on accepted + pending co-admin links per company. */
 export const MAX_COMPANY_CO_ADMINS = 5;

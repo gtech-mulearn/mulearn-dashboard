@@ -5,19 +5,18 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import {
   CompanyStatusGuard,
+  JOB_SORT_DEFAULT,
+  JOBS_DEFAULT_PAGE_INDEX,
+  JOBS_DEFAULT_PAGE_SIZE,
+  type JobSortValue,
   JobsEmptyState,
   JobsList,
   JobsListSkeleton,
   JobsPageHeader,
-} from "@/features/company-jobs/components";
+  useCompanyAccess,
+  useJobs,
+} from "@/features/company-jobs";
 import { PendingJobApprovals } from "@/features/company-jobs/components/pending-job-approvals";
-import {
-  JOB_SORT_DEFAULT,
-  JOBS_DEFAULT_PAGE_INDEX,
-  JOBS_DEFAULT_PAGE_SIZE,
-} from "@/features/company-jobs/constants";
-import { useCompanyAccess, useJobs } from "@/features/company-jobs/hooks";
-import type { JobSortValue } from "@/features/company-jobs/types";
 import { useDebounce } from "@/hooks/use-debounce";
 
 export function CompanyJobsPageClient() {

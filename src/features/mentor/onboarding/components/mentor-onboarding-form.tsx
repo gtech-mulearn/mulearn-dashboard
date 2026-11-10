@@ -33,7 +33,7 @@ import {
 import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
 import { useInterestGroupsList } from "@/features/home/hooks";
-import { useCollegeSearch, useCompanies } from "@/features/onboarding/hooks";
+import { useCollegeSearch, useCompanies } from "@/features/onboarding";
 import { MENTOR_HOURS_OPTIONS, toMentorHours } from "../../lib/hours";
 import { useOnboardingDraftStore } from "../hooks/use-draft-store";
 import {

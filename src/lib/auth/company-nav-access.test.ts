@@ -1,14 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
-  type CompanyAccessRole,
-  canOpenCompanyPage,
-} from "@/features/company-jobs/lib/company-access";
-import {
   type DynamicNavContext,
   isCompanyFeatureItem,
   NAV_ITEMS,
   type NavItem,
 } from "../nav-config";
+import { type CompanyAccessRole, canOpenCompanyPage } from "./company-access";
 import { ROLES } from "./roles";
 
 // Mirrors useFilteredNav's visibility rules for role and dynamic checks.

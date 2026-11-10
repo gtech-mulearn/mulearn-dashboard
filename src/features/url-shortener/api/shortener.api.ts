@@ -70,6 +70,7 @@ export async function updateShortUrl(
 export async function deleteShortUrl(id: string): Promise<void> {
   await apiClient.delete(
     endpoints.urlShortener.delete(id),
+    undefined,
     GenericMutationResponseSchema,
   );
 }

@@ -12,7 +12,7 @@ import { ApiError } from "@/api/errors";
 import {
   COMPANY_CAPABILITIES,
   type CompanyAccessRole,
-} from "../../lib/company-access";
+} from "@/lib/auth/company-access";
 
 const mocks = vi.hoisted(() => ({
   inviteCompanyAdmin: vi.fn(),

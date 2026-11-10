@@ -25,6 +25,9 @@ export const learningCircleKeys = {
     [...learningCircleKeys.circles(), "members", id] as const,
   joinRequests: (id: string) =>
     [...learningCircleKeys.circles(), "joinRequests", id] as const,
+  /** Ids of circles the signed-in user has asked to join, awaiting a lead. */
+  pendingJoins: () =>
+    [...learningCircleKeys.circles(), "pending-joins"] as const,
 
   // Invite queries
   sentInvites: (circleId: string) =>

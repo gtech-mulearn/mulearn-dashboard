@@ -61,7 +61,7 @@ import {
 } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import { mentorTierLabel } from "@/features/mentor/onboarding/lib/mentor-status";
 import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
-import { useCompanies } from "@/features/onboarding/hooks";
+import { useCompanies } from "@/features/onboarding";
 import { useUpdateProfile, useUpdateProfileImage } from "@/features/profile";
 import type { UserProfile } from "@/features/profile/schemas";
 import {
