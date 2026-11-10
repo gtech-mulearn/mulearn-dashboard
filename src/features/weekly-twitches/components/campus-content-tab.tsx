@@ -22,6 +22,7 @@ import {
   useSmtMutations,
 } from "../hooks";
 import { formatTime } from "../lib/format-time";
+import { ZONE_OPTIONS, zoneLabel } from "../lib/zones";
 import type { CampusContentItem, CampusContentType } from "../schemas";
 import { CampusContentDetailDialog } from "./campus-content-detail-dialog";
 import { CampusContentForm } from "./campus-content-form";
@@ -170,9 +171,11 @@ export function CampusContentTab({ contentType }: Props) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All zones</SelectItem>
-              <SelectItem value="north">North</SelectItem>
-              <SelectItem value="central">Central</SelectItem>
-              <SelectItem value="south">South</SelectItem>
+              {ZONE_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Button onClick={openCreate} className="w-full gap-2 sm:w-auto">
@@ -209,9 +212,9 @@ export function CampusContentTab({ contentType }: Props) {
             );
           }
           if (column === "zone") {
-            const z = String(row.zone ?? "");
+            const z = zoneLabel(row.zone);
             return z ? (
-              <span className="capitalize">{z}</span>
+              <span>{z}</span>
             ) : (
               <span className="text-muted-foreground">—</span>
             );

@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { formatTime } from "../lib/format-time";
+import { zoneLabel } from "../lib/zones";
 import type { CampusContentItem, CampusContentType } from "../schemas";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -64,7 +65,7 @@ export function CampusContentDetailDialog({
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Campus">{item.campus}</Field>
             <Field label="Zone">
-              <span className="capitalize">{item.zone ?? "—"}</span>
+              <span>{zoneLabel(item.zone) ?? "—"}</span>
             </Field>
           </div>
 
