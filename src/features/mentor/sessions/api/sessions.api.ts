@@ -40,9 +40,29 @@ interface ListParams {
 //   venue) so Django's URLField / CharField does not receive invalid input.
 const toISO = localInputToUtcIso;
 
+/**
+ * session_type + entity_id from the chosen scope win; otherwise an IG picked
+ * by a global mentor becomes an IG_SESSION.
+ */
+function applySessionTarget(
+  payload: Record<string, unknown>,
+  data: Partial<SessionFormValues>,
+) {
+  const entityId = data.entity_id?.trim();
+  if (data.session_type && entityId) {
+    payload.session_type = data.session_type;
+    payload.entity_id = entityId;
+  } else if (data.ig_id?.trim()) {
+    payload.session_type = "IG_SESSION";
+    payload.entity_id = data.ig_id.trim();
+  }
+}
+
 function toBackendPayload(data: Partial<SessionFormValues>) {
   const {
-    ig_id,
+    ig_id: _ig_id,
+    session_type: _session_type,
+    entity_id: _entity_id,
     meeting_link,
     description,
     venue,
@@ -57,12 +77,7 @@ function toBackendPayload(data: Partial<SessionFormValues>) {
     ...rest
   } = data;
   const payload: Record<string, unknown> = { ...rest, is_recurring };
-
-  // Every session is scoped to the selected Interest Group.
-  if (ig_id?.trim()) {
-    payload.entity_id = ig_id.trim();
-    payload.session_type = "IG_SESSION";
-  }
+  applySessionTarget(payload, data);
 
   // Normalise datetime strings to full ISO-8601
   if (starts_at !== undefined) payload.starts_at = toISO(starts_at);
@@ -106,7 +121,9 @@ function toBackendPayload(data: Partial<SessionFormValues>) {
 // and recurrence_end_date with "Unknown field." so we must omit them entirely.
 function toUpdatePayload(data: Partial<SessionFormValues>) {
   const {
-    ig_id,
+    ig_id: _ig_id,
+    session_type: _session_type,
+    entity_id: _entity_id,
     meeting_link,
     description,
     venue,
@@ -125,11 +142,7 @@ function toUpdatePayload(data: Partial<SessionFormValues>) {
   } = data;
 
   const payload: Record<string, unknown> = { ...rest };
-
-  if (ig_id?.trim()) {
-    payload.entity_id = ig_id.trim();
-    payload.session_type = "IG_SESSION";
-  }
+  applySessionTarget(payload, data);
 
   if (starts_at !== undefined) payload.starts_at = toISO(starts_at);
   if (ends_at !== undefined) payload.ends_at = toISO(ends_at);

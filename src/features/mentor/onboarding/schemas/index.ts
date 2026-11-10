@@ -29,6 +29,19 @@ export const MentorApplicationSchema = z.object({
   preferred_ig_ids: z.array(z.string()).optional().default([]),
   org: z.string().nullable().optional(),
   company: z.string().nullable().optional(),
+  // Every application (kept from the profile response) — maps a campus or
+  // company grant's org id to its name.
+  applications: z
+    .array(
+      z.object({
+        id: z.string().optional(),
+        org: z.string().nullable().optional(),
+        company: z.string().nullable().optional(),
+        mentor_tier: z.string().nullable().optional(),
+        status: z.string().optional(),
+      }),
+    )
+    .optional(),
   linkedin: z.string().nullable().optional(),
   linkedin_url: z.string().nullable().optional(),
   verified_by: z.string().nullable().optional(),

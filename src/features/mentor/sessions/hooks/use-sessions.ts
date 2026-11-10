@@ -107,8 +107,18 @@ export function useCreateSession() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: SessionFormValues) => createSession(data),
-    onSuccess: () => {
-      toast.success("Session created.");
+    onSuccess: (session) => {
+      if (session?.recurrence_truncated) {
+        toast.warning(
+          "Series capped at 50 sessions — later dates were not created.",
+        );
+      } else if (session?.child_session_ids?.length) {
+        toast.success(
+          `Session series created (${session.child_session_ids.length + 1} sessions).`,
+        );
+      } else {
+        toast.success("Session created.");
+      }
       void qc.invalidateQueries({ queryKey: mentorKeys.sessions.all });
     },
     onError: (error) =>
