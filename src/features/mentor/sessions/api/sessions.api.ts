@@ -2,6 +2,7 @@ import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import { localInputToUtcIso } from "@/lib/datetime";
 import { ApiResponseSchema } from "@/lib/schemas/api-response";
+import { buildSessionFeedbackBody } from "../lib/session-feedback";
 import type {
   AddParticipantFormValues,
   AdminVerifySessionValues,
@@ -396,7 +397,7 @@ export async function submitFeedback(
 ): Promise<void> {
   await apiClient.patch(
     endpoints.mentor.sessionParticipantFeedback(sessionId),
-    { feedback: data.feedback.trim() },
+    buildSessionFeedbackBody(data),
     GenericResponseSchema,
     OPT,
   );

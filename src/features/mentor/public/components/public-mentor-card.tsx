@@ -1,11 +1,12 @@
 "use client";
 
-import { Building2, CalendarDays, Clock, Shield } from "lucide-react";
+import { Building2, CalendarDays, Clock, Shield, Star } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatMentorHours } from "@/features/mentor/lib/hours";
+import { formatMentorRating } from "@/features/mentor/lib/rating";
 import { chipColor } from "@/lib/chip-colors";
 import {
   usePublicMentorAvailability,
@@ -143,6 +144,21 @@ export function PublicMentorCard({ mentorId }: PublicMentorCardProps) {
             <div className="flex items-center gap-1.5 text-muted-foreground">
               <Clock className="h-4 w-4" />
               <span>Available {formatMentorHours(profile.hours)} / week</span>
+            </div>
+          )}
+          {formatMentorRating(profile.avg_rating, profile.rating_count) && (
+            <div
+              className="flex items-center gap-1.5 text-muted-foreground"
+              title="Average session rating from mentees"
+            >
+              <Star
+                className="h-4 w-4 fill-amber-400 text-amber-400"
+                aria-hidden="true"
+              />
+              <span>
+                {formatMentorRating(profile.avg_rating, profile.rating_count)}
+              </span>
+              <span className="sr-only">session ratings</span>
             </div>
           )}
         </div>

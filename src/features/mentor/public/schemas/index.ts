@@ -52,6 +52,9 @@ export const PublicMentorProfileSchema = z.object({
   verification_note: z.string().nullable().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
+  // Session ratings (MentorDetailSerializer): weighted average and count.
+  avg_rating: z.number().nullable().optional(),
+  rating_count: z.number().optional(),
 });
 export type PublicMentorProfile = z.infer<typeof PublicMentorProfileSchema>;
 

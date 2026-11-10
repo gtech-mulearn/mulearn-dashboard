@@ -13,6 +13,9 @@ export type MentorStatus = (typeof MENTOR_STATUSES)[number];
 // ─── Full mentor profile object (GET /profile/ and GET /status/ response) ─────
 export const MentorApplicationSchema = z.object({
   id: z.string(),
+  // Session ratings (MentorDetailSerializer): weighted average and count.
+  avg_rating: z.number().nullable().optional(),
+  rating_count: z.number().optional(),
   user: z.string().optional(),
   user_full_name: z.string().optional(),
   user_email: z.string().optional(),

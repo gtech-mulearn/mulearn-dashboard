@@ -255,9 +255,23 @@ export const UpdateParticipantSchema = z.object({
 export type UpdateParticipantValues = z.infer<typeof UpdateParticipantSchema>;
 
 // ─── Feedback — PATCH /session/participant/feedback/<session_id>/ ─────────────
-export const SubmitFeedbackSchema = z.object({
-  feedback: z.string().min(1, "Feedback cannot be empty"),
-});
+// At least one of feedback / rating (1–5); empty values are omitted.
+export const SubmitFeedbackSchema = z
+  .object({
+    feedback: z.string().optional(),
+    rating: z
+      .union([
+        z.literal(1),
+        z.literal(2),
+        z.literal(3),
+        z.literal(4),
+        z.literal(5),
+      ])
+      .optional(),
+  })
+  .refine((v) => !!v.feedback?.trim() || v.rating != null, {
+    message: "Add a rating or a comment.",
+  });
 export type SubmitFeedbackValues = z.infer<typeof SubmitFeedbackSchema>;
 
 // ─── Generic response ─────────────────────────────────────────────────────────
