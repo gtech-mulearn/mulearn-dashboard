@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { ApiResponseSchema } from "@/lib/schemas/api-response";
 import { MentorHoursSchema } from "../../lib/hours";
+import {
+  aggregateMentorStatus,
+  pickPrimaryApplication,
+} from "../lib/mentor-status";
 
 // ─── Mentor application status (doc: PENDING | APPROVED | REJECTED) ──────────
 export const MENTOR_STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const;
@@ -18,7 +22,7 @@ export const MentorApplicationSchema = z.object({
   // A weekly-hours range ("2-5"); null when the mentor never picked one.
   hours: z.string().nullable().optional(),
   mentor_tier: z.string().nullable().optional(),
-  status: z.enum(MENTOR_STATUSES).optional(),
+  status: z.enum([...MENTOR_STATUSES, "GRANT_REVOKED"]).optional(),
   preferred_ig_ids: z.array(z.string()).optional().default([]),
   org: z.string().nullable().optional(),
   company: z.string().nullable().optional(),
@@ -35,69 +39,18 @@ export const MentorApplicationSchema = z.object({
 export type MentorApplication = z.infer<typeof MentorApplicationSchema>;
 
 // ─── GET /status/ response ────────────────────────────────────────────────────
-// The backend response shape for this endpoint varies in practice:
-//   • { status, verification_note, mentor_id }  (object)
-//   • [{ status, verification_note, mentor_id }] (array with one item)
-//   • null / undefined (no application yet)
-// Using z.unknown() + manual transform makes the schema accept every shape
-// without ever throwing a validation error.
-function normaliseMentorStatus(raw: unknown): MentorStatusData {
-  // Unwrap array if the backend returned [{...}]
-  const item = Array.isArray(raw) ? raw[0] : raw;
-
-  if (item && typeof item === "object") {
-    const obj = item as Record<string, unknown>;
-    const rawStatus =
-      typeof obj.status === "string" ? obj.status.toUpperCase() : "PENDING";
-    const status =
-      rawStatus === "APPROVED" || rawStatus === "REJECTED"
-        ? rawStatus
-        : "PENDING";
-    return {
-      status: status as MentorStatusData["status"],
-      verification_note:
-        typeof obj.verification_note === "string"
-          ? obj.verification_note
-          : null,
-      rejection_reason:
-        typeof obj.rejection_reason === "string" ? obj.rejection_reason : null,
-      mentor_id: typeof obj.mentor_id === "string" ? obj.mentor_id : null,
-      id: typeof obj.id === "string" ? obj.id : null,
-      organization:
-        typeof obj.organization === "string" ? obj.organization : null,
-      mentor_tier: typeof obj.mentor_tier === "string" ? obj.mentor_tier : null,
-    };
-  }
-
-  // Fallback: no application / unexpected shape
-  return {
-    status: "PENDING",
-    verification_note: null,
-    rejection_reason: null,
-    mentor_id: null,
-    id: null,
-    organization: null,
-    mentor_tier: null,
-  };
-}
+// Every application the user holds, newest first (release 1.91). Aggregated so
+// an approved mentor stays verified while a newer request is pending; see
+// ../lib/mentor-status. z.unknown() keeps legacy shapes from failing.
+export type {
+  MentorApplicationStatus,
+  MentorApplicationSummary,
+  MentorStatusData,
+} from "../lib/mentor-status";
 
 export const MentorStatusResponseSchema = ApiResponseSchema(
-  z.unknown().transform(normaliseMentorStatus),
+  z.unknown().transform(aggregateMentorStatus),
 );
-export type MentorStatusData = {
-  status: "PENDING" | "APPROVED" | "REJECTED";
-  verification_note?: string | null;
-  rejection_reason?: string | null;
-  mentor_id?: string | null;
-  id?: string | null;
-  // Mentor's affiliated organization, shown in the mentor profile sidebar. Same
-  // `GET /mentor/status/` response previously read via a separate `useMentorStatus`
-  // hook; consolidated onto this canonical hook/key.
-  organization?: string | null;
-  // Mentor tier (IG_MENTOR | COMPANY_MENTOR), used to build the pending-review
-  // card description (e.g. "Applying as IG_MENTOR on behalf of μLearn").
-  mentor_tier?: string | null;
-};
 
 // ─── GET/PATCH /profile/ and POST/PATCH /register/ response wrapper ───────────
 export const MentorApplicationResponseSchema = ApiResponseSchema(
@@ -110,10 +63,16 @@ export const MentorApplicationResponseSchema = ApiResponseSchema(
       (val as Record<string, unknown[]>).applications.length > 0
     ) {
       const v = val as Record<string, unknown>;
-      const apps = v.applications as Record<string, unknown>[];
-      // The backend creates new applications on updates. The array is chronologically
-      // ordered, so the LAST item is always the latest, most up-to-date application.
-      const app = apps[apps.length - 1];
+      const apps = v.applications as Array<
+        Record<string, unknown> & {
+          status?: string | null;
+          updated_at?: string | null;
+          created_at?: string | null;
+        }
+      >;
+      // `applications` has no guaranteed order: pick the approved (else the
+      // most recently updated) application rather than the array's last item.
+      const app = pickPrimaryApplication(apps) ?? apps[0];
       return {
         ...v,
         ...app,

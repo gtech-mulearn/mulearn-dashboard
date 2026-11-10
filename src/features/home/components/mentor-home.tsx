@@ -33,6 +33,7 @@ import {
   useMentorApplication,
   useMentorProfile,
 } from "@/features/mentor/onboarding/hooks/use-onboarding";
+import { mentorTierLabel } from "@/features/mentor/onboarding/lib/mentor-status";
 import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
 import type { WeeklySchedule } from "@/features/mentor/types";
 import { useDashboardCalendar, useMentorSessions } from "../hooks";
@@ -260,10 +261,12 @@ export function MentorHome() {
             existing={
               {
                 ...(mentorProfile || {}),
+                // Edit the PENDING application; the profile's own `id` may be
+                // an approved application, which the backend refuses to edit.
                 id:
-                  mentorProfile?.id ??
+                  application?.pendingApplication?.id ??
                   application?.id ??
-                  application?.mentor_id ??
+                  mentorProfile?.id ??
                   "",
               } as MentorApplication
             }
@@ -383,6 +386,20 @@ export function MentorHome() {
         nextSession={nextSessionForHero}
         isVerified={isVerified}
       />
+
+      {application?.pendingApplication && (
+        <div
+          role="status"
+          className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-400"
+        >
+          <Clock className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <p>
+            Your {mentorTierLabel(application.pendingApplication.mentor_tier)}{" "}
+            request is pending review. Your current mentor access stays active
+            until it&apos;s decided.
+          </p>
+        </div>
+      )}
 
       <MentorStatCards
         statCards={statCards}
