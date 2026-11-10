@@ -557,6 +557,15 @@ export type CompanyAdminLinkStatus =
   | "Declined"
   | "Revoked";
 
+/** An IG sponsorship request waiting for platform-admin review. */
+export interface PendingIgSponsorship {
+  ig_id: string;
+  ig_name: string;
+  company_id: string;
+  company_name: string;
+  requested_at?: string | null;
+}
+
 /** A pending co-admin invitation addressed to the signed-in user. */
 export interface CompanyInvitation {
   id: string;

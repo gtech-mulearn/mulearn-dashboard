@@ -1298,6 +1298,18 @@ export const CompanyAdminLinkListResponseSchema = DjangoResponse(
   z.array(CompanyAdminLinkSchema),
 );
 
+/** ig-sponsorship/pending/ (BE-3) — admin review queue. */
+export const PendingIgSponsorshipListResponseSchema = DjangoResponse(
+  z.array(
+    z.object({
+      ig_id: z.string(),
+      ig_name: z.string(),
+      company_id: z.string(),
+      company_name: z.string(),
+      requested_at: z.string().nullable().optional(),
+    }),
+  ),
+);
 
 /** CompanyAdminLinkInvitationSerializer — a pending invite, invitee view. */
 export const CompanyInvitationSchema = z.object({

@@ -54,6 +54,8 @@ export const CompanyStatusSchema = z.enum([
   "rejected",
   "inactive",
   "verified",
+  // Release 1.91: owner self-service or platform-admin deactivation.
+  "deactivated",
 ]);
 
 // ─── Company Verification Item ────────────────────────────────────────────────
@@ -137,6 +139,8 @@ export const CompanyDetailsSchema = z
     company_user_email: z.string().nullable().optional(),
     district_name: z.string().nullable().optional(),
     verification_requested_at: z.string().nullable().optional(),
+    // Release 1.91: required before a company can be verified.
+    verification_document_url: z.string().nullable().optional(),
     verified_at: z.string().nullable().optional(),
     verified_by: z.string().nullable().optional(),
     created_at: z.string().nullable().optional(),

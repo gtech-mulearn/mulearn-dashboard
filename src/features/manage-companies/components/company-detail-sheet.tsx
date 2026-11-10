@@ -6,6 +6,7 @@ import {
   CheckCircle,
   Clock,
   ExternalLink,
+  FileText,
   Globe,
   Linkedin,
   Mail,
@@ -66,6 +67,9 @@ function StatusBadge({ status }: { status: string }) {
   }
   if (status === "active") {
     return <Badge variant="success">Active</Badge>;
+  }
+  if (status === "deactivated") {
+    return <Badge variant="outline">Deactivated</Badge>;
   }
 
   const STATUS_VARIANTS: Record<
@@ -142,6 +146,9 @@ export function CompanyDetailSheet({
     company.status === "pending_verification" ||
     (company.status as string) === "pending" ||
     !company.status;
+  // The backend refuses to verify a company without a document (400).
+  const documentUrl = details?.verification_document_url?.trim() || null;
+  const canApprove = !isLoading && !!documentUrl;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -171,6 +178,28 @@ export function CompanyDetailSheet({
             </div>
           ) : (
             <>
+              <section className="space-y-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Verification Document
+                </h3>
+                {documentUrl ? (
+                  <a
+                    href={documentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium text-primary hover:bg-muted"
+                  >
+                    <FileText className="h-4 w-4" aria-hidden="true" />
+                    Open verification document
+                    <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                  </a>
+                ) : (
+                  <p className="rounded-xl border border-dashed px-3 py-2 text-sm text-muted-foreground">
+                    No verification document
+                  </p>
+                )}
+              </section>
+
               {details?.description && (
                 <section className="space-y-2">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -470,6 +499,12 @@ export function CompanyDetailSheet({
                   onApprove(company);
                   onOpenChange(false);
                 }}
+                disabled={!canApprove}
+                title={
+                  canApprove
+                    ? undefined
+                    : "A verification document is required before approval"
+                }
                 aria-label="Approve company"
               >
                 <CheckCircle className="mr-1.5 h-4 w-4" />

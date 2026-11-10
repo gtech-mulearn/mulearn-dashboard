@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { buildColumnOrder } from "./manage-companies-table";
+import { CompanyStatusSchema } from "../schemas";
+import { buildColumnOrder, STATUS_TABS } from "./manage-companies-table";
 
 const noop = () => {};
 const requested = buildColumnOrder(noop, noop, noop).find(
@@ -56,5 +57,45 @@ describe("Company tab — row actions", () => {
     expect(screen.getByRole("button", { name: "View" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Approve" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Reject" })).toBeNull();
+  });
+});
+
+describe("Company tab — deactivation (release 1.91)", () => {
+  it("knows the deactivated status", () => {
+    expect(CompanyStatusSchema.parse("deactivated")).toBe("deactivated");
+  });
+
+  it("has a Deactivated tab", () => {
+    expect(STATUS_TABS).toContainEqual({
+      label: "Deactivated",
+      value: "deactivated",
+    });
+  });
+
+  const renderLifecycle = (status: string) => {
+    const handlers = { onDeactivate: vi.fn(), onReactivate: vi.fn() };
+    const actions = buildColumnOrder(
+      noop,
+      noop,
+      noop,
+      handlers.onDeactivate,
+      handlers.onReactivate,
+    ).find((c) => c.column === "id");
+    render(<div>{actions?.wrap?.("", "c1", { status })}</div>);
+    return handlers;
+  };
+
+  it("offers Deactivate on a verified company", () => {
+    const handlers = renderLifecycle("verified");
+    fireEvent.click(screen.getByRole("button", { name: "Deactivate" }));
+    expect(handlers.onDeactivate).toHaveBeenCalledWith("c1");
+    expect(screen.queryByRole("button", { name: "Reactivate" })).toBeNull();
+  });
+
+  it("offers Reactivate on a deactivated company", () => {
+    const handlers = renderLifecycle("deactivated");
+    fireEvent.click(screen.getByRole("button", { name: "Reactivate" }));
+    expect(handlers.onReactivate).toHaveBeenCalledWith("c1");
+    expect(screen.queryByRole("button", { name: "Deactivate" })).toBeNull();
   });
 });

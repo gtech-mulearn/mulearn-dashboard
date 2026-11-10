@@ -278,6 +278,8 @@ export const endpoints = {
     igSponsorship: (igId: string) =>
       `/api/v1/dashboard/company/ig-sponsorship/${igId}/`,
     /** PATCH - Admin review IG sponsorship proposal */
+    /** GET - Admin queue of pending IG sponsorship requests (BE-3) */
+    igSponsorshipPending: "/api/v1/dashboard/company/ig-sponsorship/pending/",
     igSponsorshipReview: (igId: string) =>
       `/api/v1/dashboard/company/ig-sponsorship/${igId}/review/`,
     /** GET - Sponsor performance metrics for sponsored IG */

@@ -32,6 +32,7 @@ import {
   JobsListResponseSchema,
   LearnerApplicationsResponseSchema,
   LearnerDiscoveryResponseSchema,
+  PendingIgSponsorshipListResponseSchema,
   PublicCompanyProfileResponseSchema,
   PublicJobsBySlugResponseSchema,
   PublicJobsResponseSchema,
@@ -77,6 +78,7 @@ import type {
   LearnerApplicationsResponse,
   LearnerDiscoveryParams,
   LearnerDiscoveryResponse,
+  PendingIgSponsorship,
   PublicJobsResponse,
   ShortlistedLearner,
   TalentPoolAnalytics,
@@ -1106,6 +1108,18 @@ export async function submitIgSponsorship(igId: string): Promise<void> {
     undefined,
     GenericResponseSchema,
   );
+}
+
+/** Platform admin: IG sponsorship requests awaiting review (BE-3). */
+export async function fetchPendingIgSponsorships(): Promise<
+  PendingIgSponsorship[]
+> {
+  const res = await apiClient.get(
+    endpoints.company.igSponsorshipPending,
+    PendingIgSponsorshipListResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return res.response ?? [];
 }
 
 export async function reviewIgSponsorship(

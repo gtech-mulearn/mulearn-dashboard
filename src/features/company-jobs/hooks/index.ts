@@ -69,6 +69,7 @@ export {
 export {
   IG_SPONSORSHIP_KEYS,
   useIgSponsorshipMetrics,
+  usePendingIgSponsorships,
   useReviewIgSponsorship,
   useSubmitIgSponsorship,
 } from "./use-ig-sponsorships";

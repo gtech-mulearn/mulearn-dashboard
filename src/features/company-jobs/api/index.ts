@@ -62,6 +62,7 @@ export {
   fetchLearnerApplications,
   fetchLearnerDiscovery,
   fetchMyCompanyInvitations,
+  fetchPendingIgSponsorships,
   fetchPendingJobs,
   fetchPublicCompanyJobsBySlug,
   fetchPublicCompanyProfile,

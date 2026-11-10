@@ -86,6 +86,7 @@ export {
   MentorNominationSchema,
   NominateMentorResponseSchema,
   PaginationSchema,
+  PendingIgSponsorshipListResponseSchema,
   PublicCompanyProfileResponseSchema,
   PublicCompanyProfileSchema,
   PublicJobBySlugSchema,

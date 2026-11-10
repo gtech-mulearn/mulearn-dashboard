@@ -9,8 +9,10 @@ import {
 import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
+  deactivateCompanyAdmin,
   fetchCompanyDetails,
   fetchCompanyVerificationRequests,
+  reactivateCompanyAdmin,
   verifyCompany,
 } from "../api/manage-companies.api";
 import { manageCompaniesKeys } from "./query-keys";
@@ -66,6 +68,50 @@ export function useVerifyCompany() {
       toast.error(
         getApiResponseError(error, {
           fallback: "Failed to update company verification.",
+        }),
+      );
+    },
+  });
+}
+
+/** Platform admin deactivates a verified company (owner and team lose access). */
+export function useDeactivateCompanyAdmin() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (companyId: string) => deactivateCompanyAdmin(companyId),
+    onSuccess: (_data, companyId) => {
+      queryClient.invalidateQueries({ queryKey: manageCompaniesKeys.lists() });
+      queryClient.invalidateQueries({
+        queryKey: manageCompaniesKeys.detail(companyId),
+      });
+      toast.success("Company deactivated.");
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to deactivate company.",
+        }),
+      );
+    },
+  });
+}
+
+/** Platform admin restores a deactivated company to verified. */
+export function useReactivateCompany() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (companyId: string) => reactivateCompanyAdmin(companyId),
+    onSuccess: (_data, companyId) => {
+      queryClient.invalidateQueries({ queryKey: manageCompaniesKeys.lists() });
+      queryClient.invalidateQueries({
+        queryKey: manageCompaniesKeys.detail(companyId),
+      });
+      toast.success("Company reactivated.");
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to reactivate company.",
         }),
       );
     },
