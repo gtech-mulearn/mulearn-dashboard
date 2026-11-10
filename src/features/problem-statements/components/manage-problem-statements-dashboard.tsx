@@ -1,12 +1,12 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
-import { LayoutGrid, List, Plus } from "lucide-react";
+import { ArrowUpDown, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { ApiError } from "@/api/client";
 import { SearchBar } from "@/components/dashboard/table/SearchBar";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Select,
   SelectContent,
@@ -14,8 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import { StateDisplay } from "@/components/ui/state-display";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUserInfo } from "@/features/auth";
 import { ROLES } from "@/lib/auth/roles";
 import {
@@ -23,24 +23,26 @@ import {
   MANAGE_SORT_OPTIONS,
   MANAGE_STATUS_PILLS,
 } from "../constants/problem-statement.constants";
-import {
-  problemStatementKeys,
-  useAdminStatements,
-  useCompanyStatements,
-} from "../hooks";
+import { useAdminStatements, useCompanyStatements } from "../hooks";
 import type {
   CompanyQueryParams,
   ProblemStatement,
   ProblemStatementStatus,
+  ProblemStatementViewMode,
 } from "../types/problem-statement.types";
 import { ProblemStatementFormDialog } from "./problem-statement-form-dialog";
-import { ProblemStatementsGrid } from "./problem-statements-grid";
+import {
+  ProblemStatementsGrid,
+  ProblemStatementsListSkeleton,
+} from "./problem-statements-grid";
 import { ProblemStatementsPagination } from "./problem-statements-pagination";
 import { ProblemStatementsTable } from "./problem-statements-table";
+import { ProblemStatementsViewToggle } from "./problem-statements-view-toggle";
+
+const PER_PAGE = 12;
 
 export default function ManageProblemStatementsDashboard() {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const { data: userInfo, isLoading: isUserLoading } = useUserInfo();
   const userRoles = (userInfo?.roles as string[]) ?? [];
   const isAdmin = userRoles.includes(ROLES.ADMIN);
@@ -52,15 +54,15 @@ export default function ManageProblemStatementsDashboard() {
   const [statusFilter, setStatusFilter] = useState<
     ProblemStatementStatus | "all"
   >("all");
-  const [viewMode, setViewMode] = useState<"board" | "table">("board");
+  const [viewMode, setViewMode] = useState<ProblemStatementViewMode>("board");
   const [showForm, setShowForm] = useState(false);
 
   const listParams: CompanyQueryParams = {
     pageIndex: page,
+    perPage: PER_PAGE,
     search: search || undefined,
     status: statusFilter,
     sortBy,
-    perPage: 12,
   };
 
   const companyQuery = useCompanyStatements(listParams, {
@@ -69,9 +71,8 @@ export default function ManageProblemStatementsDashboard() {
   const adminQuery = useAdminStatements(listParams, {
     enabled: Boolean(userInfo && isAdmin),
   });
-
   const query = isAdmin ? adminQuery : companyQuery;
-  const { data, isLoading: isQueryLoading, isError, error } = query;
+  const { data, isLoading: isQueryLoading, isError, error, refetch } = query;
   const isLoading = isUserLoading || isQueryLoading;
 
   const statements = data?.data ?? [];
@@ -81,60 +82,85 @@ export default function ManageProblemStatementsDashboard() {
     (error.status === 404 ||
       error.message?.toLowerCase().includes("not found"));
 
-  // Summary counts from pagination (crude but avoids an extra endpoint)
-  const totalCount = data?.pagination.count ?? null;
-
   const handleCreate = useCallback(() => setShowForm(true), []);
   const handleView = useCallback(
     (s: ProblemStatement) =>
       router.push(`/dashboard/manage-problem-statements/${s.id}`),
     [router],
   );
+  const handleSearch = useCallback((value: string) => {
+    setSearch(value);
+    setPage(1);
+  }, []);
+
+  const isUnfiltered = statusFilter === "all" && !search;
+  const statusLabel = MANAGE_STATUS_PILLS.find(
+    (p) => p.value === statusFilter,
+  )?.label.toLowerCase();
+  const empty = isUnfiltered
+    ? {
+        title: "No problem statements yet",
+        description:
+          "Create a problem statement, publish it, and learners can start working on it.",
+        action: (
+          <Button onClick={handleCreate}>
+            <Plus />
+            New Problem Statement
+          </Button>
+        ),
+      }
+    : {
+        title: search
+          ? "No matching problem statements"
+          : `No ${statusLabel} problem statements`,
+        description: search
+          ? "Try a different search term or status."
+          : "Statements with this status will appear here.",
+        action: undefined,
+      };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            Problem Statements
-          </h1>
-          {totalCount !== null && (
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              {totalCount} statement{totalCount !== 1 ? "s" : ""}
-            </p>
-          )}
-        </div>
-        <Button onClick={handleCreate} className="rounded-xl gap-2">
-          <Plus className="h-4 w-4" />
-          New Problem Statement
-        </Button>
-      </div>
+      <PageHeader
+        title="Problem Statements"
+        description={
+          isAdmin
+            ? "Every problem statement on µLearn — company-posted and µLearn-authored."
+            : "Create problem statements, publish them to learners, and review submissions."
+        }
+        action={
+          <Button onClick={handleCreate}>
+            <Plus />
+            New Problem Statement
+          </Button>
+        }
+      />
 
-      {/* Status filter pills */}
-      <div className="flex flex-wrap gap-2">
-        {MANAGE_STATUS_PILLS.map((pill) => (
-          <button
-            key={pill.value}
-            type="button"
-            onClick={() => {
-              setStatusFilter(pill.value);
-              setPage(1);
-            }}
-            className={`rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors ${
-              statusFilter === pill.value
-                ? "bg-foreground text-background border-foreground"
-                : "bg-card text-muted-foreground border-border hover:bg-muted/50"
-            }`}
-          >
-            {pill.label}
-          </button>
-        ))}
-      </div>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <Tabs
+          value={statusFilter}
+          onValueChange={(v) => {
+            setStatusFilter(v as ProblemStatementStatus | "all");
+            setPage(1);
+          }}
+        >
+          <TabsList>
+            {MANAGE_STATUS_PILLS.map((pill) => (
+              <TabsTrigger key={pill.value} value={pill.value}>
+                {pill.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
 
-      {/* Controls row */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <SearchBar
+            onSearch={handleSearch}
+            placeholder="Search problem statements…"
+            size="sm"
+            showButton={false}
+            className="w-full sm:w-64"
+          />
           <Select
             value={sortBy}
             onValueChange={(value) => {
@@ -142,13 +168,11 @@ export default function ManageProblemStatementsDashboard() {
               setPage(1);
             }}
           >
-            <SelectTrigger
-              className="w-full rounded-full md:w-48"
-              aria-label="Sort problem statements"
-            >
+            <SelectTrigger className="w-auto min-w-40" aria-label="Sort by">
+              <ArrowUpDown />
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent align="end">
               {MANAGE_SORT_OPTIONS.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
                   {opt.label}
@@ -156,93 +180,29 @@ export default function ManageProblemStatementsDashboard() {
               ))}
             </SelectContent>
           </Select>
-
-          {/* View Mode Toggle: Board vs Table */}
-          <div className="flex items-center gap-1 rounded-xl bg-muted/60 p-1 border border-border/50">
-            <Button
-              variant="ghost"
-              size="sm"
-              aria-label="Switch to board view"
-              onClick={() => setViewMode("board")}
-              className={`h-8 px-2.5 rounded-lg text-xs font-medium gap-1.5 ${
-                viewMode === "board"
-                  ? "bg-background text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <LayoutGrid className="h-3.5 w-3.5" />
-              <span>Board</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              aria-label="Switch to table view"
-              onClick={() => setViewMode("table")}
-              className={`h-8 px-2.5 rounded-lg text-xs font-medium gap-1.5 ${
-                viewMode === "table"
-                  ? "bg-background text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <List className="h-3.5 w-3.5" />
-              <span>Table</span>
-            </Button>
-          </div>
+          <ProblemStatementsViewToggle
+            value={viewMode}
+            onChange={setViewMode}
+          />
         </div>
-
-        <SearchBar
-          onSearch={(val) => {
-            setSearch(val);
-            setPage(1);
-          }}
-          placeholder="Search problem statements…"
-          size="md"
-          showButton={false}
-          className="w-full md:max-w-md md:ml-auto"
-        />
       </div>
 
-      {/* Grid or Table View */}
       {isLoading ? (
-        viewMode === "board" ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            <Skeleton className="h-80 rounded-xl" />
-            <Skeleton className="h-80 rounded-xl" />
-            <Skeleton className="h-80 rounded-xl" />
-            <Skeleton className="h-80 rounded-xl" />
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <Skeleton className="h-12 w-full rounded-xl" />
-            <Skeleton className="h-16 w-full rounded-xl" />
-            <Skeleton className="h-16 w-full rounded-xl" />
-            <Skeleton className="h-16 w-full rounded-xl" />
-          </div>
-        )
+        <ProblemStatementsListSkeleton viewMode={viewMode} />
       ) : is403 ? (
         <StateDisplay
           variant="not-found"
-          className="rounded-2xl border border-dashed border-border bg-muted/40 py-12"
-          title="Access Restricted"
-          description="You don't have permission to manage problem statements. Only the verified company owner can access this."
+          title="You can't manage problem statements"
+          description="Only verified company owners and admins can create and manage problem statements."
         />
       ) : isError && !is404 ? (
         <StateDisplay
           variant="no-results"
-          className="rounded-2xl border border-dashed border-border bg-muted/40 py-12"
-          title="Failed to load problem statements"
-          description="Something went wrong while fetching your problem statements. Please try again."
+          title="Couldn't load problem statements"
+          description="Something went wrong while fetching your problem statements."
           action={
-            <Button
-              variant="outline"
-              className="rounded-xl"
-              onClick={() =>
-                queryClient.invalidateQueries({
-                  queryKey: problemStatementKeys.all,
-                })
-              }
-            >
-              Retry
+            <Button variant="outline" onClick={() => refetch()}>
+              Try Again
             </Button>
           }
         />
@@ -252,66 +212,37 @@ export default function ManageProblemStatementsDashboard() {
             <ProblemStatementsGrid
               statements={statements}
               isManageView
-              onCreateStatement={handleCreate}
               onView={handleView}
-              emptyTitle={
-                statusFilter === "all"
-                  ? "No problem statements yet"
-                  : `No ${statusFilter} statements`
-              }
-              emptyDescription={
-                statusFilter === "all"
-                  ? "Create your first problem statement to start connecting with learners."
-                  : "No problem statements match the current filter."
-              }
+              emptyTitle={empty.title}
+              emptyDescription={empty.description}
+              emptyAction={empty.action}
             />
           ) : (
             <ProblemStatementsTable
               statements={statements}
               isManageView
               onView={handleView}
-              emptyTitle={
-                statusFilter === "all"
-                  ? "No problem statements yet"
-                  : `No ${statusFilter} statements`
-              }
-              emptyDescription={
-                statusFilter === "all"
-                  ? "Create your first problem statement to start connecting with learners."
-                  : "No problem statements match the current filter."
-              }
+              emptyTitle={empty.title}
+              emptyDescription={empty.description}
+              emptyAction={empty.action}
             />
           )}
-          {data?.pagination && data.pagination.count > 0 && (
-            <ProblemStatementsPagination
-              pagination={data.pagination}
-              currentPage={page}
-              onPageChange={setPage}
-              currentCount={statements.length}
-            />
-          )}
+          <ProblemStatementsPagination
+            pagination={data?.pagination}
+            currentPage={page}
+            perPage={PER_PAGE}
+            onPageChange={setPage}
+          />
         </>
       )}
 
-      {/* Form dialog */}
       <ProblemStatementFormDialog
         open={showForm}
         mode={isAdmin ? "admin-create" : "company-create"}
-        onClose={() => {
+        onClose={() => setShowForm(false)}
+        onSuccess={(created) => {
           setShowForm(false);
-          queryClient.invalidateQueries({
-            queryKey: isAdmin
-              ? problemStatementKeys.admin()
-              : problemStatementKeys.company(),
-          });
-        }}
-        onSuccess={() => {
-          setShowForm(false);
-          queryClient.invalidateQueries({
-            queryKey: isAdmin
-              ? problemStatementKeys.admin()
-              : problemStatementKeys.company(),
-          });
+          router.push(`/dashboard/manage-problem-statements/${created.id}`);
         }}
       />
     </div>

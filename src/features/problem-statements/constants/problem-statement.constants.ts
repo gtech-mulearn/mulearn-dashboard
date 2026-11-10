@@ -7,46 +7,63 @@
  * Aligned with PROBLEM_STATEMENT_API.md (3 statuses, single category, skills[]).
  */
 
+import type { BadgeProps } from "@/components/ui/badge";
 import type {
-  FeedStatusFilter,
+  BrowseStatusFilter,
+  FeedTab,
+  ParticipationStatusFilter,
   ProblemStatementStatus,
 } from "../types/problem-statement.types";
 
 // ─── Feed Sort Options ────────────────────────────────────────────────────────
 
 export const FEED_SORT_OPTIONS: Array<{ label: string; value: string }> = [
-  { label: "Newest", value: "-published_at" },
-  { label: "Deadline Approaching", value: "deadline" },
-  { label: "A → Z", value: "title" },
+  { label: "Newest first", value: "-published_at" },
+  { label: "Deadline soonest", value: "deadline" },
+  { label: "Title (A → Z)", value: "title" },
 ];
 
 export const FEED_SORT_DEFAULT = "-published_at";
 
-// ─── Feed Status Filter Pills ─────────────────────────────────────────────────
+// ─── Learner Feed Tabs & Filters ──────────────────────────────────────────────
+// Two jobs on one page: discover statements ("Browse") and track your own
+// participation ("Participating"). Each tab has its own status filter.
 
-export const FEED_STATUS_PILLS: Array<{
+export const FEED_TABS: Array<{ label: string; value: FeedTab }> = [
+  { label: "Browse", value: "browse" },
+  { label: "Participating", value: "participating" },
+];
+
+export const BROWSE_STATUS_OPTIONS: Array<{
   label: string;
-  value: FeedStatusFilter;
+  value: BrowseStatusFilter;
 }> = [
-  { label: "All Challenges", value: "all" },
-  { label: "Open Submissions", value: "open" },
-  { label: "I'm Trying", value: "trying" },
+  { label: "Any status", value: "all" },
+  { label: "Open only", value: "open" },
+];
+
+export const PARTICIPATION_STATUS_OPTIONS: Array<{
+  label: string;
+  value: ParticipationStatusFilter;
+}> = [
+  { label: "Any status", value: "all" },
+  { label: "Trying", value: "trying" },
   { label: "Submitted", value: "submitted" },
 ];
 
 // ─── Company/Admin Manage Sort Options ───────────────────────────────────────
 
 export const MANAGE_SORT_OPTIONS: Array<{ label: string; value: string }> = [
-  { label: "Last Updated", value: "-updated_at" },
-  { label: "Newest", value: "-created_at" },
-  { label: "Title A → Z", value: "title" },
-  { label: "Deadline", value: "deadline" },
-  { label: "Published At", value: "-published_at" },
+  { label: "Last updated", value: "-updated_at" },
+  { label: "Newest first", value: "-created_at" },
+  { label: "Title (A → Z)", value: "title" },
+  { label: "Deadline soonest", value: "deadline" },
+  { label: "Recently published", value: "-published_at" },
 ];
 
 export const MANAGE_SORT_DEFAULT = "-updated_at";
 
-// ─── Status Filter Pills (for manage views) ───────────────────────────────────
+// ─── Status Filter Tabs (for manage views) ───────────────────────────────────
 
 export const MANAGE_STATUS_PILLS: Array<{
   label: string;
@@ -59,29 +76,19 @@ export const MANAGE_STATUS_PILLS: Array<{
 ];
 
 // ─── Status Badge Config ──────────────────────────────────────────────────────
+// Maps lifecycle status onto the shared Badge variants (token colours only).
 
 export const STATUS_CONFIG: Record<
   ProblemStatementStatus,
-  { label: string; className: string }
+  { label: string; variant: NonNullable<BadgeProps["variant"]> }
 > = {
-  Draft: {
-    label: "Draft",
-    className: "bg-muted text-muted-foreground border-border",
-  },
-  Published: {
-    label: "Published",
-    className:
-      "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
-  },
-  Unpublished: {
-    label: "Unpublished",
-    className:
-      "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20",
-  },
+  Draft: { label: "Draft", variant: "secondary" },
+  Published: { label: "Published", variant: "success" },
+  Unpublished: { label: "Unpublished", variant: "warning" },
 };
 
-// ─── Category Suggestion Pills ────────────────────────────────────────────────
-// Used in the form to speed up input; user can also type a custom category.
+// ─── Category Suggestions ─────────────────────────────────────────────────────
+// Offered in the form (datalist) and the feed filter; custom categories allowed.
 
 export const CATEGORY_SUGGESTIONS = [
   "AI / ML",
@@ -100,13 +107,3 @@ export const CATEGORY_SUGGESTIONS = [
   "Social Impact",
   "Gaming",
 ] as const;
-
-// ─── Form Defaults ────────────────────────────────────────────────────────────
-
-export const STATEMENT_FORM_DEFAULTS = {
-  title: "",
-  description: "",
-  category: "",
-  skills: [] as string[],
-  deadline: null,
-};
