@@ -21,6 +21,7 @@ import {
   DISTRICT_ROLES,
   FELLOW_MANAGEMENT_ROLES,
   INTERN_MANAGEMENT_ROLES,
+  isIgCampusLeadRole,
   MANAGEMENT_HUB_ROLES,
   MANAGEMENT_ROLES,
   ROLES,
@@ -255,7 +256,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
       ROLES.DISTRICT_CAMPUS_LEAD,
     ],
     dynamicCheck: (roles) =>
-      roles.some((r) => r.endsWith(" IGLead") || r.endsWith(" CampusLead")),
+      roles.some((r) => r.endsWith(" IGLead") || isIgCampusLeadRole(r)),
   },
 
   // ── Problem Statements Management ────────────────────────

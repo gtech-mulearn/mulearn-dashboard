@@ -218,7 +218,7 @@ export function proxy(request: NextRequest) {
         userRoles.includes(r),
       );
       // Dynamic check: per-IG/campus roles like "{code} IGLead" /
-      // "{code} CampusLead" — defined alongside the route in route-access.ts.
+      // "{code} CampusIGLead" — defined alongside the route in route-access.ts.
       const hasDynamicRole = routeConfig.dynamicCheck?.(userRoles) ?? false;
       const hasAccess = hasStaticRole || hasDynamicRole;
 

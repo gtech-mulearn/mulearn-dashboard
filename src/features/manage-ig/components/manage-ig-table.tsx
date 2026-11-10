@@ -316,7 +316,7 @@ export function ManageIGTable() {
           if (!open) setDeleteTarget(null);
         }}
         title={`Delete "${deleteTarget?.name}"?`}
-        description="This will permanently delete this interest group and its associated roles (Member, CampusLead, IGLead). This action cannot be undone."
+        description="This will permanently delete this interest group and its associated roles (Member, IG Lead, Campus IG Lead and Co-Lead). This action cannot be undone."
         onConfirm={handleDeleteConfirm}
         isPending={isDeleting}
         variant="destructive"
