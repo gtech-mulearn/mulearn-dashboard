@@ -15,6 +15,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useCompanyAccess } from "@/features/company-jobs/hooks/use-company-access";
 import { useMentorApplicationStatus } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import { usePermissions } from "@/hooks/use-permissions";
 import { ROLES } from "@/lib/auth/roles";
@@ -51,9 +52,14 @@ export function useFilteredNav(): UseFilteredNavReturn {
     ? mentorStatus?.status === "APPROVED"
     : false;
 
+  // Owners, co-admins and company mentors all get company entries, but only
+  // the owner holds the Company role.
+  const { role: companyAccess, isLoading: companyAccessLoading } =
+    useCompanyAccess();
+
   const dynamicContext: DynamicNavContext = useMemo(
-    () => ({ isMentorVerified }),
-    [isMentorVerified],
+    () => ({ isMentorVerified, companyAccess }),
+    [isMentorVerified, companyAccess],
   );
 
   const filtered = useMemo(() => {
@@ -96,7 +102,10 @@ export function useFilteredNav(): UseFilteredNavReturn {
     };
   }, [can, hasRole, roles, dynamicContext]);
 
-  const isLoading = permissionsLoading || (isMentor && mentorStatusLoading);
+  const isLoading =
+    permissionsLoading ||
+    (isMentor && mentorStatusLoading) ||
+    companyAccessLoading;
 
   return {
     ...filtered,

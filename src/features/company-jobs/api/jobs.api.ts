@@ -1,6 +1,7 @@
 import type { z } from "zod";
 import { apiClient, publicApiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import { ApiError } from "@/api/errors";
 import { fetchCompanyOnboardingStatus } from "@/features/auth/api/auth.api";
 import { getEditableUserProfile } from "@/features/profile/api/profile.api";
 import type { PublicCompanyProfile, PublicJobsBySlugData } from "../schemas";
@@ -89,10 +90,77 @@ import type {
 
 // ─── Company Profile (§2) ───────────────────────────────────
 
+/** The signed-in user owns, co-administers or mentors no verified company. */
+export class NoCompanyAccessError extends Error {
+  constructor() {
+    super("You're not part of a company on muLearn");
+    this.name = "NoCompanyAccessError";
+  }
+}
+
+const isNotFound = (error: unknown) =>
+  error instanceof ApiError && error.status === 404;
+
+const isDenied = (error: unknown) =>
+  error instanceof ApiError && (error.status === 403 || error.status === 404);
+
+/** Probe options: a 403 here means "not a member", not an expired session. */
+const PROBE = { skipAuthRedirectOn403: true } as const;
+
+/**
+ * True when the user may act for a company (owner, accepted co-admin or
+ * company mentor): GET company/profile/ answers only for them.
+ */
+export async function probeCompanyMembership(): Promise<boolean> {
+  try {
+    await apiClient.get(endpoints.company.profile, undefined, PROBE);
+    return true;
+  } catch (error) {
+    if (isDenied(error)) return false;
+    throw error;
+  }
+}
+
+/** True for the owner or an accepted co-admin (admin-link list is theirs only). */
+export async function probeCompanyAdminAccess(): Promise<boolean> {
+  try {
+    await apiClient.get(endpoints.company.adminLinkList, undefined, PROBE);
+    return true;
+  } catch (error) {
+    if (isDenied(error)) return false;
+    throw error;
+  }
+}
+
 export async function fetchCompanyProfile(): Promise<CompanyProfile> {
-  // Check verification status first
-  const statusRes = await fetchCompanyOnboardingStatus();
+  // company/status/ only knows the registering OWNER. Co-admins and company
+  // mentors (release 1.91) get 404 there but can read company/profile/.
+  let statusRes: Awaited<ReturnType<typeof fetchCompanyOnboardingStatus>>;
+  try {
+    statusRes = await fetchCompanyOnboardingStatus();
+  } catch (error) {
+    if (!isNotFound(error)) throw error;
+    try {
+      const res = await apiClient.get(
+        endpoints.company.profile,
+        CompanyProfileResponseSchema,
+      );
+      return { ...res.response, status: "verified" };
+    } catch (profileError) {
+      if (isNotFound(profileError)) throw new NoCompanyAccessError();
+      throw profileError;
+    }
+  }
   const status = statusRes.status;
+
+  // A deactivated company (1.91) has no readable profile; surface the status
+  // so the guard can explain it instead of failing.
+  if (status === "deactivated") {
+    return {
+      ...(statusRes as Record<string, unknown>),
+      status: "deactivated",
+    } as unknown as CompanyProfile;
+  }
 
   // If pending or rejected, fallback to the editable user profile
   // and construct a minimal CompanyProfile shape for the UI

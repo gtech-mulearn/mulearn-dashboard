@@ -3,10 +3,14 @@ import { AlertTriangle, Clock, Lock, ShieldX, XCircle } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { NoCompanyAccessError } from "../api/jobs.api";
 import { COMPANY_STATUS_CONFIG } from "../constants";
 import { useCompanyProfile } from "../hooks";
 import type { CompanyStatus } from "../types";
+import {
+  CompanyNoAccessState,
+  CompanyPageSkeleton,
+} from "./company-access-states";
 
 interface CompanyStatusGuardProps {
   children: ReactNode;
@@ -22,19 +26,12 @@ const STATUS_ICONS: Record<string, React.ElementType> = {
 export function CompanyStatusGuard({ children }: CompanyStatusGuardProps) {
   const { profile, isActive, isLoading, isError, error } = useCompanyProfile();
 
-  // Loading state — skeleton
-  if (isLoading) {
-    return (
-      <div className="space-y-6 p-6">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-4 w-96" />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {(["a", "b", "c"] as const).map((k) => (
-            <Skeleton key={k} className="h-48 rounded-xl" />
-          ))}
-        </div>
-      </div>
-    );
+  if (isLoading) return <CompanyPageSkeleton />;
+
+  // Access ended mid-session (invite revoked, grant expired) — the layout's
+  // CompanyAccessGate catches this on the next probe.
+  if (isError && error instanceof NoCompanyAccessError) {
+    return <CompanyNoAccessState />;
   }
 
   // Error fetching profile

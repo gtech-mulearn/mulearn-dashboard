@@ -281,7 +281,14 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   },
 
   // ── Company Dashboard ───────────────────────────────────
+  // Owners, accepted co-admins and company mentors all act for a company
+  // (release 1.91), but only the owner holds the Company role — so company
+  // pages are open to any signed-in user here and gated client-side by
+  // CompanyStatusGuard / useCompanyAccess. Owner-only pages stay role-gated.
   "/dashboard/company": {
+    roles: [],
+  },
+  "/dashboard/company/profile/edit": {
     roles: [ROLES.COMPANY],
   },
   "/dashboard/company/ig-requests": {
