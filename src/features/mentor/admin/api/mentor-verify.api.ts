@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import type {
@@ -87,6 +88,57 @@ export async function fetchMentorRoster(params: RosterParams = {}): Promise<{
     data: rawData,
     totalPages: res.response?.pagination?.totalPages ?? 1,
     totalItems: res.response?.pagination?.count ?? rawData.length,
+  };
+}
+
+// ─── GET /admin/deactivated/ (BE-5) ───────────────────────────────────────────
+// UserMentor profiles with is_active = false; row.id is the UserMentor id that
+// admin/reactivate/<user_mentor_id>/ takes (application ids won't work there).
+export const DeactivatedMentorSchema = z.object({
+  id: z.string(),
+  user_full_name: z.string().nullable().optional(),
+  muid: z.string().nullable().optional(),
+  updated_at: z.string().nullable().optional(),
+});
+export type DeactivatedMentor = z.infer<typeof DeactivatedMentorSchema>;
+
+const DeactivatedMentorListResponseSchema = z.object({
+  response: z
+    .object({
+      data: z.array(DeactivatedMentorSchema).default([]),
+      pagination: z
+        .object({
+          count: z.number().optional(),
+          totalPages: z.number().optional(),
+        })
+        .passthrough()
+        .optional(),
+    })
+    .passthrough(),
+});
+
+export async function fetchDeactivatedMentors(
+  params: { page?: number; perPage?: number } = {},
+): Promise<{
+  data: DeactivatedMentor[];
+  totalPages: number;
+  totalItems: number;
+}> {
+  const q = new URLSearchParams();
+  if (params.page && params.page > 1) q.set("pageIndex", String(params.page));
+  if (params.perPage) q.set("perPage", String(params.perPage));
+  const query = q.toString();
+  const url = query
+    ? `${endpoints.mentor.adminDeactivated}?${query}`
+    : endpoints.mentor.adminDeactivated;
+  const res = await apiClient.get(url, DeactivatedMentorListResponseSchema, {
+    skipAuthRedirectOn403: true,
+  });
+  const data = res.response?.data ?? [];
+  return {
+    data,
+    totalPages: res.response?.pagination?.totalPages ?? 1,
+    totalItems: res.response?.pagination?.count ?? data.length,
   };
 }
 

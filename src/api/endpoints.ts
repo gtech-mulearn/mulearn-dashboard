@@ -362,6 +362,8 @@ export const endpoints = {
     /** POST - Deactivate a mentor by user_mentor_id (Admin) */
     adminDeactivate: (userMentorId: string) =>
       `/api/v1/dashboard/mentor/admin/deactivate/${userMentorId}/`,
+    /** GET - Deactivated mentors, UserMentor rows (Admin, BE-5) */
+    adminDeactivated: "/api/v1/dashboard/mentor/admin/deactivated/",
     /** POST - Reactivate a mentor by user_mentor_id (Admin) */
     adminReactivate: (userMentorId: string) =>
       `/api/v1/dashboard/mentor/admin/reactivate/${userMentorId}/`,
