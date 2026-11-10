@@ -1,5 +1,165 @@
 # mulearn-dashboard
 
+## 5.4.1
+
+### Patch Changes
+
+- The Issue VC dialog lays out long achievement descriptions properly.
+- Event cards and the featured events carousel show the venue correctly, including for hybrid events.
+- Tasks can be saved without a channel.
+
+## 5.4.0
+
+### Minor Changes
+
+- **Career Labs** — manage Career Labs hiring listings from Homepage management.
+- **Campus search** — filter and sort campuses.
+- **Public events** — event listings and event pages open without signing in.
+- **Karma vouchers** — create and edit vouchers, now with a hashtag.
+- **Grit** — your grit score appears in your profile stats.
+- **Learning circles** — leave a circle, remove members, and take back an RSVP.
+- **Weekly Twitches** — sort content and clear filters in one click.
+- **Account menu** — a dropdown in the top bar, with a confirmation before you log out.
+- **Achievement images** — enlarge images in the Issue VC dialog.
+- **Management access** — management tools open to the roles that use them, not only admins.
+- **Organization verification** — the list pages and sorts on the server.
+- **Bulk role assignment** — long lists of users load as you scroll.
+
+### Patch Changes
+
+- Editing a location shows its country and state for context, and saving confirms it worked.
+- Karma voucher bulk import explains what went wrong.
+- Event images crop with better proportions and quality, and event categories have new styles.
+- Event descriptions show more text before collapsing.
+- Organization verification no longer ends up on an empty page after the last request on it is handled.
+- Logging out still works when the server can't be reached.
+- Learning circle meetings show the right status and permissions, and a quick second RSVP click no longer causes errors.
+- Issued VCs reference the right achievement.
+- Fixed layout overflow and date handling on the dashboard, school results in campus search, the fallback image, and venue text and spacing on events.
+
+## 5.3.2
+
+### Patch Changes
+
+- QSeverse achievement templates are back, and issuing VCs works again.
+
+## 5.3.1
+
+### Patch Changes
+
+- Country, state and district load correctly in forms.
+
+## 5.3.0
+
+### Minor Changes
+
+- **Grab Your Superpowers** — a new Weekly Twitches content type.
+- **Weekly Twitches** for zonal and district leads.
+- **Add project** — a button to add a project from the Projects page.
+- **Grit meter** — available behind a feature flag.
+
+### Patch Changes
+
+- Task details open in a side panel that shows who published the task and when.
+- μJourney uses the new task list, and interest groups are no longer edited from μJourney.
+- The μJourney task list no longer reloads over and over, and μJourney refreshes after you change your interest groups.
+- QSeverse QR codes load.
+- Fixed the learning circles sidebar layout.
+
+## 5.2.2
+
+### Patch Changes
+
+- Refreshing your session keeps you on the same site after you sign in with Google.
+
+## 5.2.1
+
+### Patch Changes
+
+- Google sign-in works reliably: sign-in cookies use the SameSite=Lax setting, and return paths are checked.
+
+## 5.2.0
+
+### Minor Changes
+
+- **Image cropping** when you upload images.
+- **Event management** — a detailed event card and review panel.
+- **Connect Discord** — link your Discord account from the dashboard.
+- **Sorting** for job and event lists.
+- **Custom campus roles** — campus leads can create custom execom roles.
+- **Think Tank** — interest groups can list their think tank members.
+- **College and department search** during onboarding.
+- **Active and Inactive tabs** in task management.
+- **Step navigation** — jump straight to any step in the job form and the company signup.
+- **Job listings** open the job's details when clicked.
+
+### Patch Changes
+
+- Image uploads accept files up to 5 MB.
+- Mentors nominated directly by a company no longer need a second approval.
+- Campus and mentor search results show more detail.
+- μJourney tabs list tasks by their hashtags.
+- Event tags are limited to 30 characters.
+- Interest group request dialogs and other forms fit smaller screens better, and the karma chart legend scrolls.
+- Company names and task hashtags made of spaces only are rejected.
+- Company Tasks tab counts and the active job count on the home page are correct.
+- Applicant status tabs, advanced job options and the form stepper work as expected.
+- The intern leaderboard handles a podium with missing places, and profile and event pages keep the right order on mobile.
+- The Discord channel link opens the right channel.
+
+## 5.1.4
+
+### Patch Changes
+
+- Task titles and hashtags no longer have arbitrary length limits.
+- Student levels show correctly on the Top Students card.
+
+## 5.1.3
+
+### Patch Changes
+
+- Your sign-in renews reliably in the background, so you're no longer signed out unexpectedly.
+- Profile links point to the right pages, and the μLearn name and logo are used everywhere.
+
+## 5.1.2
+
+### Patch Changes
+
+- Campus pages show the execom section and campus level only when they apply.
+
+## 5.1.1
+
+### Patch Changes
+
+- Error messages show once instead of twice across the dashboard.
+- Learning circles: the full list pages properly, and the Join button is hidden for circles you created or already joined.
+
+## 5.1.0
+
+### Minor Changes
+
+- **Activity heatmap** on profiles.
+- **Meetings** — export the attendee list as CSV, and the meeting link opens when you join.
+- **Learning circle invites** — an Invites button in the header, with status filters.
+- **Projects** — add members from outside μLearn.
+- **Date and time picker** — a Today button, a confirmation step and minimum dates.
+- **Mentor verification** — pages of applications, and reasons when an application is rejected.
+- **Achievement IDs** — easier to look up when preparing a bulk issue.
+
+### Patch Changes
+
+- You can pick up to three interest groups.
+- Clearer karma validation messages, and activity and session items link to their pages.
+- The review step is back before you submit an interest group request.
+- You can't change your password to the one you already use.
+- Learning circle invite statuses are correct.
+
+## 5.0.1
+
+### Patch Changes
+
+- Company accounts can no longer open pages meant for other roles.
+
 ## 5.0.0
 
 The μLearn Dashboard has been rebuilt from the ground up. This is a full rewrite faster, more secure, and significantly broader in scope than before. It keeps everything the community already relies on (authentication, profiles, μJourney, interest groups, learning circles, leaderboards) while adding role-aware home pages, a dedicated Company portal, a complete Mentor portal, an Intern workspace, rebuilt task management, new analytics, and hardened security and performance under the hood.
