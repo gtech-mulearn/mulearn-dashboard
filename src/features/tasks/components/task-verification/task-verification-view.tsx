@@ -9,15 +9,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { TaskApprovalStatus } from "../../schemas";
 import { TaskVerificationTable } from "./task-verification-table";
 
 export function TaskVerificationView() {
   const [sourceFilter, setSourceFilter] = useState<
     "mentor" | "company" | "all"
   >("all");
-  const [activeTab, setActiveTab] = useState<
-    "pending" | "approved" | "rejected"
-  >("pending");
+  const [activeTab, setActiveTab] = useState<TaskApprovalStatus>("pending");
 
   return (
     <div className="space-y-6">
@@ -55,9 +54,7 @@ export function TaskVerificationView() {
 
       <Tabs
         value={activeTab}
-        onValueChange={(v) =>
-          setActiveTab(v as "pending" | "approved" | "rejected")
-        }
+        onValueChange={(v) => setActiveTab(v as TaskApprovalStatus)}
         className="w-full"
       >
         <TabsList className="bg-muted border border-border/60">
@@ -72,6 +69,12 @@ export function TaskVerificationView() {
             className="data-[state=active]:bg-background"
           >
             Approved
+          </TabsTrigger>
+          <TabsTrigger
+            value="changes_requested"
+            className="data-[state=active]:bg-background"
+          >
+            Changes requested
           </TabsTrigger>
           <TabsTrigger
             value="rejected"
@@ -91,6 +94,13 @@ export function TaskVerificationView() {
         <TabsContent value="approved" className="mt-4">
           <TaskVerificationTable
             status="approved"
+            source={sourceFilter === "all" ? undefined : sourceFilter}
+          />
+        </TabsContent>
+
+        <TabsContent value="changes_requested" className="mt-4">
+          <TaskVerificationTable
+            status="changes_requested"
             source={sourceFilter === "all" ? undefined : sourceFilter}
           />
         </TabsContent>
