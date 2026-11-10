@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   COMPANY_CAPABILITIES,
   type CompanyAccessRole,
-} from "../lib/company-access";
+} from "@/lib/auth/company-access";
 import type { Job } from "../types";
 
 const mocks = vi.hoisted(() => ({

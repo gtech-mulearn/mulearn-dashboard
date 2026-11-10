@@ -29,6 +29,8 @@ import {
 } from "../hooks/use-company-tasks";
 import type { CompanyTask, TaskTemplate } from "../types/tasks.types";
 
+const NO_ITEMS: never[] = [];
+
 interface CreateTaskModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -45,11 +47,16 @@ export function CreateTaskModal({
   const { data: taskTypesResponse } = useTaskTypes();
   const { data: taskLevelsResponse } = useTaskLevels();
 
-  // biome-ignore lint/suspicious/noExplicitAny: API type
-  const taskTypes = (taskTypesResponse as any)?.data || [];
-  const taskLevels = Array.isArray(taskLevelsResponse)
+  // Fall back to a shared empty list: a fresh `[]` per render would re-run the
+  // effects below on every render while the lists load.
+  const taskTypes: { id: string; title: string }[] =
+    // biome-ignore lint/suspicious/noExplicitAny: API type
+    (taskTypesResponse as any)?.data || NO_ITEMS;
+  const taskLevels: { id: string; name: string }[] = Array.isArray(
+    taskLevelsResponse,
+  )
     ? taskLevelsResponse
-    : [];
+    : NO_ITEMS;
 
   const { mutate: createTask, isPending: isCreating } = useCreateCompanyTask();
   const { mutate: updateTask, isPending: isUpdating } = useUpdateCompanyTask();
@@ -80,56 +87,59 @@ export function CreateTaskModal({
     return "";
   };
 
+  // Fill the draft when the dialog opens or its source task/template changes —
+  // never in response to the type/level lists loading, which would wipe input.
   useEffect(() => {
-    if (open) {
-      setKarmaError("");
-      if (taskToEdit) {
-        setTitle(taskToEdit.title || "");
-        setHashtag(taskToEdit.hashtag || "");
-        setKarma(taskToEdit.karma?.toString() || "");
-
-        // The API returns the type title (e.g. "Task"), but the Select needs the type ID.
-        // So we find the matching type from the taskTypes list.
-        if (taskTypes.length > 0) {
-          const matchingType = taskTypes.find(
-            (t: { id: string; title: string }) =>
-              t.title === taskToEdit.type || t.id === taskToEdit.type,
-          );
-          setType(matchingType ? matchingType.id : "");
-        }
-
-        if (taskLevels.length > 0) {
-          const matchingLevel = taskLevels.find(
-            (l: { id: string; name: string }) =>
-              l.name === taskToEdit.level || l.id === taskToEdit.level,
-          );
-          setLevel(matchingLevel ? matchingLevel.id : "");
-        }
-
-        setUsageCount(taskToEdit.usage_count?.toString() || "1");
-        setSkills(taskToEdit.skills?.map((s) => s.id) || []);
-        setDescription(taskToEdit.description || "");
-      } else if (templateToUse) {
-        setTitle(templateToUse.title || "");
-        setHashtag(templateToUse.hashtag_prefix || "");
-        setKarma(templateToUse.karma?.toString() || "");
-        setType(templateToUse.type_id || "");
-        setDescription(templateToUse.description || "");
-        setUsageCount("1");
-        setLevel("");
-        setSkills([]);
-      } else {
-        setTitle("");
-        setHashtag("");
-        setKarma("");
-        setType("");
-        setDescription("");
-        setUsageCount("1");
-        setLevel("");
-        setSkills([]);
-      }
+    if (!open) return;
+    setKarmaError("");
+    if (taskToEdit) {
+      setTitle(taskToEdit.title || "");
+      setHashtag(taskToEdit.hashtag || "");
+      setKarma(taskToEdit.karma?.toString() || "");
+      setType(""); // resolved to an id below once task types load
+      setLevel(""); // resolved to an id below once task levels load
+      setUsageCount(taskToEdit.usage_count?.toString() || "1");
+      setSkills(taskToEdit.skills?.map((s) => s.id) || []);
+      setDescription(taskToEdit.description || "");
+    } else if (templateToUse) {
+      setTitle(templateToUse.title || "");
+      setHashtag(templateToUse.hashtag_prefix || "");
+      setKarma(templateToUse.karma?.toString() || "");
+      setType(templateToUse.type_id || "");
+      setDescription(templateToUse.description || "");
+      setUsageCount("1");
+      setLevel("");
+      setSkills([]);
+    } else {
+      setTitle("");
+      setHashtag("");
+      setKarma("");
+      setType("");
+      setDescription("");
+      setUsageCount("1");
+      setLevel("");
+      setSkills([]);
     }
-  }, [open, taskToEdit, templateToUse, taskTypes, taskLevels]);
+  }, [open, taskToEdit, templateToUse]);
+
+  // The API returns the task's type title (e.g. "Task") and level name, but the
+  // selects need ids. Resolve them when the lists are available — possibly
+  // after the dialog opened — touching only those two fields.
+  useEffect(() => {
+    if (!open || !taskToEdit || taskTypes.length === 0) return;
+    const match = taskTypes.find(
+      (t) => t.title === taskToEdit.type || t.id === taskToEdit.type,
+    );
+    setType(match ? match.id : "");
+  }, [open, taskToEdit, taskTypes]);
+
+  useEffect(() => {
+    if (!open || !taskToEdit || taskLevels.length === 0) return;
+    const match = taskLevels.find(
+      (l) => l.name === taskToEdit.level || l.id === taskToEdit.level,
+    );
+    setLevel(match ? match.id : "");
+  }, [open, taskToEdit, taskLevels]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { CompanyAccessRole } from "../lib/company-access";
+import type { CompanyAccessRole } from "@/lib/auth/company-access";
 
 export function CompanyPageSkeleton() {
   return (

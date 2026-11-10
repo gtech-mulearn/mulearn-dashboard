@@ -43,15 +43,15 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fetchAchievements } from "@/features/achievements";
-import { downloadTalentPoolInsightsCSV } from "@/features/company-jobs/api";
-import { LearnerCard } from "@/features/company-jobs/components";
 import {
+  downloadTalentPoolInsightsCSV,
+  LearnerCard,
+  type LearnerDiscoveryParams,
   useLearnerDiscovery,
   useRemoveLearnerFromShortlist,
   useShortlistedLearners,
   useTalentPoolInsights,
-} from "@/features/company-jobs/hooks";
-import type { LearnerDiscoveryParams } from "@/features/company-jobs/types";
+} from "@/features/company-jobs";
 import { getInterestGroupsList } from "@/features/interest-groups/api/interest-groups.api";
 import { useDebounce } from "@/hooks/use-debounce";
 

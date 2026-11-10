@@ -62,6 +62,7 @@ export async function updateHiring(
 export async function deleteHiring(id: string): Promise<void> {
   await apiClient.delete(
     endpoints.careerLab.hiring.delete(id),
+    undefined,
     GenericMutationResponseSchema,
   );
 }

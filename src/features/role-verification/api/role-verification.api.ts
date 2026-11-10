@@ -58,6 +58,7 @@ export async function updateRoleVerification(
 export async function deleteRoleVerification(id: string): Promise<void> {
   await apiClient.delete(
     endpoints.admin.roleVerification.delete(id),
+    undefined,
     GenericMutationResponseSchema,
   );
 }

@@ -119,6 +119,7 @@ export async function adminUpdateStatement(
 export async function adminDeleteStatement(id: string): Promise<void> {
   await apiClient.delete(
     endpoints.problemStatements.adminDelete(id),
+    undefined,
     GenericResponseSchema,
   );
 }
@@ -181,6 +182,7 @@ export async function adminDeleteUserInteraction(
 ): Promise<void> {
   await apiClient.delete(
     endpoints.problemStatements.adminDeleteInteraction(statementId, userId),
+    undefined,
     GenericResponseSchema,
   );
 }
