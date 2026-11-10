@@ -101,6 +101,12 @@ export const JobSchema = z.object({
   applicantCount: z.number().optional().nullable(),
   applicationsCount: z.number().optional().nullable(),
   expires_at: z.string().optional().nullable(),
+  // Approval trail (JobListSerializer, release 1.91). For "Needs Revision"
+  // rejection_reason holds the owner's revision note.
+  created_by_name: z.string().nullable().optional(),
+  rejection_reason: z.string().nullable().optional(),
+  approved_at: z.string().nullable().optional(),
+  approved_by_name: z.string().nullable().optional(),
   // Computed eligibility (learner view from jobs/all/)
   eligibility: z
     .object({
@@ -162,6 +168,10 @@ export const PaginationSchema = z
   });
 
 // ─── API Response Wrapper ───────────────────────────────────
+
+/** Backend enums are stored case-insensitively; compare in upper case. */
+const upperCase = (value: unknown) =>
+  typeof value === "string" ? value.toUpperCase() : value;
 
 const DjangoResponse = <T extends z.ZodTypeAny>(dataSchema: T) =>
   z.object({
@@ -737,6 +747,8 @@ export const CompanyProfileSchema = z.object({
   verified_by: z.string().optional().nullable(),
   rejection_reason: z.string().optional().nullable(),
   profile_completeness: z.number().nullable().optional(),
+  // Owner view while pending (CompanyDetailSerializer).
+  verification_sla_message: z.string().nullable().optional(),
   collaboration_summary: z
     .object({
       total_partnerships: z.number().optional().default(0),
@@ -747,6 +759,8 @@ export const CompanyProfileSchema = z.object({
     .nullable()
     .optional(),
   impact_summary: z.unknown().nullable().optional(),
+  // Owner profile (BE-4): whether the impact summary is on the public page.
+  publish_impact_report: z.boolean().nullable().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
   deleted_at: z.string().optional().nullable(),
@@ -977,6 +991,8 @@ export const RequirementsStepSchema = z.object({
   deliverables: z.array(z.string().min(1)).optional(),
   stipend: z.string().max(50, "Must be 50 characters or fewer").optional(),
   certificate_provided: z.boolean().optional(),
+  /** Application deadline as a datetime-local value; empty = no deadline. */
+  expires_at: z.string().optional(),
 });
 
 /** Combined form schema for create / edit */
@@ -1251,43 +1267,64 @@ export const AdminSummaryResponseSchema = DjangoResponse(AdminSummarySchema);
 
 // ─── Company Admin Links (Co-Admins) ─────────────────────────
 
+export const COMPANY_ADMIN_LINK_STATUSES = [
+  "Pending",
+  "Accepted",
+  "Declined",
+  "Revoked",
+] as const;
+
+// Django writes "Accepted"; the varchar column's default is "pending".
+const CompanyAdminLinkStatusSchema = z.preprocess(
+  (value) =>
+    typeof value === "string" && value.length > 0
+      ? value.charAt(0).toUpperCase() + value.slice(1).toLowerCase()
+      : value,
+  z.enum(COMPANY_ADMIN_LINK_STATUSES),
+);
+
+/** Backend CompanyAdminLinkSerializer (release 1.91). */
 export const CompanyAdminLinkSchema = z.object({
   id: z.string(),
-  company_id: z.string(),
-  company_name: z.string(),
-  user_id: z.string(),
-  user_name: z.string().optional().nullable(),
-  user_email: z.string().optional().nullable(),
-  status: z.string(),
-  invited_by: z.string(),
+  user_muid: z.string(),
+  user_name: z.string().nullable().optional(),
+  status: CompanyAdminLinkStatusSchema,
+  invited_by_name: z.string().nullable().optional(),
   invited_at: z.string(),
-  accepted_at: z.string().nullable().optional(),
+  responded_at: z.string().nullable().optional(),
+  revoked_by_name: z.string().nullable().optional(),
+  revoked_at: z.string().nullable().optional(),
 });
 
-export const CompanyAdminLinkResponseSchema = DjangoResponse(
-  CompanyAdminLinkSchema,
-);
 export const CompanyAdminLinkListResponseSchema = DjangoResponse(
   z.array(CompanyAdminLinkSchema),
 );
 
-export const UserCompanyStatusSchema = z.object({
-  has_company: z.boolean(),
-  company: z
-    .object({
-      id: z.string(),
-      name: z.string(),
-      slug: z.string(),
-      status: z.string(),
-      is_owner: z.boolean(),
-    })
-    .nullable()
-    .optional(),
-  pending_invitations: z.array(CompanyAdminLinkSchema).default([]),
+/** ig-sponsorship/pending/ (BE-3) — admin review queue. */
+export const PendingIgSponsorshipListResponseSchema = DjangoResponse(
+  z.array(
+    z.object({
+      ig_id: z.string(),
+      ig_name: z.string(),
+      company_id: z.string(),
+      company_name: z.string(),
+      requested_at: z.string().nullable().optional(),
+    }),
+  ),
+);
+
+/** CompanyAdminLinkInvitationSerializer — a pending invite, invitee view. */
+export const CompanyInvitationSchema = z.object({
+  id: z.string(),
+  company_id: z.string(),
+  company_name: z.string(),
+  company_logo: z.string().nullable().optional(),
+  invited_by_name: z.string().nullable().optional(),
+  invited_at: z.string(),
 });
 
-export const UserCompanyStatusResponseSchema = DjangoResponse(
-  UserCompanyStatusSchema,
+export const CompanyInvitationListResponseSchema = DjangoResponse(
+  z.array(CompanyInvitationSchema),
 );
 
 // ─── Campus Analytics ────────────────────────────────────────
@@ -1449,58 +1486,108 @@ export const TalentPoolInsightsResponseSchema = DjangoResponse(
 
 // ─── Company Feedback ────────────────────────────────────────
 
+export const FEEDBACK_INTERACTION_TYPES = [
+  "JOB",
+  "TASK",
+  "EVENT",
+  "SESSION",
+] as const;
+
+/** Backend CompanyFeedbackSerializer (release 1.91). */
 export const CompanyFeedbackSchema = z.object({
   id: z.string(),
-  from_user_name: z.string(),
-  from_user_id: z.string(),
+  interaction_type: z.preprocess(upperCase, z.enum(FEEDBACK_INTERACTION_TYPES)),
+  entity_id: z.string().nullable().optional(),
+  submitted_by_name: z.string().nullable().optional(),
   rating: z.number(),
-  feedback_type: z.string(),
-  comments: z.string(),
+  comment: z.string().nullable().optional(),
   created_at: z.string(),
 });
 
 export const CompanyFeedbackListResponseSchema = DjangoResponse(
-  z.array(CompanyFeedbackSchema),
-);
-export const CompanyFeedbackResponseSchema = DjangoResponse(
-  CompanyFeedbackSchema,
+  z.object({
+    data: z.array(CompanyFeedbackSchema).default([]),
+    pagination: PaginationSchema,
+  }),
 );
 
 // ─── Impact Report ───────────────────────────────────────────
 
+/** build_impact_summary() — the impact report and the public opt-in summary. */
 export const ImpactReportSchema = z.object({
-  company_id: z.string(),
-  company_name: z.string(),
-  total_hires: z.number(),
-  total_gigs: z.number(),
-  total_karma_awarded: z.number(),
-  campuses_engaged: z.number(),
-  is_published: z.boolean(),
-  published_at: z.string().nullable().optional(),
+  company: z.object({ id: z.string(), name: z.string() }),
+  reach: z.object({
+    total_learners_touched: z.number(),
+    job_applicants: z.number(),
+    task_completers: z.number(),
+    event_attendees: z.number(),
+    session_mentees: z.number(),
+  }),
+  quality_signal: z.object({
+    average_rating: z.number().nullable(),
+    total_ratings: z.number(),
+    feedback_average_rating: z.number().nullable(),
+    feedback_count: z.number(),
+    session_average_rating: z.number().nullable(),
+    session_rating_count: z.number(),
+  }),
+  outcome_signal: z.object({
+    hires: z.number(),
+    karma_distributed: z.number(),
+  }),
 });
 
 export const ImpactReportResponseSchema = DjangoResponse(ImpactReportSchema);
 
 // ─── Company Collaboration ───────────────────────────────────
 
+export const COLLAB_TYPES = [
+  "EVENT_COHOST",
+  "IG_SPONSORSHIP",
+  "CAMPUS_PARTNERSHIP",
+  "MENTORSHIP_EXCHANGE",
+] as const;
+export const COLLAB_TARGET_TYPES = ["IG", "CAMPUS"] as const;
+export const COLLAB_STATUSES = [
+  "OPEN",
+  "PENDING",
+  "ACCEPTED",
+  "DECLINED",
+  "WITHDRAWN",
+] as const;
+
+/** Backend CollaborationSerializer (release 1.91). */
 export const CompanyCollaborationSchema = z.object({
   id: z.string(),
+  company_name: z.string().nullable().optional(),
+  company_logo: z.string().nullable().optional(),
+  collab_type: z.preprocess(upperCase, z.enum(COLLAB_TYPES)),
   title: z.string(),
-  description: z.string(),
-  initiator_company_id: z.string(),
-  initiator_company_name: z.string(),
-  partner_company_id: z.string().nullable().optional(),
-  partner_company_name: z.string().nullable().optional(),
-  status: z.string(),
-  collaboration_type: z.string(),
+  description: z.string().nullable().optional(),
+  target_type: z
+    .preprocess(upperCase, z.enum(COLLAB_TARGET_TYPES))
+    .nullable()
+    .optional(),
+  target_org_id: z.string().nullable().optional(),
+  event_id: z.string().nullable().optional(),
+  status: z.preprocess(upperCase, z.enum(COLLAB_STATUSES)),
+  responded_by_name: z.string().nullable().optional(),
+  responded_at: z.string().nullable().optional(),
+  rejection_reason: z.string().nullable().optional(),
   created_at: z.string(),
 });
 
-export const CompanyCollaborationListResponseSchema = DjangoResponse(
+/** collaborations/incoming/ returns a plain list (BE-9). */
+export const IncomingCollaborationListResponseSchema = DjangoResponse(
   z.array(CompanyCollaborationSchema),
 );
-export const CompanyCollaborationResponseSchema = DjangoResponse(
-  CompanyCollaborationSchema,
+
+/** List and discover both return {data, pagination}. */
+export const CompanyCollaborationListResponseSchema = DjangoResponse(
+  z.object({
+    data: z.array(CompanyCollaborationSchema).default([]),
+    pagination: PaginationSchema,
+  }),
 );
 
 // ─── IG Sponsorship Metrics ──────────────────────────────────

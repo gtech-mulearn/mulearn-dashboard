@@ -111,6 +111,9 @@ export interface IgChapter {
   igIconImage?: string | null;
   leadId?: string;
   lead: string;
+  /** Chapter co-lead (release 1.91: co_lead_id / co_lead_name). */
+  coLeadId?: string;
+  coLead: string | null;
   membersCount: number;
   description?: string;
   isActive?: boolean;

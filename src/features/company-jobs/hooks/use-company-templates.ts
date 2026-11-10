@@ -14,11 +14,12 @@ export const TEMPLATES_KEYS = {
   events: () => [...TEMPLATES_KEYS.all, "events"] as const,
 };
 
-export function useEventTemplates() {
+export function useEventTemplates(enabled = true) {
   return useQuery({
     queryKey: TEMPLATES_KEYS.events(),
     queryFn: fetchEventTemplates,
     refetchOnWindowFocus: false,
+    enabled,
   });
 }
 

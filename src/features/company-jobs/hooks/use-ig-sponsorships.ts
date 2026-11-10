@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   fetchIgSponsorshipMetrics,
+  fetchPendingIgSponsorships,
   reviewIgSponsorship,
   submitIgSponsorship,
 } from "../api";
@@ -13,7 +14,19 @@ export const IG_SPONSORSHIP_KEYS = {
   all: ["ig-sponsorships"] as const,
   metrics: (igId: string) =>
     [...IG_SPONSORSHIP_KEYS.all, "metrics", igId] as const,
+  pending: () => [...IG_SPONSORSHIP_KEYS.all, "pending"] as const,
 };
+
+/** Platform admin: sponsorship requests awaiting review (BE-3). */
+export function usePendingIgSponsorships(enabled = true) {
+  return useQuery({
+    queryKey: IG_SPONSORSHIP_KEYS.pending(),
+    queryFn: fetchPendingIgSponsorships,
+    enabled,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+}
 
 export function useIgSponsorshipMetrics(igId: string) {
   return useQuery({
@@ -62,6 +75,9 @@ export function useReviewIgSponsorship() {
       );
       queryClient.invalidateQueries({
         queryKey: IG_SPONSORSHIP_KEYS.metrics(variables.igId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: IG_SPONSORSHIP_KEYS.pending(),
       });
     },
     onError: (error) => {

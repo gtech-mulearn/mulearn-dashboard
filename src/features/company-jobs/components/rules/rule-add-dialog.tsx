@@ -14,6 +14,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import {
   Dialog,
   DialogContent,
@@ -41,8 +42,9 @@ import {
   KARMA_RULE_TYPES,
   LEVEL_RULE_TYPES,
   RULE_TYPE_OPTIONS,
+  SKILL_RULE_TYPES,
 } from "../../constants";
-import { useEligibilityLevels } from "../../hooks";
+import { useEligibilityLevels, useEligibilitySkills } from "../../hooks";
 import { RuleFormSchema, type RuleFormValues } from "../../schemas";
 
 interface RuleAddDialogProps {
@@ -56,13 +58,15 @@ const isKarma = (t: string) =>
   (KARMA_RULE_TYPES as readonly string[]).includes(t);
 const isLevel = (t: string) =>
   (LEVEL_RULE_TYPES as readonly string[]).includes(t);
+const isSkill = (t: string) =>
+  (SKILL_RULE_TYPES as readonly string[]).includes(t);
 
 /**
  * The value control for the currently-selected rule type. The level list is
  * fetched only when a level rule type is selected (`enabled`), so we never
  * over-fetch.
  */
-function RuleValueField({
+export function RuleValueField({
   ruleType,
   value,
   onChange,
@@ -72,6 +76,7 @@ function RuleValueField({
   onChange: (value: string) => void;
 }) {
   const levels = useEligibilityLevels(isLevel(ruleType));
+  const skills = useEligibilitySkills(isSkill(ruleType));
 
   // No type chosen yet.
   if (!ruleType) {
@@ -95,6 +100,28 @@ function RuleValueField({
         placeholder="e.g. 500"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+      />
+    );
+  }
+
+  // Skill → searchable list of active skills; stores the skill id.
+  if (isSkill(ruleType)) {
+    if (skills.isError) {
+      return (
+        <p className="text-sm text-destructive">
+          Couldn&apos;t load skills. Please try again.
+        </p>
+      );
+    }
+    return (
+      <Combobox
+        options={(skills.data ?? []).map((s) => ({ id: s.id, title: s.name }))}
+        value={value}
+        onValueChange={onChange}
+        loading={skills.isLoading}
+        placeholder={skills.isLoading ? "Loading skills…" : "Search skills"}
+        searchPlaceholder="Search skills"
+        emptyText="No matching skill."
       />
     );
   }

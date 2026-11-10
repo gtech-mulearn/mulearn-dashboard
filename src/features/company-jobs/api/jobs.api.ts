@@ -1,8 +1,10 @@
 import type { z } from "zod";
 import { apiClient, publicApiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import { ApiError } from "@/api/errors";
 import { fetchCompanyOnboardingStatus } from "@/features/auth/api/auth.api";
 import { getEditableUserProfile } from "@/features/profile/api/profile.api";
+import type { CollaborationCreatePayload } from "../lib/collaboration-payload";
 import type { PublicCompanyProfile, PublicJobsBySlugData } from "../schemas";
 import {
   AdminSummaryResponseSchema,
@@ -10,12 +12,10 @@ import {
   CampusAnalyticsResponseSchema,
   CampusTrendResponseSchema,
   CompanyAdminLinkListResponseSchema,
-  CompanyAdminLinkResponseSchema,
   CompanyCollaborationListResponseSchema,
-  CompanyCollaborationResponseSchema,
   CompanyDashboardSummaryResponseSchema,
   CompanyFeedbackListResponseSchema,
-  CompanyFeedbackResponseSchema,
+  CompanyInvitationListResponseSchema,
   CompanyProfileResponseSchema,
   CreateJobResponseSchema,
   DeleteJobResponseSchema,
@@ -25,12 +25,14 @@ import {
   GigAnalyticsResponseSchema,
   IgSponsorshipMetricsResponseSchema,
   ImpactReportResponseSchema,
+  IncomingCollaborationListResponseSchema,
   JobApplicantsResponseSchema,
   JobDetailResponseSchema,
   JobEngagementAnalyticsResponseSchema,
   JobsListResponseSchema,
   LearnerApplicationsResponseSchema,
   LearnerDiscoveryResponseSchema,
+  PendingIgSponsorshipListResponseSchema,
   PublicCompanyProfileResponseSchema,
   PublicJobsBySlugResponseSchema,
   PublicJobsResponseSchema,
@@ -44,16 +46,18 @@ import {
   UpdateApplicantStatusResponseSchema,
   UpdateCompanyProfileResponseSchema,
   UpdateJobResponseSchema,
-  UserCompanyStatusResponseSchema,
 } from "../schemas";
 import type {
   AdminSummary,
   CampusAnalytics,
   CampusTrend,
+  CollaborationPage,
+  CollabTargetType,
   CompanyAdminLink,
   CompanyCollaboration,
   CompanyDashboardSummary,
-  CompanyFeedback,
+  CompanyFeedbackPage,
+  CompanyInvitation,
   CompanyProfile,
   CreateJobPayload,
   CreateJobResponse,
@@ -62,6 +66,7 @@ import type {
   DeleteJobResponse,
   DeleteRuleResponse,
   EventTemplate,
+  FeedbackInteractionType,
   GigAnalytics,
   IgSponsorshipMetrics,
   ImpactReport,
@@ -73,6 +78,7 @@ import type {
   LearnerApplicationsResponse,
   LearnerDiscoveryParams,
   LearnerDiscoveryResponse,
+  PendingIgSponsorship,
   PublicJobsResponse,
   ShortlistedLearner,
   TalentPoolAnalytics,
@@ -84,15 +90,81 @@ import type {
   UpdateJobResponse,
   UpdateRulePayload,
   UpdateRuleResponse,
-  UserCompanyStatus,
 } from "../types";
 
 // ─── Company Profile (§2) ───────────────────────────────────
 
+/** The signed-in user owns, co-administers or mentors no verified company. */
+export class NoCompanyAccessError extends Error {
+  constructor() {
+    super("You're not part of a company on muLearn");
+    this.name = "NoCompanyAccessError";
+  }
+}
+
+const isNotFound = (error: unknown) =>
+  error instanceof ApiError && error.status === 404;
+
+const isDenied = (error: unknown) =>
+  error instanceof ApiError && (error.status === 403 || error.status === 404);
+
+/** Probe options: a 403 here means "not a member", not an expired session. */
+const PROBE = { skipAuthRedirectOn403: true } as const;
+
+/**
+ * True when the user may act for a company (owner, accepted co-admin or
+ * company mentor): GET company/profile/ answers only for them.
+ */
+export async function probeCompanyMembership(): Promise<boolean> {
+  try {
+    await apiClient.get(endpoints.company.profile, undefined, PROBE);
+    return true;
+  } catch (error) {
+    if (isDenied(error)) return false;
+    throw error;
+  }
+}
+
+/** True for the owner or an accepted co-admin (admin-link list is theirs only). */
+export async function probeCompanyAdminAccess(): Promise<boolean> {
+  try {
+    await apiClient.get(endpoints.company.adminLinkList, undefined, PROBE);
+    return true;
+  } catch (error) {
+    if (isDenied(error)) return false;
+    throw error;
+  }
+}
+
 export async function fetchCompanyProfile(): Promise<CompanyProfile> {
-  // Check verification status first
-  const statusRes = await fetchCompanyOnboardingStatus();
+  // company/status/ only knows the registering OWNER. Co-admins and company
+  // mentors (release 1.91) get 404 there but can read company/profile/.
+  let statusRes: Awaited<ReturnType<typeof fetchCompanyOnboardingStatus>>;
+  try {
+    statusRes = await fetchCompanyOnboardingStatus();
+  } catch (error) {
+    if (!isNotFound(error)) throw error;
+    try {
+      const res = await apiClient.get(
+        endpoints.company.profile,
+        CompanyProfileResponseSchema,
+      );
+      return { ...res.response, status: "verified" };
+    } catch (profileError) {
+      if (isNotFound(profileError)) throw new NoCompanyAccessError();
+      throw profileError;
+    }
+  }
   const status = statusRes.status;
+
+  // A deactivated company (1.91) has no readable profile; surface the status
+  // so the guard can explain it instead of failing.
+  if (status === "deactivated") {
+    return {
+      ...(statusRes as Record<string, unknown>),
+      status: "deactivated",
+    } as unknown as CompanyProfile;
+  }
 
   // If pending or rejected, fallback to the editable user profile
   // and construct a minimal CompanyProfile shape for the UI
@@ -637,27 +709,37 @@ export async function fetchAdminSummary(): Promise<AdminSummary> {
 
 // ─── Company Admin Links & Co-Admins (§2) ───────────────────
 
-export async function inviteCompanyAdmin(
-  email: string,
-): Promise<CompanyAdminLink> {
-  const res = await apiClient.post(
+/** Owner invites a muLearn user (by muid); they must accept to get access. */
+export async function inviteCompanyAdmin(muid: string): Promise<void> {
+  await apiClient.post(
     endpoints.company.adminLink,
-    { email },
-    CompanyAdminLinkResponseSchema,
+    { muid },
+    GenericResponseSchema,
   );
-  return res.response;
 }
 
+/** The signed-in user's pending co-admin invitations (BE-1). */
+export async function fetchMyCompanyInvitations(): Promise<
+  CompanyInvitation[]
+> {
+  const res = await apiClient.get(
+    endpoints.company.adminLinkInvitations,
+    CompanyInvitationListResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return res.response ?? [];
+}
+
+/** The invitee accepts or declines; the backend returns no body. */
 export async function respondCompanyAdminInvitation(
   linkId: string,
   accept: boolean,
-): Promise<CompanyAdminLink> {
-  const res = await apiClient.post(
+): Promise<void> {
+  await apiClient.post(
     endpoints.company.adminLinkRespond(linkId),
     { accept },
-    CompanyAdminLinkResponseSchema,
+    GenericResponseSchema,
   );
-  return res.response;
 }
 
 export async function removeCompanyAdmin(linkId: string): Promise<void> {
@@ -684,14 +766,6 @@ export async function fetchCompanyAdminLinks(): Promise<CompanyAdminLink[]> {
   return res.response ?? [];
 }
 
-export async function fetchUserCompanyStatus(): Promise<UserCompanyStatus> {
-  const res = await apiClient.get(
-    endpoints.company.userStatus,
-    UserCompanyStatusResponseSchema,
-  );
-  return res.response;
-}
-
 export async function deactivateCompanySelf(): Promise<void> {
   await apiClient.post(
     endpoints.company.deactivateSelf,
@@ -712,7 +786,11 @@ export async function fetchPendingJobs(
     query.set("pageIndex", String(page));
   }
   const perPage = params?.per_page ?? params?.perPage;
-  if (perPage !== undefined) query.set("per_page", String(perPage));
+  if (perPage !== undefined) {
+    query.set("per_page", String(perPage));
+    // CommonUtils.get_paginated_queryset reads perPage.
+    query.set("perPage", String(perPage));
+  }
   if (params?.search?.trim()) query.set("search", params.search.trim());
   const sortBy = params?.sort_by ?? params?.sortBy;
   if (sortBy) query.set("sortBy", sortBy);
@@ -863,26 +941,41 @@ export async function downloadTalentPoolInsightsCSV(params?: {
 
 // ─── Feedback & Impact Reports (§8) ─────────────────────────
 
-export async function submitCompanyFeedback(payload: {
-  to_user_id?: string;
-  rating: number;
-  feedback_type: string;
-  comments: string;
-}): Promise<CompanyFeedback> {
-  const res = await apiClient.post(
-    endpoints.company.feedback,
-    payload,
-    CompanyFeedbackResponseSchema,
-  );
-  return res.response;
+export interface CompanyFeedbackPayload {
+  interaction_type: FeedbackInteractionType;
+  entity_id: string;
+  rating: 1 | 2 | 3 | 4 | 5;
+  comment?: string;
 }
 
-export async function fetchCompanyFeedbackList(): Promise<CompanyFeedback[]> {
+/**
+ * A learner rates a company after a finished interaction (job outcome,
+ * approved task, attended event, completed company session as mentee).
+ */
+export async function submitCompanyFeedback(
+  payload: CompanyFeedbackPayload,
+): Promise<void> {
+  await apiClient.post(
+    endpoints.company.feedback,
+    payload,
+    GenericResponseSchema,
+  );
+}
+
+/** Feedback learners left about the company, newest first. */
+export async function fetchCompanyFeedbackList(
+  params?: CollaborationPageParams,
+): Promise<CompanyFeedbackPage> {
   const res = await apiClient.get(
-    endpoints.company.feedbackList,
+    `${endpoints.company.feedbackList}${pageQuery(params)}`,
     CompanyFeedbackListResponseSchema,
   );
-  return res.response ?? [];
+  return (
+    res.response ?? {
+      data: [],
+      pagination: EMPTY_COLLABORATION_PAGE.pagination,
+    }
+  );
 }
 
 export async function fetchCompanyImpactReport(): Promise<ImpactReport> {
@@ -893,64 +986,113 @@ export async function fetchCompanyImpactReport(): Promise<ImpactReport> {
   return res.response;
 }
 
-export async function togglePublishImpactReport(
-  isPublished: boolean,
-): Promise<ImpactReport> {
-  const res = await apiClient.patch(
+/** Owner or co-admin shows/hides the impact summary on the public profile. */
+export async function setImpactReportPublished(
+  publish: boolean,
+): Promise<void> {
+  await apiClient.patch(
     endpoints.company.impactReportPublish,
-    { is_published: isPublished },
-    ImpactReportResponseSchema,
+    { publish },
+    GenericResponseSchema,
   );
-  return res.response;
 }
 
 // ─── Inter-Company Collaboration (§9) ───────────────────────
 
-export async function fetchCollaborations(): Promise<CompanyCollaboration[]> {
+export interface CollaborationPageParams {
+  page?: number;
+  perPage?: number;
+}
+
+function pageQuery(params?: CollaborationPageParams): string {
+  const query = new URLSearchParams();
+  if (params?.page) query.set("pageIndex", String(params.page));
+  if (params?.perPage) query.set("perPage", String(params.perPage));
+  const qs = query.toString();
+  return qs ? `?${qs}` : "";
+}
+
+const EMPTY_COLLABORATION_PAGE: CollaborationPage = {
+  data: [],
+  pagination: {
+    count: 0,
+    totalPages: 1,
+    isNext: false,
+    isPrev: false,
+    nextPage: null,
+  },
+};
+
+/** The company's own collaboration posts, any status, newest first. */
+export async function fetchCollaborations(
+  params?: CollaborationPageParams,
+): Promise<CollaborationPage> {
   const res = await apiClient.get(
-    endpoints.company.collaborations,
+    `${endpoints.company.collaborations}${pageQuery(params)}`,
     CompanyCollaborationListResponseSchema,
   );
-  return res.response ?? [];
+  return res.response ?? EMPTY_COLLABORATION_PAGE;
 }
 
-export async function createCollaboration(payload: {
-  title: string;
-  description: string;
-  collaboration_type: string;
-  partner_company_id?: string;
-}): Promise<CompanyCollaboration> {
-  const res = await apiClient.post(
+/** OPEN posts from every company (the campus/IG discovery feed). */
+export async function discoverCollaborations(
+  params?: CollaborationPageParams,
+): Promise<CollaborationPage> {
+  const res = await apiClient.get(
+    `${endpoints.company.collaborationsDiscover}${pageQuery(params)}`,
+    CompanyCollaborationListResponseSchema,
+  );
+  return res.response ?? EMPTY_COLLABORATION_PAGE;
+}
+
+/** Owner or co-admin posts a collaboration; 429 at 5 open/pending posts. */
+export async function createCollaboration(
+  payload: CollaborationCreatePayload,
+): Promise<void> {
+  await apiClient.post(
     endpoints.company.collaborations,
     payload,
-    CompanyCollaborationResponseSchema,
+    GenericResponseSchema,
   );
-  return res.response;
 }
 
-export async function discoverCollaborations(): Promise<
+/** Invites addressed to a campus or IG the caller leads (BE-9). */
+export async function fetchIncomingCollaborations(): Promise<
   CompanyCollaboration[]
 > {
   const res = await apiClient.get(
-    endpoints.company.collaborationsDiscover,
-    CompanyCollaborationListResponseSchema,
+    endpoints.company.collaborationsIncoming,
+    IncomingCollaborationListResponseSchema,
+    { skipAuthRedirectOn403: true },
   );
   return res.response ?? [];
+}
+
+/**
+ * Campus/IG lead answers a collaboration. A direct invite (PENDING) takes
+ * accept (+ optional rejection_reason); an OPEN post is claimed with
+ * accept: true plus the target it is claimed for.
+ */
+export interface CollaborationResponseBody {
+  accept: boolean;
+  rejection_reason?: string;
+  target_type?: CollabTargetType;
+  target_org_id?: string;
 }
 
 export async function respondCollaboration(
   id: string,
-  accept: boolean,
-): Promise<CompanyCollaboration> {
-  const res = await apiClient.post(
+  body: CollaborationResponseBody,
+): Promise<void> {
+  await apiClient.post(
     endpoints.company.collaborationRespond(id),
-    { accept },
-    CompanyCollaborationResponseSchema,
+    body,
+    GenericResponseSchema,
   );
-  return res.response;
 }
 
-export async function cancelCollaboration(id: string): Promise<void> {
+/** Withdraw an OPEN or PENDING post. */
+export async function withdrawCollaboration(id: string): Promise<void> {
   await apiClient.delete(
     endpoints.company.collaborationDetail(id),
     undefined,
@@ -966,6 +1108,18 @@ export async function submitIgSponsorship(igId: string): Promise<void> {
     undefined,
     GenericResponseSchema,
   );
+}
+
+/** Platform admin: IG sponsorship requests awaiting review (BE-3). */
+export async function fetchPendingIgSponsorships(): Promise<
+  PendingIgSponsorship[]
+> {
+  const res = await apiClient.get(
+    endpoints.company.igSponsorshipPending,
+    PendingIgSponsorshipListResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return res.response ?? [];
 }
 
 export async function reviewIgSponsorship(

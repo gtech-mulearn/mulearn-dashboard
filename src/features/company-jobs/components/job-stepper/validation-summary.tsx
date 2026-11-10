@@ -31,6 +31,7 @@ const FIELD_LABELS: Record<keyof JobFormValues, string> = {
   duration_unit: "Duration unit",
   deliverables: "Deliverables",
   certificate_provided: "Completion certificate",
+  expires_at: "Application deadline",
 };
 
 interface ValidationSummaryProps {

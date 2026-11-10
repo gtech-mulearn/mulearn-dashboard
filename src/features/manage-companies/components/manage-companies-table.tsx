@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle, Eye, XCircle } from "lucide-react";
+import { Ban, CheckCircle, Eye, RotateCcw, XCircle } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
 import { RowActionButton } from "@/components/dashboard/table/row-action-button";
@@ -9,21 +9,29 @@ import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAdminSummary } from "@/features/company-jobs/hooks/use-company-analytics";
 import { formatShortDate } from "@/lib/datetime";
-import { useCompanyVerificationList } from "../hooks/use-manage-companies";
+import {
+  useCompanyVerificationList,
+  useDeactivateCompanyAdmin,
+  useReactivateCompany,
+} from "../hooks/use-manage-companies";
 import type { CompanyStatus, CompanyVerificationItem } from "../schemas";
 import { CompanyDetailSheet } from "./company-detail-sheet";
+import { PendingIgSponsorships } from "./pending-ig-sponsorships";
 import { VerificationActionDialog } from "./verification-action-dialog";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 // Values must match what the backend stores in company.status
-// (enum 'pending','verified','rejected'). "all" sends no status filter.
-const STATUS_TABS = [
+// ('pending','verified','rejected','deactivated'). "all" sends no filter.
+export const STATUS_TABS = [
   { label: "Pending", value: "pending" },
   { label: "Verified", value: "verified" },
   { label: "Rejected", value: "rejected" },
+  { label: "Deactivated", value: "deactivated" },
   { label: "All", value: "all" },
 ] as const;
 
@@ -61,6 +69,10 @@ const STATUS_CONFIG: Record<
     label: "Inactive",
     className: "border-border bg-muted text-muted-foreground",
   },
+  deactivated: {
+    label: "Deactivated",
+    className: "border-border bg-muted text-muted-foreground",
+  },
 };
 
 // ─── Column Builder ───────────────────────────────────────────────────────────
@@ -69,6 +81,8 @@ export function buildColumnOrder(
   onView: (id: string | number | boolean) => void,
   onApproveRow: (id: string | number | boolean) => void,
   onRejectRow: (id: string | number | boolean) => void,
+  onDeactivateRow?: (id: string | number | boolean) => void,
+  onReactivateRow?: (id: string | number | boolean) => void,
 ) {
   return [
     {
@@ -147,7 +161,8 @@ export function buildColumnOrder(
         id: string,
         row: Record<string, unknown>,
       ) => {
-        const isPending = (row.status as CompanyStatus) === "pending";
+        const status = row.status as CompanyStatus;
+        const isPending = status === "pending";
         return (
           <div className="flex items-center gap-1">
             <RowActionButton
@@ -170,6 +185,22 @@ export function buildColumnOrder(
                   onClick={() => onRejectRow(id)}
                 />
               </>
+            )}
+            {status === "verified" && onDeactivateRow && (
+              <RowActionButton
+                icon={Ban}
+                label="Deactivate"
+                tone="destructive"
+                onClick={() => onDeactivateRow(id)}
+              />
+            )}
+            {status === "deactivated" && onReactivateRow && (
+              <RowActionButton
+                icon={RotateCcw}
+                label="Reactivate"
+                tone="success"
+                onClick={() => onReactivateRow(id)}
+              />
             )}
           </div>
         );
@@ -194,6 +225,13 @@ export default function ManageCompaniesTable() {
   const [selectedCompany, setSelectedCompany] =
     useState<CompanyVerificationItem | null>(null);
   const [actionType, setActionType] = useState<"approve" | "reject">("approve");
+  const [lifecycle, setLifecycle] = useState<{
+    kind: "deactivate" | "reactivate";
+    company: CompanyVerificationItem;
+  } | null>(null);
+  const deactivate = useDeactivateCompanyAdmin();
+  const reactivate = useReactivateCompany();
+  const { data: summary } = useAdminSummary();
 
   // ── Data ──────────────────────────────────────────────────────
   const { data, isLoading } = useCompanyVerificationList({
@@ -274,15 +312,55 @@ export default function ManageCompaniesTable() {
     setActionDialogOpen(true);
   };
 
+  const handleDeactivateRow = useCallback(
+    (id: string | number | boolean) => {
+      const company = rows.find((r) => r.id === String(id));
+      if (company) setLifecycle({ kind: "deactivate", company });
+    },
+    [rows],
+  );
+
+  const handleReactivateRow = useCallback(
+    (id: string | number | boolean) => {
+      const company = rows.find((r) => r.id === String(id));
+      if (company) setLifecycle({ kind: "reactivate", company });
+    },
+    [rows],
+  );
+
+  const confirmLifecycle = () => {
+    if (!lifecycle) return;
+    const mutation = lifecycle.kind === "deactivate" ? deactivate : reactivate;
+    mutation.mutate(lifecycle.company.id, {
+      onSettled: () => setLifecycle(null),
+    });
+  };
+
   const columnOrder = useMemo(
-    () => buildColumnOrder(handleViewRow, handleApproveRow, handleRejectRow),
-    [handleViewRow, handleApproveRow, handleRejectRow],
+    () =>
+      buildColumnOrder(
+        handleViewRow,
+        handleApproveRow,
+        handleRejectRow,
+        handleDeactivateRow,
+        handleReactivateRow,
+      ),
+    [
+      handleViewRow,
+      handleApproveRow,
+      handleRejectRow,
+      handleDeactivateRow,
+      handleReactivateRow,
+    ],
   );
 
   return (
     <>
       <Card className="overflow-visible rounded-none border-0 bg-transparent shadow-none">
         <CardContent className="space-y-6 bg-transparent p-0">
+          {/* Companies asking to sponsor an IG (BE-3); hidden when none */}
+          <PendingIgSponsorships />
+
           {/* Status tabs — same pattern as the other verification pages */}
           <Tabs
             value={statusFilter}
@@ -296,7 +374,9 @@ export default function ManageCompaniesTable() {
                   value={tab.value}
                   className="data-[state=active]:bg-background"
                 >
-                  {tab.label}
+                  {tab.value === "deactivated" && summary?.deactivated_companies
+                    ? `${tab.label} (${summary.deactivated_companies})`
+                    : tab.label}
                 </TabsTrigger>
               ))}
             </TabsList>
@@ -357,6 +437,30 @@ export default function ManageCompaniesTable() {
         company={selectedCompany}
         onApprove={handleApproveFromSheet}
         onReject={handleRejectFromSheet}
+      />
+
+      {/* Deactivate / Reactivate confirmation */}
+      <ConfirmDialog
+        open={lifecycle !== null}
+        onOpenChange={(open) => {
+          if (!open) setLifecycle(null);
+        }}
+        variant={lifecycle?.kind === "deactivate" ? "destructive" : "success"}
+        title={
+          lifecycle?.kind === "deactivate"
+            ? `Deactivate ${lifecycle.company.name}?`
+            : `Reactivate ${lifecycle?.company.name ?? "company"}?`
+        }
+        description={
+          lifecycle?.kind === "deactivate"
+            ? "Its public page goes offline, co-admins are revoked, company mentors lose access and IG sponsorships end. You can reactivate it later."
+            : "The company returns to verified. Co-admins, company mentors and IG sponsorships removed at deactivation are not restored."
+        }
+        confirmLabel={
+          lifecycle?.kind === "deactivate" ? "Deactivate" : "Reactivate"
+        }
+        isPending={deactivate.isPending || reactivate.isPending}
+        onConfirm={confirmLifecycle}
       />
 
       {/* Approve / Reject confirmation dialog */}

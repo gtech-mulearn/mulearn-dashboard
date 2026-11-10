@@ -363,6 +363,15 @@ h5 {
   }
 
   /* ── Application / Applicant status chips ──────────────────────────── */
+  .app-status-withdrawn {
+    background-color: color-mix(
+      in srgb,
+      var(--muted-foreground) 12%,
+      var(--background)
+    );
+    color: var(--muted-foreground);
+    border-color: color-mix(in srgb, var(--muted-foreground) 22%, transparent);
+  }
   .app-status-applied {
     background-color: color-mix(
       in srgb,

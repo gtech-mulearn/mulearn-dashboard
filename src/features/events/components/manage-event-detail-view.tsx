@@ -27,9 +27,11 @@ import {
   historyTimestamp,
   useAdminFeature,
   useDeleteEvent,
+  useEventAnalytics,
   useManageEventDetail,
+  useOrganizerOptions,
 } from "../hooks";
-import { canApproveStatus } from "../lib/events.policy";
+import { approvalContextFor, canApproveStatus } from "../lib/events.policy";
 import type {
   HistoryLogEntryProps,
   ManageEventDetailViewProps,
@@ -166,6 +168,8 @@ export function ManageEventDetailView({
     error,
     refetch,
   } = useManageEventDetail(eventId);
+  // Organiser engagement (RSVPs, attendance, satisfaction); hidden on 403.
+  const { data: analytics } = useEventAnalytics(eventId);
 
   const { data: userInfo } = useQuery({
     queryKey: ["user", "info", "events-manage"],
@@ -178,12 +182,29 @@ export function ManageEventDetailView({
   const isStaff = (userInfo?.is_staff as boolean | undefined) ?? false;
   const isAdmin = isStaff || viewerRoles.includes(ROLES.ADMIN);
 
-  // Can the viewer act at THIS event's current approval stage (mentor/campus/admin)?
+  // Company events are approved by the company's owner/co-admins; the
+  // organizer options list exactly the companies this viewer can act for.
+  const isCompanyEvent =
+    (event?.organizer.type ?? event?.organizer.organiser_type) === "company";
+  const { data: organizerOptions } = useOrganizerOptions(isCompanyEvent);
+  const manageableCompanyOrgIds = useMemo(
+    () => (organizerOptions?.can_create_as_company ?? []).map((c) => c.id),
+    [organizerOptions],
+  );
+
+  // Can the viewer act at THIS event's current approval stage?
   const canApprove = event
-    ? canApproveStatus(event.status, viewerRoles, isStaff)
+    ? canApproveStatus(
+        event.status,
+        viewerRoles,
+        isStaff,
+        approvalContextFor(event.organizer, manageableCompanyOrgIds),
+      )
     : false;
   const canAdmin = isAdmin;
-  const canSelfPublish = isAdmin || event?.organizer.type === "company";
+  // Company events always go to review in 1.91 (owner → admin approval,
+  // company mentor → owner approval first), so only admins publish directly.
+  const canSelfPublish = isAdmin;
 
   const deleteEvent = useDeleteEvent(eventId);
   const adminFeature = useAdminFeature(eventId);
@@ -437,6 +458,7 @@ export function ManageEventDetailView({
             venueName={venueName}
             mapsUrl={mapsUrl}
             mapQuery={mapQuery}
+            analytics={analytics}
           />
 
           <div className="overflow-hidden rounded-2xl border border-border bg-card lc-card-shadow">
@@ -526,6 +548,7 @@ export function ManageEventDetailView({
               venueName={venueName}
               mapsUrl={mapsUrl}
               mapQuery={mapQuery}
+              analytics={analytics}
             />
 
             <div className="overflow-hidden rounded-2xl border border-border bg-card lc-card-shadow">

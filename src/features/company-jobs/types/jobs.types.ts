@@ -73,6 +73,11 @@ export interface Job {
   applicantCount?: number | null;
   applicationsCount?: number | null;
   expires_at?: string | null;
+  created_by_name?: string | null;
+  /** Rejection reason, or the owner's revision note for "Needs Revision". */
+  rejection_reason?: string | null;
+  approved_at?: string | null;
+  approved_by_name?: string | null;
   eligibility?: {
     eligible: boolean;
     rules: {
@@ -359,12 +364,14 @@ export interface CompanyProfile {
   deleted_at?: string | null;
   rejection_reason?: string | null;
   profile_completeness?: number | null;
+  verification_sla_message?: string | null;
   collaboration_summary?: {
     total_partnerships?: number;
     campus_partnerships?: number;
     ig_partnerships?: number;
   } | null;
   impact_summary?: unknown;
+  publish_impact_report?: boolean | null;
   // Frontend-only permission flags (not from API)
   can_edit_profile?: boolean;
   can_access_advanced_features?: boolean;
@@ -545,29 +552,42 @@ export interface MuLearnersResponse {
 
 // ─── New Part A Types (Admin Links, Analytics, Feedback, etc.) ─
 
-export interface CompanyAdminLink {
+export type CompanyAdminLinkStatus =
+  | "Pending"
+  | "Accepted"
+  | "Declined"
+  | "Revoked";
+
+/** An IG sponsorship request waiting for platform-admin review. */
+export interface PendingIgSponsorship {
+  ig_id: string;
+  ig_name: string;
+  company_id: string;
+  company_name: string;
+  requested_at?: string | null;
+}
+
+/** A pending co-admin invitation addressed to the signed-in user. */
+export interface CompanyInvitation {
   id: string;
   company_id: string;
   company_name: string;
-  user_id: string;
-  user_name?: string | null;
-  user_email?: string | null;
-  status: string;
-  invited_by: string;
+  company_logo?: string | null;
+  invited_by_name?: string | null;
   invited_at: string;
-  accepted_at?: string | null;
 }
 
-export interface UserCompanyStatus {
-  has_company: boolean;
-  company?: {
-    id: string;
-    name: string;
-    slug: string;
-    status: string;
-    is_owner: boolean;
-  } | null;
-  pending_invitations: CompanyAdminLink[];
+/** One row of the company's co-admin history (CompanyAdminLinkSerializer). */
+export interface CompanyAdminLink {
+  id: string;
+  user_muid: string;
+  user_name?: string | null;
+  status: CompanyAdminLinkStatus;
+  invited_by_name?: string | null;
+  invited_at: string;
+  responded_at?: string | null;
+  revoked_by_name?: string | null;
+  revoked_at?: string | null;
 }
 
 export interface CampusJobApplicant {
@@ -658,38 +678,79 @@ export interface TaskTemplate {
   created_at?: string | null;
 }
 
+export type FeedbackInteractionType = "JOB" | "TASK" | "EVENT" | "SESSION";
+
+/** Feedback a learner left about the company (CompanyFeedbackSerializer). */
 export interface CompanyFeedback {
   id: string;
-  from_user_name: string;
-  from_user_id: string;
+  interaction_type: FeedbackInteractionType;
+  entity_id?: string | null;
+  submitted_by_name?: string | null;
   rating: number;
-  feedback_type: string;
-  comments: string;
+  comment?: string | null;
   created_at: string;
 }
 
-export interface ImpactReport {
-  company_id: string;
-  company_name: string;
-  total_hires: number;
-  total_gigs: number;
-  total_karma_awarded: number;
-  campuses_engaged: number;
-  is_published: boolean;
-  published_at?: string | null;
+export interface CompanyFeedbackPage {
+  data: CompanyFeedback[];
+  pagination: Pagination;
 }
 
+/** build_impact_summary() output. */
+export interface ImpactReport {
+  company: { id: string; name: string };
+  reach: {
+    total_learners_touched: number;
+    job_applicants: number;
+    task_completers: number;
+    event_attendees: number;
+    session_mentees: number;
+  };
+  quality_signal: {
+    average_rating: number | null;
+    total_ratings: number;
+    feedback_average_rating: number | null;
+    feedback_count: number;
+    session_average_rating: number | null;
+    session_rating_count: number;
+  };
+  outcome_signal: { hires: number; karma_distributed: number };
+}
+
+export type CollabType =
+  | "EVENT_COHOST"
+  | "IG_SPONSORSHIP"
+  | "CAMPUS_PARTNERSHIP"
+  | "MENTORSHIP_EXCHANGE";
+export type CollabTargetType = "IG" | "CAMPUS";
+export type CollabStatus =
+  | "OPEN"
+  | "PENDING"
+  | "ACCEPTED"
+  | "DECLINED"
+  | "WITHDRAWN";
+
+/** A company's collaboration post (CollaborationSerializer). */
 export interface CompanyCollaboration {
   id: string;
+  company_name?: string | null;
+  company_logo?: string | null;
+  collab_type: CollabType;
   title: string;
-  description: string;
-  initiator_company_id: string;
-  initiator_company_name: string;
-  partner_company_id?: string | null;
-  partner_company_name?: string | null;
-  status: string;
-  collaboration_type: string;
+  description?: string | null;
+  target_type?: CollabTargetType | null;
+  target_org_id?: string | null;
+  event_id?: string | null;
+  status: CollabStatus;
+  responded_by_name?: string | null;
+  responded_at?: string | null;
+  rejection_reason?: string | null;
   created_at: string;
+}
+
+export interface CollaborationPage {
+  data: CompanyCollaboration[];
+  pagination: Pagination;
 }
 
 export interface IgSponsorshipMetrics {

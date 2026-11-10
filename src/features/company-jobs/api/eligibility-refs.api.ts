@@ -6,8 +6,8 @@
  * Fetches the level list used to populate the "Add Eligibility Rule" value
  * field for Min/Max Level rules (issue #23), so a company selects a real level
  * rather than free-typing. The stored value is the numeric `level_order` the
- * backend compares against. (Karma rules use a plain numeric input; Skill /
- * Interest Group / Achievement rule types were removed.)
+ * backend compares against. Karma rules use a plain numeric input; skill
+ * rules (release 1.91) store an active Skill id picked from skill/dropdown/.
  */
 
 import { apiClient } from "@/api/client";
@@ -30,6 +30,20 @@ function toArray(payload: unknown): Record<string, unknown>[] {
     }
   }
   return [];
+}
+
+export interface EligibilitySkill {
+  /** Skill id — the value a skill rule stores. */
+  id: string;
+  name: string;
+}
+
+/** GET skill/dropdown/ — active skills, any authenticated user. */
+export async function fetchEligibilitySkills(): Promise<EligibilitySkill[]> {
+  const data = await apiClient.get<unknown>(endpoints.admin.tasks.skills);
+  return toArray(data)
+    .filter((it) => it.id != null && it.name != null)
+    .map((it) => ({ id: String(it.id), name: String(it.name).trim() }));
 }
 
 export async function fetchEligibilityLevels(): Promise<EligibilityLevel[]> {

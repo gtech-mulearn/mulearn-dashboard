@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { mentorKeys } from "@/features/mentor/hooks/query-keys";
+import type { SessionFeedbackInput } from "@/features/mentor/sessions/lib/session-feedback";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   fetchMentees,
@@ -40,11 +41,11 @@ export function useSubmitFeedback() {
   return useMutation({
     mutationFn: ({
       sessionId,
-      feedback,
+      body,
     }: {
       sessionId: string;
-      feedback: string;
-    }) => submitSessionFeedback(sessionId, feedback),
+      body: SessionFeedbackInput;
+    }) => submitSessionFeedback(sessionId, body),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: mentorKeys.sessions.all });
       void queryClient.invalidateQueries({ queryKey: menteeKeys.all });

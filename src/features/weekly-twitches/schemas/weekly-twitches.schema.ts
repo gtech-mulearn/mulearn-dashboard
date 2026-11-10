@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ApiResponseSchema } from "@/lib/schemas/api-response";
+import { ZoneSchema, ZoneWriteSchema } from "../lib/zones";
 
 export const PaginationSchema = z.object({
   count: z.number().optional(),
@@ -10,7 +11,8 @@ export const PaginationSchema = z.object({
 });
 
 export const StatusSchema = z.enum(["upcoming", "ongoing", "completed"]);
-export const ZoneSchema = z.enum(["north", "central", "south"]);
+// Zones live in ../lib/zones (upper-case since release 1.91, legacy-tolerant).
+export { ZoneSchema };
 
 export type CampusContentType = "smt" | "isr";
 
@@ -101,7 +103,7 @@ export const CampusContentWriteSchema = z.object({
   campus: z.string().min(1, "Campus is required").max(200),
   date: z.string().min(1, "Date is required"),
   time: z.string().min(1, "Time is required"),
-  zone: ZoneSchema.optional(),
+  zone: ZoneWriteSchema.optional(),
   description: z.string().min(1, "Description is required"),
   link: z
     .string()

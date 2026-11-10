@@ -21,6 +21,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserInfo } from "@/features/auth/hooks/use-session";
 import { useCompanyProfile } from "@/features/company-jobs/hooks";
+import { PersonaSwitcher } from "@/features/mentor/components/persona-switcher";
 import { GameProgressBar } from "@/features/mujourney/components/GameProgressBar";
 import { NotificationPopover } from "@/features/notification";
 import { authStore, ROLES } from "@/lib/auth";
@@ -61,6 +62,7 @@ export function AppTopbar() {
   // not the logged-in creator's personal details. Gated so the company
   // profile is only fetched for users with the Company role.
   const isCompany = data?.roles?.includes(ROLES.COMPANY) ?? false;
+  const isMentor = data?.roles?.includes(ROLES.MENTOR) ?? false;
   const { profile: companyProfile } = useCompanyProfile({ enabled: isCompany });
 
   const displayName =
@@ -98,6 +100,7 @@ export function AppTopbar() {
         <div className="hidden md:flex">
           <GameProgressBar />
         </div>
+        {mounted && isMentor && <PersonaSwitcher />}
         <ThemeToggle />
         <NotificationPopover />
         {!mounted || isLoading ? (

@@ -39,7 +39,8 @@ export const PublicMentorProfileSchema = z.object({
   about: z.string().nullable().optional(),
   expertise: z.string().nullable().optional(),
   reason: z.string().nullable().optional(),
-  hours: z.coerce.number().optional().default(0),
+  // Weekly-hours range ("2-5"); null when the mentor never picked one.
+  hours: z.string().nullable().optional(),
   mentor_tier: z.string().nullable().optional(),
   status: z.string().optional(),
   preferred_ig_ids: z.array(z.string()).optional().default([]),
@@ -51,6 +52,9 @@ export const PublicMentorProfileSchema = z.object({
   verification_note: z.string().nullable().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
+  // Session ratings (MentorDetailSerializer): weighted average and count.
+  avg_rating: z.number().nullable().optional(),
+  rating_count: z.number().optional(),
 });
 export type PublicMentorProfile = z.infer<typeof PublicMentorProfileSchema>;
 

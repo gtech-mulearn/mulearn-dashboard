@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MentorHoursSchema } from "../../lib/hours";
 
 // ─── Mentor tiers (all four from doc) ─────────────────────────────────────────
 export const MENTOR_TIERS = [
@@ -50,7 +51,8 @@ export const MentorApplicationListItemSchema = z.object({
     .array(z.union([z.string(), z.number()]))
     .nullable()
     .optional(),
-  hours: z.number().optional().default(0),
+  // Weekly-hours range ("2-5"); null when the mentor never picked one.
+  hours: z.string().nullable().optional(),
   is_active: z.boolean().optional(),
   created_at: z.string().nullable().optional(),
   updated_at: z.string().nullable().optional(),
@@ -161,7 +163,7 @@ export const AssignMentorsPayloadSchema = z
     ig_ids: z.array(z.string()).optional().default([]),
     about: z.string().optional(),
     expertise: z.string().optional(),
-    hours: z.number().int().min(0).optional(),
+    hours: MentorHoursSchema.optional(),
   })
   .superRefine((v, ctx) => {
     if (

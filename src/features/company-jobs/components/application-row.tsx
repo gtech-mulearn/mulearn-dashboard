@@ -6,7 +6,7 @@
  * A row in the learner's "My Applications" tab.
  */
 
-import { MoreVertical, RefreshCcw, Trash2 } from "lucide-react";
+import { MoreVertical, RefreshCcw, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +29,7 @@ import type { AppStatus } from "../constants";
 import { useResubmitApplication, useWithdrawApplication } from "../hooks";
 import type { LearnerApplication } from "../types";
 import { ApplicationStatusBadge } from "./application-status-badge";
+import { RateCompanyDialog } from "./feedback/rate-company-dialog";
 
 interface ApplicationRowProps {
   application: LearnerApplication;
@@ -47,6 +48,9 @@ function formatDate(iso: string) {
 
 export function ApplicationRow({ application }: ApplicationRowProps) {
   const { job } = application;
+  // The backend accepts feedback once the application reaches a final outcome.
+  const outcome = application.status.toLowerCase();
+  const canRateCompany = outcome === "selected" || outcome === "rejected";
   const { mutate: withdraw, isPending: isWithdrawing } =
     useWithdrawApplication();
   const { mutate: resubmit, isPending: isResubmitting } =
@@ -109,6 +113,20 @@ export function ApplicationRow({ application }: ApplicationRowProps) {
       </div>
       <div className="flex items-center gap-3 shrink-0">
         <ApplicationStatusBadge status={application.status as AppStatus} />
+
+        {canRateCompany && (
+          <RateCompanyDialog
+            interaction="JOB"
+            entityId={job.id}
+            companyName={job.company_name ?? undefined}
+            trigger={
+              <Button variant="outline" size="sm" className="h-8 gap-1.5">
+                <Star className="h-3.5 w-3.5" aria-hidden="true" />
+                Rate company
+              </Button>
+            }
+          />
+        )}
 
         {application.status !== "selected" && (
           <DropdownMenu>

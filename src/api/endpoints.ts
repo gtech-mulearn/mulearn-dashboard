@@ -133,10 +133,10 @@ export const endpoints = {
       `/api/v1/dashboard/company/profile/public/${slug}/jobs/`,
     /** POST - Invite a platform user as co-admin */
     adminLink: "/api/v1/dashboard/company/admin-link/",
-    /** POST - Accept or reject co-admin invitation */
+    /** POST - Invitee accepts or declines a co-admin invitation */
     adminLinkRespond: (linkId: string) =>
       `/api/v1/dashboard/company/admin-link/${linkId}/respond/`,
-    /** DELETE - Owner removes an invited/accepted co-admin */
+    /** DELETE - Owner revokes an accepted co-admin (pending invites can't be cancelled) */
     adminLinkRemove: (linkId: string) =>
       `/api/v1/dashboard/company/admin-link/${linkId}/`,
     /** DELETE - Co-admin voluntarily leaves the company */
@@ -144,8 +144,8 @@ export const endpoints = {
       `/api/v1/dashboard/company/admin-link/${linkId}/leave/`,
     /** GET - List all co-admins and invitations */
     adminLinkList: "/api/v1/dashboard/company/admin-link/list/",
-    /** GET - User's company status & pending invitations */
-    userStatus: "/api/v1/dashboard/company/user-status/",
+    /** GET - The caller's pending co-admin invitations (BE-1) */
+    adminLinkInvitations: "/api/v1/dashboard/company/admin-link/invitations/",
     /** POST - Company owner self-deactivation */
     deactivateSelf: "/api/v1/dashboard/company/deactivate/",
     /** POST - Platform admin deactivates a company */
@@ -264,9 +264,12 @@ export const endpoints = {
     collaborationsDiscover:
       "/api/v1/dashboard/company/collaborations/discover/",
     /** POST - Respond to collaboration invitation */
+    /** GET - Collaboration invites for the caller's campus/IGs (BE-9) */
+    collaborationsIncoming:
+      "/api/v1/dashboard/company/collaborations/incoming/",
     collaborationRespond: (id: string) =>
       `/api/v1/dashboard/company/collaborations/${id}/respond/`,
-    /** DELETE - Cancel or close collaboration */
+    /** DELETE - Withdraw an open or pending collaboration */
     collaborationDetail: (id: string) =>
       `/api/v1/dashboard/company/collaborations/${id}/`,
 
@@ -275,6 +278,8 @@ export const endpoints = {
     igSponsorship: (igId: string) =>
       `/api/v1/dashboard/company/ig-sponsorship/${igId}/`,
     /** PATCH - Admin review IG sponsorship proposal */
+    /** GET - Admin queue of pending IG sponsorship requests (BE-3) */
+    igSponsorshipPending: "/api/v1/dashboard/company/ig-sponsorship/pending/",
     igSponsorshipReview: (igId: string) =>
       `/api/v1/dashboard/company/ig-sponsorship/${igId}/review/`,
     /** GET - Sponsor performance metrics for sponsored IG */
@@ -357,6 +362,8 @@ export const endpoints = {
     /** POST - Deactivate a mentor by user_mentor_id (Admin) */
     adminDeactivate: (userMentorId: string) =>
       `/api/v1/dashboard/mentor/admin/deactivate/${userMentorId}/`,
+    /** GET - Deactivated mentors, UserMentor rows (Admin, BE-5) */
+    adminDeactivated: "/api/v1/dashboard/mentor/admin/deactivated/",
     /** POST - Reactivate a mentor by user_mentor_id (Admin) */
     adminReactivate: (userMentorId: string) =>
       `/api/v1/dashboard/mentor/admin/reactivate/${userMentorId}/`,
@@ -378,6 +385,13 @@ export const endpoints = {
     // ── §21 Company Affiliation Change ───────────────────────────────────────
     /** POST - Request a company affiliation change (pending admin approval) */
     changeCompany: "/api/v1/dashboard/mentor/change-company/",
+    /**
+     * GET/PATCH - Preferred IGs of one of the caller's APPROVED applications.
+     * PATCH creates a PENDING change request for the tier's verifier; the
+     * current IGs stay active until it is approved.
+     */
+    preferredIgs: (applicationId: string) =>
+      `/api/v1/dashboard/mentor/${applicationId}/preferred-igs/`,
 
     // ── §22 Sessions ─────────────────────────────────────────────────────────
     /** POST - Create a mentorship session */
@@ -1580,12 +1594,7 @@ export const endpoints = {
   // Notifications
   // ============================================
   notifications: {
-    // ── Legacy (kept for admin management UI) ───────────────────────────────
-    /** GET - List direct + broadcast notifications for authenticated user */
-    list: "/api/v1/notification/list/",
-    /** DELETE - Delete a single direct notification */
-    deleteOne: (id: string) => `/api/v1/notification/delete/id/${id}/`,
-    /** DELETE - Delete all direct notifications for authenticated user */
+    /** DELETE - Delete all personal notifications for the authenticated user */
     deleteAll: "/api/v1/notification/delete/all/",
 
     // ── New unified feed API ─────────────────────────────────────────────────

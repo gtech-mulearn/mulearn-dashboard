@@ -25,6 +25,7 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { useEventTemplates } from "@/features/company-jobs/hooks/use-company-templates";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { usePermissions } from "@/hooks/use-permissions";
 import { eventsApi } from "../api";
@@ -47,6 +48,7 @@ import {
   useIGClusters,
   useOrganizerOptions,
 } from "../hooks";
+import { applyEventTemplate } from "../lib/apply-event-template";
 import { getAllowedScopes } from "../lib/events.policy";
 import { type CreateEventSchema, createEventSchema } from "../schemas";
 import type {
@@ -370,6 +372,26 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
 
     return list;
   }, [organizerOptionsQuery.data, can]);
+
+  // Company organisers can start from one of their saved event templates.
+  const canUseTemplates = organizerOptions.some((o) => o.type === "company");
+  const { data: eventTemplates = [] } = useEventTemplates(
+    open && canUseTemplates,
+  );
+  const [templateId, setTemplateId] = useState("");
+  const applyTemplate = (id: string) => {
+    setTemplateId(id);
+    const template = eventTemplates.find((t) => t.id === id);
+    if (!template) return;
+    const values = applyEventTemplate(template, new Date());
+    for (const [field, value] of Object.entries(values)) {
+      setValue(field as keyof CreateEventSchema, value as never, {
+        shouldDirty: true,
+        shouldValidate: false,
+      });
+    }
+    toast.success(`Started from "${template.title}". Review and adjust.`);
+  };
 
   const selectedOrganiser = organizerOptions.find(
     (item) => `${item.type}:${item.id}` === selectedOrganiserId,
@@ -880,6 +902,37 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
             <div className="mx-auto w-full max-w-5xl">
               {currentStep === 1 ? (
                 <section className="space-y-6">
+                  {canUseTemplates && eventTemplates.length > 0 && (
+                    <div className="space-y-1">
+                      <label
+                        htmlFor="event-template"
+                        className="text-sm font-medium text-foreground"
+                      >
+                        Start from template{" "}
+                        <span className="font-normal text-muted-foreground">
+                          (optional)
+                        </span>
+                      </label>
+                      <select
+                        id="event-template"
+                        className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm"
+                        value={templateId}
+                        onChange={(e) => applyTemplate(e.target.value)}
+                      >
+                        <option value="">Choose a saved template</option>
+                        {eventTemplates.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.title}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-muted-foreground">
+                        Fills the title, description, type and duration. You can
+                        change anything afterwards.
+                      </p>
+                    </div>
+                  )}
+
                   <div className="space-y-1">
                     <p className="text-sm font-medium text-foreground">
                       Title <span className="text-destructive">*</span>

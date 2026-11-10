@@ -5,7 +5,6 @@ import type {
   AdminBroadcastDispatchPayload,
   BroadcastCreatePayload,
   NotificationFeed,
-  NotificationListResponse,
   TargetOption,
 } from "../schemas";
 import {
@@ -13,14 +12,7 @@ import {
   UnreadCountApiResponseSchema,
 } from "../schemas";
 
-export async function getUserNotifications(): Promise<NotificationListResponse> {
-  return apiClient.get<NotificationListResponse>(endpoints.notifications.list);
-}
-
-export async function deleteDirectNotification(id: string): Promise<void> {
-  await apiClient.delete(endpoints.notifications.deleteOne(id));
-}
-
+/** Clears every personal notification server-side (all pages). */
 export async function deleteAllDirectNotifications(): Promise<void> {
   await apiClient.delete(endpoints.notifications.deleteAll);
 }

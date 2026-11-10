@@ -1,11 +1,18 @@
 "use client";
 
-import { CalendarClock, MapPin, MessageSquarePlus, Video } from "lucide-react";
+import {
+  CalendarClock,
+  MapPin,
+  MessageSquarePlus,
+  Star,
+  Video,
+} from "lucide-react";
 import { useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RateCompanyDialog } from "@/features/company-jobs/components/feedback/rate-company-dialog";
 import { SessionFeedbackDialog } from "@/features/mentor/mentees/components/session-feedback-dialog";
 import { chipColor } from "@/lib/chip-colors";
 import { cn } from "@/lib/utils";
@@ -63,6 +70,12 @@ function InviteCard({
   const isOnline = mode === "ONLINE" || mode === "HYBRID";
   const isOffline = mode === "OFFLINE" || mode === "HYBRID";
   const isAttended = participant.attendance_status === "ATTENDED";
+  // Mentees of a completed company session can rate the company.
+  const canRateCompany =
+    (participant.session_type ?? "").toUpperCase() === "COMPANY_SESSION" &&
+    participant.participant_role === "MENTEE" &&
+    status === "COMPLETED" &&
+    !!participant.session_id;
   const { meetingUrl, mapUrl } = getSessionAccess(
     participant.session_mode,
     participant.session_meeting_link,
@@ -144,6 +157,25 @@ function InviteCard({
               <MessageSquarePlus className="mr-1.5 size-3.5" />
               Give Feedback
             </Button>
+          )}
+
+          {canRateCompany && participant.session_id && (
+            <RateCompanyDialog
+              interaction="SESSION"
+              entityId={participant.session_id}
+              companyName={participant.session_entity_name ?? undefined}
+              trigger={
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full text-xs"
+                >
+                  <Star className="mr-1.5 size-3.5" aria-hidden="true" />
+                  Rate company
+                </Button>
+              }
+            />
           )}
 
           {hasAccess ? (

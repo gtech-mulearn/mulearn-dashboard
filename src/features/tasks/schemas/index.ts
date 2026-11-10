@@ -15,11 +15,13 @@ export {
 export type {
   ReviewActionValues,
   TaskApprovalStatus,
+  TaskReviewAction,
   TaskVerificationItem,
 } from "./task-verification.schema";
 export {
   ReviewActionSchema,
   TASK_APPROVAL_STATUSES,
+  TASK_REVIEW_ACTIONS,
   TaskVerificationItemSchema,
   TaskVerificationListResponseSchema,
 } from "./task-verification.schema";

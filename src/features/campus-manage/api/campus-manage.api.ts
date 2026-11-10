@@ -17,9 +17,9 @@ import type {
   SocialLinks,
   StudentLevelCount,
   TrendPoint,
-  UnverifiedOrgLinkUser,
   UnverifiedOrgLinksFilters,
   UnverifiedOrgLinksResponse,
+  UnverifiedOrgLinkUser,
 } from "../types";
 
 const toNumber = (value: unknown, fallback = 0): number => {
@@ -719,6 +719,11 @@ export const campusManageApi = {
           row.lead_name ?? lead.full_name ?? row.lead,
           "No Lead Assigned",
         ),
+        coLeadId: row.co_lead_id ? safeToString(row.co_lead_id) : undefined,
+        coLead:
+          typeof row.co_lead_name === "string" && row.co_lead_name.trim()
+            ? row.co_lead_name
+            : null,
         membersCount: toNumber(
           row.campus_ig_member_count ?? row.member_count ?? row.members,
         ),

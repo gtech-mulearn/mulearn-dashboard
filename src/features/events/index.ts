@@ -78,6 +78,7 @@ export {
   useCompanyEvents,
   useCreateEvent,
   useDeleteEvent,
+  useEventAnalytics,
   useEventCategories,
   useEventCollaborators,
   useEventCoOwners,

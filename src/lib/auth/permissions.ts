@@ -14,7 +14,16 @@
  * and `<RoleGate>` will automatically reflect the change.
  */
 
-import { ROLES, type RoleValue } from "./roles";
+import { isIgCampusLeadRole, ROLES, type RoleValue } from "./roles";
+
+/**
+ * Per-IG roles that manage events: "{code} IGLead" and "{code} CampusIGLead"
+ * (plus its pre-1.91 "{code} CampusLead" title). Mirrors the backend's
+ * dynamic-role check in api/dashboard/events/manage_views.py.
+ */
+export function hasDynamicEventManagerRole(roles: readonly string[]): boolean {
+  return roles.some((r) => r.endsWith(" IGLead") || isIgCampusLeadRole(r));
+}
 
 // ─── Permission Map ────────────────────────────────────────
 
@@ -187,17 +196,13 @@ export const DYNAMIC_PERMISSION_CHECKS: Partial<
   "ig:lead": (roles) =>
     roles.some((r) => r.endsWith(" IGLead")) || roles.includes(ROLES.ADMIN),
 
-  "events:manage": (roles) =>
-    roles.some((r) => r.endsWith(" IGLead") || r.endsWith(" CampusLead")),
+  "events:manage": hasDynamicEventManagerRole,
 
-  "events:manage_co_owners": (roles) =>
-    roles.some((r) => r.endsWith(" IGLead") || r.endsWith(" CampusLead")),
+  "events:manage_co_owners": hasDynamicEventManagerRole,
 
-  "events:accept_collaboration": (roles) =>
-    roles.some((r) => r.endsWith(" IGLead") || r.endsWith(" CampusLead")),
+  "events:accept_collaboration": hasDynamicEventManagerRole,
 
-  "events:reject_collaboration": (roles) =>
-    roles.some((r) => r.endsWith(" IGLead") || r.endsWith(" CampusLead")),
+  "events:reject_collaboration": hasDynamicEventManagerRole,
 };
 
 /**

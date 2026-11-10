@@ -73,7 +73,8 @@ export function historyTimestamp(entry: EventLog): string {
 
 export function historyAction(entry: EventLog): string {
   if (entry.action) {
-    return entry.action.replace(/_/g, " ");
+    // New EventLog rows are EVENT_CREATED-style; older rows are lower-case.
+    return entry.action.toLowerCase().replace(/_/g, " ");
   }
   if (entry.changed_fields) {
     return "edited";

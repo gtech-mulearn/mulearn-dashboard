@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatSessionType } from "@/lib/enum-casing";
 import { useMyRequests } from "../hooks/use-student-requests";
 
 function getStatusColor(status: string) {
@@ -34,14 +35,9 @@ function formatMode(mode: string | null | undefined) {
   return mode.charAt(0).toUpperCase() + mode.slice(1).toLowerCase();
 }
 
-function formatSessionType(type: string | undefined) {
-  if (!type) return "Global";
-  if (type === "campus_session" || type === "CAMPUS_SESSION") return "Campus";
-  if (type === "company_session" || type === "COMPANY_SESSION")
-    return "Company";
-  if (type === "ig_session" || type === "IG_SESSION")
-    return "Interest Group (IG)";
-  return type;
+/** No type = a global (any-IG) request. */
+function sessionTypeLabel(type: string | undefined) {
+  return type ? formatSessionType(type) : "Global";
 }
 
 export function MyRequestsList() {
@@ -102,7 +98,7 @@ export function MyRequestsList() {
                     <span className="text-muted-foreground">Global</span>
                   )}
                   <div className="text-xs text-muted-foreground mt-0.5">
-                    {formatSessionType(req.session_type)}
+                    {sessionTypeLabel(req.session_type)}
                   </div>
                 </TableCell>
                 <TableCell>

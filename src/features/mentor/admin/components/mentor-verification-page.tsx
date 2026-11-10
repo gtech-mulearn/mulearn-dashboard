@@ -4,12 +4,12 @@ import {
   CheckCircle,
   Eye,
   GitPullRequestArrow,
-  RefreshCw,
   Search,
   ShieldCheck,
   ShieldOff,
   UserPlus,
   Users,
+  UserX,
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
@@ -30,12 +30,12 @@ import { formatShortDate } from "@/lib/datetime";
 import {
   useMentorChangeRequests,
   useMentorList,
-  useReactivateMentor,
   useRevokeMentorAssignment,
 } from "../hooks/use-mentor-verify";
 import { isActionable, resolveStatus, statusBadge } from "../lib/status";
 import type { MentorApplicationListItem } from "../schemas";
 import { AssignMentorsDialog } from "./assign-mentors-dialog";
+import { DeactivatedMentorsTab } from "./deactivated-mentors-tab";
 import { MentorApplicationSheet } from "./mentor-application-sheet";
 import { MentorGrantsSheet } from "./mentor-grants-sheet";
 import { MentorRosterTab } from "./mentor-roster-tab";
@@ -81,7 +81,6 @@ function MentorTable({
   onVerify,
   onScopes,
   onRevokeTier,
-  onReactivate,
   page,
   totalPages,
   totalCount,
@@ -99,7 +98,6 @@ function MentorTable({
   ) => void;
   onScopes: (m: MentorApplicationListItem) => void;
   onRevokeTier: (m: MentorApplicationListItem) => void;
-  onReactivate: (m: MentorApplicationListItem) => void;
   page: number;
   totalPages: number;
   totalCount: number | undefined;
@@ -197,17 +195,6 @@ function MentorTable({
                         onClick={() => onRevokeTier(m)}
                       />
                     )}
-                    {/* Reactivate — only shown when the mentor is suspended */}
-                    {resolveStatus(m) === "APPROVED" &&
-                      m.is_active === false && (
-                        <RowActionButton
-                          icon={RefreshCw}
-                          label="Reactivate mentor"
-                          tone="success"
-                          onClick={() => onReactivate(m)}
-                          id={`reactivate-btn-${m.id}`}
-                        />
-                      )}
                   </>
                 );
               }
@@ -255,8 +242,6 @@ export function MentorVerificationPanel() {
   const [revokeFor, setRevokeFor] = useState<MentorApplicationListItem | null>(
     null,
   );
-  const [reactivateFor, setReactivateFor] =
-    useState<MentorApplicationListItem | null>(null);
   const [pendingSort, setPendingSort] = useState("");
   const [allSort, setAllSort] = useState("");
   const [changeRequestsSort, setChangeRequestsSort] = useState("");
@@ -264,7 +249,6 @@ export function MentorVerificationPanel() {
     null,
   );
   const revokeAssignment = useRevokeMentorAssignment();
-  const reactivateMutation = useReactivateMentor();
 
   const { data: pending, isLoading: pendingLoading } = useMentorList({
     status: "PENDING",
@@ -338,6 +322,10 @@ export function MentorVerificationPanel() {
               <Users className="h-3.5 w-3.5" />
               Roster
             </TabsTrigger>
+            <TabsTrigger value="deactivated" className="gap-1.5">
+              <UserX className="h-3.5 w-3.5" />
+              Deactivated
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="pending" className="mt-4">
@@ -354,7 +342,6 @@ export function MentorVerificationPanel() {
               onVerify={(m, action) => setVerifyState({ mentor: m, action })}
               onScopes={setGrantsFor}
               onRevokeTier={setRevokeFor}
-              onReactivate={setReactivateFor}
               page={pendingPage}
               totalPages={pending?.totalPages ?? 1}
               totalCount={pending?.totalItems}
@@ -376,7 +363,6 @@ export function MentorVerificationPanel() {
               onVerify={(m, action) => setVerifyState({ mentor: m, action })}
               onScopes={setGrantsFor}
               onRevokeTier={setRevokeFor}
-              onReactivate={setReactivateFor}
               page={allPage}
               totalPages={all?.totalPages ?? 1}
               totalCount={all?.totalItems}
@@ -403,7 +389,6 @@ export function MentorVerificationPanel() {
               onVerify={(m, action) => setVerifyState({ mentor: m, action })}
               onScopes={setGrantsFor}
               onRevokeTier={setRevokeFor}
-              onReactivate={setReactivateFor}
               page={changeRequestsPage}
               totalPages={changeRequests?.totalPages ?? 1}
               totalCount={changeRequests?.totalItems}
@@ -420,6 +405,10 @@ export function MentorVerificationPanel() {
             forceMount
           >
             <MentorRosterTab />
+          </TabsContent>
+
+          <TabsContent value="deactivated" className="mt-4">
+            <DeactivatedMentorsTab />
           </TabsContent>
         </Tabs>
 
@@ -466,27 +455,6 @@ export function MentorVerificationPanel() {
               },
               { onSuccess: () => setRevokeFor(null) },
             );
-          }}
-        />
-
-        {/* Reactivate confirm — no reason needed, just a warning */}
-        <ConfirmDialog
-          open={Boolean(reactivateFor)}
-          onOpenChange={(v) => !v && setReactivateFor(null)}
-          variant="warning"
-          title={
-            reactivateFor
-              ? `Reactivate ${getDisplayName(reactivateFor)}?`
-              : "Reactivate mentor?"
-          }
-          description="This will immediately restore all mentor capabilities: session creation, persona switch, and roster visibility — without re-verification."
-          confirmLabel="Reactivate mentor"
-          isPending={reactivateMutation.isPending}
-          onConfirm={() => {
-            if (!reactivateFor) return;
-            reactivateMutation.mutate(reactivateFor.id, {
-              onSuccess: () => setReactivateFor(null),
-            });
           }}
         />
       </div>

@@ -112,7 +112,7 @@ export const CompanySignupRequestSchema = z.object({
   description: z.string().min(1, "Description is required"),
   verification_document_url: z
     .string()
-    .min(1, "Verification document URL is required"),
+    .url("Add a valid link to your registration document"),
   logo: z.string().url().optional().or(z.literal("")),
   short_pitch: z.string().optional(),
   industry_sector: z.string().optional(),
@@ -147,9 +147,19 @@ export const CompanySignupRequestSchema = z.object({
   remote_policy: z.string().optional(),
   culture_text: z.string().optional(),
   tech_stack: z.array(z.string()).optional(),
-  perks: z.string().optional(),
-  testimonials: z.string().optional(),
-  gallery: z.array(z.string()).optional(),
+  // Backend 1.91 requires a list of strings (not free text).
+  perks: z.array(z.string()).optional(),
+  // Backend 1.91 requires gallery item objects; the public profile renders
+  // `image_url` (and orders by `sort_order`). Testimonials are not collected
+  // at signup — companies add them from their profile.
+  gallery: z
+    .array(
+      z.object({
+        image_url: z.string().url(),
+        sort_order: z.number().int().optional(),
+      }),
+    )
+    .optional(),
 });
 
 /**

@@ -13,7 +13,6 @@ import {
   deleteAllBroadcasts,
   deleteAllDirectNotifications,
   deleteBroadcast,
-  deleteDirectNotification,
   deleteNotification,
   dispatchAdminBroadcast,
   getAllBroadcasts,
@@ -23,7 +22,6 @@ import {
   getTargetEventList,
   getTargetIGList,
   getUnreadCount,
-  getUserNotifications,
   markAllNotificationsRead,
   markManyNotificationsRead,
   markNotificationRead,
@@ -198,52 +196,6 @@ export function useDispatchAdminBroadcast() {
       toast.error(
         getApiResponseError(error, {
           fallback: "Failed to send announcement",
-        }),
-      );
-    },
-  });
-}
-
-// ─── Legacy admin management hooks ───────────────────────────────────────────
-
-export function useNotifications() {
-  return useQuery({
-    queryKey: notificationKeys.list(),
-    queryFn: getUserNotifications,
-    refetchInterval: REFETCH_INTERVAL,
-    refetchIntervalInBackground: false,
-  });
-}
-
-export function useDeleteDirectNotification() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => deleteDirectNotification(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: notificationKeys.list() });
-    },
-    onError: (error) => {
-      toast.error(
-        getApiResponseError(error, {
-          fallback: "Failed to delete notification",
-        }),
-      );
-    },
-  });
-}
-
-export function useDeleteAllDirectNotifications() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: deleteAllDirectNotifications,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: notificationKeys.list() });
-      toast.success("Personal notifications cleared");
-    },
-    onError: (error) => {
-      toast.error(
-        getApiResponseError(error, {
-          fallback: "Failed to clear personal notifications",
         }),
       );
     },

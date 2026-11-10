@@ -306,6 +306,24 @@ export async function changeCompany(
   });
 }
 
+/**
+ * PATCH /mentor/<application_id>/preferred-igs/ — request a change to the
+ * Interest Groups of an approved application. Creates a PENDING change
+ * request; the backend refuses when the set is unchanged or a request for the
+ * same tier is already pending.
+ */
+export async function requestPreferredIgChange(
+  applicationId: string,
+  preferredIgIds: string[],
+): Promise<void> {
+  await apiClient.patch(
+    endpoints.mentor.preferredIgs(applicationId),
+    { preferred_ig_ids: preferredIgIds },
+    z.unknown(),
+    { skipAuthRedirectOn403: true },
+  );
+}
+
 // ─── Profile Completion ───────────────────────────────────────────────────────
 
 export interface ProfileCompletionChecklist {
@@ -313,7 +331,8 @@ export interface ProfileCompletionChecklist {
   expertise: boolean;
   hours?: boolean;
   linkedin: boolean;
-  preferred_igs: boolean;
+  /** `null` when the mentor holds no approved IG_MENTOR application. */
+  preferred_igs: boolean | null;
 }
 
 export interface ProfileCompletionData {
@@ -329,7 +348,7 @@ const ProfileCompletionSchema = ApiResponseOf(
       expertise: z.boolean(),
       hours: z.boolean().optional(),
       linkedin: z.boolean(),
-      preferred_igs: z.boolean(),
+      preferred_igs: z.boolean().nullable(),
     }),
   }),
 );
@@ -379,11 +398,8 @@ const MentorPersonalAnalyticsSchema = z
       .nullable()
       .optional()
       .transform((v) => v ?? 0),
-    profile_hours: z
-      .number()
-      .nullable()
-      .optional()
-      .transform((v) => v ?? 0),
+    // The mentor's chosen weekly-hours range ("2-5"); null when never set.
+    profile_hours: z.string().nullable().optional(),
     rating: z
       .object({
         average: z

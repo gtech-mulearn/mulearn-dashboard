@@ -78,6 +78,9 @@ export const SessionParticipantSchema = z.object({
   session_meeting_link: z.string().nullable().optional(),
   session_venue: z.string().nullable().optional(),
   session_status: z.string().nullable().optional(),
+  // Not sent by participant/history yet (backend gap); company-session
+  // rating lights up once it is.
+  session_type: z.string().nullable().optional(),
   session_entity_id: z.string().nullable().optional(),
   session_entity_name: z.string().nullable().optional(),
 });
@@ -121,6 +124,8 @@ export const SessionSchema = z.object({
   is_recurring: z.boolean().nullable().optional().default(false),
   parent_session_id: z.string().nullable().optional(),
   child_session_ids: z.array(z.string()).nullable().optional(),
+  // True when a recurring series hit MAX_RECURRENCE_COUNT (50).
+  recurrence_truncated: z.boolean().nullable().optional(),
   recurrence_type: z.string().nullable().optional(),
   recurrence_interval: z.coerce.number().nullable().optional(),
   recurrence_end_date: z.string().nullable().optional(),
@@ -149,8 +154,13 @@ export const ParticipantsListResponseSchema = ApiResponseSchema(
 export const SessionFormBaseSchema = z.object({
   title: z.string().min(1, "Title is required").max(150),
   description: z.string().optional(),
-  // Every session is scoped to an Interest Group the mentor mentors.
-  ig_id: z.string().min(1, "Interest Group is required"),
+  // Who the session is for: an IG, campus or company grant (session_type +
+  // entity_id), or — for a global mentor — the interest group in ig_id.
+  session_type: z
+    .enum(["IG_SESSION", "CAMPUS_SESSION", "COMPANY_SESSION"])
+    .optional(),
+  entity_id: z.string().optional(),
+  ig_id: z.string().optional(),
   mode: z.enum(["ONLINE", "OFFLINE", "HYBRID"]),
   starts_at: z.string().min(1, "Start time is required"),
   ends_at: z.string().min(1, "End time is required"),
@@ -167,6 +177,17 @@ export const SessionFormBaseSchema = z.object({
 export type SessionFormValues = z.infer<typeof SessionFormBaseSchema>;
 
 export const SessionFormSchema = SessionFormBaseSchema.superRefine((v, ctx) => {
+  if (!(v.session_type && v.entity_id?.trim()) && !v.ig_id?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message:
+        v.session_type === "IG_SESSION"
+          ? "Choose an interest group"
+          : "Choose who this session is for",
+      path: [v.session_type === "IG_SESSION" ? "ig_id" : "entity_id"],
+    });
+  }
+
   // Basic end_at vs starts_at
   if (new Date(v.ends_at) <= new Date(v.starts_at)) {
     ctx.addIssue({
@@ -252,9 +273,23 @@ export const UpdateParticipantSchema = z.object({
 export type UpdateParticipantValues = z.infer<typeof UpdateParticipantSchema>;
 
 // ─── Feedback — PATCH /session/participant/feedback/<session_id>/ ─────────────
-export const SubmitFeedbackSchema = z.object({
-  feedback: z.string().min(1, "Feedback cannot be empty"),
-});
+// At least one of feedback / rating (1–5); empty values are omitted.
+export const SubmitFeedbackSchema = z
+  .object({
+    feedback: z.string().optional(),
+    rating: z
+      .union([
+        z.literal(1),
+        z.literal(2),
+        z.literal(3),
+        z.literal(4),
+        z.literal(5),
+      ])
+      .optional(),
+  })
+  .refine((v) => !!v.feedback?.trim() || v.rating != null, {
+    message: "Add a rating or a comment.",
+  });
 export type SubmitFeedbackValues = z.infer<typeof SubmitFeedbackSchema>;
 
 // ─── Generic response ─────────────────────────────────────────────────────────
