@@ -101,6 +101,12 @@ export const JobSchema = z.object({
   applicantCount: z.number().optional().nullable(),
   applicationsCount: z.number().optional().nullable(),
   expires_at: z.string().optional().nullable(),
+  // Approval trail (JobListSerializer, release 1.91). For "Needs Revision"
+  // rejection_reason holds the owner's revision note.
+  created_by_name: z.string().nullable().optional(),
+  rejection_reason: z.string().nullable().optional(),
+  approved_at: z.string().nullable().optional(),
+  approved_by_name: z.string().nullable().optional(),
   // Computed eligibility (learner view from jobs/all/)
   eligibility: z
     .object({
@@ -983,6 +989,8 @@ export const RequirementsStepSchema = z.object({
   deliverables: z.array(z.string().min(1)).optional(),
   stipend: z.string().max(50, "Must be 50 characters or fewer").optional(),
   certificate_provided: z.boolean().optional(),
+  /** Application deadline as a datetime-local value; empty = no deadline. */
+  expires_at: z.string().optional(),
 });
 
 /** Combined form schema for create / edit */

@@ -23,6 +23,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FieldErrors, UseFormReturn } from "react-hook-form";
 import { useForm } from "react-hook-form";
+import { utcIsoToLocalInput } from "@/lib/datetime";
 import {
   COMPENSATION_FIELD,
   getJobTypeFieldModel,
@@ -47,6 +48,7 @@ const DEFAULT_VALUES: JobFormValues = {
   deliverables: [],
   stipend: "",
   certificate_provided: false,
+  expires_at: "",
 };
 
 function jobToFormValues(job: Job): JobFormValues {
@@ -72,6 +74,7 @@ function jobToFormValues(job: Job): JobFormValues {
           : [],
     stipend: job.stipend ?? "",
     certificate_provided: job.certificate_provided ?? false,
+    expires_at: utcIsoToLocalInput(job.expires_at),
   };
 }
 
@@ -151,7 +154,12 @@ export function useJobStepper(
         "location",
         COMPENSATION_FIELD[fieldModel.compensation],
       ],
-      requirements: ["experience", "job_description", ...engagement],
+      requirements: [
+        "experience",
+        "job_description",
+        "expires_at",
+        ...engagement,
+      ],
       // Rules are managed as local state and validated by the add-rule dialog.
       rules: [],
       // Review renders no inputs of its own.

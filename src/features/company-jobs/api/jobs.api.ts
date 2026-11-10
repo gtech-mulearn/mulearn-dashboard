@@ -784,7 +784,11 @@ export async function fetchPendingJobs(
     query.set("pageIndex", String(page));
   }
   const perPage = params?.per_page ?? params?.perPage;
-  if (perPage !== undefined) query.set("per_page", String(perPage));
+  if (perPage !== undefined) {
+    query.set("per_page", String(perPage));
+    // CommonUtils.get_paginated_queryset reads perPage.
+    query.set("perPage", String(perPage));
+  }
   if (params?.search?.trim()) query.set("search", params.search.trim());
   const sortBy = params?.sort_by ?? params?.sortBy;
   if (sortBy) query.set("sortBy", sortBy);

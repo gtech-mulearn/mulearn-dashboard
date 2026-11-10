@@ -73,6 +73,11 @@ export interface Job {
   applicantCount?: number | null;
   applicationsCount?: number | null;
   expires_at?: string | null;
+  created_by_name?: string | null;
+  /** Rejection reason, or the owner's revision note for "Needs Revision". */
+  rejection_reason?: string | null;
+  approved_at?: string | null;
+  approved_by_name?: string | null;
   eligibility?: {
     eligible: boolean;
     rules: {

@@ -13,6 +13,7 @@
 import {
   Award,
   Briefcase,
+  CalendarClock,
   Clock,
   Edit2,
   MapPin,
@@ -152,6 +153,18 @@ export function StepReview({
             icon={Timer}
             label="Experience"
             value={values.experience || "—"}
+          />
+          <ReviewField
+            icon={CalendarClock}
+            label="Application Deadline"
+            value={
+              values.expires_at
+                ? new Date(values.expires_at).toLocaleString("en-IN", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })
+                : "No deadline"
+            }
           />
         </div>
         {values.job_description && (
