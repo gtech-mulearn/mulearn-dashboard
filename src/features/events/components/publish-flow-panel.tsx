@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useEventApproval, usePublishEvent } from "../hooks";
-import { resolveApprovalTier } from "../lib/events.policy";
+import { approvalContextFor, resolveApprovalTier } from "../lib/events.policy";
 import type { EventDetail, EventDetailManage } from "../types";
 import { EventStatusBadge } from "./event-status-badge";
 
@@ -46,7 +46,10 @@ export function PublishFlowPanel({
 
   const publish = usePublishEvent(event.id);
   const { approve, reject } = useEventApproval(event.id);
-  const tier = resolveApprovalTier(event.status);
+  const tier = resolveApprovalTier(
+    event.status,
+    approvalContextFor(event.organizer, []).organiserType,
+  );
 
   const isPendingStatus =
     event.status === "pending_campus_approval" ||

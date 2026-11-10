@@ -127,10 +127,11 @@ export function usePendingCollaboratorInvites() {
   };
 }
 
-export function useOrganizerOptions() {
+export function useOrganizerOptions(enabled = true) {
   return useQuery<OrganizerOptionsResponse>({
     queryKey: eventKeys.organizerOptions(),
     queryFn: () => eventsApi.getOrganizerOptions(),
+    enabled,
   });
 }
 
