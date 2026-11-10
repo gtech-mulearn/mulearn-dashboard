@@ -147,10 +147,14 @@ export function NotificationPopover() {
           className="relative rounded-full shrink-0"
           size="icon"
           variant="ghost"
+          // The count covers personal notifications only (not broadcasts).
           aria-label={
             unreadCount > 0
-              ? `${unreadCount} unread notifications`
+              ? `${unreadCount} unread personal notifications`
               : "Notifications"
+          }
+          title={
+            unreadCount > 0 ? "Unread personal notifications" : "Notifications"
           }
         >
           <Bell className="h-5 w-5 text-muted-foreground" />
