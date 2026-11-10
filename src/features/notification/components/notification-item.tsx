@@ -5,10 +5,8 @@ import { Check, ExternalLink, Loader2, X } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  isSafeRedirectUrl,
-  type NotificationItem as NotificationItemData,
-} from "../schemas";
+import { resolveNotificationHref } from "../lib/notification-href";
+import type { NotificationItem as NotificationItemData } from "../schemas";
 
 interface NotificationItemProps {
   item: NotificationItemData;
@@ -16,16 +14,6 @@ interface NotificationItemProps {
   isMarkingRead?: boolean;
   onDelete?: (id: string) => void;
   onMarkRead?: (id: string) => void;
-}
-
-/**
- * Only allow relative paths and HTTPS URLs.
- * Returns null for any other scheme (javascript:, data:, http://, etc.)
- * so the link is hidden rather than rendered with an unsafe href.
- */
-function sanitizeRedirectUrl(url: string | null | undefined): string | null {
-  if (!url) return null;
-  return isSafeRedirectUrl(url) ? url : null;
 }
 
 export function NotificationItem({
@@ -36,8 +24,13 @@ export function NotificationItem({
   onMarkRead,
 }: NotificationItemProps) {
   const isPending = isDeleting || isMarkingRead;
-  const safeUrl = sanitizeRedirectUrl(item.redirect_url);
-  const isExternal = safeUrl?.startsWith("https://") ?? false;
+  // Typed notifications link by entity; legacy ones by redirect_url (only
+  // relative or https, same-origin URLs kept in-app).
+  const link = resolveNotificationHref(
+    item,
+    typeof window === "undefined" ? "" : window.location.origin,
+  );
+  const isExternal = link?.external ?? false;
 
   return (
     // Non-interactive container — avoids nested interactive elements (button > button/a).
@@ -116,9 +109,9 @@ export function NotificationItem({
           )}
         </div>
 
-        {safeUrl && (
+        {link && (
           <Link
-            href={safeUrl}
+            href={link.href}
             className="flex items-center gap-1 text-xs text-primary hover:underline"
             target={isExternal ? "_blank" : undefined}
             rel={isExternal ? "noopener noreferrer" : undefined}
@@ -130,7 +123,7 @@ export function NotificationItem({
             }}
           >
             View
-            <ExternalLink className="h-3 w-3" />
+            {isExternal && <ExternalLink className="h-3 w-3" />}
           </Link>
         )}
       </div>

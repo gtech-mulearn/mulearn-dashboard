@@ -1590,12 +1590,7 @@ export const endpoints = {
   // Notifications
   // ============================================
   notifications: {
-    // ── Legacy (kept for admin management UI) ───────────────────────────────
-    /** GET - List direct + broadcast notifications for authenticated user */
-    list: "/api/v1/notification/list/",
-    /** DELETE - Delete a single direct notification */
-    deleteOne: (id: string) => `/api/v1/notification/delete/id/${id}/`,
-    /** DELETE - Delete all direct notifications for authenticated user */
+    /** DELETE - Delete all personal notifications for the authenticated user */
     deleteAll: "/api/v1/notification/delete/all/",
 
     // ── New unified feed API ─────────────────────────────────────────────────
