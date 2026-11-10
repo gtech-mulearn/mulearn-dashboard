@@ -747,6 +747,8 @@ export const CompanyProfileSchema = z.object({
   verified_by: z.string().optional().nullable(),
   rejection_reason: z.string().optional().nullable(),
   profile_completeness: z.number().nullable().optional(),
+  // Owner view while pending (CompanyDetailSerializer).
+  verification_sla_message: z.string().nullable().optional(),
   collaboration_summary: z
     .object({
       total_partnerships: z.number().optional().default(0),

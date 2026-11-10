@@ -364,6 +364,7 @@ export interface CompanyProfile {
   deleted_at?: string | null;
   rejection_reason?: string | null;
   profile_completeness?: number | null;
+  verification_sla_message?: string | null;
   collaboration_summary?: {
     total_partnerships?: number;
     campus_partnerships?: number;
