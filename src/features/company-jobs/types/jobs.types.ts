@@ -365,6 +365,7 @@ export interface CompanyProfile {
     ig_partnerships?: number;
   } | null;
   impact_summary?: unknown;
+  publish_impact_report?: boolean | null;
   // Frontend-only permission flags (not from API)
   can_edit_profile?: boolean;
   can_access_advanced_features?: boolean;
@@ -662,25 +663,43 @@ export interface TaskTemplate {
   created_at?: string | null;
 }
 
+export type FeedbackInteractionType = "JOB" | "TASK" | "EVENT" | "SESSION";
+
+/** Feedback a learner left about the company (CompanyFeedbackSerializer). */
 export interface CompanyFeedback {
   id: string;
-  from_user_name: string;
-  from_user_id: string;
+  interaction_type: FeedbackInteractionType;
+  entity_id?: string | null;
+  submitted_by_name?: string | null;
   rating: number;
-  feedback_type: string;
-  comments: string;
+  comment?: string | null;
   created_at: string;
 }
 
+export interface CompanyFeedbackPage {
+  data: CompanyFeedback[];
+  pagination: Pagination;
+}
+
+/** build_impact_summary() output. */
 export interface ImpactReport {
-  company_id: string;
-  company_name: string;
-  total_hires: number;
-  total_gigs: number;
-  total_karma_awarded: number;
-  campuses_engaged: number;
-  is_published: boolean;
-  published_at?: string | null;
+  company: { id: string; name: string };
+  reach: {
+    total_learners_touched: number;
+    job_applicants: number;
+    task_completers: number;
+    event_attendees: number;
+    session_mentees: number;
+  };
+  quality_signal: {
+    average_rating: number | null;
+    total_ratings: number;
+    feedback_average_rating: number | null;
+    feedback_count: number;
+    session_average_rating: number | null;
+    session_rating_count: number;
+  };
+  outcome_signal: { hires: number; karma_distributed: number };
 }
 
 export type CollabType =

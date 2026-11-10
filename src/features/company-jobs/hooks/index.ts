@@ -36,8 +36,9 @@ export {
   FEEDBACK_KEYS,
   useCompanyFeedbackList,
   useCompanyImpactReport,
+  useImpactReportPublished,
+  useSetImpactReportPublished,
   useSubmitCompanyFeedback,
-  useTogglePublishImpactReport,
 } from "./use-company-feedback";
 export {
   COMPANY_KEYS,

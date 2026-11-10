@@ -42,7 +42,6 @@ export {
   CompanyDashboardSummaryResponseSchema,
   CompanyDashboardSummarySchema,
   CompanyFeedbackListResponseSchema,
-  CompanyFeedbackResponseSchema,
   CompanyFeedbackSchema,
   CompanyGalleryItemSchema,
   CompanyInvitationListResponseSchema,

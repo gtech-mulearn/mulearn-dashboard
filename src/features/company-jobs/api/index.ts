@@ -26,6 +26,7 @@ export {
 export type {
   CollaborationPageParams,
   CollaborationResponseBody,
+  CompanyFeedbackPayload,
 } from "./jobs.api";
 export {
   addLearnerToShortlist,
@@ -80,9 +81,9 @@ export {
   respondCompanyAdminInvitation,
   resubmitApplication,
   reviewIgSponsorship,
+  setImpactReportPublished,
   submitCompanyFeedback,
   submitIgSponsorship,
-  togglePublishImpactReport,
   trackJobView,
   updateApplicantStatus,
   updateCompanyProfile,

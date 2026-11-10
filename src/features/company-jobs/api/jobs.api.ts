@@ -15,7 +15,6 @@ import {
   CompanyCollaborationListResponseSchema,
   CompanyDashboardSummaryResponseSchema,
   CompanyFeedbackListResponseSchema,
-  CompanyFeedbackResponseSchema,
   CompanyInvitationListResponseSchema,
   CompanyProfileResponseSchema,
   CreateJobResponseSchema,
@@ -56,7 +55,7 @@ import type {
   CompanyAdminLink,
   CompanyCollaboration,
   CompanyDashboardSummary,
-  CompanyFeedback,
+  CompanyFeedbackPage,
   CompanyInvitation,
   CompanyProfile,
   CreateJobPayload,
@@ -66,6 +65,7 @@ import type {
   DeleteJobResponse,
   DeleteRuleResponse,
   EventTemplate,
+  FeedbackInteractionType,
   GigAnalytics,
   IgSponsorshipMetrics,
   ImpactReport,
@@ -935,26 +935,41 @@ export async function downloadTalentPoolInsightsCSV(params?: {
 
 // ─── Feedback & Impact Reports (§8) ─────────────────────────
 
-export async function submitCompanyFeedback(payload: {
-  to_user_id?: string;
-  rating: number;
-  feedback_type: string;
-  comments: string;
-}): Promise<CompanyFeedback> {
-  const res = await apiClient.post(
-    endpoints.company.feedback,
-    payload,
-    CompanyFeedbackResponseSchema,
-  );
-  return res.response;
+export interface CompanyFeedbackPayload {
+  interaction_type: FeedbackInteractionType;
+  entity_id: string;
+  rating: 1 | 2 | 3 | 4 | 5;
+  comment?: string;
 }
 
-export async function fetchCompanyFeedbackList(): Promise<CompanyFeedback[]> {
+/**
+ * A learner rates a company after a finished interaction (job outcome,
+ * approved task, attended event, completed company session as mentee).
+ */
+export async function submitCompanyFeedback(
+  payload: CompanyFeedbackPayload,
+): Promise<void> {
+  await apiClient.post(
+    endpoints.company.feedback,
+    payload,
+    GenericResponseSchema,
+  );
+}
+
+/** Feedback learners left about the company, newest first. */
+export async function fetchCompanyFeedbackList(
+  params?: CollaborationPageParams,
+): Promise<CompanyFeedbackPage> {
   const res = await apiClient.get(
-    endpoints.company.feedbackList,
+    `${endpoints.company.feedbackList}${pageQuery(params)}`,
     CompanyFeedbackListResponseSchema,
   );
-  return res.response ?? [];
+  return (
+    res.response ?? {
+      data: [],
+      pagination: EMPTY_COLLABORATION_PAGE.pagination,
+    }
+  );
 }
 
 export async function fetchCompanyImpactReport(): Promise<ImpactReport> {
@@ -965,15 +980,15 @@ export async function fetchCompanyImpactReport(): Promise<ImpactReport> {
   return res.response;
 }
 
-export async function togglePublishImpactReport(
-  isPublished: boolean,
-): Promise<ImpactReport> {
-  const res = await apiClient.patch(
+/** Owner or co-admin shows/hides the impact summary on the public profile. */
+export async function setImpactReportPublished(
+  publish: boolean,
+): Promise<void> {
+  await apiClient.patch(
     endpoints.company.impactReportPublish,
-    { is_published: isPublished },
-    ImpactReportResponseSchema,
+    { publish },
+    GenericResponseSchema,
   );
-  return res.response;
 }
 
 // ─── Inter-Company Collaboration (§9) ───────────────────────

@@ -751,6 +751,8 @@ export const CompanyProfileSchema = z.object({
     .nullable()
     .optional(),
   impact_summary: z.unknown().nullable().optional(),
+  // Owner profile (BE-4): whether the impact summary is on the public page.
+  publish_impact_report: z.boolean().nullable().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
   deleted_at: z.string().optional().nullable(),
@@ -1462,34 +1464,55 @@ export const TalentPoolInsightsResponseSchema = DjangoResponse(
 
 // ─── Company Feedback ────────────────────────────────────────
 
+export const FEEDBACK_INTERACTION_TYPES = [
+  "JOB",
+  "TASK",
+  "EVENT",
+  "SESSION",
+] as const;
+
+/** Backend CompanyFeedbackSerializer (release 1.91). */
 export const CompanyFeedbackSchema = z.object({
   id: z.string(),
-  from_user_name: z.string(),
-  from_user_id: z.string(),
+  interaction_type: z.preprocess(upperCase, z.enum(FEEDBACK_INTERACTION_TYPES)),
+  entity_id: z.string().nullable().optional(),
+  submitted_by_name: z.string().nullable().optional(),
   rating: z.number(),
-  feedback_type: z.string(),
-  comments: z.string(),
+  comment: z.string().nullable().optional(),
   created_at: z.string(),
 });
 
 export const CompanyFeedbackListResponseSchema = DjangoResponse(
-  z.array(CompanyFeedbackSchema),
-);
-export const CompanyFeedbackResponseSchema = DjangoResponse(
-  CompanyFeedbackSchema,
+  z.object({
+    data: z.array(CompanyFeedbackSchema).default([]),
+    pagination: PaginationSchema,
+  }),
 );
 
 // ─── Impact Report ───────────────────────────────────────────
 
+/** build_impact_summary() — the impact report and the public opt-in summary. */
 export const ImpactReportSchema = z.object({
-  company_id: z.string(),
-  company_name: z.string(),
-  total_hires: z.number(),
-  total_gigs: z.number(),
-  total_karma_awarded: z.number(),
-  campuses_engaged: z.number(),
-  is_published: z.boolean(),
-  published_at: z.string().nullable().optional(),
+  company: z.object({ id: z.string(), name: z.string() }),
+  reach: z.object({
+    total_learners_touched: z.number(),
+    job_applicants: z.number(),
+    task_completers: z.number(),
+    event_attendees: z.number(),
+    session_mentees: z.number(),
+  }),
+  quality_signal: z.object({
+    average_rating: z.number().nullable(),
+    total_ratings: z.number(),
+    feedback_average_rating: z.number().nullable(),
+    feedback_count: z.number(),
+    session_average_rating: z.number().nullable(),
+    session_rating_count: z.number(),
+  }),
+  outcome_signal: z.object({
+    hires: z.number(),
+    karma_distributed: z.number(),
+  }),
 });
 
 export const ImpactReportResponseSchema = DjangoResponse(ImpactReportSchema);

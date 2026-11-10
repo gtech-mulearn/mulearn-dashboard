@@ -78,6 +78,9 @@ export const SessionParticipantSchema = z.object({
   session_meeting_link: z.string().nullable().optional(),
   session_venue: z.string().nullable().optional(),
   session_status: z.string().nullable().optional(),
+  // Not sent by participant/history yet (backend gap); company-session
+  // rating lights up once it is.
+  session_type: z.string().nullable().optional(),
   session_entity_id: z.string().nullable().optional(),
   session_entity_name: z.string().nullable().optional(),
 });
