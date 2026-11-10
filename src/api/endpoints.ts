@@ -378,6 +378,13 @@ export const endpoints = {
     // ── §21 Company Affiliation Change ───────────────────────────────────────
     /** POST - Request a company affiliation change (pending admin approval) */
     changeCompany: "/api/v1/dashboard/mentor/change-company/",
+    /**
+     * GET/PATCH - Preferred IGs of one of the caller's APPROVED applications.
+     * PATCH creates a PENDING change request for the tier's verifier; the
+     * current IGs stay active until it is approved.
+     */
+    preferredIgs: (applicationId: string) =>
+      `/api/v1/dashboard/mentor/${applicationId}/preferred-igs/`,
 
     // ── §22 Sessions ─────────────────────────────────────────────────────────
     /** POST - Create a mentorship session */

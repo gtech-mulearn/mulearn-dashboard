@@ -306,6 +306,24 @@ export async function changeCompany(
   });
 }
 
+/**
+ * PATCH /mentor/<application_id>/preferred-igs/ — request a change to the
+ * Interest Groups of an approved application. Creates a PENDING change
+ * request; the backend refuses when the set is unchanged or a request for the
+ * same tier is already pending.
+ */
+export async function requestPreferredIgChange(
+  applicationId: string,
+  preferredIgIds: string[],
+): Promise<void> {
+  await apiClient.patch(
+    endpoints.mentor.preferredIgs(applicationId),
+    { preferred_ig_ids: preferredIgIds },
+    z.unknown(),
+    { skipAuthRedirectOn403: true },
+  );
+}
+
 // ─── Profile Completion ───────────────────────────────────────────────────────
 
 export interface ProfileCompletionChecklist {
