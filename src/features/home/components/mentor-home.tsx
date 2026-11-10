@@ -6,6 +6,7 @@ import {
   CalendarCheck2,
   Clock,
   Loader2,
+  ShieldOff,
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
@@ -27,6 +28,7 @@ import {
   useMentorOverview,
   useMentorPersonalAnalytics,
 } from "@/features/mentor/hooks";
+import { isMentorDeactivatedError } from "@/features/mentor/lib/mentor-deactivated";
 import { MentorOnboardingForm } from "@/features/mentor/onboarding/components/mentor-onboarding-form";
 import {
   deriveOnboardingState,
@@ -176,6 +178,31 @@ export function MentorHome() {
     overviewError instanceof Error &&
     "status" in overviewError &&
     (overviewError as { status: number }).status === 403;
+
+  // A deactivated mentor gets a specific 403; don't send them to setup.
+  if (
+    isMentorDeactivatedError(overviewError) ||
+    isMentorDeactivatedError(appError)
+  ) {
+    return (
+      <div className="mx-auto max-w-2xl py-8">
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3"
+        >
+          <ShieldOff className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+          <div>
+            <p className="text-sm font-semibold text-destructive">
+              Your mentor account is deactivated. Contact an administrator.
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              You can keep using muLearn as a learner in the meantime.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (is403) {
     return <MentorSetupPrompt />;

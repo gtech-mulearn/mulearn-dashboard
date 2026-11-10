@@ -27,6 +27,7 @@ import {
   historyTimestamp,
   useAdminFeature,
   useDeleteEvent,
+  useEventAnalytics,
   useManageEventDetail,
   useOrganizerOptions,
 } from "../hooks";
@@ -167,6 +168,8 @@ export function ManageEventDetailView({
     error,
     refetch,
   } = useManageEventDetail(eventId);
+  // Organiser engagement (RSVPs, attendance, satisfaction); hidden on 403.
+  const { data: analytics } = useEventAnalytics(eventId);
 
   const { data: userInfo } = useQuery({
     queryKey: ["user", "info", "events-manage"],
@@ -455,6 +458,7 @@ export function ManageEventDetailView({
             venueName={venueName}
             mapsUrl={mapsUrl}
             mapQuery={mapQuery}
+            analytics={analytics}
           />
 
           <div className="overflow-hidden rounded-2xl border border-border bg-card lc-card-shadow">
@@ -544,6 +548,7 @@ export function ManageEventDetailView({
               venueName={venueName}
               mapsUrl={mapsUrl}
               mapQuery={mapQuery}
+              analytics={analytics}
             />
 
             <div className="overflow-hidden rounded-2xl border border-border bg-card lc-card-shadow">

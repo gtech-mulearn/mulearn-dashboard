@@ -1,8 +1,24 @@
 import { z } from "zod";
+import { upperEnum } from "@/lib/enum-casing";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-export const OPPORTUNITY_TYPES = ["CHALLENGE", "INTERNSHIP"] as const;
+export const OPPORTUNITY_TYPES = [
+  "CHALLENGE",
+  "INTERNSHIP",
+  "HACKATHON",
+  "JOB",
+] as const;
+
+export const OPPORTUNITY_TYPE_LABELS: Record<
+  (typeof OPPORTUNITY_TYPES)[number],
+  string
+> = {
+  CHALLENGE: "Challenge",
+  INTERNSHIP: "Internship",
+  HACKATHON: "Hackathon",
+  JOB: "Job",
+};
 
 export const OPPORTUNITY_STATUSES = [
   "DRAFT",
@@ -30,9 +46,9 @@ export const OpportunitySchema = z.object({
   org: z.string().nullable().optional(),
   org_name: z.string().nullable().optional(),
 
-  type: z.enum(OPPORTUNITY_TYPES),
+  type: upperEnum(OPPORTUNITY_TYPES),
 
-  status: z.enum(OPPORTUNITY_STATUSES),
+  status: upperEnum(OPPORTUNITY_STATUSES),
 
   eligibility: z.string().nullable().optional(),
 

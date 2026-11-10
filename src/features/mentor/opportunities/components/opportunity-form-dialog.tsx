@@ -38,7 +38,11 @@ import {
 } from "../hooks/use-opportunities";
 
 import type { Opportunity, OpportunityFormValues } from "../schemas";
-import { OpportunityFormSchema } from "../schemas";
+import {
+  OPPORTUNITY_TYPE_LABELS,
+  OPPORTUNITY_TYPES,
+  OpportunityFormSchema,
+} from "../schemas";
 
 interface OpportunityFormDialogProps {
   opportunity?: Opportunity;
@@ -382,9 +386,11 @@ export function OpportunityFormDialog({
                         </FormControl>
 
                         <SelectContent>
-                          <SelectItem value="CHALLENGE">Challenge</SelectItem>
-
-                          <SelectItem value="INTERNSHIP">Internship</SelectItem>
+                          {OPPORTUNITY_TYPES.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {OPPORTUNITY_TYPE_LABELS[type]}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
 
