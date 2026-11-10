@@ -119,5 +119,14 @@ export interface PaginatedResponse<T> {
   pagination: Pagination;
 }
 
-/** Status filter options for the public learner feed */
-export type FeedStatusFilter = "all" | "open" | "trying" | "submitted";
+/** Learner feed tabs: discover vs. track own participation */
+export type FeedTab = "browse" | "participating";
+
+/** Status filter within the Browse tab */
+export type BrowseStatusFilter = "all" | "open";
+
+/** Status filter within the Participating tab */
+export type ParticipationStatusFilter = "all" | "trying" | "submitted";
+
+/** Board (cards) vs. table presentation */
+export type ProblemStatementViewMode = "board" | "table";

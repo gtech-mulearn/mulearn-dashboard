@@ -5,51 +5,52 @@
  *
  * 📍 src/features/problem-statements/components/manage-problem-statement-detail-view.tsx
  *
- * Dedicated admin & company management view for a specific problem statement.
- * Unifies the Challenge Description and the list of Learners who joined into a
- * single, cohesive, responsive 2-column layout — eliminating disjointed tabs.
- *
- * Layout:
- *  - Responsive container & padding aligned with Events management design
- *  - Top navigation bar with breadcrumb & lifecycle actions (Edit, Publish, Delete)
- *  - Overview Identity Card with key status pills, deadline, and jump anchor
- *  - 2-Column Responsive Grid:
- *      * Main Column:
- *          1. Challenge Overview & Requirements (MarkdownRenderer)
- *          2. Required & Relevant Skills
- *          3. Learners Trying It (Live search, user details, MUID, join date)
- *      * Sticky Sidebar:
- *          1. Quick Actions & Status Control Card
- *          2. Problem Provider Card
- *          3. Analytics & Timeline Card
+ * /dashboard/manage-problem-statements/[id] — company owners and admins.
+ *  1. Header: back link, status badges, title, provider, one action bar
+ *     (Edit · Publish/Unpublish · More → View public page / Delete)
+ *  2. Stats: trying, submitted, deadline, published
+ *  3. About: description + skills
+ *  4. Participants: status tabs, search, roster table, pagination
+ * Every fact and action appears once.
  */
 
 import {
   ArrowLeft,
-  Building2,
-  Calendar,
-  CheckCircle,
-  Clock,
-  Edit2,
+  CalendarClock,
+  CheckCircle2,
   ExternalLink,
   Loader2,
-  Play,
-  Search,
-  Sparkles,
+  MoreHorizontal,
+  Pencil,
+  Send,
   Trash2,
   Users,
-  X,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { RowActionButton } from "@/components/dashboard/table/row-action-button";
+import { SearchBar } from "@/components/dashboard/table/SearchBar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatCard } from "@/components/ui/stat-card";
 import { StateDisplay } from "@/components/ui/state-display";
 import {
   Table,
@@ -59,8 +60,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUserInfo } from "@/features/auth";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { ROLES } from "@/lib/auth/roles";
 import {
   useAdminDeleteStatement,
@@ -75,42 +76,43 @@ import {
   usePublishCompanyStatement,
   useUnpublishCompanyStatement,
 } from "../hooks";
-import type { InteractionsQueryParams } from "../types/problem-statement.types";
+import { formatDate, formatDateTime, formatDeadline } from "../lib/format";
+import type {
+  InteractionStatus,
+  InteractionsQueryParams,
+} from "../types/problem-statement.types";
 import { ProblemStatementAboutSection } from "./problem-statement-about-section";
+import { ProblemStatementCompany } from "./problem-statement-company";
 import { ProblemStatementFormDialog } from "./problem-statement-form-dialog";
-import { ProblemStatementStatusBadge } from "./problem-statement-status-badge";
+import {
+  ProblemStatementAvailabilityBadge,
+  ProblemStatementParticipationBadge,
+  ProblemStatementStatusBadge,
+} from "./problem-statement-status-badge";
 import { ProblemStatementsPagination } from "./problem-statements-pagination";
+
+const ROSTER_PER_PAGE = 20;
+const LIST_HREF = "/dashboard/manage-problem-statements";
+
+type RosterFilter = "all" | InteractionStatus;
 
 interface ManageProblemStatementDetailViewProps {
   statementId: string;
 }
 
-function formatDate(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function formatDeadline(deadline: string | null): string | null {
-  if (!deadline) return null;
-  const d = new Date(deadline);
-  const now = new Date();
-  const diff = d.getTime() - now.getTime();
-  if (diff < 0) return "Deadline passed";
-  const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-  if (days === 0) return "Ends today";
-  if (days === 1) return "1 day left";
-  if (days <= 7) return `${days} days left`;
-  return d.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+function BackLink() {
+  return (
+    <Button
+      variant="ghost"
+      asChild
+      className="gap-2 text-muted-foreground hover:text-foreground"
+    >
+      <Link href={LIST_HREF}>
+        <ArrowLeft className="h-4 w-4" />
+        Back to Problem Statements
+      </Link>
+    </Button>
+  );
 }
 
 export function ManageProblemStatementDetailView({
@@ -122,11 +124,9 @@ export function ManageProblemStatementDetailView({
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [showUnpublishDialog, setShowUnpublishDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [interactionStatusFilter, setInteractionStatusFilter] = useState<
-    "all" | "Submitted" | "Trying"
-  >("all");
+  const [rosterFilter, setRosterFilter] = useState<RosterFilter>("all");
   const [rosterPage, setRosterPage] = useState(1);
-  const [deletingUser, setDeletingUser] = useState<{
+  const [removingUser, setRemovingUser] = useState<{
     userId: string;
     fullName: string;
   } | null>(null);
@@ -148,12 +148,10 @@ export function ManageProblemStatementDetailView({
 
   const interactionsParams: InteractionsQueryParams = {
     pageIndex: rosterPage,
-    perPage: 20,
-    search: searchQuery.trim() || undefined,
-    status:
-      interactionStatusFilter === "all" ? undefined : interactionStatusFilter,
+    perPage: ROSTER_PER_PAGE,
+    search: searchQuery || undefined,
+    status: rosterFilter === "all" ? undefined : rosterFilter,
   };
-
   const companyInteractionsQuery = useCompanyInteractions(
     statementId,
     interactionsParams,
@@ -164,11 +162,9 @@ export function ManageProblemStatementDetailView({
     interactionsParams,
     { enabled: Boolean(userInfo && isAdmin) },
   );
-  const interactionsQuery = isAdmin
+  const { data: interactionsData, isLoading: interactionsLoading } = isAdmin
     ? adminInteractionsQuery
     : companyInteractionsQuery;
-  const { data: interactionsData, isLoading: interactionsLoading } =
-    interactionsQuery;
 
   // Mutations
   const publishCompanyMutation = usePublishCompanyStatement();
@@ -176,20 +172,15 @@ export function ManageProblemStatementDetailView({
   const publishMutation = isAdmin
     ? publishAdminMutation
     : publishCompanyMutation;
-
   const unpublishCompanyMutation = useUnpublishCompanyStatement();
   const unpublishAdminMutation = useAdminUnpublishStatement();
   const unpublishMutation = isAdmin
     ? unpublishAdminMutation
     : unpublishCompanyMutation;
-
   const deleteCompanyMutation = useDeleteCompanyStatement();
   const deleteAdminMutation = useAdminDeleteStatement();
   const deleteMutation = isAdmin ? deleteAdminMutation : deleteCompanyMutation;
-
-  const adminDeleteUserMutation = useAdminDeleteUserInteraction();
-
-  const isLoading = isUserLoading || isDetailLoading;
+  const removeUserMutation = useAdminDeleteUserInteraction();
 
   const interactions = interactionsData?.data ?? [];
   const tryingCount =
@@ -200,50 +191,30 @@ export function ManageProblemStatementDetailView({
     interactionsData?.counts?.Submitted ??
     statement?.interaction_counts?.Submitted ??
     0;
-  const totalRosterCount =
-    interactionsData?.pagination?.count ?? tryingCount + submittedCount;
+  const totalParticipants = tryingCount + submittedCount;
   const totalRosterPages = interactionsData?.pagination?.totalPages ?? 1;
+  const hasActiveFilter = Boolean(searchQuery || rosterFilter !== "all");
 
-  // Prevent admin from being trapped on empty pages if roster count shrinks
+  // Don't strand the roster on an empty page after removals shrink it.
   useEffect(() => {
-    if (!interactionsLoading && interactions.length === 0 && rosterPage > 1) {
-      if (totalRosterPages >= 1 && rosterPage > totalRosterPages) {
-        setRosterPage(Math.max(1, totalRosterPages));
-      }
+    if (
+      !interactionsLoading &&
+      interactions.length === 0 &&
+      rosterPage > 1 &&
+      rosterPage > totalRosterPages
+    ) {
+      setRosterPage(Math.max(1, totalRosterPages));
     }
   }, [interactions.length, rosterPage, totalRosterPages, interactionsLoading]);
 
-  const deadlineText = formatDeadline(statement?.deadline ?? null);
-  const hasActiveFilter = Boolean(
-    searchQuery.trim() || interactionStatusFilter !== "all",
-  );
-
-  const handleConfirmDeleteUser = async () => {
-    if (!deletingUser || !statement) return;
-    try {
-      await adminDeleteUserMutation.mutateAsync({
-        statementId: statement.id,
-        userId: deletingUser.userId,
-      });
-      setDeletingUser(null);
-      // Clamp rosterPage back if deleting the sole participant on a page > 1
-      if (interactions.length <= 1 && rosterPage > 1) {
-        setRosterPage((p) => Math.max(1, p - 1));
-      }
-    } catch {
-      // toast is handled by mutation hook
-    }
-  };
-
-  // Lifecycle handlers — mutation hook owns error toasts per repo rule
   const handlePublish = async () => {
     if (!statement) return;
     try {
       await publishMutation.mutateAsync(statement.id);
-      toast.success("Problem statement published! Learners can now see it.");
+      toast.success("Published. Learners can now see this problem statement.");
       setShowPublishDialog(false);
     } catch {
-      // error toast is handled by mutation hook onError
+      // error toast is owned by the mutation hook
     }
   };
 
@@ -251,10 +222,10 @@ export function ManageProblemStatementDetailView({
     if (!statement) return;
     try {
       await unpublishMutation.mutateAsync(statement.id);
-      toast.success("Problem statement unpublished. Hidden from learners.");
+      toast.success("Unpublished. It's now hidden from learners.");
       setShowUnpublishDialog(false);
     } catch {
-      // error toast is handled by mutation hook onError
+      // error toast is owned by the mutation hook
     }
   };
 
@@ -262,756 +233,369 @@ export function ManageProblemStatementDetailView({
     if (!statement) return;
     try {
       await deleteMutation.mutateAsync(statement.id);
-      router.push("/dashboard/manage-problem-statements");
+      router.push(LIST_HREF);
     } catch {
-      // toast handled by mutation hook
+      // error toast is owned by the mutation hook
     }
   };
 
-  if (isLoading) {
+  const handleRemoveUser = async () => {
+    if (!removingUser || !statement) return;
+    try {
+      await removeUserMutation.mutateAsync({
+        statementId: statement.id,
+        userId: removingUser.userId,
+      });
+      setRemovingUser(null);
+      if (interactions.length <= 1 && rosterPage > 1) {
+        setRosterPage((p) => Math.max(1, p - 1));
+      }
+    } catch {
+      // error toast is owned by the mutation hook
+    }
+  };
+
+  if (isUserLoading || isDetailLoading) {
     return (
-      <div className="w-full max-w-full overflow-x-hidden px-0 py-2 lg:p-4 min-h-[calc(100vh-6rem)]">
-        <div className="mx-auto w-full space-y-5 pb-24 lg:pb-6 lc-fade-in overflow-x-hidden">
-          <Skeleton className="h-10 w-48 rounded-xl" />
-          <Skeleton className="h-44 w-full rounded-2xl" />
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
-            <div className="space-y-5">
-              <Skeleton className="h-72 w-full rounded-2xl" />
-              <Skeleton className="h-80 w-full rounded-2xl" />
-            </div>
-            <div className="space-y-4">
-              <Skeleton className="h-60 w-full rounded-2xl" />
-              <Skeleton className="h-32 w-full rounded-2xl" />
-            </div>
-          </div>
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48 rounded-md" />
+        <div className="space-y-3">
+          <Skeleton className="h-5 w-48" />
+          <Skeleton className="h-8 w-2/3" />
         </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {["a", "b", "c", "d"].map((k) => (
+            <Skeleton key={k} className="h-28 rounded-2xl" />
+          ))}
+        </div>
+        <Skeleton className="h-64 w-full rounded-2xl" />
       </div>
     );
   }
 
   if (isError || !statement) {
     return (
-      <div className="w-full max-w-full overflow-x-hidden px-0 py-2 lg:p-4 min-h-[calc(100vh-6rem)]">
-        <div className="mx-auto max-w-xl py-16">
-          <StateDisplay
-            variant="no-results"
-            title="Statement Not Found"
-            description="You might not have access to manage this problem statement, or it may have been deleted."
-            action={
-              <Button asChild variant="outline" className="rounded-xl">
-                <Link href="/dashboard/manage-problem-statements">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Manage Problem Statements
-                </Link>
-              </Button>
-            }
-          />
-        </div>
-      </div>
+      <StateDisplay
+        variant="not-found"
+        title="Problem statement not found"
+        description="It may have been deleted, or you don't have access to manage it."
+        action={<BackLink />}
+      />
     );
   }
 
-  const companyName = statement.company?.name || "μLearn";
+  const isPublished = statement.status === "Published";
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden px-0 py-2 lg:p-4 min-h-[calc(100vh-6rem)]">
-      <div className="mx-auto w-full space-y-5 pb-24 lg:pb-6 lc-fade-in overflow-x-hidden">
-        {/* ─── Top Navigation & Action Controls ─── */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            asChild
-            className="rounded-xl text-xs gap-1.5 -ml-2 text-muted-foreground hover:text-foreground"
-          >
-            <Link href="/dashboard/manage-problem-statements">
-              <ArrowLeft className="h-3.5 w-3.5" />
-              Manage Problem Statements
-            </Link>
+    <div className="space-y-6">
+      <BackLink />
+
+      {/* ─── Header + the single action bar ─── */}
+      <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 space-y-3">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <ProblemStatementStatusBadge status={statement.status} />
+            {isPublished && (
+              <ProblemStatementAvailabilityBadge isOpen={statement.is_open} />
+            )}
+            <Badge>{statement.category}</Badge>
+          </div>
+          <h1 className="text-2xl font-bold leading-tight text-foreground md:text-3xl">
+            {statement.title}
+          </h1>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <ProblemStatementCompany
+              company={statement.company}
+              nameClassName="text-sm"
+            />
+            <span className="text-sm text-muted-foreground">
+              Updated {formatDateTime(statement.updated_at)}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <Button variant="outline" onClick={() => setShowEditDialog(true)}>
+            <Pencil />
+            Edit
           </Button>
-
-          {/* Action buttons */}
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Public view link */}
-            {statement.status === "Published" && (
-              <Button
-                variant="outline"
-                size="sm"
-                asChild
-                className="rounded-xl text-xs gap-1.5"
-              >
-                <Link
-                  href={`/dashboard/problem-statements/${statement.id}`}
-                  target="_blank"
-                >
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  Public View
-                </Link>
-              </Button>
-            )}
-
-            {/* Edit */}
+          {isPublished ? (
             <Button
-              size="sm"
               variant="outline"
-              onClick={() => setShowEditDialog(true)}
-              className="rounded-xl text-xs gap-1.5"
+              onClick={() => setShowUnpublishDialog(true)}
+              disabled={unpublishMutation.isPending}
             >
-              <Edit2 className="h-3.5 w-3.5" />
-              Edit
+              {unpublishMutation.isPending && (
+                <Loader2 className="animate-spin" />
+              )}
+              Unpublish
             </Button>
-
-            {/* Publish / Unpublish */}
-            {(statement.status === "Draft" ||
-              statement.status === "Unpublished") && (
-              <Button
-                size="sm"
-                onClick={() => setShowPublishDialog(true)}
-                disabled={publishMutation.isPending}
-                className="rounded-xl text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
-              >
-                {publishMutation.isPending ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Play className="h-3.5 w-3.5" />
-                )}
-                Publish
-              </Button>
-            )}
-            {statement.status === "Published" && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setShowUnpublishDialog(true)}
-                disabled={unpublishMutation.isPending}
-                className="rounded-xl text-xs gap-1.5 text-amber-600 border-amber-500/20 hover:bg-amber-500/10"
-              >
-                {unpublishMutation.isPending ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <X className="h-3.5 w-3.5" />
-                )}
-                Unpublish
-              </Button>
-            )}
-
-            {/* Delete */}
+          ) : (
             <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setShowDeleteDialog(true)}
-              className="rounded-xl text-xs text-destructive hover:bg-destructive/10"
-              title="Delete statement"
+              onClick={() => setShowPublishDialog(true)}
+              disabled={publishMutation.isPending}
             >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        </div>
-
-        {/* ─── Identity Overview Header Card ─── */}
-        <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-sm space-y-4">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <ProblemStatementStatusBadge status={statement.status} />
-              {statement.is_open ? (
-                <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                  <CheckCircle className="h-3 w-3" />
-                  Open for Submissions
-                </span>
-              ) : statement.status === "Published" ? (
-                <span className="rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground border border-border">
-                  Deadline Passed
-                </span>
-              ) : null}
-
-              <Badge
-                variant="outline"
-                className="rounded-full border-brand-blue/20 bg-brand-blue/8 text-brand-blue text-xs px-2.5 py-0.5"
-              >
-                {statement.category}
-              </Badge>
-            </div>
-
-            <h1 className="text-2xl font-bold text-foreground md:text-3xl leading-snug">
-              {statement.title}
-            </h1>
-          </div>
-
-          {/* Quick Meta strip with Jump Link */}
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-4 border-t border-border/60 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1.5 font-medium text-foreground">
-              <Building2 className="h-3.5 w-3.5 text-primary" />
-              <span>{companyName}</span>
-            </div>
-
-            <span className="h-3 w-px bg-border hidden sm:inline-block" />
-
-            <div className="flex items-center gap-1.5">
-              {statement.is_open ? (
-                <Calendar className="h-3.5 w-3.5 text-primary" />
+              {publishMutation.isPending ? (
+                <Loader2 className="animate-spin" />
               ) : (
-                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                <Send />
               )}
-              <span>
-                {deadlineText
-                  ? `Deadline: ${deadlineText}`
-                  : "No deadline (Continuous)"}
-              </span>
-            </div>
-
-            <span className="h-3 w-px bg-border hidden sm:inline-block" />
-
-            <a
-              href="#learners-section"
-              className="flex items-center gap-1.5 text-primary hover:underline font-semibold"
-              title="Jump to learners roster"
-            >
-              <Users className="h-3.5 w-3.5" />
-              <span>
-                <strong>{tryingCount}</strong> trying •{" "}
-                <strong>{submittedCount}</strong> submitted ↓
-              </span>
-            </a>
-
-            {statement.published_at && (
-              <>
-                <span className="h-3 w-px bg-border hidden sm:inline-block" />
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span>Published {formatDate(statement.published_at)}</span>
-                </div>
-              </>
-            )}
-
-            <div className="ml-auto text-[11px] text-muted-foreground hidden md:block">
-              Updated {formatDate(statement.updated_at)}
-            </div>
-          </div>
-        </div>
-
-        {/* ─── 2-Column Responsive Grid (All Content Together) ─── */}
-        <div className="grid gap-5 w-full max-w-full overflow-x-hidden lg:grid-cols-[minmax(0,1fr)_340px]">
-          {/* Main Column */}
-          <div className="min-w-0 w-full max-w-full space-y-5 overflow-x-hidden">
-            {/* 1. Challenge Overview & Requirements Card with Read More / Read Less */}
-            <ProblemStatementAboutSection description={statement.description} />
-
-            {/* 2. Required & Relevant Skills Card */}
-            {statement.skills && statement.skills.length > 0 && (
-              <div className="rounded-2xl border border-border bg-card shadow-sm">
-                <div className="flex items-center gap-2.5 px-5 py-4">
-                  <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
-                    <Sparkles className="size-4 text-primary" />
-                  </div>
-                  <h2 className="text-base font-bold text-foreground">
-                    Required & Relevant Skills
-                  </h2>
-                </div>
-                <div className="relative px-5 pb-5 pt-0">
-                  <div className="flex flex-wrap gap-2">
-                    {statement.skills.map((skill) => (
-                      <span
-                        key={skill}
-                        className="rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground shadow-2xs hover:border-primary/40 transition-colors"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* 3. Learners Who Joined & Are Trying / Submitted */}
-            <div
-              id="learners-section"
-              className="rounded-2xl border border-border bg-card shadow-sm scroll-mt-6"
-            >
-              <div className="flex flex-col gap-4 p-5 border-b border-border/50">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
-                      <Users className="size-4 text-primary" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-base font-bold text-foreground">
-                          Learner Participants & Submissions
-                        </h2>
-                        <Badge
-                          variant="secondary"
-                          className="rounded-full px-2 py-0.5 text-xs font-semibold"
-                        >
-                          {interactionsData?.pagination?.count ??
-                            tryingCount + submittedCount}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {tryingCount} actively trying • {submittedCount}{" "}
-                        submitted solution deliverables
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Real-time search filter */}
-                  {(totalRosterCount > 0 ||
-                    interactions.length > 0 ||
-                    hasActiveFilter) && (
-                    <div className="relative w-full sm:w-64">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-                      <Input
-                        placeholder="Search by name or MUID..."
-                        value={searchQuery}
-                        onChange={(e) => {
-                          setSearchQuery(e.target.value);
-                          setRosterPage(1);
-                        }}
-                        className="pl-9 h-8 text-xs rounded-xl bg-background"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Status Filter Tabs */}
-                {(totalRosterCount > 0 ||
-                  interactions.length > 0 ||
-                  hasActiveFilter) && (
-                  <div className="flex items-center gap-1.5 self-start rounded-xl bg-muted/50 p-1 border border-border/60">
-                    {[
-                      {
-                        label: "All",
-                        value: "all",
-                        count: tryingCount + submittedCount,
-                      },
-                      {
-                        label: "Submitted",
-                        value: "Submitted",
-                        count: submittedCount,
-                      },
-                      { label: "Trying", value: "Trying", count: tryingCount },
-                    ].map((tab) => (
-                      <button
-                        key={tab.value}
-                        type="button"
-                        onClick={() => {
-                          setInteractionStatusFilter(
-                            tab.value as "all" | "Submitted" | "Trying",
-                          );
-                          setRosterPage(1);
-                        }}
-                        className={`rounded-lg px-3 py-1 text-xs font-semibold transition-all cursor-pointer ${
-                          interactionStatusFilter === tab.value
-                            ? "bg-background text-foreground shadow-xs ring-1 ring-border"
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        {tab.label} ({tab.count})
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Table or state display */}
-              <div className="p-0">
-                {interactionsLoading ? (
-                  <div className="p-5 space-y-3">
-                    <Skeleton className="h-12 w-full rounded-xl" />
-                    <Skeleton className="h-12 w-full rounded-xl" />
-                    <Skeleton className="h-12 w-full rounded-xl" />
-                  </div>
-                ) : interactions.length === 0 ? (
-                  hasActiveFilter ? (
-                    <div className="p-6">
-                      <StateDisplay
-                        variant="no-results"
-                        className="rounded-2xl border border-dashed border-border bg-muted/20 py-8"
-                        title="No matches found"
-                        description={
-                          searchQuery.trim()
-                            ? `No learners matching "${searchQuery}". Try a different name or MUID.`
-                            : `No learners found with status "${interactionStatusFilter}".`
-                        }
-                        action={
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSearchQuery("");
-                              setInteractionStatusFilter("all");
-                              setRosterPage(1);
-                            }}
-                            className="rounded-xl text-xs"
-                          >
-                            Clear Filters
-                          </Button>
-                        }
-                      />
-                    </div>
-                  ) : rosterPage > 1 ? (
-                    <div className="p-6">
-                      <StateDisplay
-                        variant="no-results"
-                        className="rounded-2xl border border-dashed border-border bg-muted/20 py-8"
-                        title="Page is empty"
-                        description="There are no learners on this page."
-                        action={
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setRosterPage(1)}
-                            className="rounded-xl text-xs"
-                          >
-                            Return to First Page
-                          </Button>
-                        }
-                      />
-                    </div>
-                  ) : (
-                    <div className="p-6">
-                      <StateDisplay
-                        variant="no-results"
-                        className="rounded-2xl border border-dashed border-border bg-muted/20 py-10"
-                        title="No learners participating yet"
-                        description="When learners click 'I'm Trying It' or submit solution links, they'll appear here automatically."
-                      />
-                    </div>
-                  )
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="border-b border-border/60 bg-muted/30 hover:bg-muted/30">
-                        <TableHead className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Learner
-                        </TableHead>
-                        <TableHead className="px-4 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          MUID
-                        </TableHead>
-                        <TableHead className="px-4 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Status
-                        </TableHead>
-                        <TableHead className="px-4 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Submission Link
-                        </TableHead>
-                        <TableHead className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
-                          Timestamp
-                        </TableHead>
-                        {isAdmin && (
-                          <TableHead className="px-4 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
-                            Action
-                          </TableHead>
-                        )}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {interactions.map((interaction) => {
-                        const initials = (interaction.full_name || "L")
-                          .slice(0, 2)
-                          .toUpperCase();
-                        const isSub = interaction.status === "Submitted";
-                        return (
-                          <TableRow
-                            key={interaction.user_id}
-                            className="transition-colors hover:bg-muted/40"
-                          >
-                            <TableCell className="px-5 py-3.5 whitespace-nowrap">
-                              <div className="flex items-center gap-3">
-                                <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-xs">
-                                  {initials}
-                                </div>
-                                <div>
-                                  <p className="font-semibold text-xs text-foreground">
-                                    {interaction.full_name}
-                                  </p>
-                                  <p className="text-[11px] text-muted-foreground">
-                                    Participant
-                                  </p>
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell className="px-4 py-3.5 whitespace-nowrap text-xs text-muted-foreground font-mono">
-                              @{interaction.muid}
-                            </TableCell>
-                            <TableCell className="px-4 py-3.5 whitespace-nowrap">
-                              <span
-                                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${
-                                  isSub
-                                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                                    : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
-                                }`}
-                              >
-                                {isSub ? (
-                                  <CheckCircle className="size-3" />
-                                ) : (
-                                  <Clock className="size-3" />
-                                )}
-                                {interaction.status}
-                              </span>
-                            </TableCell>
-                            <TableCell className="px-4 py-3.5">
-                              {interaction.submission_url ? (
-                                <a
-                                  href={interaction.submission_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 font-mono text-xs text-primary hover:underline max-w-[260px] truncate"
-                                  title={interaction.submission_url}
-                                >
-                                  <ExternalLink className="size-3 shrink-0 text-muted-foreground" />
-                                  <span className="truncate">
-                                    {interaction.submission_url}
-                                  </span>
-                                </a>
-                              ) : (
-                                <span className="text-xs text-muted-foreground italic">
-                                  No submission link
-                                </span>
-                              )}
-                            </TableCell>
-                            <TableCell className="px-5 py-3.5 whitespace-nowrap text-right">
-                              {interaction.submitted_at ? (
-                                <div>
-                                  <p className="text-xs font-medium text-foreground">
-                                    {formatDate(interaction.submitted_at)}
-                                  </p>
-                                  <p className="text-[10px] text-muted-foreground">
-                                    Submitted
-                                  </p>
-                                </div>
-                              ) : (
-                                <div>
-                                  <p className="text-xs text-muted-foreground">
-                                    {formatDate(interaction.created_at)}
-                                  </p>
-                                  <p className="text-[10px] text-muted-foreground">
-                                    Joined
-                                  </p>
-                                </div>
-                              )}
-                            </TableCell>
-                            {isAdmin && (
-                              <TableCell className="px-4 py-3.5 whitespace-nowrap text-right">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() =>
-                                    setDeletingUser({
-                                      userId: interaction.user_id,
-                                      fullName: interaction.full_name,
-                                    })
-                                  }
-                                  className="size-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
-                                  title="Remove learner interaction"
-                                >
-                                  <Trash2 className="size-3.5" />
-                                </Button>
-                              </TableCell>
-                            )}
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                )}
-
-                {/* Pagination — available whenever total items exist, even if current page slice is empty */}
-                {!interactionsLoading &&
-                  interactionsData?.pagination &&
-                  interactionsData.pagination.count > 0 && (
-                    <div className="border-t border-border/50 p-4">
-                      <ProblemStatementsPagination
-                        pagination={interactionsData.pagination}
-                        currentPage={rosterPage}
-                        onPageChange={setRosterPage}
-                        currentCount={interactions.length}
-                      />
-                    </div>
-                  )}
-              </div>
-            </div>
-          </div>
-
-          {/* ─── Sticky Sidebar Column ─── */}
-          <aside className="min-w-0 w-full max-w-full space-y-4 overflow-x-hidden lg:sticky lg:top-6 lg:self-start">
-            {/* Card 1: Management Actions & Status Control */}
-            <div className="space-y-4 rounded-2xl border border-border bg-card p-5 shadow-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Status & Controls
-                </span>
-                <ProblemStatementStatusBadge status={statement.status} />
-              </div>
-
-              {/* Publish / Unpublish CTA */}
-              {(statement.status === "Draft" ||
-                statement.status === "Unpublished") && (
-                <Button
-                  size="default"
-                  onClick={() => setShowPublishDialog(true)}
-                  disabled={publishMutation.isPending}
-                  className="w-full rounded-full font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-2 shadow-sm"
-                >
-                  {publishMutation.isPending ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <Play className="size-4" />
-                  )}
-                  Publish to Learners
-                </Button>
-              )}
-
-              {statement.status === "Published" && (
-                <Button
-                  size="default"
-                  variant="outline"
-                  onClick={() => setShowUnpublishDialog(true)}
-                  disabled={unpublishMutation.isPending}
-                  className="w-full rounded-full font-bold text-amber-600 border-amber-500/30 hover:bg-amber-500/10 gap-2"
-                >
-                  {unpublishMutation.isPending ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <X className="size-4" />
-                  )}
-                  Unpublish Statement
-                </Button>
-              )}
-
-              {/* Edit Details */}
-              <Button
-                variant="outline"
-                size="default"
-                onClick={() => setShowEditDialog(true)}
-                className="w-full rounded-full text-xs font-semibold gap-1.5"
-              >
-                <Edit2 className="size-3.5" />
-                Edit Statement Details
+              Publish
+            </Button>
+          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" aria-label="More actions">
+                <MoreHorizontal />
               </Button>
-
-              {/* Public View */}
-              {statement.status === "Published" && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  asChild
-                  className="w-full rounded-full text-xs text-muted-foreground hover:text-foreground gap-1.5"
-                >
-                  <Link
-                    href={`/dashboard/problem-statements/${statement.id}`}
-                    target="_blank"
-                  >
-                    <ExternalLink className="size-3.5" />
-                    Open Public Challenge Page
-                  </Link>
-                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-48">
+              {isPublished && (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href={`/dashboard/problem-statements/${statement.id}`}
+                      target="_blank"
+                    >
+                      <ExternalLink />
+                      View Public Page
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
               )}
-
-              {/* Delete Button */}
-              <div className="pt-2 border-t border-border">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowDeleteDialog(true)}
-                  className="w-full rounded-full text-xs text-destructive hover:bg-destructive/10 gap-1.5"
-                >
-                  <Trash2 className="size-3.5" />
-                  Delete Problem Statement
-                </Button>
-              </div>
-            </div>
-
-            {/* Card 2: Problem Provider */}
-            <div className="rounded-2xl border border-border bg-card shadow-sm">
-              <div className="flex items-center gap-2.5 px-5 py-4">
-                <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
-                  <Building2 className="size-4 text-primary" />
-                </div>
-                <h2 className="text-base font-bold text-foreground">
-                  Problem Provider
-                </h2>
-              </div>
-              <div className="flex items-center gap-3 px-5 pb-5">
-                {statement.company?.logo ? (
-                  <div className="relative size-12 shrink-0 overflow-hidden rounded-xl bg-background border border-border">
-                    <Image
-                      src={statement.company.logo}
-                      alt={companyName}
-                      fill
-                      className="object-contain p-1"
-                    />
-                  </div>
-                ) : (
-                  <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary">
-                    <span className="text-sm font-black text-primary-foreground">
-                      {companyName.slice(0, 2).toUpperCase()}
-                    </span>
-                  </div>
-                )}
-                <div className="min-w-0">
-                  <p
-                    title={companyName}
-                    className="text-sm font-bold text-foreground wrap-break-word line-clamp-2"
-                  >
-                    {companyName}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {isAdmin && !statement.company?.id
-                      ? "Admin Managed"
-                      : "Challenge Partner"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 3: Summary Analytics & Timeline */}
-            <div className="space-y-3 rounded-2xl border border-border bg-card p-5 shadow-sm text-xs">
-              <p className="font-semibold text-foreground uppercase tracking-wider text-[11px]">
-                Engagement & Timeline
-              </p>
-
-              <div className="space-y-2.5 pt-1 text-muted-foreground">
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5">
-                    <Users className="size-3.5 text-primary" />
-                    Total Trying
-                  </span>
-                  <span className="font-semibold text-foreground">
-                    {tryingCount}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5">
-                    <Calendar className="size-3.5 text-primary" />
-                    Deadline
-                  </span>
-                  <span className="font-semibold text-foreground">
-                    {deadlineText ?? "None (Continuous)"}
-                  </span>
-                </div>
-
-                {statement.published_at && (
-                  <div className="flex items-center justify-between">
-                    <span>Published</span>
-                    <span className="text-foreground">
-                      {formatDate(statement.published_at)}
-                    </span>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between">
-                  <span>Last Updated</span>
-                  <span className="text-foreground">
-                    {formatDate(statement.updated_at)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </aside>
+              <DropdownMenuItem
+                variant="destructive"
+                onSelect={() => setShowDeleteDialog(true)}
+              >
+                <Trash2 />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
+      </header>
+
+      {/* ─── At a glance ─── */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Trying"
+          value={tryingCount}
+          icon={<Users className="size-5" />}
+          accent="chart-2"
+        />
+        <StatCard
+          title="Submitted"
+          value={submittedCount}
+          icon={<CheckCircle2 className="size-5" />}
+          accent="chart-3"
+        />
+        <StatCard
+          title="Deadline"
+          value={
+            <span className="text-lg">
+              {formatDeadline(statement.deadline)}
+            </span>
+          }
+          description={
+            statement.deadline ? formatDateTime(statement.deadline) : undefined
+          }
+          icon={<CalendarClock className="size-5" />}
+          accent="chart-4"
+        />
+        <StatCard
+          title="Published"
+          value={
+            <span className="text-lg">
+              {statement.published_at
+                ? formatDate(statement.published_at)
+                : "Not yet"}
+            </span>
+          }
+          description={
+            isPublished
+              ? statement.is_open
+                ? "Visible and open"
+                : "Visible, submissions closed"
+              : "Hidden from learners"
+          }
+          icon={<Send className="size-5" />}
+          accent="chart-1"
+        />
       </div>
 
-      {/* Edit dialog */}
+      <ProblemStatementAboutSection
+        description={statement.description}
+        skills={statement.skills}
+      />
+
+      {/* ─── Participants ─── */}
+      <Card className="gap-0 rounded-2xl pb-0">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base">Participants</CardTitle>
+          <CardDescription>
+            Learners working on this problem statement and the solution links
+            they've submitted.
+          </CardDescription>
+        </CardHeader>
+
+        {(totalParticipants > 0 || hasActiveFilter) && (
+          <div className="flex flex-col gap-3 border-t border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <Tabs
+              value={rosterFilter}
+              onValueChange={(v) => {
+                setRosterFilter(v as RosterFilter);
+                setRosterPage(1);
+              }}
+            >
+              <TabsList>
+                <TabsTrigger value="all">All ({totalParticipants})</TabsTrigger>
+                <TabsTrigger value="Submitted">
+                  Submitted ({submittedCount})
+                </TabsTrigger>
+                <TabsTrigger value="Trying">Trying ({tryingCount})</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <SearchBar
+              onSearch={(value) => {
+                setSearchQuery(value);
+                setRosterPage(1);
+              }}
+              placeholder="Search by name or MUID…"
+              size="sm"
+              showButton={false}
+              className="sm:w-64"
+            />
+          </div>
+        )}
+
+        <div className="border-t border-border">
+          {interactionsLoading ? (
+            <div className="space-y-3 p-6">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ) : interactions.length === 0 ? (
+            <StateDisplay
+              variant="no-results"
+              size="sm"
+              title={
+                hasActiveFilter
+                  ? "No matching participants"
+                  : "No participants yet"
+              }
+              description={
+                hasActiveFilter
+                  ? "Try a different name, MUID or status."
+                  : isPublished
+                    ? "Learners who choose “I'm Trying It” or submit a solution will appear here."
+                    : "Publish this problem statement so learners can start working on it."
+              }
+            />
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="pl-6">Learner</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Solution</TableHead>
+                  <TableHead>Date</TableHead>
+                  {isAdmin && (
+                    <TableHead className="w-12 pr-6">
+                      <span className="sr-only">Actions</span>
+                    </TableHead>
+                  )}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {interactions.map((interaction) => (
+                  <TableRow key={interaction.user_id}>
+                    <TableCell className="pl-6">
+                      <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarFallback className="text-xs font-semibold">
+                            {(interaction.full_name || "L")
+                              .slice(0, 2)
+                              .toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate font-medium text-foreground">
+                            {interaction.full_name}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {interaction.muid}
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <ProblemStatementParticipationBadge
+                        status={interaction.status}
+                      />
+                    </TableCell>
+                    <TableCell className="max-w-64">
+                      {interaction.submission_url ? (
+                        <a
+                          href={interaction.submission_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={interaction.submission_url}
+                          className="flex items-center gap-1.5 text-primary underline-offset-4 hover:underline"
+                        >
+                          <ExternalLink className="size-3.5 shrink-0" />
+                          <span className="truncate">
+                            {interaction.submission_url.replace(
+                              /^https?:\/\//,
+                              "",
+                            )}
+                          </span>
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-muted-foreground">
+                      {interaction.submitted_at
+                        ? `Submitted ${formatDate(interaction.submitted_at)}`
+                        : `Joined ${formatDate(interaction.created_at)}`}
+                    </TableCell>
+                    {isAdmin && (
+                      <TableCell className="pr-6 text-right">
+                        <RowActionButton
+                          icon={Trash2}
+                          label="Remove participant"
+                          tone="destructive"
+                          onClick={() =>
+                            setRemovingUser({
+                              userId: interaction.user_id,
+                              fullName: interaction.full_name,
+                            })
+                          }
+                        />
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </div>
+
+        {!interactionsLoading &&
+          (interactionsData?.pagination?.count ?? 0) > 0 && (
+            <div className="px-6 pb-4">
+              <ProblemStatementsPagination
+                pagination={interactionsData?.pagination}
+                currentPage={rosterPage}
+                perPage={ROSTER_PER_PAGE}
+                onPageChange={setRosterPage}
+              />
+            </div>
+          )}
+      </Card>
+
       <ProblemStatementFormDialog
         open={showEditDialog}
         mode={isAdmin ? "admin-edit" : "company-edit"}
@@ -1020,51 +604,48 @@ export function ManageProblemStatementDetailView({
         onSuccess={() => setShowEditDialog(false)}
       />
 
-      {/* Publish confirm */}
       <ConfirmDialog
         open={showPublishDialog}
         onOpenChange={setShowPublishDialog}
         title="Publish this problem statement?"
-        description="Learners will be able to see and interact with this statement. You can unpublish it later."
+        description="Learners will be able to see it and start working on it. You can unpublish it later."
+        variant="success"
         confirmLabel="Publish"
         onConfirm={handlePublish}
         isPending={publishMutation.isPending}
       />
 
-      {/* Unpublish confirm */}
       <ConfirmDialog
         open={showUnpublishDialog}
         onOpenChange={setShowUnpublishDialog}
         title="Unpublish this problem statement?"
-        description="This statement will be hidden from learners. Existing interactions are preserved."
-        variant="destructive"
+        description="It will be hidden from learners. Existing participants and submissions are kept."
+        variant="warning"
         confirmLabel="Unpublish"
         onConfirm={handleUnpublish}
         isPending={unpublishMutation.isPending}
       />
 
-      {/* Delete confirm */}
       <ConfirmDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
         title="Delete this problem statement?"
-        description="This action is permanent and cannot be undone. All learner interactions will also be deleted."
+        description="This permanently deletes it along with every participant and submission. This can't be undone."
         variant="destructive"
-        confirmLabel="Delete Forever"
+        confirmLabel="Delete"
         onConfirm={handleDelete}
         isPending={deleteMutation.isPending}
       />
 
-      {/* Delete learner interaction confirm (Admin only) */}
       <ConfirmDialog
-        open={Boolean(deletingUser)}
-        onOpenChange={(open) => !open && setDeletingUser(null)}
-        title="Remove learner interaction?"
-        description={`This will permanently remove ${deletingUser?.fullName}'s participation and submission from this challenge.`}
+        open={Boolean(removingUser)}
+        onOpenChange={(open) => !open && setRemovingUser(null)}
+        title="Remove this participant?"
+        description={`${removingUser?.fullName ?? "This learner"}'s participation and any submitted solution will be permanently removed from this problem statement.`}
         variant="destructive"
-        confirmLabel="Remove Learner"
-        onConfirm={handleConfirmDeleteUser}
-        isPending={adminDeleteUserMutation.isPending}
+        confirmLabel="Remove"
+        onConfirm={handleRemoveUser}
+        isPending={removeUserMutation.isPending}
       />
     </div>
   );
