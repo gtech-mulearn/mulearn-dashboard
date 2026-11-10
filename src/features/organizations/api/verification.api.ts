@@ -1,19 +1,35 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
-  type UnverifiedOrgItem,
+  type UnverifiedOrgListData,
   UnverifiedOrgListResponseSchema,
   VerificationMutationResponseSchema,
   type VerifyOrgFormValues,
 } from "../schemas/verification.schema";
 
-export async function fetchUnverifiedOrgs(): Promise<UnverifiedOrgItem[]> {
+export interface FetchUnverifiedOrgsParams {
+  pageIndex?: number;
+  perPage?: number;
+  search?: string;
+  sortBy?: string;
+  org_type?: string;
+}
+
+export async function fetchUnverifiedOrgs(
+  params: FetchUnverifiedOrgsParams = {},
+): Promise<UnverifiedOrgListData> {
+  const query = new URLSearchParams();
+  if (params.pageIndex) query.set("pageIndex", String(params.pageIndex));
+  if (params.perPage) query.set("perPage", String(params.perPage));
+  if (params.search?.trim()) query.set("search", params.search.trim());
+  if (params.sortBy?.trim()) query.set("sortBy", params.sortBy.trim());
+  if (params.org_type) query.set("org_type", params.org_type);
+
   const response = await apiClient.get(
-    endpoints.organization.verificationList,
+    `${endpoints.organization.verificationList}?${query.toString()}`,
     UnverifiedOrgListResponseSchema,
   );
-  const payload = response.response ?? response.data;
-  return Array.isArray(payload) ? payload : [];
+  return response.response;
 }
 
 export async function verifyOrganization(

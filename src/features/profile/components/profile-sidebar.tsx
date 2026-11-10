@@ -58,7 +58,7 @@ export function ProfileSidebar({
       {/* Profile Visibility */}
       {isOwnProfile && (
         <div className="rounded-2xl bg-card p-4 shadow-sm">
-          <ProfileSettings isPublic={profile.is_public} />
+          <ProfileSettings isPublic={profile.is_public ?? null} />
         </div>
       )}
 

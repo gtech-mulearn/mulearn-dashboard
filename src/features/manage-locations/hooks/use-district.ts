@@ -34,6 +34,7 @@ export const useAddDistrict = () => {
         queryKey: ["districts"],
         exact: false,
       });
+      toast.success("District added successfully");
     },
     onError: (error) => {
       toast.error(
@@ -50,6 +51,7 @@ export const useUpdateDistrict = () => {
     mutationFn: (data: UpdateDistrictInput) => updateDistrict(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["districts"] });
+      toast.success("District updated successfully");
     },
     onError: (error) => {
       toast.error(
@@ -66,6 +68,7 @@ export const useDeleteDistrict = () => {
     mutationFn: deleteDistrict,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["districts"] });
+      toast.success("District deleted successfully");
     },
     onError: (error) => {
       toast.error(

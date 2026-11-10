@@ -2,6 +2,10 @@
 
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import {
+  buildSessionFeedbackBody,
+  type SessionFeedbackInput,
+} from "@/features/mentor/sessions/lib/session-feedback";
 import type { MenteeView } from "../schemas";
 import {
   GenericResponseSchema,
@@ -61,11 +65,11 @@ export async function fetchMentees(): Promise<{
 
 export async function submitSessionFeedback(
   sessionId: string,
-  feedback: string | null,
+  body: SessionFeedbackInput,
 ) {
   return apiClient.patch(
     endpoints.mentor.sessionParticipantFeedback(sessionId),
-    { feedback },
+    buildSessionFeedbackBody(body),
     SessionFeedbackResponseSchema,
   );
 }

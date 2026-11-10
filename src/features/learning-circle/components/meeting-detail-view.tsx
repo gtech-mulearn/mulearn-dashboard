@@ -54,6 +54,7 @@ import {
   useCirclePermissions,
   useLeaveMeeting,
   useMeetingDetail,
+  usePendingRsvpMeetingIds,
   useRemoveRsvpMeeting,
   useRsvpMeeting,
 } from "../hooks";
@@ -81,12 +82,20 @@ const STATUS_CONFIG = {
     label: "Recurring",
     dot: false,
   },
+  scheduled: {
+    gradient: "from-[#B45309] via-[#D97706] to-[#F59E0B]",
+    label: "Scheduled",
+    dot: false,
+  },
   ended: {
     gradient: "from-[#6B7280] via-[#9CA3AF] to-[#D1D5DB]",
     label: "Ended",
     dot: false,
   },
 } as const;
+
+/** How early a meeting flips to "Live Now" ahead of its scheduled start time. */
+const LIVE_SOON_WINDOW_MS = 2 * 60 * 60 * 1000;
 
 function formatMeetingDuration(duration?: number): string {
   if (!duration || duration <= 0) return "1h";
@@ -129,11 +138,18 @@ function getStatus(meeting: {
   is_ended: boolean;
   is_started: boolean;
   is_recurring?: boolean;
+  meet_time: Date;
 }) {
   // "Ended" takes precedence over "Recurring": an occurrence that has ended is
   // shown as Ended even when the meeting is part of a recurring series.
   if (meeting.is_ended) return STATUS_CONFIG.ended;
   if (meeting.is_started) return STATUS_CONFIG.live;
+  if (meeting.meet_time.getTime() - Date.now() <= LIVE_SOON_WINDOW_MS) {
+    // Start time has passed but the organiser hasn't marked it started yet.
+    if (!isFuture(meeting.meet_time)) return STATUS_CONFIG.live;
+    // Still upcoming, within 2h of start — show as "starting soon", not live.
+    return STATUS_CONFIG.scheduled;
+  }
   if (meeting.is_recurring) return STATUS_CONFIG.recurring;
   return STATUS_CONFIG.upcoming;
 }
@@ -190,6 +206,8 @@ export function MeetingDetailView({
   const { data: circleMeetings } = useCircleMeetings(circleId);
   const rsvpMeeting = useRsvpMeeting();
   const removeRsvpMeeting = useRemoveRsvpMeeting();
+  const pendingRsvpMeetingIds = usePendingRsvpMeetingIds();
+  const isRsvpLoading = pendingRsvpMeetingIds.has(meetingId);
   const { data: userInfo } = useUserInfo();
   const leaveMeeting = useLeaveMeeting();
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
@@ -243,6 +261,15 @@ export function MeetingDetailView({
 
   const canEditThisMeeting =
     permissions.canEditMeeting ||
+    (userInfo?.muid != null && userInfo.muid === creatorMuid);
+
+  /**
+   * Attendee CSV export access: circle owner/lead (canSubmitReport) OR the
+   * meeting's own creator, per the backend's export permission (owner/lead/
+   * meeting creator).
+   */
+  const canExportAttendees =
+    permissions.canSubmitReport ||
     (userInfo?.muid != null && userInfo.muid === creatorMuid);
 
   const currentMember = members?.members?.find(
@@ -347,7 +374,7 @@ export function MeetingDetailView({
       ? listMeetingInfo.can_remove_rsvp !== false
       : true);
   const canLeave = hasJoined && isActive;
-  const status = getStatus(meeting);
+  const status = getStatus({ ...meeting, meet_time: meetTime });
 
   return (
     <div className="space-y-6">
@@ -449,26 +476,28 @@ export function MeetingDetailView({
               <Button
                 type="button"
                 variant="secondary"
-                onClick={() => rsvpMeeting.mutate(meetingId)}
-                disabled={rsvpMeeting.isPending}
+                onClick={() => {
+                  if (isRsvpLoading) return;
+                  rsvpMeeting.mutate(meetingId);
+                }}
+                disabled={isRsvpLoading}
                 className="text-xs font-bold uppercase tracking-wide"
               >
-                {rsvpMeeting.isPending ? (
-                  <Spinner className="h-3.5 w-3.5" />
-                ) : (
-                  "RSVP"
-                )}
+                {isRsvpLoading ? <Spinner className="h-3.5 w-3.5" /> : "RSVP"}
               </Button>
             )}
             {canRemoveRsvp && (
               <button
                 type="button"
-                onClick={() => removeRsvpMeeting.mutate(meetingId)}
-                disabled={removeRsvpMeeting.isPending}
-                className="text-xs font-bold text-success bg-success/15 border border-success/30 hover:bg-destructive/15 hover:text-destructive hover:border-destructive/30 transition-all uppercase tracking-wide px-3 py-1.5 rounded-lg flex items-center gap-1.5 group/rsvp cursor-pointer"
+                onClick={() => {
+                  if (isRsvpLoading) return;
+                  removeRsvpMeeting.mutate(meetingId);
+                }}
+                disabled={isRsvpLoading}
+                className="text-xs font-bold text-success bg-success/15 border border-success/30 hover:bg-destructive/15 hover:text-destructive hover:border-destructive/30 transition-all uppercase tracking-wide px-3 py-1.5 rounded-lg flex items-center gap-1.5 group/rsvp cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Click to remove RSVP"
               >
-                {removeRsvpMeeting.isPending ? (
+                {isRsvpLoading ? (
                   <Spinner className="h-3.5 w-3.5" />
                 ) : (
                   <>
@@ -672,7 +701,7 @@ export function MeetingDetailView({
               )
             </span>
           </h3>
-          {permissions.canSubmitReport && (
+          {canExportAttendees && (
             <Button
               type="button"
               id="meeting-attendees-export-csv"

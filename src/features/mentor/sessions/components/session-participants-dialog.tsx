@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +22,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -33,6 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { UpdateParticipantDialog } from "@/features/mentor/mentees/components/update-participant-dialog";
 import {
   useAddParticipant,
   useParticipants,
@@ -42,6 +42,7 @@ import {
   AddParticipantFormSchema,
   type AddParticipantFormValues,
   type Session,
+  type UpdateParticipantValues,
 } from "../schemas";
 
 const ROLE_LABELS: Record<string, string> = {
@@ -72,6 +73,12 @@ export function SessionParticipantsDialog({
   const { mutate: updateP, isPending: isRemoving } =
     useUpdateParticipant(sessionId);
 
+  const [editTarget, setEditTarget] = useState<{
+    linkId: string;
+    name: string;
+    defaultValues: UpdateParticipantValues;
+  } | null>(null);
+
   const [removeTarget, setRemoveTarget] = useState<{
     linkId: string;
     name: string;
@@ -91,7 +98,7 @@ export function SessionParticipantsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Participants — {session?.title}</DialogTitle>
         </DialogHeader>
@@ -113,7 +120,9 @@ export function SessionParticipantsDialog({
                 <TableHead>Name</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Attendance</TableHead>
-                <TableHead className="w-16" />
+                <TableHead>Minutes</TableHead>
+                <TableHead>Feedback &amp; Notes</TableHead>
+                <TableHead className="w-24 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -143,22 +152,71 @@ export function SessionParticipantsDialog({
                         : "—"}
                     </Badge>
                   </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                      onClick={() =>
-                        setRemoveTarget({
-                          linkId: p.id ?? p.user_id,
-                          name: p.user_full_name ?? p.full_name ?? p.user_id,
-                          participantRole: p.participant_role,
-                        })
-                      }
-                      disabled={isRemoving}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {p.contributed_minutes ? `${p.contributed_minutes}m` : "—"}
+                  </TableCell>
+                  <TableCell className="max-w-[220px]">
+                    <div className="space-y-1">
+                      {p.feedback ? (
+                        <p
+                          className="text-xs text-foreground italic truncate"
+                          title={p.feedback}
+                        >
+                          "{p.feedback}"
+                        </p>
+                      ) : null}
+                      {p.progress_note ? (
+                        <p
+                          className="text-[11px] text-muted-foreground truncate"
+                          title={`Note: ${p.progress_note}`}
+                        >
+                          Note: {p.progress_note}
+                        </p>
+                      ) : null}
+                      {!p.feedback && !p.progress_note && (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        title="Edit participant attendance & notes"
+                        onClick={() =>
+                          setEditTarget({
+                            linkId: p.id ?? p.user_id,
+                            name: p.user_full_name ?? p.full_name ?? p.user_id,
+                            defaultValues: {
+                              attendance_status:
+                                p.attendance_status ?? "INVITED",
+                              progress_note: p.progress_note ?? "",
+                              contributed_minutes:
+                                p.contributed_minutes ?? null,
+                            },
+                          })
+                        }
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                        onClick={() =>
+                          setRemoveTarget({
+                            linkId: p.id ?? p.user_id,
+                            name: p.user_full_name ?? p.full_name ?? p.user_id,
+                            participantRole: p.participant_role,
+                          })
+                        }
+                        disabled={isRemoving}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -194,6 +252,17 @@ export function SessionParticipantsDialog({
         </Form>
       </DialogContent>
 
+      {editTarget && (
+        <UpdateParticipantDialog
+          open={!!editTarget}
+          onOpenChange={(v) => !v && setEditTarget(null)}
+          sessionId={sessionId}
+          linkId={editTarget.linkId}
+          defaultValues={editTarget.defaultValues}
+          participantName={editTarget.name}
+        />
+      )}
+
       <ConfirmDialog
         open={!!removeTarget}
         onOpenChange={(v) => !v && setRemoveTarget(null)}
@@ -201,8 +270,6 @@ export function SessionParticipantsDialog({
         description={`Remove ${removeTarget?.name} from this session?`}
         onConfirm={() => {
           if (removeTarget) {
-            // Doc endpoint #21: PATCH /session/participant/update/<link_id>/
-            // Mark attendance as ABSENT to effectively remove from active list
             updateP(
               {
                 linkId: removeTarget.linkId,

@@ -70,10 +70,9 @@ export interface CreateCompanyTaskPayload {
 export interface UpdateCompanyTaskPayload {
   title?: string;
   karma?: number;
-  usage_count?: number;
   description?: string;
-  type?: string;
-  level?: string;
+  type_id?: string;
+  level_id?: string;
   skill_ids?: string[];
   hashtag?: string;
 }
@@ -83,4 +82,14 @@ export interface CompanyTaskMutationResult {
   active?: boolean;
   task_id?: string;
   deleted_at?: string;
+}
+
+export interface TaskTemplate {
+  id: string;
+  title: string;
+  description?: string | null;
+  hashtag_prefix?: string | null;
+  karma: number;
+  type_id?: string | null;
+  type_title?: string | null;
 }

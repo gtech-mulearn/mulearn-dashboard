@@ -162,7 +162,7 @@ export function ProjectDetailModal({
             </div>
 
             {/* Right: Edit (creator only) + Upvote */}
-            <div className="flex items-center gap-2.5 shrink-0">
+            <div className="flex items-center gap-2.5 shrink-0 mr-6">
               {canEdit && onEdit && (
                 <Button
                   size="sm"

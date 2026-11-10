@@ -1,5 +1,5 @@
 import { DiscordModerationPage } from "@/features/discord-moderation";
-import { ROLES } from "@/lib/auth/roles";
+import { DISCORD_MODERATION_ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 
 export const metadata = {
@@ -7,6 +7,6 @@ export const metadata = {
 };
 
 export default async function Page() {
-  await requireRole([ROLES.ADMIN, ROLES.DISCORD_MODERATOR]);
+  await requireRole(DISCORD_MODERATION_ROLES);
   return <DiscordModerationPage />;
 }

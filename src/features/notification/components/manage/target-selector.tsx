@@ -62,7 +62,7 @@ export function TargetSelector({
   return (
     <div className="space-y-3">
       <div className="space-y-1.5">
-        <Label className="text-sm font-medium">Target Audience</Label>
+        <Label className="text-sm font-medium">Audience</Label>
         <Select
           value={targetType}
           onValueChange={handleTypeChange}

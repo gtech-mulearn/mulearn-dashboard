@@ -1,5 +1,6 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import type { MentorProfilePatch } from "../../profile/lib/split-profile-edit";
 import type { MentorProfileWrite } from "../schemas";
 import {
   type MentorApplication,
@@ -61,7 +62,7 @@ export async function getMentorProfile(): Promise<MentorApplication> {
 // ─── PATCH /profile/ ──────────────────────────────────────────────────────────
 // Update approved mentor profile.
 export async function updateMentorProfile(
-  data: Partial<MentorProfileWrite>,
+  data: MentorProfilePatch,
 ): Promise<MentorApplication> {
   const res = await apiClient.patch(
     endpoints.mentor.profile,

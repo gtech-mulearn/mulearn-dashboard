@@ -6,6 +6,7 @@ import {
   CheckCircle,
   Clock,
   ExternalLink,
+  FileText,
   Globe,
   Linkedin,
   Mail,
@@ -61,20 +62,28 @@ const _STATUS_CONFIG: Record<string, { label: string; className: string }> = {
 };
 
 function StatusBadge({ status }: { status: string }) {
+  if (status === "verified") {
+    return <Badge variant="success">Verified</Badge>;
+  }
   if (status === "active") {
     return <Badge variant="success">Active</Badge>;
+  }
+  if (status === "deactivated") {
+    return <Badge variant="outline">Deactivated</Badge>;
   }
 
   const STATUS_VARIANTS: Record<
     string,
     "default" | "secondary" | "destructive" | "outline" | "warning"
   > = {
+    pending: "warning",
     pending_verification: "warning",
     rejected: "destructive",
     inactive: "outline",
   };
 
   const STATUS_LABELS: Record<string, string> = {
+    pending: "Pending Verification",
     pending_verification: "Pending Verification",
     rejected: "Rejected",
     inactive: "Inactive",
@@ -137,11 +146,16 @@ export function CompanyDetailSheet({
     company.status === "pending_verification" ||
     (company.status as string) === "pending" ||
     !company.status;
+  // The backend refuses to verify a company without a document (400).
+  const documentUrl = details?.verification_document_url?.trim() || null;
+  const canApprove = !isLoading && !!documentUrl;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="flex w-full flex-col gap-0 overflow-y-auto sm:max-w-lg">
-        <SheetHeader className="border-b pb-4">
+        {/* pr-10 keeps the status badge clear of the sheet's close button
+            (absolute top-4 right-4). */}
+        <SheetHeader className="border-b pb-4 pr-10">
           <div className="flex items-start justify-between gap-3">
             <div className="space-y-1.5">
               <SheetTitle className="text-xl font-bold leading-tight">
@@ -155,15 +169,37 @@ export function CompanyDetailSheet({
           </div>
         </SheetHeader>
 
-        <div className="flex-1 space-y-6 overflow-y-auto py-6">
+        <div className="flex-1 space-y-6 overflow-y-auto px-4 py-6">
           {isLoading ? (
-            <div className="space-y-6 px-1">
+            <div className="space-y-6">
               <Skeleton className="h-24 w-full rounded-xl" />
               <Skeleton className="h-32 w-full rounded-xl" />
               <Skeleton className="h-32 w-full rounded-xl" />
             </div>
           ) : (
             <>
+              <section className="space-y-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Verification Document
+                </h3>
+                {documentUrl ? (
+                  <a
+                    href={documentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium text-primary hover:bg-muted"
+                  >
+                    <FileText className="h-4 w-4" aria-hidden="true" />
+                    Open verification document
+                    <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                  </a>
+                ) : (
+                  <p className="rounded-xl border border-dashed px-3 py-2 text-sm text-muted-foreground">
+                    No verification document
+                  </p>
+                )}
+              </section>
+
               {details?.description && (
                 <section className="space-y-2">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -443,7 +479,7 @@ export function CompanyDetailSheet({
 
         {/* Actions Footer */}
         {canAct && (
-          <div className="border-t pt-4">
+          <div className="border-t p-4">
             <div className="flex gap-3">
               <Button
                 variant="outline"
@@ -463,6 +499,12 @@ export function CompanyDetailSheet({
                   onApprove(company);
                   onOpenChange(false);
                 }}
+                disabled={!canApprove}
+                title={
+                  canApprove
+                    ? undefined
+                    : "A verification document is required before approval"
+                }
                 aria-label="Approve company"
               >
                 <CheckCircle className="mr-1.5 h-4 w-4" />

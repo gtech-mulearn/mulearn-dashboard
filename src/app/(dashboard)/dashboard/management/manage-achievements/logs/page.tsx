@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AchievementAnalytics, AuditLogsTable } from "@/features/achievements";
-import { ROLES } from "@/lib/auth/roles";
+import { ADMIN_ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 
 export const metadata = {
@@ -9,7 +9,7 @@ export const metadata = {
 };
 
 export default async function LogsPage() {
-  await requireRole([ROLES.ADMIN]);
+  await requireRole(ADMIN_ROLES);
   return (
     <div className="container py-8">
       <Tabs defaultValue="analytics" className="space-y-6">

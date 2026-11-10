@@ -18,6 +18,7 @@ import {
   DollarSign,
   MapPin,
   Package,
+  ShieldAlert,
   Timer,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -31,6 +32,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatNumericRuleValue } from "../constants";
 import {
   useApplyJob,
+  useEligibilitySkills,
   useLearnerApplications,
   useResubmitApplication,
   useTrackJobView,
@@ -103,6 +105,18 @@ export function JobDetailModal({
   const isSuccess = applySuccess || resubmitSuccess;
   // A job that is not Active (e.g. Closed) no longer accepts applications.
   const isClosed = !!job && job.status != null && job.status !== "Active";
+  // jobs/all/ computes eligibility for the signed-in learner; the backend
+  // refuses applications that miss a rule, so say why up front.
+  const isIneligible = job?.eligibility?.eligible === false;
+  const unmetReasons = (job?.eligibility?.rules ?? [])
+    .filter((rule) => !rule.met && rule.message)
+    .map((rule) => rule.message as string);
+  const hasSkillRule = !!job?.rules?.some((r) => r.rule_type === "skill");
+  const { data: skills } = useEligibilitySkills(open && hasSkillRule);
+  const ruleValueLabel = (ruleType: string, ruleValue: string) =>
+    ruleType === "skill"
+      ? (skills?.find((s) => s.id === ruleValue)?.name ?? "A required skill")
+      : formatNumericRuleValue(ruleType, ruleValue);
 
   useEffect(() => {
     if (open) {
@@ -323,7 +337,7 @@ export function JobDetailModal({
                   <li key={rule.id} className="flex items-start gap-2 text-sm">
                     <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
                     <span>
-                      {formatNumericRuleValue(rule.rule_type, rule.rule_value)}
+                      {ruleValueLabel(rule.rule_type, rule.rule_value)}
                       {rule.rule_type && (
                         <span className="ml-1.5 text-xs text-muted-foreground capitalize">
                           ({rule.rule_type.replace(/_/g, " ")})
@@ -351,7 +365,26 @@ export function JobDetailModal({
                 </p>
               </div>
             </div>
-          ) : isClosed ? null : (
+          ) : isClosed ? null : isIneligible ? (
+            <div
+              role="status"
+              className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3"
+            >
+              <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  You don&apos;t meet this job&apos;s requirements yet
+                </p>
+                {unmetReasons.length > 0 && (
+                  <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-muted-foreground">
+                    {unmetReasons.map((reason) => (
+                      <li key={reason}>{reason}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          ) : (
             <div className="space-y-4">
               {/* Resume Link */}
               <div className="space-y-1.5">
@@ -411,17 +444,24 @@ export function JobDetailModal({
           {!isSuccess && !isClosed && (
             <Button
               onClick={handleApply}
-              disabled={isPending || !resumeLink.trim() || isAlreadyApplied}
+              disabled={
+                isPending ||
+                !resumeLink.trim() ||
+                isAlreadyApplied ||
+                isIneligible
+              }
             >
               {isAlreadyApplied
                 ? "Already Applied"
-                : isPending
-                  ? canResubmit
-                    ? "Resubmitting…"
-                    : "Applying…"
-                  : canResubmit
-                    ? "Resubmit Application"
-                    : "Apply Now"}
+                : isIneligible
+                  ? "Not eligible"
+                  : isPending
+                    ? canResubmit
+                      ? "Resubmitting…"
+                      : "Applying…"
+                    : canResubmit
+                      ? "Resubmit Application"
+                      : "Apply Now"}
             </Button>
           )}
         </div>

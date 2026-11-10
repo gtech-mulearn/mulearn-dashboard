@@ -31,8 +31,8 @@ const COLUMNS = [
   { column: "title", Label: "Title", isSortable: false, width: "w-52" },
   { column: "campus", Label: "Campus", isSortable: false, width: "w-40" },
   { column: "performer", Label: "Performer", isSortable: false, width: "w-36" },
-  { column: "date", Label: "Date", isSortable: false, width: "w-28" },
-  { column: "time", Label: "Time", isSortable: false, width: "w-20" },
+  { column: "date", Label: "Date", isSortable: true, width: "w-28" },
+  { column: "time", Label: "Time", isSortable: true, width: "w-20" },
   { column: "status", Label: "Status", isSortable: false, width: "w-28" },
 ];
 
@@ -41,6 +41,7 @@ export function GysTab() {
   const [perPage, setPerPage] = useState(10);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
+  const [sort, setSort] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [viewTarget, setViewTarget] = useState<GysItem | null>(null);
   const [editTarget, setEditTarget] = useState<GysItem | null>(null);
@@ -51,6 +52,7 @@ export function GysTab() {
     perPage,
     search,
     status: status || undefined,
+    sortBy: sort || undefined,
   });
 
   const { remove } = useGysMutations();
@@ -77,6 +79,11 @@ export function GysTab() {
   const handleStatusChange = (val: string) => {
     setPage(1);
     setStatus(val === "all" ? "" : val);
+  };
+
+  const handleSortChange = (column: string) => {
+    setPage(1);
+    setSort((prev) => (prev === column ? `-${column}` : column));
   };
 
   const openCreate = () => {
@@ -199,7 +206,11 @@ export function GysTab() {
           </div>
         )}
       >
-        <THead columnOrder={COLUMNS} onIconClick={() => {}} action={true} />
+        <THead
+          columnOrder={COLUMNS}
+          onIconClick={handleSortChange}
+          action={true}
+        />
         <Pagination
           currentPage={page}
           totalPages={totalPages}

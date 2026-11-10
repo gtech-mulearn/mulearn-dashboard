@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatSessionType } from "@/lib/enum-casing";
 import { useIncomingRequests } from "../hooks/use-student-requests";
 import type { StudentSessionRequest } from "../schemas";
 import { VerifyRequestDialog } from "./verify-request-dialog";
@@ -22,12 +23,9 @@ function formatMode(mode: string | null | undefined) {
   return mode.charAt(0).toUpperCase() + mode.slice(1).toLowerCase();
 }
 
-function formatSessionType(type: string | undefined) {
-  if (!type) return "Global";
-  if (type === "campus_session") return "Campus";
-  if (type === "company_session") return "Company";
-  if (type === "ig_session") return "Interest Group (IG)";
-  return type;
+/** No type = a global (any-IG) request. */
+function sessionTypeLabel(type: string | undefined) {
+  return type ? formatSessionType(type) : "Global";
 }
 
 export function IncomingRequestsList() {
@@ -94,7 +92,7 @@ export function IncomingRequestsList() {
                     <span className="text-muted-foreground">Global</span>
                   )}
                   <div className="text-xs text-muted-foreground mt-0.5">
-                    {formatSessionType(req.session_type)}
+                    {sessionTypeLabel(req.session_type)}
                   </div>
                 </TableCell>
                 <TableCell>

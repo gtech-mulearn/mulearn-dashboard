@@ -1,15 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { endpoints } from "@/api/endpoints";
+import { useCsvDownload } from "@/hooks/use-csv-download";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   createTask,
   deleteTask,
-  downloadTasksCsv,
-  downloadTasksTemplate,
+  fetchActiveTasks,
+  fetchInactiveTasks,
   fetchPublicTasks,
   fetchTaskDetail,
   fetchTaskReferences,
-  fetchTasks,
   importTasks,
   updateTask,
 } from "../api/tasks.api";
@@ -18,15 +19,31 @@ import type {
   PublicTaskListParams,
   TaskListParams,
 } from "../types/tasks.types";
+import { tasksKeys } from "./query-keys";
 import { useTaskQueryErrorToast } from "./task-error";
 
-export const useTasks = (
+export const useActiveTasks = (
   params: TaskListParams,
   options?: { enabled?: boolean },
 ) => {
   const query = useQuery({
-    queryKey: ["tasks", params],
-    queryFn: () => fetchTasks(params),
+    queryKey: tasksKeys.active(params),
+    queryFn: () => fetchActiveTasks(params),
+    placeholderData: (prev) => prev,
+    ...options,
+  });
+
+  useTaskQueryErrorToast(query.error, "Failed to load tasks.");
+  return query;
+};
+
+export const useInactiveTasks = (
+  params: TaskListParams,
+  options?: { enabled?: boolean },
+) => {
+  const query = useQuery({
+    queryKey: tasksKeys.inactive(params),
+    queryFn: () => fetchInactiveTasks(params),
     placeholderData: (prev) => prev,
     ...options,
   });
@@ -67,7 +84,7 @@ export const useCreateTask = () => {
   return useMutation({
     mutationFn: createTask,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"], exact: false });
+      queryClient.invalidateQueries({ queryKey: tasksKeys.all, exact: false });
       queryClient.invalidateQueries({
         queryKey: ["public-tasks"],
         exact: false,
@@ -93,7 +110,7 @@ export const useUpdateTask = () => {
       data: Partial<TaskCreateRequest>;
     }) => updateTask(id, data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"], exact: false });
+      queryClient.invalidateQueries({ queryKey: tasksKeys.all, exact: false });
       queryClient.invalidateQueries({
         queryKey: ["public-tasks"],
         exact: false,
@@ -117,7 +134,7 @@ export const useDeleteTask = () => {
   return useMutation({
     mutationFn: deleteTask,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"], exact: false });
+      queryClient.invalidateQueries({ queryKey: tasksKeys.all, exact: false });
       queryClient.invalidateQueries({
         queryKey: ["public-tasks"],
         exact: false,
@@ -137,7 +154,7 @@ export const useImportTasks = () => {
   return useMutation({
     mutationFn: importTasks,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"], exact: false });
+      queryClient.invalidateQueries({ queryKey: tasksKeys.all, exact: false });
       queryClient.invalidateQueries({
         queryKey: ["public-tasks"],
         exact: false,
@@ -163,28 +180,8 @@ export const useTaskReferences = (options?: { enabled?: boolean }) => {
   return query;
 };
 
-export const useDownloadTasksCsv = () => {
-  return useMutation({
-    mutationFn: downloadTasksCsv,
-    onError: (error) => {
-      toast.error(
-        getApiResponseError(error, {
-          fallback: "Failed to download tasks CSV.",
-        }),
-      );
-    },
-  });
-};
+export const useDownloadTasksCsv = () =>
+  useCsvDownload(endpoints.admin.tasks.csv, "tasks.csv");
 
-export const useDownloadTasksTemplate = () => {
-  return useMutation({
-    mutationFn: downloadTasksTemplate,
-    onError: (error) => {
-      toast.error(
-        getApiResponseError(error, {
-          fallback: "Failed to download task template.",
-        }),
-      );
-    },
-  });
-};
+export const useDownloadTasksTemplate = () =>
+  useCsvDownload(endpoints.admin.tasks.template, "tasks_template.xlsx");

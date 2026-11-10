@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, MessageSquareWarning, XCircle } from "lucide-react";
 import { useState } from "react";
 import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
@@ -16,8 +16,26 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { usePendingTasks } from "../../hooks";
-import type { TaskVerificationItem } from "../../schemas";
+import type {
+  TaskApprovalStatus,
+  TaskReviewAction,
+  TaskVerificationItem,
+} from "../../schemas";
 import { TaskReviewDialog } from "./task-review-dialog";
+
+const STATUS_COLORS: Record<TaskApprovalStatus, string> = {
+  pending: "text-warning bg-warning/10 border-warning/20",
+  approved: "text-success bg-success/10 border-success/20",
+  rejected: "text-destructive bg-destructive/10 border-destructive/20",
+  changes_requested: "text-warning bg-warning/10 border-warning/20",
+};
+
+const STATUS_LABELS: Record<TaskApprovalStatus, string> = {
+  pending: "Pending",
+  approved: "Approved",
+  rejected: "Rejected",
+  changes_requested: "Changes requested",
+};
 
 const COLUMN_ORDER = [
   { column: "title", Label: "Title", isSortable: true },
@@ -35,7 +53,7 @@ export function TaskVerificationTable({
   status,
   source,
 }: {
-  status: "pending" | "approved" | "rejected";
+  status: TaskApprovalStatus;
   source?: "mentor" | "company";
 }) {
   const [search, setSearch] = useState("");
@@ -44,7 +62,7 @@ export function TaskVerificationTable({
   const [sort, setSort] = useState("");
   const [reviewState, setReviewState] = useState<{
     task: TaskVerificationItem;
-    action: "approve" | "reject";
+    action: TaskReviewAction;
   } | null>(null);
 
   const { data, isLoading } = usePendingTasks({
@@ -169,6 +187,7 @@ export function TaskVerificationTable({
                         setReviewState({ task: item, action: "approve" })
                       }
                       disabled={!isPending}
+                      aria-label="Approve task"
                     >
                       <CheckCircle className="h-4 w-4" />
                     </Button>
@@ -185,11 +204,35 @@ export function TaskVerificationTable({
                     <Button
                       variant="ghost"
                       size="icon"
+                      className="h-8 w-8 text-warning hover:bg-warning/10"
+                      onClick={() =>
+                        setReviewState({
+                          task: item,
+                          action: "request_changes",
+                        })
+                      }
+                      disabled={!isPending}
+                      aria-label="Request changes"
+                    >
+                      <MessageSquareWarning className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-card text-foreground border border-border">
+                    Request Changes
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className="h-8 w-8 text-destructive hover:bg-destructive/10"
                       onClick={() =>
                         setReviewState({ task: item, action: "reject" })
                       }
                       disabled={!isPending}
+                      aria-label="Reject task"
                     >
                       <XCircle className="h-4 w-4" />
                     </Button>
@@ -205,18 +248,12 @@ export function TaskVerificationTable({
             const item = filteredTasks.find((t) => t.id === String(row.id));
             if (!item) return null;
             if (column === "approval_status") {
-              const statusColors = {
-                pending: "text-warning bg-warning/10 border-warning/20",
-                approved: "text-success bg-success/10 border-success/20",
-                rejected:
-                  "text-destructive bg-destructive/10 border-destructive/20",
-              };
               return (
                 <Badge
                   variant="outline"
-                  className={`capitalize px-2 py-0.5 font-medium border ${statusColors[item.approval_status]}`}
+                  className={`px-2 py-0.5 font-medium border ${STATUS_COLORS[item.approval_status]}`}
                 >
-                  {item.approval_status}
+                  {STATUS_LABELS[item.approval_status]}
                 </Badge>
               );
             }

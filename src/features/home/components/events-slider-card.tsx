@@ -88,6 +88,8 @@ export function EventsSliderCard() {
             src={event.cover_image ?? "/images/fallback.webp"}
             alt={event.title}
             fill
+            sizes="(min-width: 1024px) 800px, 100vw"
+            quality={90}
             className="object-cover"
             priority={slideIndex === 0}
           />

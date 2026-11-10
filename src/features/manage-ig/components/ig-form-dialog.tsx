@@ -49,7 +49,7 @@ const IG_WIZARD_STEPS = [
   "Basic Info",
   "About & Learning",
   "Team & Schedule",
-  "Community Partners",
+  // "Community Partners",
   "Review",
 ] as const;
 
@@ -902,7 +902,7 @@ export function InterestGroupFormDialog({
               ) : null}
 
               {/* Step 4: Community Partners */}
-              {currentStep === 4 ? (
+              {/* {currentStep === 4 ? (
                 <section className="space-y-6">
                   <h3 className="text-base font-semibold text-foreground">
                     Community Partners
@@ -911,7 +911,6 @@ export function InterestGroupFormDialog({
                     Manage community partners linked to this interest group.
                   </p>
 
-                  {/* Add new partner */}
                   <div className="rounded-xl border border-dashed border-primary/40 bg-primary/5 p-4 space-y-3">
                     <p className="text-xs font-semibold text-primary">
                       New Partner
@@ -1016,7 +1015,6 @@ export function InterestGroupFormDialog({
                     </Button>
                   </div>
 
-                  {/* Partners list */}
                   {partnersLoading && (
                     <p className="text-xs text-muted-foreground">
                       Loading partners…
@@ -1243,10 +1241,10 @@ export function InterestGroupFormDialog({
                     )}
                   </div>
                 </section>
-              ) : null}
+              ) : null} */}
 
-              {/* Step 5: Review */}
-              {currentStep === 5 ? (
+              {/* Step 4: Review */}
+              {currentStep === 4 ? (
                 <section className="space-y-6">
                   <h3 className="text-base font-semibold text-foreground">
                     Review your interest group

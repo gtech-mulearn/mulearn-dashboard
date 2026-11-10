@@ -28,7 +28,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
               Community
             </h1>
             <p className="text-lg text-primary-foreground max-w-md">
-              Join the fastest growing tech community.
+              Join our fastest growing community.
             </p>
           </div>
         </div>

@@ -11,6 +11,7 @@ export interface KarmaVoucher {
   karma: number;
   claimed: boolean;
   task?: string | null;
+  hashtag?: string | null;
   week?: string | null;
   month?: string | null;
   updated_by?: string | null;
@@ -20,14 +21,32 @@ export interface KarmaVoucher {
   muid?: string | null;
 }
 
-export interface ImportResult {
+export interface ImportSuccessRow {
+  muid?: string | null;
   code: string;
-  message: string;
+  user?: string | null;
+  task?: string | null;
+  karma?: number | string | null;
+  month?: string | null;
+  week?: string | null;
+  description?: string | null;
+  event?: string | null;
+}
+
+export interface ImportFailureRow {
+  muid?: string | null;
+  karma?: number | string | null;
+  hashtag?: string | null;
+  month?: string | null;
+  week?: string | null;
+  description?: string | null;
+  event?: string | null;
+  error: string;
 }
 
 export interface BulkImportResponse {
-  Success: ImportResult[];
-  Failed: ImportResult[];
+  Success: ImportSuccessRow[];
+  Failed: ImportFailureRow[];
 }
 
 export interface PaginatedData<T> {
@@ -42,3 +61,25 @@ export interface PaginatedData<T> {
 }
 
 export interface KarmaVoucherListData extends PaginatedData<KarmaVoucher> {}
+
+export interface CreateVoucherPayload {
+  user: string;
+  task: string;
+  karma: number;
+  month: string;
+  week: string;
+}
+
+export interface CreateVoucherResponse {
+  user: string;
+  task: string;
+  karma: number | string;
+  month: string;
+  week: string;
+}
+
+export interface UpdateVoucherPayload {
+  id: string;
+  hashtag: string;
+  new_karma: number;
+}

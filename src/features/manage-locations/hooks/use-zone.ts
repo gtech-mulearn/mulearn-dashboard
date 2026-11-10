@@ -37,6 +37,7 @@ export const useAddZone = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["zones"] });
       queryClient.invalidateQueries({ queryKey: ["zone-dropdown"] });
+      toast.success("Zone added successfully");
     },
     onError: (error) => {
       toast.error(
@@ -54,6 +55,7 @@ export const useUpdateZone = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["zones"] });
       queryClient.invalidateQueries({ queryKey: ["zone-dropdown"] });
+      toast.success("Zone updated successfully");
     },
     onError: (error) => {
       toast.error(
@@ -71,6 +73,7 @@ export const useDeleteZone = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["zones"] });
       queryClient.invalidateQueries({ queryKey: ["zone-dropdown"] });
+      toast.success("Zone deleted successfully");
     },
     onError: (error) => {
       toast.error(

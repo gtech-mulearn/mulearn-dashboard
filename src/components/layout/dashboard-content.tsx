@@ -26,14 +26,14 @@ export function DashboardContent({ children }: DashboardContentProps) {
     <main
       className={cn(
         "min-h-screen w-full overflow-x-hidden transition-[padding-left] duration-200 ease-linear",
-        "pt-20 pl-4 pr-4 pb-4",
+        "pt-20 pl-2 pr-2 pb-4",
         // The sidebar becomes a fixed rail at md (768px+), so the content must
         // offset from md — not lg — otherwise tablets (768–1023px) render the
         // content underneath the sidebar (left edge cropped).
         isSidebarExpanded ? "md:pl-62" : "md:pl-14",
       )}
     >
-      <div className="bg-background rounded-2xl shadow-sm p-4 min-h-[calc(100vh-6rem)]">
+      <div className="bg-background rounded-2xl shadow-sm p-2 md:p-3 min-h-[calc(100vh-6rem)]">
         {children}
         <ConnectAccountsBanner />
       </div>

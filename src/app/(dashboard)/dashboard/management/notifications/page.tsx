@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { NotificationManageCard } from "@/features/notification/components/manage/notification-manage-card";
-import { ROLES } from "@/lib/auth/roles";
+import { ADMIN_ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function NotificationsManagePage() {
-  await requireRole([ROLES.ADMIN]);
+  await requireRole(ADMIN_ROLES);
   return (
     <div className="space-y-6">
       <div>

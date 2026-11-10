@@ -2,6 +2,7 @@
 
 import { FileText, Upload, X } from "lucide-react";
 import * as React from "react";
+import { toast } from "sonner";
 
 interface FileUploadProps {
   value: File | null;
@@ -24,7 +25,10 @@ export function FileUpload({
   const [isDragging, setIsDragging] = React.useState(false);
 
   const handleFile = (file: File) => {
-    if (file.size > maxSizeMB * 1024 * 1024) return;
+    if (file.size > maxSizeMB * 1024 * 1024) {
+      toast.error(`File size exceeds ${maxSizeMB}MB limit`);
+      return;
+    }
     onChange(file);
   };
 

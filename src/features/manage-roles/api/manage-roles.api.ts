@@ -4,6 +4,7 @@ import {
   BulkImportResponseSchema,
   type BulkImportResult,
   GenericMutationResponseSchema,
+  type Pagination,
   type Role,
   type RoleFormValues,
   type RoleListData,
@@ -142,12 +143,36 @@ export async function removeUserRole(payload: {
 
 // ─── Bulk assign / remove ─────────────────────────────────────────────────────
 
-export async function fetchBulkRoleUsers(roleId: string): Promise<RoleUser[]> {
+export interface FetchBulkRoleUsersParams {
+  pageIndex: number;
+  perPage: number;
+  search?: string;
+}
+
+export interface BulkRoleUsersPage {
+  users: RoleUser[];
+  pagination?: Pagination;
+}
+
+export async function fetchBulkRoleUsers(
+  roleId: string,
+  params: FetchBulkRoleUsersParams,
+): Promise<BulkRoleUsersPage> {
+  const query = new URLSearchParams({
+    pageIndex: String(params.pageIndex),
+    perPage: String(params.perPage),
+  });
+  if (params.search?.trim()) query.set("search", params.search.trim());
+
   const response = await apiClient.get(
-    endpoints.manageRoles.bulkAssign(roleId),
+    `${endpoints.manageRoles.bulkAssign(roleId)}?${query}`,
     RoleUserFlexibleResponseSchema,
   );
-  return extractUserArray(response.response);
+  const data = response.response;
+  return {
+    users: extractUserArray(data),
+    pagination: Array.isArray(data) ? undefined : data.pagination,
+  };
 }
 
 export async function fetchUsersWithoutRole(

@@ -25,13 +25,16 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { useEventTemplates } from "@/features/company-jobs/hooks/use-company-templates";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { usePermissions } from "@/hooks/use-permissions";
 import { eventsApi } from "../api";
 import {
   EVENT_BANNER_IMAGE_ASPECT,
+  EVENT_BANNER_IMAGE_MAX_DIMENSION,
   EVENT_BANNER_IMAGE_MOBILE_PREVIEW_ASPECT,
   EVENT_COVER_IMAGE_ASPECT,
+  EVENT_COVER_IMAGE_MAX_DIMENSION,
   EVENT_CREATE_WIZARD_STEPS,
   EVENT_FORM_DEFAULT_VALUES,
   EVENT_SCOPE_OPTIONS,
@@ -45,6 +48,7 @@ import {
   useIGClusters,
   useOrganizerOptions,
 } from "../hooks";
+import { applyEventTemplate } from "../lib/apply-event-template";
 import { getAllowedScopes } from "../lib/events.policy";
 import { type CreateEventSchema, createEventSchema } from "../schemas";
 import type {
@@ -58,6 +62,26 @@ import { VenueSection } from "./venue-section";
 const MAX_WIZARD_UPLOAD_BYTES = 900 * 1024;
 const MAX_SINGLE_IMAGE_BYTES = 450 * 1024;
 const MAX_IMAGE_DIMENSION = 1600;
+
+/** What actually happened, per the status the publish endpoint returned.
+ *  An event whose dates have passed is recorded rather than published, and
+ *  one that needs a reviewer is submitted rather than live. */
+function describePublishOutcome(status: string | undefined): string {
+  switch (status) {
+    case "completed":
+      return "Past event recorded";
+    case "ongoing":
+      return "Event published — it's happening now";
+    case "pending_campus_approval":
+      return "Event sent to your campus lead for approval";
+    case "pending_mentor_approval":
+      return "Event sent to your mentor for approval";
+    case "pending_approval":
+      return "Event submitted for approval";
+    default:
+      return "Event published";
+  }
+}
 
 function formatReviewEnum(value: unknown): string {
   if (typeof value !== "string") return "Not set";
@@ -349,6 +373,26 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
     return list;
   }, [organizerOptionsQuery.data, can]);
 
+  // Company organisers can start from one of their saved event templates.
+  const canUseTemplates = organizerOptions.some((o) => o.type === "company");
+  const { data: eventTemplates = [] } = useEventTemplates(
+    open && canUseTemplates,
+  );
+  const [templateId, setTemplateId] = useState("");
+  const applyTemplate = (id: string) => {
+    setTemplateId(id);
+    const template = eventTemplates.find((t) => t.id === id);
+    if (!template) return;
+    const values = applyEventTemplate(template, new Date());
+    for (const [field, value] of Object.entries(values)) {
+      setValue(field as keyof CreateEventSchema, value as never, {
+        shouldDirty: true,
+        shouldValidate: false,
+      });
+    }
+    toast.success(`Started from "${template.title}". Review and adjust.`);
+  };
+
   const selectedOrganiser = organizerOptions.find(
     (item) => `${item.type}:${item.id}` === selectedOrganiserId,
   );
@@ -595,6 +639,12 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
       return trigger(fields);
     }
 
+    if (stepIndex === 5) {
+      // Registration URL had no validation at all: a link without a scheme
+      // passed straight through to the API and saved as a dead relative link.
+      return trigger(["registration_url"]);
+    }
+
     return true;
   };
 
@@ -720,12 +770,16 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
       const created = await createEvent.mutateAsync(requestBody as never);
       createdEventId = created.id;
 
+      let publishedStatus: string | undefined;
       if (action === "publish") {
-        await eventsApi.publish(created.id);
+        const published = await eventsApi.publish(created.id);
+        publishedStatus = published?.status;
       }
 
       toast.success(
-        action === "publish" ? "Event published" : "Event saved as draft",
+        action === "draft"
+          ? "Event saved as draft"
+          : describePublishOutcome(publishedStatus),
       );
       resetWizard();
       onClose();
@@ -848,6 +902,37 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
             <div className="mx-auto w-full max-w-5xl">
               {currentStep === 1 ? (
                 <section className="space-y-6">
+                  {canUseTemplates && eventTemplates.length > 0 && (
+                    <div className="space-y-1">
+                      <label
+                        htmlFor="event-template"
+                        className="text-sm font-medium text-foreground"
+                      >
+                        Start from template{" "}
+                        <span className="font-normal text-muted-foreground">
+                          (optional)
+                        </span>
+                      </label>
+                      <select
+                        id="event-template"
+                        className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm"
+                        value={templateId}
+                        onChange={(e) => applyTemplate(e.target.value)}
+                      >
+                        <option value="">Choose a saved template</option>
+                        {eventTemplates.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.title}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-muted-foreground">
+                        Fills the title, description, type and duration. You can
+                        change anything afterwards.
+                      </p>
+                    </div>
+                  )}
+
                   <div className="space-y-1">
                     <p className="text-sm font-medium text-foreground">
                       Title <span className="text-destructive">*</span>
@@ -1289,6 +1374,24 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       />
                     )
                   ) : null}
+
+                  {/* The schema raises the missing-target issue against these
+                      paths. Without them Next silently did nothing. */}
+                  {errors.target_campus_id?.message ? (
+                    <p className="text-xs text-destructive">
+                      {errors.target_campus_id.message}
+                    </p>
+                  ) : null}
+                  {errors.target_ig_id?.message ? (
+                    <p className="text-xs text-destructive">
+                      {errors.target_ig_id.message}
+                    </p>
+                  ) : null}
+                  {errors.target_campus_ig_id?.message ? (
+                    <p className="text-xs text-destructive">
+                      {errors.target_campus_ig_id.message}
+                    </p>
+                  ) : null}
                 </section>
               ) : null}
 
@@ -1363,6 +1466,8 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                         value={coverImageFile}
                         onChange={setCoverImageFile}
                         aspectRatio={EVENT_COVER_IMAGE_ASPECT}
+                        outputMaxDimension={EVENT_COVER_IMAGE_MAX_DIMENSION}
+                        hint="Instagram post size — 1080x1350 (4:5)"
                       />
                     </div>
                     <div className="space-y-2">
@@ -1373,7 +1478,9 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                         value={bannerImageFile}
                         onChange={setBannerImageFile}
                         aspectRatio={EVENT_BANNER_IMAGE_ASPECT}
+                        outputMaxDimension={EVENT_BANNER_IMAGE_MAX_DIMENSION}
                         previewAspect={EVENT_BANNER_IMAGE_MOBILE_PREVIEW_ASPECT}
+                        hint="LinkedIn banner size — 1584x396 (4:1)"
                       />
                     </div>
                   </div>
@@ -1391,7 +1498,20 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       <p className="text-sm font-medium text-foreground">
                         Registration URL
                       </p>
-                      <Input {...register("registration_url")} />
+                      <Input
+                        placeholder="https://example.com/register"
+                        {...register("registration_url")}
+                      />
+                      {errors.registration_url?.message ? (
+                        <p className="text-xs text-destructive">
+                          {errors.registration_url.message}
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">
+                          Include https:// at the start, or the link will not
+                          open.
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm font-medium text-foreground">

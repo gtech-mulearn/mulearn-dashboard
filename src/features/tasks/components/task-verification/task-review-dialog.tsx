@@ -22,16 +22,47 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { useReviewTask } from "../../hooks";
-import type { TaskVerificationItem } from "../../schemas";
+import type { TaskReviewAction, TaskVerificationItem } from "../../schemas";
 
-const RejectSchema = z.object({
-  reason: z.string().min(1, "Rejection reason is required"),
+const ReasonSchema = z.object({
+  reason: z.string().trim().min(1, "Add a reason so the requester knows why."),
 });
-type RejectValues = z.infer<typeof RejectSchema>;
+
+type ReasonValues = z.infer<typeof ReasonSchema>;
+
+const COPY: Record<
+  Exclude<TaskReviewAction, "approve">,
+  {
+    title: string;
+    description: string;
+    label: string;
+    placeholder: string;
+    submit: string;
+    pending: string;
+  }
+> = {
+  reject: {
+    title: "Reject Task",
+    description: "Specify the reason for rejecting this task application.",
+    label: "Rejection Reason",
+    placeholder: "Explain why this task is being rejected…",
+    submit: "Reject Task",
+    pending: "Rejecting…",
+  },
+  request_changes: {
+    title: "Request Changes",
+    description:
+      "Send the task back with what needs to change. It leaves the pending queue until the requester updates it.",
+    label: "Requested Changes",
+    placeholder: "e.g. Lower the karma to 200 and add submission criteria…",
+    submit: "Request Changes",
+    pending: "Sending…",
+  },
+};
 
 interface TaskReviewDialogProps {
   task: TaskVerificationItem | null;
-  action: "approve" | "reject";
+  action: TaskReviewAction;
   open: boolean;
   onOpenChange: (v: boolean) => void;
 }
@@ -44,12 +75,12 @@ export function TaskReviewDialog({
 }: TaskReviewDialogProps) {
   const { mutate: review, isPending } = useReviewTask();
 
-  const rejectForm = useForm<RejectValues>({
-    resolver: zodResolver(RejectSchema),
+  const reasonForm = useForm<ReasonValues>({
+    resolver: zodResolver(ReasonSchema),
     defaultValues: { reason: "" },
   });
 
-  const isApprove = action === "approve";
+  const copy = action === "approve" ? null : COPY[action];
 
   function onApproveSubmit() {
     if (!task) return;
@@ -62,17 +93,19 @@ export function TaskReviewDialog({
     );
   }
 
-  function onRejectSubmit(values: RejectValues) {
-    if (!task) return;
+  function onReasonSubmit(values: ReasonValues) {
+    if (!task || action === "approve") return;
     review(
       {
         taskId: task.id,
-        data: {
-          action: "reject",
-          reason: values.reason,
+        data: { action, reason: values.reason.trim() },
+      },
+      {
+        onSuccess: () => {
+          reasonForm.reset();
+          onOpenChange(false);
         },
       },
-      { onSuccess: () => onOpenChange(false) },
     );
   }
 
@@ -81,12 +114,12 @@ export function TaskReviewDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col bg-card text-foreground border border-border">
         <DialogHeader>
           <DialogTitle className="text-lg font-bold">
-            {isApprove ? "Approve Task" : "Reject Task"}
+            {copy ? copy.title : "Approve Task"}
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            {isApprove
-              ? "Are you sure you want to approve this task? This will make the task live."
-              : "Specify the reason for rejecting this task application."}
+            {copy
+              ? copy.description
+              : "Are you sure you want to approve this task? This will make the task live."}
           </DialogDescription>
         </DialogHeader>
 
@@ -141,41 +174,24 @@ export function TaskReviewDialog({
           </div>
         )}
 
-        {isApprove ? (
-          <div className="flex justify-end gap-2 pt-2 border-t border-border">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              onClick={onApproveSubmit}
-              disabled={isPending}
-            >
-              {isPending ? "Approving…" : "Approve & Publish"}
-            </Button>
-          </div>
-        ) : (
-          <Form {...rejectForm}>
+        {copy ? (
+          <Form {...reasonForm}>
             <form
-              onSubmit={rejectForm.handleSubmit(onRejectSubmit)}
+              onSubmit={reasonForm.handleSubmit(onReasonSubmit)}
               className="space-y-4 pt-2 border-t border-border"
             >
               <FormField
-                control={rejectForm.control}
+                control={reasonForm.control}
                 name="reason"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm font-medium text-foreground">
-                      Rejection Reason
+                      {copy.label}
                     </FormLabel>
                     <FormControl>
                       <Textarea
                         rows={3}
-                        placeholder="Explain why this task is being rejected…"
+                        placeholder={copy.placeholder}
                         className="bg-background border-border text-foreground focus-visible:ring-ring"
                         {...field}
                       />
@@ -194,14 +210,31 @@ export function TaskReviewDialog({
                 </Button>
                 <Button
                   type="submit"
-                  variant="destructive"
+                  variant={action === "reject" ? "destructive" : "default"}
                   disabled={isPending}
                 >
-                  {isPending ? "Rejecting…" : "Reject Task"}
+                  {isPending ? copy.pending : copy.submit}
                 </Button>
               </div>
             </form>
           </Form>
+        ) : (
+          <div className="flex justify-end gap-2 pt-2 border-t border-border">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={onApproveSubmit}
+              disabled={isPending}
+            >
+              {isPending ? "Approving…" : "Approve & Publish"}
+            </Button>
+          </div>
         )}
       </DialogContent>
     </Dialog>

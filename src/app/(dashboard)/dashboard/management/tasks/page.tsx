@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ROLES } from "@/lib/auth/roles";
+import { ADMIN_ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
@@ -66,7 +66,7 @@ const TASK_ITEMS: TaskItem[] = [
 ];
 
 export default async function TaskHubPage() {
-  await requireRole([ROLES.ADMIN]);
+  await requireRole(ADMIN_ROLES);
 
   return (
     <div className="space-y-8 py-6">

@@ -6,6 +6,7 @@ import {
   CalendarCheck2,
   Clock,
   Loader2,
+  ShieldOff,
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
@@ -25,13 +26,16 @@ import {
   useAvailabilitySlots,
   useCreateAvailabilitySlots,
   useMentorOverview,
+  useMentorPersonalAnalytics,
 } from "@/features/mentor/hooks";
+import { isMentorDeactivatedError } from "@/features/mentor/lib/mentor-deactivated";
 import { MentorOnboardingForm } from "@/features/mentor/onboarding/components/mentor-onboarding-form";
 import {
   deriveOnboardingState,
   useMentorApplication,
   useMentorProfile,
 } from "@/features/mentor/onboarding/hooks/use-onboarding";
+import { mentorTierLabel } from "@/features/mentor/onboarding/lib/mentor-status";
 import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
 import type { WeeklySchedule } from "@/features/mentor/types";
 import { useDashboardCalendar, useMentorSessions } from "../hooks";
@@ -75,6 +79,10 @@ export function MentorHome() {
   const { data: mentorProfile, isLoading: profileLoading } = useMentorProfile(
     onboardingState === "rejected" ||
       onboardingState === "pending_verification",
+  );
+
+  const { data: personalAnalytics } = useMentorPersonalAnalytics(
+    onboardingState === "verified",
   );
 
   const {
@@ -171,6 +179,31 @@ export function MentorHome() {
     "status" in overviewError &&
     (overviewError as { status: number }).status === 403;
 
+  // A deactivated mentor gets a specific 403; don't send them to setup.
+  if (
+    isMentorDeactivatedError(overviewError) ||
+    isMentorDeactivatedError(appError)
+  ) {
+    return (
+      <div className="mx-auto max-w-2xl py-8">
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3"
+        >
+          <ShieldOff className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+          <div>
+            <p className="text-sm font-semibold text-destructive">
+              Your mentor account is deactivated. Contact an administrator.
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              You can keep using muLearn as a learner in the meantime.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (is403) {
     return <MentorSetupPrompt />;
   }
@@ -255,10 +288,12 @@ export function MentorHome() {
             existing={
               {
                 ...(mentorProfile || {}),
+                // Edit the PENDING application; the profile's own `id` may be
+                // an approved application, which the backend refuses to edit.
                 id:
-                  mentorProfile?.id ??
+                  application?.pendingApplication?.id ??
                   application?.id ??
-                  application?.mentor_id ??
+                  mentorProfile?.id ??
                   "",
               } as MentorApplication
             }
@@ -316,7 +351,9 @@ export function MentorHome() {
     {
       key: "volunteer_hours",
       label: "Hours Mentored",
-      value: mentorProfile?.hours ?? 0,
+      // Logged session time from the backend (hours, 2 dp). `profile.hours`
+      // is the mentor's weekly-availability range, not time mentored.
+      value: Math.round((personalAnalytics?.hours_contributed ?? 0) * 10) / 10,
       delta: 0,
       delta_type: "neutral" as const,
       period: "all_time",
@@ -376,6 +413,20 @@ export function MentorHome() {
         nextSession={nextSessionForHero}
         isVerified={isVerified}
       />
+
+      {application?.pendingApplication && (
+        <div
+          role="status"
+          className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-400"
+        >
+          <Clock className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <p>
+            Your {mentorTierLabel(application.pendingApplication.mentor_tier)}{" "}
+            request is pending review. Your current mentor access stays active
+            until it&apos;s decided.
+          </p>
+        </div>
+      )}
 
       <MentorStatCards
         statCards={statCards}

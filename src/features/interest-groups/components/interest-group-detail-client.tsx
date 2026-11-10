@@ -32,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { IGIcon, useInterestGroupDetail } from "@/features/interest-groups";
+import { IgImpactProjects, IgSponsorChip } from "./ig-sponsor-and-projects";
 import { PersonCard } from "./person-card";
 
 export function InterestGroupDetailClient() {
@@ -162,6 +163,11 @@ export function InterestGroupDetailClient() {
                   {group.code}
                 </div>
               )}
+              <IgSponsorChip
+                isSponsored={group.is_sponsored}
+                name={group.sponsor_company_name}
+                logo={group.sponsor_company_logo}
+              />
             </div>
 
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold tracking-tight text-primary-foreground">
@@ -548,8 +554,8 @@ export function InterestGroupDetailClient() {
               </div>
             )}
 
-            {/* Community Partners */}
-            {group.community_partners &&
+            {/* ── Community Partners ── */}
+            {/*   {group.community_partners &&
               group.community_partners.length > 0 && (
                 <div className="overflow-hidden rounded-3xl border border-border/50 bg-card shadow-sm">
                   <div className="border-b border-border/50 bg-muted/30 px-4 sm:px-6 py-3 sm:py-4">
@@ -664,7 +670,7 @@ export function InterestGroupDetailClient() {
                     })}
                   </div>
                 </div>
-              )}
+              )} */}
 
             {/* Support / Help Box */}
             <div className="rounded-3xl bg-linear-to-br from-muted/50 to-muted/10 p-4 sm:p-6 border border-border/50 text-center">
@@ -674,8 +680,8 @@ export function InterestGroupDetailClient() {
               </p>
             </div>
 
-            {/* TODO: Impact Projects disabled — backend conflict */}
-            {/* <ImpactProjectsSection igId={group.id} /> */}
+            {/* Release 1.91: impact projects ship with the IG detail. */}
+            <IgImpactProjects projects={group.impact_projects ?? []} />
           </div>
         </div>
       </div>

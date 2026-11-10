@@ -1,18 +1,17 @@
 import {
-  Briefcase,
   CalendarCheck,
   ChevronLeft,
   ChevronRight,
   ClipboardCheck,
-  GraduationCap,
   type LucideIcon,
   ShieldCheck,
-  UserCheck,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ROLES } from "@/lib/auth/roles";
-import { requireRole } from "@/lib/auth/server";
+import { redirect } from "next/navigation";
+import { hasAnyRole } from "@/lib/auth/permissions";
+import { ADMIN_ROLES } from "@/lib/auth/roles";
+import { requireAuth } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
   title: "Verification Portal | Management",
@@ -25,15 +24,19 @@ interface VerificationItem {
   href: string;
   icon: LucideIcon;
   iconBg: string;
+  roles: readonly string[];
 }
 
 const VERIFICATION_ITEMS: VerificationItem[] = [
   {
+    // One card for the unified page: its Mentor / Enabler / College /
+    // Company tabs replaced four separate verification pages.
     title: "Role Verification",
-    description: "Verify and assign roles to users.",
+    description: "Review mentor, enabler, organization and company requests.",
     href: "/dashboard/management/role-verification",
     icon: ShieldCheck,
     iconBg: "bg-warning/15 text-warning",
+    roles: ADMIN_ROLES,
   },
   {
     title: "Session Verification",
@@ -41,6 +44,7 @@ const VERIFICATION_ITEMS: VerificationItem[] = [
     href: "/dashboard/management/session-verification",
     icon: CalendarCheck,
     iconBg: "bg-success/15 text-success",
+    roles: ADMIN_ROLES,
   },
   {
     title: "Task Verification",
@@ -48,32 +52,20 @@ const VERIFICATION_ITEMS: VerificationItem[] = [
     href: "/dashboard/management/tasks/task-verification",
     icon: ClipboardCheck,
     iconBg: "bg-brand-blue/15 text-brand-blue",
-  },
-  {
-    title: "Organization Verification",
-    description: "Verify legitimacy of registered organizations.",
-    href: "/dashboard/management/organizations/verify",
-    icon: GraduationCap,
-    iconBg: "bg-brand-purple/15 text-brand-purple",
-  },
-  {
-    title: "Company Verification",
-    description: "Review and verify company registration requests.",
-    href: "/dashboard/management/manage-companies",
-    icon: Briefcase,
-    iconBg: "bg-destructive/15 text-destructive",
-  },
-  {
-    title: "Mentor Verification",
-    description: "Review and verify mentor applications.",
-    href: "/dashboard/management/mentor-verification",
-    icon: UserCheck,
-    iconBg: "bg-slate-500/15 text-slate-600 dark:text-slate-400",
+    roles: ADMIN_ROLES,
   },
 ];
 
 export default async function VerificationPortalPage() {
-  await requireRole([ROLES.ADMIN]);
+  const user = await requireAuth();
+
+  const visibleItems = VERIFICATION_ITEMS.filter((item) =>
+    hasAnyRole(user.roles, item.roles),
+  );
+
+  if (visibleItems.length === 0) {
+    redirect("/dashboard/management?unauthorized=true");
+  }
 
   return (
     <div className="space-y-8 py-6">
@@ -98,7 +90,7 @@ export default async function VerificationPortalPage() {
 
       {/* Grid of Sub-Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {VERIFICATION_ITEMS.map((card) => (
+        {visibleItems.map((card) => (
           <Link
             key={card.href}
             href={card.href}

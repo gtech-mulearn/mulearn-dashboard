@@ -7,10 +7,7 @@
  * Matches old codebase card-based layout.
  */
 
-"use client";
-
 import { Flame } from "lucide-react";
-import { useState } from "react";
 import Loader from "@/app/loading";
 import type { UserLogData } from "../schemas";
 
@@ -38,8 +35,6 @@ function formatRelativeTime(dateString: string): string {
 }
 
 export function KarmaHistory({ userLog, isLoading }: KarmaHistoryProps) {
-  const [hideChatKarma, setHideChatKarma] = useState(false);
-
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -59,29 +54,11 @@ export function KarmaHistory({ userLog, isLoading }: KarmaHistoryProps) {
     );
   }
 
-  // Filter chat karma if toggle is on
-  const filteredLog = hideChatKarma
-    ? userLog.filter((log) => log.task_name !== "Chat Karma")
-    : userLog;
-
   return (
     <div className="rounded-2xl bg-card p-4 shadow-sm sm:p-6">
-      {/* Header with toggle */}
-      <div className="mb-4 flex items-center justify-end gap-4">
-        <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-          Hide daily chat karma
-          <input
-            type="checkbox"
-            checked={hideChatKarma}
-            onChange={(e) => setHideChatKarma(e.target.checked)}
-            className="h-4 w-4 rounded border-input text-primary focus:ring-ring"
-          />
-        </label>
-      </div>
-
       {/* Card Grid */}
       <div className="grid max-h-[450px] gap-5 overflow-y-auto sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {filteredLog.map((entry) => (
+        {userLog.map((entry) => (
           <div
             key={`${entry.task_name}-${entry.created_date}`}
             className="relative min-h-[220px] overflow-hidden rounded-xl border border-primary/20 bg-linear-to-br from-primary/5 to-primary/10 p-5 shadow-sm transition-shadow hover:shadow-md"

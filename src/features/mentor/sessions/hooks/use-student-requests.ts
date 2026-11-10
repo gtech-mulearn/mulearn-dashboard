@@ -80,6 +80,13 @@ export function useVerifyStudentRequest() {
       // §10.4: approving reassigns the session to the approving mentor —
       // refresh their own session list so it appears without a reload.
       queryClient.invalidateQueries({ queryKey: mentorKeys.sessions.all });
+      queryClient.invalidateQueries({ queryKey: STUDENT_REQUESTS_KEYS.my() });
+      queryClient.invalidateQueries({
+        queryKey: mentorKeys.sessions.available({}),
+      });
+      queryClient.invalidateQueries({
+        queryKey: mentorKeys.sessions.participantHistory({}),
+      });
     },
     onError: (error: unknown) => {
       toast.error(

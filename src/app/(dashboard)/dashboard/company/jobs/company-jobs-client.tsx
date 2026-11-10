@@ -10,17 +10,19 @@ import {
   JobsListSkeleton,
   JobsPageHeader,
 } from "@/features/company-jobs/components";
+import { PendingJobApprovals } from "@/features/company-jobs/components/pending-job-approvals";
 import {
   JOB_SORT_DEFAULT,
   JOBS_DEFAULT_PAGE_INDEX,
   JOBS_DEFAULT_PAGE_SIZE,
 } from "@/features/company-jobs/constants";
-import { useJobs } from "@/features/company-jobs/hooks";
+import { useCompanyAccess, useJobs } from "@/features/company-jobs/hooks";
 import type { JobSortValue } from "@/features/company-jobs/types";
 import { useDebounce } from "@/hooks/use-debounce";
 
 export function CompanyJobsPageClient() {
   const router = useRouter();
+  const { can } = useCompanyAccess();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(JOBS_DEFAULT_PAGE_INDEX);
   // Newest listings first. The backend model declares no Meta.ordering, so
@@ -67,6 +69,9 @@ export function CompanyJobsPageClient() {
           sortBy={sortBy}
           onSortChange={handleSortChange}
         />
+
+        {/* Mentor-submitted jobs waiting for the owner or a co-admin */}
+        {can.approveJobs && <PendingJobApprovals onViewJob={handleViewJob} />}
 
         {/* Loading */}
         {isLoading && <JobsListSkeleton />}

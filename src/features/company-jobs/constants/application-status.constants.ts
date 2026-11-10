@@ -19,6 +19,8 @@ export const APP_STATUS_TRANSITIONS: Record<string, string[]> = {
   interview: ["selected", "rejected"],
   selected: [],
   rejected: [],
+  // The learner withdrew: the company can no longer move it.
+  withdrawn: [],
 };
 
 export const APP_STATUS_META: Record<
@@ -65,5 +67,11 @@ export const APP_STATUS_META: Record<
     backendStatus: "Rejected",
     badgeClass: "app-status-rejected",
     dotVar: "var(--destructive)",
+  },
+  withdrawn: {
+    label: "Withdrawn",
+    backendStatus: "Withdrawn",
+    badgeClass: "app-status-withdrawn",
+    dotVar: "var(--muted-foreground)",
   },
 };

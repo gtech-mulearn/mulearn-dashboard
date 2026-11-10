@@ -9,8 +9,15 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ROLES } from "@/lib/auth/roles";
-import { requireRole } from "@/lib/auth/server";
+import { redirect } from "next/navigation";
+import { hasAnyRole } from "@/lib/auth/permissions";
+import {
+  ADMIN_ROLES,
+  FELLOW_MANAGEMENT_ROLES,
+  MANAGEMENT_ROLES,
+  TECH_ROLES,
+} from "@/lib/auth/roles";
+import { requireAuth } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
   title: "System & Configurations | Management",
@@ -23,6 +30,7 @@ interface SystemItem {
   href: string;
   icon: LucideIcon;
   iconBg: string;
+  roles: readonly string[];
 }
 
 const SYSTEM_ITEMS: SystemItem[] = [
@@ -32,6 +40,7 @@ const SYSTEM_ITEMS: SystemItem[] = [
     href: "/dashboard/management/system/features",
     icon: ToggleRight,
     iconBg: "bg-emerald-500/15 text-emerald-500",
+    roles: MANAGEMENT_ROLES,
   },
   {
     title: "Karma Voucher",
@@ -39,6 +48,7 @@ const SYSTEM_ITEMS: SystemItem[] = [
     href: "/dashboard/management/karma-voucher",
     icon: Ticket,
     iconBg: "bg-warning/15 text-warning",
+    roles: FELLOW_MANAGEMENT_ROLES,
   },
   {
     title: "Error Log",
@@ -46,6 +56,7 @@ const SYSTEM_ITEMS: SystemItem[] = [
     href: "/dashboard/management/error-log",
     icon: AlertTriangle,
     iconBg: "bg-destructive/15 text-destructive",
+    roles: TECH_ROLES,
   },
   {
     title: "Dynamic Type",
@@ -53,11 +64,20 @@ const SYSTEM_ITEMS: SystemItem[] = [
     href: "/dashboard/management/dynamic-type",
     icon: Settings2,
     iconBg: "bg-brand-blue/15 text-brand-blue",
+    roles: ADMIN_ROLES,
   },
 ];
 
 export default async function SystemPage() {
-  await requireRole([ROLES.ADMIN]);
+  const user = await requireAuth();
+
+  const visibleItems = SYSTEM_ITEMS.filter((item) =>
+    hasAnyRole(user.roles, item.roles),
+  );
+
+  if (visibleItems.length === 0) {
+    redirect("/dashboard/management?unauthorized=true");
+  }
 
   return (
     <div className="space-y-8 py-6">
@@ -82,7 +102,7 @@ export default async function SystemPage() {
 
       {/* Grid of Sub-Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {SYSTEM_ITEMS.map((card) => (
+        {visibleItems.map((card) => (
           <Link
             key={card.href}
             href={card.href}

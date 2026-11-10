@@ -22,6 +22,7 @@ export {
   useCompanyEvents,
   useCreateEvent,
   useDeleteEvent,
+  useEventAnalytics,
   useEventApproval,
   useEventCategories,
   useEventCollaborators,

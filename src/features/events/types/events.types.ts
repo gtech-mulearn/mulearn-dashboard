@@ -117,6 +117,8 @@ export interface MinimalUser {
   full_name: string;
   muid: string;
   profile_pic: string | null;
+  profile_picture?: string | null;
+  avatar?: string | null;
 }
 
 export interface MinimalIG {
@@ -199,11 +201,16 @@ export interface CollaborationTarget {
 
 export interface EventCoOwner {
   id: UUID;
-  entity_id: UUID;
+  entity_id?: UUID;
   user: MinimalUser;
-  added_by: MinimalUser;
-  added_at: ISODateTime;
+  added_by?: MinimalUser;
+  added_at?: ISODateTime;
   role?: "co_owner" | "admin"; // Backward compatibility - may or may not be in API
+  full_name?: string;
+  muid?: string;
+  profile_pic?: string | null;
+  profile_picture?: string | null;
+  avatar?: string | null;
 }
 
 export interface EventCoOwnerInput {
@@ -481,11 +488,32 @@ export type CollaboratorsListData = EventCollaborator[];
 
 // ─── UI / COMPONENT PROPS ──────────────────────────────────────────────────
 
+/** GET manage/<id>/analytics/ → summary (organisers and admins). */
+export interface EventAnalyticsSummary {
+  total_interests?: number;
+  total_tasks?: number;
+  approved_tasks?: number;
+  pending_tasks?: number;
+  total_task_completions?: number;
+  total_karma_awarded?: number;
+  // Release 1.91
+  total_rsvps?: number;
+  total_attendance?: number;
+  /** Pre-formatted by the backend, e.g. "75.00%". */
+  attendance_rate?: string;
+  repeat_attendees?: number;
+  learner_satisfaction?: {
+    average_rating: number | null;
+    rating_count: number;
+  };
+}
+
 export interface EventAnalyticsPanelProps {
   interestCount: number;
   venueName: string | null;
   mapsUrl: string | null;
   mapQuery: string;
+  analytics?: EventAnalyticsSummary | null;
 }
 
 export interface EventDetailViewProps {

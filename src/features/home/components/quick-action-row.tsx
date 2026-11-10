@@ -42,7 +42,7 @@ export function QuickActionRow({
     {
       id: "projects",
       label: "Projects",
-      sub: "Explore open projects",
+      sub: "Browse and publish projects",
       href: "/dashboard/projects",
       icon: FolderKanban,
       iconBg: "bg-warning/10",

@@ -87,7 +87,7 @@ const TableTop = ({
         <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
           <div
             className={cn(
-              "relative flex-1 w-full lg:w-auto",
+              "relative min-w-0 flex-1 w-full lg:w-auto",
               searchFieldWrapperClassName,
               !CSV && "lg:flex-none",
             )}

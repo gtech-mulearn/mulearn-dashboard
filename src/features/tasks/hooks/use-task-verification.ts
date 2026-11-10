@@ -4,7 +4,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { fetchPendingTasks, reviewTask } from "../api/task-verification.api";
-import type { ReviewActionValues } from "../schemas/task-verification.schema";
+import type {
+  ReviewActionValues,
+  TaskApprovalStatus,
+} from "../schemas/task-verification.schema";
 import { useTaskQueryErrorToast } from "./task-error";
 
 const taskVerificationKeys = {
@@ -14,7 +17,7 @@ const taskVerificationKeys = {
 };
 
 interface UsePendingTasksParams {
-  approval_status?: "pending" | "approved" | "rejected";
+  approval_status?: TaskApprovalStatus;
   source?: "mentor" | "company";
   mentor_name?: string;
   company_name?: string;
@@ -61,7 +64,9 @@ export function useReviewTask() {
       toast.success(
         data.action === "approve"
           ? "Task approved and is now live."
-          : "Task application rejected.",
+          : data.action === "request_changes"
+            ? "Changes requested. The task moves to Changes requested."
+            : "Task application rejected.",
       );
     },
     onError: (error) => {

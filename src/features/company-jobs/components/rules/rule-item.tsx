@@ -7,6 +7,7 @@
 import { Award, BookOpen, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatNumericRuleValue } from "../../constants";
+import { useEligibilitySkills } from "../../hooks/use-eligibility-refs";
 import type { JobRule } from "../../types";
 
 interface RuleItemProps {
@@ -27,7 +28,7 @@ const RULE_TYPE_ICONS: Record<string, React.ElementType> = {
 };
 
 const RULE_TYPE_LABELS: Record<string, string> = {
-  skill: "Skill",
+  skill: "Required skill",
   interest_group: "Interest Group",
   achievement: "Achievement",
   min_karma: "Min Karma",
@@ -52,6 +53,12 @@ export function RuleItem({
   isDeleting,
   readOnly,
 }: RuleItemProps) {
+  // Skill rules store a skill id; show its name.
+  const isSkillRule = rule.rule_type === "skill";
+  const skills = useEligibilitySkills(isSkillRule);
+  const skillName = isSkillRule
+    ? skills.data?.find((s) => s.id === rule.rule_value)?.name
+    : undefined;
   const Icon = RULE_TYPE_ICONS[rule.rule_type] ?? Sparkles;
   const label = RULE_TYPE_LABELS[rule.rule_type] ?? rule.rule_type;
   const colorClass =
@@ -68,7 +75,9 @@ export function RuleItem({
           {label}
         </span>
         <span className="break-words text-sm font-medium text-foreground">
-          {formatNumericRuleValue(rule.rule_type, rule.rule_value)}
+          {isSkillRule
+            ? (skillName ?? (skills.isLoading ? "Loading…" : "Unknown skill"))
+            : formatNumericRuleValue(rule.rule_type, rule.rule_value)}
         </span>
       </div>
 

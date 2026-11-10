@@ -2,6 +2,8 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { mentorKeys } from "@/features/mentor/hooks/query-keys";
+import type { SessionFeedbackInput } from "@/features/mentor/sessions/lib/session-feedback";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   fetchMentees,
@@ -39,13 +41,14 @@ export function useSubmitFeedback() {
   return useMutation({
     mutationFn: ({
       sessionId,
-      feedback,
+      body,
     }: {
       sessionId: string;
-      feedback: string | null;
-    }) => submitSessionFeedback(sessionId, feedback),
+      body: SessionFeedbackInput;
+    }) => submitSessionFeedback(sessionId, body),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: menteeKeys.all });
+      void queryClient.invalidateQueries({ queryKey: mentorKeys.sessions.all });
+      void queryClient.invalidateQueries({ queryKey: menteeKeys.all });
     },
     onError: (error) => {
       toast.error(
@@ -75,7 +78,7 @@ export function useSessionParticipants(sessionId: string | null) {
   });
 }
 
-export function useUpdateParticipant(sessionId: string) {
+export function useUpdateParticipant(_sessionId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
@@ -86,15 +89,8 @@ export function useUpdateParticipant(sessionId: string) {
       data: import("../schemas").UpdateParticipantValues;
     }) => updateParticipant(linkId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: menteeKeys.sessionParticipants(sessionId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: menteeKeys.participantHistory(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: menteeKeys.list(),
-      });
+      void queryClient.invalidateQueries({ queryKey: mentorKeys.sessions.all });
+      void queryClient.invalidateQueries({ queryKey: menteeKeys.all });
     },
     onError: (error) => {
       toast.error(

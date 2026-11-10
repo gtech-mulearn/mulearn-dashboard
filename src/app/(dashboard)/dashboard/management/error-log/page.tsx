@@ -6,7 +6,7 @@
  */
 
 import { ErrorLogPage } from "@/features/error-log";
-import { ROLES } from "@/lib/auth/roles";
+import { TECH_ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 
 export const metadata = {
@@ -16,6 +16,6 @@ export const metadata = {
 };
 
 export default async function ErrorLogAdminPage() {
-  await requireRole([ROLES.ADMIN, ROLES.TECH_TEAM]);
+  await requireRole(TECH_ROLES);
   return <ErrorLogPage />;
 }

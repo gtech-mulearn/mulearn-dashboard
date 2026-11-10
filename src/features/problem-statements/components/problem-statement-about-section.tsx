@@ -1,0 +1,123 @@
+"use client";
+
+/**
+ * Problem Statement About Section
+ *
+ * 📍 src/features/problem-statements/components/problem-statement-about-section.tsx
+ *
+ * Renders the markdown description for a problem statement with an expandable
+ * "Read more" / "Read less" toggle, line-clamping (6 lines), and bottom gradient mask.
+ * Aligned with the implementation in `src/features/events/components/event-about-section.tsx`.
+ */
+
+import { FileText } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
+import { cn } from "@/lib/utils";
+
+interface ProblemStatementAboutSectionProps {
+  description: string | null | undefined;
+  title?: string;
+  className?: string;
+}
+
+export function ProblemStatementAboutSection({
+  description,
+  title = "Challenge Overview & Requirements",
+  className,
+}: ProblemStatementAboutSectionProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  const [prevDescription, setPrevDescription] = useState(description);
+  if (description !== prevDescription) {
+    setPrevDescription(description);
+    setIsExpanded(false);
+  }
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-measure overflow when description changes or expansion toggles
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+
+    const checkOverflow = () => {
+      // Only measure rendered overflow when collapsed, where line-clamp is applied
+      if (!isExpanded) {
+        setIsOverflowing(el.scrollHeight > el.clientHeight + 1);
+      }
+    };
+
+    checkOverflow();
+    const rafId = requestAnimationFrame(checkOverflow);
+
+    let prevWidth = el.clientWidth;
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const newWidth = entry.contentRect.width;
+          if (Math.abs(newWidth - prevWidth) > 1) {
+            prevWidth = newWidth;
+            checkOverflow();
+          }
+        }
+      });
+      resizeObserver.observe(el);
+    }
+
+    window.addEventListener("resize", checkOverflow);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", checkOverflow);
+    };
+  }, [description, isExpanded]);
+
+  if (!description) return null;
+
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border border-border bg-card shadow-sm",
+        className,
+      )}
+    >
+      <div className="flex items-center gap-2.5 px-5 py-4">
+        <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
+          <FileText className="size-4 text-primary" />
+        </div>
+        <h2 className="text-base font-bold text-foreground">{title}</h2>
+      </div>
+
+      <div className="relative px-5 pb-5 pt-0">
+        <div
+          ref={contentRef}
+          className={cn(
+            "markdown-body whitespace-pre-wrap break-words text-sm leading-7 text-muted-foreground [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:text-primary/80",
+            !isExpanded && "line-clamp-6",
+          )}
+        >
+          <MarkdownRenderer content={description} />
+        </div>
+
+        {isOverflowing && !isExpanded && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-5 h-16 bg-gradient-to-t from-card to-transparent" />
+        )}
+
+        {isOverflowing && (
+          <Button
+            variant="link"
+            size="sm"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="relative z-10 mt-2 px-0 text-xs font-semibold cursor-pointer"
+          >
+            {isExpanded ? "Read less" : "Read more"}
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}

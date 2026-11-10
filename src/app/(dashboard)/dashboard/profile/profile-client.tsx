@@ -286,16 +286,10 @@ export function ProfilePageClient() {
           onSwitchToMentor={
             profile?.roles.includes(ROLES.MENTOR) && isVerifiedMentor
               ? () =>
-                  switchPersonaMutation.mutate(
-                    personaCurrent?.available_scopes?.[0]
-                      ? {
-                          persona: "mentor",
-                          scope_type:
-                            personaCurrent.available_scopes[0].scope_type,
-                          scope_id: personaCurrent.available_scopes[0].scope_id,
-                        }
-                      : { persona: "mentor" },
-                  )
+                  // No scope: the backend picks the most recently granted
+                  // one. Mentors with several grants choose precisely from
+                  // the persona switcher in the top bar.
+                  switchPersonaMutation.mutate({ persona: "mentor" })
               : undefined
           }
         />
@@ -372,7 +366,7 @@ export function ProfilePageClient() {
         open={showShareProfile}
         onOpenChange={setShowShareProfile}
         muid={profile.muid}
-        isPublic={profile.is_public}
+        isPublic={profile.is_public ?? null}
       />
       <EditInterestGroupsModal
         open={showEditInterestGroups}

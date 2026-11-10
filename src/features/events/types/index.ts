@@ -9,6 +9,7 @@ export type {
   CoOwnersListData,
   EntityDetail,
   EventAnalyticsPanelProps,
+  EventAnalyticsSummary,
   EventCollaborator,
   EventCoOwner,
   EventCoOwnerInput,
