@@ -12,6 +12,9 @@ const { useCompanyAccess, usePathname } = vi.hoisted(() => ({
 }));
 vi.mock("../hooks/use-company-access", () => ({ useCompanyAccess }));
 vi.mock("next/navigation", () => ({ usePathname }));
+vi.mock("./admin/company-invitations-panel", () => ({
+  CompanyInvitationsPanel: () => <p>pending invitations</p>,
+}));
 
 import { CompanyAccessGate } from "./company-access-gate";
 
@@ -45,6 +48,8 @@ describe("CompanyAccessGate", () => {
     visit("/dashboard/company/analytics", null);
     render(<CompanyAccessGate>page</CompanyAccessGate>);
     expect(screen.getByText(NO_COMPANY)).toBeInTheDocument();
+    // Invitees can accept a pending invitation right here.
+    expect(screen.getByText("pending invitations")).toBeInTheDocument();
     expect(screen.queryByText("page")).not.toBeInTheDocument();
   });
 

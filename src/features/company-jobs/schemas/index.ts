@@ -36,7 +36,6 @@ export {
   CampusTrendResponseSchema,
   CampusTrendSchema,
   CompanyAdminLinkListResponseSchema,
-  CompanyAdminLinkResponseSchema,
   CompanyAdminLinkSchema,
   CompanyCollaborationListResponseSchema,
   CompanyCollaborationResponseSchema,
@@ -47,6 +46,8 @@ export {
   CompanyFeedbackResponseSchema,
   CompanyFeedbackSchema,
   CompanyGalleryItemSchema,
+  CompanyInvitationListResponseSchema,
+  CompanyInvitationSchema,
   CompanyProfileResponseSchema,
   CompanyProfileSchema,
   CompanyTestimonialSchema,
@@ -115,6 +116,4 @@ export {
   UpdateCompanyProfileResponseSchema,
   UpdateJobResponseSchema,
   UpdateRuleResponseSchema,
-  UserCompanyStatusResponseSchema,
-  UserCompanyStatusSchema,
 } from "./jobs.schema";

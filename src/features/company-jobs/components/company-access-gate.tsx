@@ -7,6 +7,7 @@ import {
   type CompanyCapability,
   canOpenCompanyPage,
 } from "../lib/company-access";
+import { CompanyInvitationsPanel } from "./admin/company-invitations-panel";
 import {
   CompanyForbiddenState,
   CompanyNoAccessState,
@@ -37,7 +38,7 @@ export function CompanyAccessGate({
   if (isLoading) return <CompanyPageSkeleton />;
   // Invitees land here from the invite notification: let them accept.
   if (!role) {
-    return <CompanyNoAccessState />;
+    return <CompanyNoAccessState invitations={<CompanyInvitationsPanel />} />;
   }
 
   const allowed = capability

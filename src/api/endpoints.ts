@@ -133,10 +133,10 @@ export const endpoints = {
       `/api/v1/dashboard/company/profile/public/${slug}/jobs/`,
     /** POST - Invite a platform user as co-admin */
     adminLink: "/api/v1/dashboard/company/admin-link/",
-    /** POST - Accept or reject co-admin invitation */
+    /** POST - Invitee accepts or declines a co-admin invitation */
     adminLinkRespond: (linkId: string) =>
       `/api/v1/dashboard/company/admin-link/${linkId}/respond/`,
-    /** DELETE - Owner removes an invited/accepted co-admin */
+    /** DELETE - Owner revokes an accepted co-admin (pending invites can't be cancelled) */
     adminLinkRemove: (linkId: string) =>
       `/api/v1/dashboard/company/admin-link/${linkId}/`,
     /** DELETE - Co-admin voluntarily leaves the company */
@@ -144,8 +144,8 @@ export const endpoints = {
       `/api/v1/dashboard/company/admin-link/${linkId}/leave/`,
     /** GET - List all co-admins and invitations */
     adminLinkList: "/api/v1/dashboard/company/admin-link/list/",
-    /** GET - User's company status & pending invitations */
-    userStatus: "/api/v1/dashboard/company/user-status/",
+    /** GET - The caller's pending co-admin invitations (BE-1) */
+    adminLinkInvitations: "/api/v1/dashboard/company/admin-link/invitations/",
     /** POST - Company owner self-deactivation */
     deactivateSelf: "/api/v1/dashboard/company/deactivate/",
     /** POST - Platform admin deactivates a company */

@@ -11,12 +11,12 @@ import {
   CampusAnalyticsResponseSchema,
   CampusTrendResponseSchema,
   CompanyAdminLinkListResponseSchema,
-  CompanyAdminLinkResponseSchema,
   CompanyCollaborationListResponseSchema,
   CompanyCollaborationResponseSchema,
   CompanyDashboardSummaryResponseSchema,
   CompanyFeedbackListResponseSchema,
   CompanyFeedbackResponseSchema,
+  CompanyInvitationListResponseSchema,
   CompanyProfileResponseSchema,
   CreateJobResponseSchema,
   DeleteJobResponseSchema,
@@ -45,7 +45,6 @@ import {
   UpdateApplicantStatusResponseSchema,
   UpdateCompanyProfileResponseSchema,
   UpdateJobResponseSchema,
-  UserCompanyStatusResponseSchema,
 } from "../schemas";
 import type {
   AdminSummary,
@@ -55,6 +54,7 @@ import type {
   CompanyCollaboration,
   CompanyDashboardSummary,
   CompanyFeedback,
+  CompanyInvitation,
   CompanyProfile,
   CreateJobPayload,
   CreateJobResponse,
@@ -85,7 +85,6 @@ import type {
   UpdateJobResponse,
   UpdateRulePayload,
   UpdateRuleResponse,
-  UserCompanyStatus,
 } from "../types";
 
 // ─── Company Profile (§2) ───────────────────────────────────
@@ -705,27 +704,37 @@ export async function fetchAdminSummary(): Promise<AdminSummary> {
 
 // ─── Company Admin Links & Co-Admins (§2) ───────────────────
 
-export async function inviteCompanyAdmin(
-  email: string,
-): Promise<CompanyAdminLink> {
-  const res = await apiClient.post(
+/** Owner invites a muLearn user (by muid); they must accept to get access. */
+export async function inviteCompanyAdmin(muid: string): Promise<void> {
+  await apiClient.post(
     endpoints.company.adminLink,
-    { email },
-    CompanyAdminLinkResponseSchema,
+    { muid },
+    GenericResponseSchema,
   );
-  return res.response;
 }
 
+/** The signed-in user's pending co-admin invitations (BE-1). */
+export async function fetchMyCompanyInvitations(): Promise<
+  CompanyInvitation[]
+> {
+  const res = await apiClient.get(
+    endpoints.company.adminLinkInvitations,
+    CompanyInvitationListResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return res.response ?? [];
+}
+
+/** The invitee accepts or declines; the backend returns no body. */
 export async function respondCompanyAdminInvitation(
   linkId: string,
   accept: boolean,
-): Promise<CompanyAdminLink> {
-  const res = await apiClient.post(
+): Promise<void> {
+  await apiClient.post(
     endpoints.company.adminLinkRespond(linkId),
     { accept },
-    CompanyAdminLinkResponseSchema,
+    GenericResponseSchema,
   );
-  return res.response;
 }
 
 export async function removeCompanyAdmin(linkId: string): Promise<void> {
@@ -750,14 +759,6 @@ export async function fetchCompanyAdminLinks(): Promise<CompanyAdminLink[]> {
     CompanyAdminLinkListResponseSchema,
   );
   return res.response ?? [];
-}
-
-export async function fetchUserCompanyStatus(): Promise<UserCompanyStatus> {
-  const res = await apiClient.get(
-    endpoints.company.userStatus,
-    UserCompanyStatusResponseSchema,
-  );
-  return res.response;
 }
 
 export async function deactivateCompanySelf(): Promise<void> {

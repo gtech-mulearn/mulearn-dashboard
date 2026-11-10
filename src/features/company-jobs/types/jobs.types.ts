@@ -545,29 +545,33 @@ export interface MuLearnersResponse {
 
 // ─── New Part A Types (Admin Links, Analytics, Feedback, etc.) ─
 
-export interface CompanyAdminLink {
+export type CompanyAdminLinkStatus =
+  | "Pending"
+  | "Accepted"
+  | "Declined"
+  | "Revoked";
+
+/** A pending co-admin invitation addressed to the signed-in user. */
+export interface CompanyInvitation {
   id: string;
   company_id: string;
   company_name: string;
-  user_id: string;
-  user_name?: string | null;
-  user_email?: string | null;
-  status: string;
-  invited_by: string;
+  company_logo?: string | null;
+  invited_by_name?: string | null;
   invited_at: string;
-  accepted_at?: string | null;
 }
 
-export interface UserCompanyStatus {
-  has_company: boolean;
-  company?: {
-    id: string;
-    name: string;
-    slug: string;
-    status: string;
-    is_owner: boolean;
-  } | null;
-  pending_invitations: CompanyAdminLink[];
+/** One row of the company's co-admin history (CompanyAdminLinkSerializer). */
+export interface CompanyAdminLink {
+  id: string;
+  user_muid: string;
+  user_name?: string | null;
+  status: CompanyAdminLinkStatus;
+  invited_by_name?: string | null;
+  invited_at: string;
+  responded_at?: string | null;
+  revoked_by_name?: string | null;
+  revoked_at?: string | null;
 }
 
 export interface CampusJobApplicant {

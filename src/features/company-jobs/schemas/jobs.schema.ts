@@ -1251,43 +1251,52 @@ export const AdminSummaryResponseSchema = DjangoResponse(AdminSummarySchema);
 
 // ─── Company Admin Links (Co-Admins) ─────────────────────────
 
+export const COMPANY_ADMIN_LINK_STATUSES = [
+  "Pending",
+  "Accepted",
+  "Declined",
+  "Revoked",
+] as const;
+
+// Django writes "Accepted"; the varchar column's default is "pending".
+const CompanyAdminLinkStatusSchema = z.preprocess(
+  (value) =>
+    typeof value === "string" && value.length > 0
+      ? value.charAt(0).toUpperCase() + value.slice(1).toLowerCase()
+      : value,
+  z.enum(COMPANY_ADMIN_LINK_STATUSES),
+);
+
+/** Backend CompanyAdminLinkSerializer (release 1.91). */
 export const CompanyAdminLinkSchema = z.object({
   id: z.string(),
-  company_id: z.string(),
-  company_name: z.string(),
-  user_id: z.string(),
-  user_name: z.string().optional().nullable(),
-  user_email: z.string().optional().nullable(),
-  status: z.string(),
-  invited_by: z.string(),
+  user_muid: z.string(),
+  user_name: z.string().nullable().optional(),
+  status: CompanyAdminLinkStatusSchema,
+  invited_by_name: z.string().nullable().optional(),
   invited_at: z.string(),
-  accepted_at: z.string().nullable().optional(),
+  responded_at: z.string().nullable().optional(),
+  revoked_by_name: z.string().nullable().optional(),
+  revoked_at: z.string().nullable().optional(),
 });
 
-export const CompanyAdminLinkResponseSchema = DjangoResponse(
-  CompanyAdminLinkSchema,
-);
 export const CompanyAdminLinkListResponseSchema = DjangoResponse(
   z.array(CompanyAdminLinkSchema),
 );
 
-export const UserCompanyStatusSchema = z.object({
-  has_company: z.boolean(),
-  company: z
-    .object({
-      id: z.string(),
-      name: z.string(),
-      slug: z.string(),
-      status: z.string(),
-      is_owner: z.boolean(),
-    })
-    .nullable()
-    .optional(),
-  pending_invitations: z.array(CompanyAdminLinkSchema).default([]),
+
+/** CompanyAdminLinkInvitationSerializer — a pending invite, invitee view. */
+export const CompanyInvitationSchema = z.object({
+  id: z.string(),
+  company_id: z.string(),
+  company_name: z.string(),
+  company_logo: z.string().nullable().optional(),
+  invited_by_name: z.string().nullable().optional(),
+  invited_at: z.string(),
 });
 
-export const UserCompanyStatusResponseSchema = DjangoResponse(
-  UserCompanyStatusSchema,
+export const CompanyInvitationListResponseSchema = DjangoResponse(
+  z.array(CompanyInvitationSchema),
 );
 
 // ─── Campus Analytics ────────────────────────────────────────
