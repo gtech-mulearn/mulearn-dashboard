@@ -165,6 +165,8 @@ export const RULE_TYPE_OPTIONS = [
   { value: "max_karma", label: "Max Karma" },
   { value: "min_level", label: "Min Level" },
   { value: "max_level", label: "Max Level" },
+  // Release 1.91: rule_value must be an active Skill id.
+  { value: "skill", label: "Required skill" },
 ] as const;
 
 // ─── Rule value input categories ────────────────────────────
@@ -174,6 +176,7 @@ export const RULE_TYPE_OPTIONS = [
 
 export const KARMA_RULE_TYPES = ["min_karma", "max_karma"] as const;
 export const LEVEL_RULE_TYPES = ["min_level", "max_level"] as const;
+export const SKILL_RULE_TYPES = ["skill"] as const;
 
 export function formatNumericRuleValue(
   rule_type: string,

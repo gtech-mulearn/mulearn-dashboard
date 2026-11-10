@@ -64,7 +64,9 @@ export {
 } from "./use-company-templates";
 export {
   type EligibilityLevel,
+  type EligibilitySkill,
   useEligibilityLevels,
+  useEligibilitySkills,
 } from "./use-eligibility-refs";
 export {
   IG_SPONSORSHIP_KEYS,
