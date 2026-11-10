@@ -15,6 +15,8 @@
 "use client";
 
 import { useMemo } from "react";
+// Direct import on purpose: this runs in the sidebar on every page, and the
+// company-jobs barrel isn't tree-shaken here — it would add ~800 KB of JS.
 import { useCompanyAccess } from "@/features/company-jobs/hooks/use-company-access";
 import { useMentorApplicationStatus } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import { usePermissions } from "@/hooks/use-permissions";

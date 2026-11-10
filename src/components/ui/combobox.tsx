@@ -52,10 +52,18 @@ export function Combobox({
   const [search, setSearch] = React.useState("");
   const containerRef = React.useRef<HTMLDivElement>(null);
 
+  // The option the user last picked. Server-search callers reset their search
+  // after a pick, so the picked option can drop out of `options`; its label is
+  // kept here so the input doesn't fall back to showing the raw id.
+  const [picked, setPicked] = React.useState<Option | null>(null);
+
   const isServerSearch = Boolean(onSearchChange);
   const selectedOption =
     options.find((opt) => opt.id === value) ??
-    (value && selectedLabel ? { id: value, title: selectedLabel } : undefined);
+    (value && selectedLabel
+      ? { id: value, title: selectedLabel }
+      : undefined) ??
+    (value && picked?.id === value ? picked : undefined);
 
   // Filter options based on search (skipped when server-side search is used)
   const filteredOptions = React.useMemo(() => {
@@ -70,6 +78,7 @@ export function Combobox({
   const displayValue = search || selectedOption?.title || value || "";
 
   const handleSelect = (option: Option) => {
+    setPicked(option);
     onValueChange(option.id);
     setSearch("");
     setOpen(false);

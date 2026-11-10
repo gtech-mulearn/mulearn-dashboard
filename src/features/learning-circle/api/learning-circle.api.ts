@@ -148,6 +148,7 @@ export async function editCircle(
 export async function deleteCircle(circleId: string): Promise<void> {
   await apiClient.delete(
     endpoints.learningCircle.delete(circleId),
+    undefined,
     EmptyResponseSchema,
   );
 }
@@ -416,6 +417,7 @@ export async function editMeeting(
 export async function deleteMeeting(meetingId: string): Promise<void> {
   await apiClient.delete(
     endpoints.learningCircle.meetingDelete(meetingId),
+    undefined,
     EmptyResponseSchema,
   );
 }
@@ -437,6 +439,7 @@ export async function rsvpMeeting(meetingId: string): Promise<void> {
 export async function removeRsvpMeeting(meetingId: string): Promise<void> {
   await apiClient.delete(
     endpoints.learningCircle.meetingRsvp(meetingId),
+    undefined,
     EmptyResponseSchema,
   );
 }
@@ -457,6 +460,7 @@ export async function joinMeeting(
 export async function leaveMeeting(meetingId: string): Promise<void> {
   await apiClient.delete(
     endpoints.learningCircle.meetingLeave(meetingId),
+    undefined,
     EmptyResponseSchema,
   );
 }
@@ -490,6 +494,7 @@ export async function getAttendeeReport(meetingId: string) {
 export async function deleteAttendeeReport(meetingId: string): Promise<void> {
   await apiClient.delete(
     endpoints.learningCircle.attendeeReport(meetingId),
+    undefined,
     EmptyResponseSchema,
   );
 }
@@ -519,6 +524,7 @@ export async function getMeetingReport(meetingId: string) {
 export async function deleteMeetingReport(meetingId: string): Promise<void> {
   await apiClient.delete(
     endpoints.learningCircle.meetingReport(meetingId),
+    undefined,
     EmptyResponseSchema,
   );
 }

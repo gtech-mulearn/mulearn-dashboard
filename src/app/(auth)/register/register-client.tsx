@@ -19,6 +19,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
+  buildCompanySignupPayload,
   type CompanyDetailsValues,
   CompanySignupRequestSchema,
   RegisterForm,
@@ -28,7 +29,6 @@ import {
   useCompanyRegister,
   useRegister,
 } from "@/features/auth";
-import { buildCompanySignupPayload } from "@/features/auth/lib/company-signup-payload";
 import {
   useCollegeSearch,
   useCompanies,

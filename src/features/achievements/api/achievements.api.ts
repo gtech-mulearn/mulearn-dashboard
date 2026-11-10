@@ -76,6 +76,7 @@ export async function updateAchievement(
 export async function deleteAchievement(id: string): Promise<void> {
   await apiClient.delete(
     endpoints.achievements.delete(id),
+    undefined,
     GenericSuccessResponseSchema,
   );
 }

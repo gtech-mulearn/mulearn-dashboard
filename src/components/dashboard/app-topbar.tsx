@@ -21,6 +21,8 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserInfo } from "@/features/auth/hooks/use-session";
 import { useCompanyProfile } from "@/features/company-jobs/hooks";
+// Direct import on purpose: the topbar is on every page, and the mentor barrel
+// (admin verification and more) isn't tree-shaken in this build.
 import { PersonaSwitcher } from "@/features/mentor/components/persona-switcher";
 import { GameProgressBar } from "@/features/mujourney/components/GameProgressBar";
 import { NotificationPopover } from "@/features/notification";
@@ -108,7 +110,9 @@ export function AppTopbar() {
         </div>
         {mounted && isMentor && <PersonaSwitcher />}
         <ThemeToggle />
-        <NotificationPopover />
+        {/* Signed-in users only: its queries are private, and a 401 for a
+            visitor on a public page would redirect them to /login. */}
+        {mounted && data && <NotificationPopover />}
         {!mounted || isLoading ? (
           <div className="flex items-center gap-2 pr-1">
             <Skeleton className="w-8 h-8 rounded-full" />

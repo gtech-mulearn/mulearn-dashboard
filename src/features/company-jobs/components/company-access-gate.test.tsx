@@ -4,7 +4,7 @@ import {
   COMPANY_CAPABILITIES,
   type CompanyAccessRole,
   NO_COMPANY_CAPABILITIES,
-} from "../lib/company-access";
+} from "@/lib/auth/company-access";
 
 const { useCompanyAccess, usePathname } = vi.hoisted(() => ({
   useCompanyAccess: vi.fn(),

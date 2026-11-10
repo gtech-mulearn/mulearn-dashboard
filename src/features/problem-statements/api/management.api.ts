@@ -119,6 +119,7 @@ export async function updateCompanyStatement(
 export async function deleteCompanyStatement(id: string): Promise<void> {
   await apiClient.delete(
     endpoints.problemStatements.companyDelete(id),
+    undefined,
     GenericResponseSchema,
   );
 }

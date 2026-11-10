@@ -47,7 +47,7 @@ import {
   COMPANY_CAPABILITIES,
   type CompanyAccessRole,
   canOpenCompanyPage,
-} from "@/features/company-jobs/lib/company-access";
+} from "@/lib/auth/company-access";
 import type { Permission } from "@/lib/auth/permissions";
 import {
   ASSOCIATE_MANAGEMENT_ROLES,
