@@ -37,13 +37,18 @@ export function NotificationItem({
     // Mark-as-read is triggered by the ✓ icon button; the Link handles navigation.
     <div
       className={cn(
-        "relative flex flex-col gap-1 rounded-lg border border-border p-3 text-sm transition-all",
-        item.is_read ? "bg-card" : "bg-primary/5 border-primary/20",
+        "group relative flex flex-col gap-2 overflow-hidden rounded-xl border p-3 text-sm transition-all",
+        item.is_read
+          ? "border-border/70 bg-card hover:border-brand-blue/30 hover:shadow-sm"
+          : "border-brand-blue/20 bg-brand-blue/[0.04] shadow-sm",
         isPending && "pointer-events-none opacity-50",
       )}
     >
+      {!item.is_read && (
+        <span className="absolute inset-y-0 left-0 w-1 bg-linear-to-b from-brand-blue to-brand-purple" />
+      )}
       {isPending && (
-        <div className="absolute inset-0 flex items-center justify-center rounded-lg">
+        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-card/60">
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         </div>
       )}
@@ -51,11 +56,13 @@ export function NotificationItem({
       {/* Title row */}
       <div className="flex items-start justify-between gap-2">
         {/* Left: unread dot + title */}
-        <div className="flex min-w-0 items-center gap-1.5">
+        <div className="flex min-w-0 items-center gap-2">
           {!item.is_read && (
-            <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
+            <span className="h-2 w-2 shrink-0 rounded-full bg-brand-blue shadow-[0_0_0_3px_rgba(46,133,254,0.12)]" />
           )}
-          <p className="truncate font-medium leading-snug">{item.title}</p>
+          <p className="truncate font-semibold leading-snug tracking-[-0.01em]">
+            {item.title}
+          </p>
         </div>
 
         {/* Right: action buttons */}
@@ -64,7 +71,7 @@ export function NotificationItem({
             <Button
               variant="ghost"
               size="icon"
-              className="h-5 w-5 text-muted-foreground hover:text-primary"
+              className="h-7 w-7 rounded-full text-muted-foreground hover:bg-brand-blue/10 hover:text-brand-blue"
               onClick={() => onMarkRead(item.id)}
               disabled={isPending}
               aria-label="Mark as read"
@@ -78,7 +85,7 @@ export function NotificationItem({
             <Button
               variant="ghost"
               size="icon"
-              className="h-5 w-5 text-muted-foreground hover:text-foreground"
+              className="h-7 w-7 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
               onClick={() => onDelete(item.id)}
               disabled={isPending}
               aria-label="Delete notification"
@@ -90,20 +97,20 @@ export function NotificationItem({
       </div>
 
       {/* Body */}
-      <p className="line-clamp-2 pl-3.5 text-xs leading-snug text-muted-foreground">
+      <p className="line-clamp-2 pl-4 text-xs leading-relaxed text-muted-foreground">
         {item.description}
       </p>
 
       {/* Footer: timestamp + link */}
-      <div className="mt-1 flex items-center justify-between pl-3.5">
+      <div className="mt-1 flex items-center justify-between gap-3 pl-4">
         <div className="flex items-center gap-1.5">
-          <span className="text-xs text-muted-foreground">
+          <span className="text-[11px] font-medium text-muted-foreground">
             {formatDistanceToNow(new Date(item.created_at), {
               addSuffix: true,
             })}
           </span>
           {item.source === "broadcast" && (
-            <span className="rounded bg-muted px-1.5 py-0.2 text-[10px] font-medium text-muted-foreground">
+            <span className="rounded-full bg-brand-purple/10 px-2 py-0.5 text-[10px] font-semibold text-brand-purple">
               Announcement
             </span>
           )}
@@ -112,7 +119,7 @@ export function NotificationItem({
         {link && (
           <Link
             href={link.href}
-            className="flex items-center gap-1 text-xs text-primary hover:underline"
+            className="flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold text-brand-blue transition-colors hover:bg-brand-blue/10"
             target={isExternal ? "_blank" : undefined}
             rel={isExternal ? "noopener noreferrer" : undefined}
             onClick={() => {
