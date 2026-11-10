@@ -20,6 +20,7 @@ import {
   DISCORD_MODERATION_ROLES,
   DISTRICT_ROLES,
   FELLOW_MANAGEMENT_ROLES,
+  hasIgLeadRole,
   INTERN_MANAGEMENT_ROLES,
   isIgCampusLeadRole,
   MANAGEMENT_HUB_ROLES,
@@ -257,6 +258,14 @@ export const routeAccessMap: Record<string, RouteConfig> = {
     ],
     dynamicCheck: (roles) =>
       roles.some((r) => r.endsWith(" IGLead") || isIgCampusLeadRole(r)),
+  },
+
+  // ── Collaboration inbox (campus and IG leads, BE-9) ──────
+  // Mirrors the backend's _can_respond_as_target: "Campus Lead", or a
+  // "{code} IGLead" role ("{code} CampusIGLead" can't respond).
+  "/dashboard/collaborations": {
+    roles: [ROLES.CAMPUS_LEAD],
+    dynamicCheck: (roles) => hasIgLeadRole(roles),
   },
 
   // ── Problem Statements Management ────────────────────────

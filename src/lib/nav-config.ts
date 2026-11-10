@@ -364,6 +364,17 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: Layers,
   }),
   {
+    id: "collaboration-invites",
+    title: "Collaboration Invites",
+    href: "/dashboard/collaborations/incoming",
+    icon: Handshake,
+    section: "management",
+    // Campus Lead (static role) or any "{code} IGLead" — same rule as the route.
+    roles: [ROLES.CAMPUS_LEAD],
+    dynamicCheck: (roles) =>
+      roles.includes(ROLES.CAMPUS_LEAD) || hasIgLeadRole(roles),
+  },
+  {
     id: "campus-manage",
     title: "Campus",
     href: "/dashboard/campus/manage",

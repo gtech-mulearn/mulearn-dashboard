@@ -4,6 +4,7 @@ import { endpoints } from "@/api/endpoints";
 import { ApiError } from "@/api/errors";
 import { fetchCompanyOnboardingStatus } from "@/features/auth/api/auth.api";
 import { getEditableUserProfile } from "@/features/profile/api/profile.api";
+import type { CollaborationCreatePayload } from "../lib/collaboration-payload";
 import type { PublicCompanyProfile, PublicJobsBySlugData } from "../schemas";
 import {
   AdminSummaryResponseSchema,
@@ -12,7 +13,6 @@ import {
   CampusTrendResponseSchema,
   CompanyAdminLinkListResponseSchema,
   CompanyCollaborationListResponseSchema,
-  CompanyCollaborationResponseSchema,
   CompanyDashboardSummaryResponseSchema,
   CompanyFeedbackListResponseSchema,
   CompanyFeedbackResponseSchema,
@@ -26,6 +26,7 @@ import {
   GigAnalyticsResponseSchema,
   IgSponsorshipMetricsResponseSchema,
   ImpactReportResponseSchema,
+  IncomingCollaborationListResponseSchema,
   JobApplicantsResponseSchema,
   JobDetailResponseSchema,
   JobEngagementAnalyticsResponseSchema,
@@ -50,6 +51,8 @@ import type {
   AdminSummary,
   CampusAnalytics,
   CampusTrend,
+  CollaborationPage,
+  CollabTargetType,
   CompanyAdminLink,
   CompanyCollaboration,
   CompanyDashboardSummary,
@@ -975,51 +978,100 @@ export async function togglePublishImpactReport(
 
 // ─── Inter-Company Collaboration (§9) ───────────────────────
 
-export async function fetchCollaborations(): Promise<CompanyCollaboration[]> {
+export interface CollaborationPageParams {
+  page?: number;
+  perPage?: number;
+}
+
+function pageQuery(params?: CollaborationPageParams): string {
+  const query = new URLSearchParams();
+  if (params?.page) query.set("pageIndex", String(params.page));
+  if (params?.perPage) query.set("perPage", String(params.perPage));
+  const qs = query.toString();
+  return qs ? `?${qs}` : "";
+}
+
+const EMPTY_COLLABORATION_PAGE: CollaborationPage = {
+  data: [],
+  pagination: {
+    count: 0,
+    totalPages: 1,
+    isNext: false,
+    isPrev: false,
+    nextPage: null,
+  },
+};
+
+/** The company's own collaboration posts, any status, newest first. */
+export async function fetchCollaborations(
+  params?: CollaborationPageParams,
+): Promise<CollaborationPage> {
   const res = await apiClient.get(
-    endpoints.company.collaborations,
+    `${endpoints.company.collaborations}${pageQuery(params)}`,
     CompanyCollaborationListResponseSchema,
   );
-  return res.response ?? [];
+  return res.response ?? EMPTY_COLLABORATION_PAGE;
 }
 
-export async function createCollaboration(payload: {
-  title: string;
-  description: string;
-  collaboration_type: string;
-  partner_company_id?: string;
-}): Promise<CompanyCollaboration> {
-  const res = await apiClient.post(
+/** OPEN posts from every company (the campus/IG discovery feed). */
+export async function discoverCollaborations(
+  params?: CollaborationPageParams,
+): Promise<CollaborationPage> {
+  const res = await apiClient.get(
+    `${endpoints.company.collaborationsDiscover}${pageQuery(params)}`,
+    CompanyCollaborationListResponseSchema,
+  );
+  return res.response ?? EMPTY_COLLABORATION_PAGE;
+}
+
+/** Owner or co-admin posts a collaboration; 429 at 5 open/pending posts. */
+export async function createCollaboration(
+  payload: CollaborationCreatePayload,
+): Promise<void> {
+  await apiClient.post(
     endpoints.company.collaborations,
     payload,
-    CompanyCollaborationResponseSchema,
+    GenericResponseSchema,
   );
-  return res.response;
 }
 
-export async function discoverCollaborations(): Promise<
+/** Invites addressed to a campus or IG the caller leads (BE-9). */
+export async function fetchIncomingCollaborations(): Promise<
   CompanyCollaboration[]
 > {
   const res = await apiClient.get(
-    endpoints.company.collaborationsDiscover,
-    CompanyCollaborationListResponseSchema,
+    endpoints.company.collaborationsIncoming,
+    IncomingCollaborationListResponseSchema,
+    { skipAuthRedirectOn403: true },
   );
   return res.response ?? [];
+}
+
+/**
+ * Campus/IG lead answers a collaboration. A direct invite (PENDING) takes
+ * accept (+ optional rejection_reason); an OPEN post is claimed with
+ * accept: true plus the target it is claimed for.
+ */
+export interface CollaborationResponseBody {
+  accept: boolean;
+  rejection_reason?: string;
+  target_type?: CollabTargetType;
+  target_org_id?: string;
 }
 
 export async function respondCollaboration(
   id: string,
-  accept: boolean,
-): Promise<CompanyCollaboration> {
-  const res = await apiClient.post(
+  body: CollaborationResponseBody,
+): Promise<void> {
+  await apiClient.post(
     endpoints.company.collaborationRespond(id),
-    { accept },
-    CompanyCollaborationResponseSchema,
+    body,
+    GenericResponseSchema,
   );
-  return res.response;
 }
 
-export async function cancelCollaboration(id: string): Promise<void> {
+/** Withdraw an OPEN or PENDING post. */
+export async function withdrawCollaboration(id: string): Promise<void> {
   await apiClient.delete(
     endpoints.company.collaborationDetail(id),
     undefined,

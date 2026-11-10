@@ -23,11 +23,14 @@ export {
   type EligibilityLevel,
   fetchEligibilityLevels,
 } from "./eligibility-refs.api";
+export type {
+  CollaborationPageParams,
+  CollaborationResponseBody,
+} from "./jobs.api";
 export {
   addLearnerToShortlist,
   applyToJob,
   approveJob,
-  cancelCollaboration,
   createCollaboration,
   createEventTemplate,
   createJob,
@@ -50,6 +53,7 @@ export {
   fetchEventTemplates,
   fetchGigAnalytics,
   fetchIgSponsorshipMetrics,
+  fetchIncomingCollaborations,
   fetchJobApplicants,
   fetchJobDetail,
   fetchJobEngagementAnalytics,
@@ -85,4 +89,5 @@ export {
   updateJob,
   updateJobRule,
   withdrawApplication,
+  withdrawCollaboration,
 } from "./jobs.api";

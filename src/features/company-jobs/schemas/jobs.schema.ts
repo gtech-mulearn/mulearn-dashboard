@@ -163,6 +163,10 @@ export const PaginationSchema = z
 
 // ─── API Response Wrapper ───────────────────────────────────
 
+/** Backend enums are stored case-insensitively; compare in upper case. */
+const upperCase = (value: unknown) =>
+  typeof value === "string" ? value.toUpperCase() : value;
+
 const DjangoResponse = <T extends z.ZodTypeAny>(dataSchema: T) =>
   z.object({
     hasError: z.boolean().optional(),
@@ -1492,24 +1496,53 @@ export const ImpactReportResponseSchema = DjangoResponse(ImpactReportSchema);
 
 // ─── Company Collaboration ───────────────────────────────────
 
+export const COLLAB_TYPES = [
+  "EVENT_COHOST",
+  "IG_SPONSORSHIP",
+  "CAMPUS_PARTNERSHIP",
+  "MENTORSHIP_EXCHANGE",
+] as const;
+export const COLLAB_TARGET_TYPES = ["IG", "CAMPUS"] as const;
+export const COLLAB_STATUSES = [
+  "OPEN",
+  "PENDING",
+  "ACCEPTED",
+  "DECLINED",
+  "WITHDRAWN",
+] as const;
+
+/** Backend CollaborationSerializer (release 1.91). */
 export const CompanyCollaborationSchema = z.object({
   id: z.string(),
+  company_name: z.string().nullable().optional(),
+  company_logo: z.string().nullable().optional(),
+  collab_type: z.preprocess(upperCase, z.enum(COLLAB_TYPES)),
   title: z.string(),
-  description: z.string(),
-  initiator_company_id: z.string(),
-  initiator_company_name: z.string(),
-  partner_company_id: z.string().nullable().optional(),
-  partner_company_name: z.string().nullable().optional(),
-  status: z.string(),
-  collaboration_type: z.string(),
+  description: z.string().nullable().optional(),
+  target_type: z
+    .preprocess(upperCase, z.enum(COLLAB_TARGET_TYPES))
+    .nullable()
+    .optional(),
+  target_org_id: z.string().nullable().optional(),
+  event_id: z.string().nullable().optional(),
+  status: z.preprocess(upperCase, z.enum(COLLAB_STATUSES)),
+  responded_by_name: z.string().nullable().optional(),
+  responded_at: z.string().nullable().optional(),
+  rejection_reason: z.string().nullable().optional(),
   created_at: z.string(),
 });
 
-export const CompanyCollaborationListResponseSchema = DjangoResponse(
+/** collaborations/incoming/ returns a plain list (BE-9). */
+export const IncomingCollaborationListResponseSchema = DjangoResponse(
   z.array(CompanyCollaborationSchema),
 );
-export const CompanyCollaborationResponseSchema = DjangoResponse(
-  CompanyCollaborationSchema,
+
+/** List and discover both return {data, pagination}. */
+export const CompanyCollaborationListResponseSchema = DjangoResponse(
+  z.object({
+    data: z.array(CompanyCollaborationSchema).default([]),
+    pagination: PaginationSchema,
+  }),
 );
 
 // ─── IG Sponsorship Metrics ──────────────────────────────────

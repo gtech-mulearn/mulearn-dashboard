@@ -264,9 +264,12 @@ export const endpoints = {
     collaborationsDiscover:
       "/api/v1/dashboard/company/collaborations/discover/",
     /** POST - Respond to collaboration invitation */
+    /** GET - Collaboration invites for the caller's campus/IGs (BE-9) */
+    collaborationsIncoming:
+      "/api/v1/dashboard/company/collaborations/incoming/",
     collaborationRespond: (id: string) =>
       `/api/v1/dashboard/company/collaborations/${id}/respond/`,
-    /** DELETE - Cancel or close collaboration */
+    /** DELETE - Withdraw an open or pending collaboration */
     collaborationDetail: (id: string) =>
       `/api/v1/dashboard/company/collaborations/${id}/`,
 

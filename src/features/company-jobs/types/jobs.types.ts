@@ -683,17 +683,40 @@ export interface ImpactReport {
   published_at?: string | null;
 }
 
+export type CollabType =
+  | "EVENT_COHOST"
+  | "IG_SPONSORSHIP"
+  | "CAMPUS_PARTNERSHIP"
+  | "MENTORSHIP_EXCHANGE";
+export type CollabTargetType = "IG" | "CAMPUS";
+export type CollabStatus =
+  | "OPEN"
+  | "PENDING"
+  | "ACCEPTED"
+  | "DECLINED"
+  | "WITHDRAWN";
+
+/** A company's collaboration post (CollaborationSerializer). */
 export interface CompanyCollaboration {
   id: string;
+  company_name?: string | null;
+  company_logo?: string | null;
+  collab_type: CollabType;
   title: string;
-  description: string;
-  initiator_company_id: string;
-  initiator_company_name: string;
-  partner_company_id?: string | null;
-  partner_company_name?: string | null;
-  status: string;
-  collaboration_type: string;
+  description?: string | null;
+  target_type?: CollabTargetType | null;
+  target_org_id?: string | null;
+  event_id?: string | null;
+  status: CollabStatus;
+  responded_by_name?: string | null;
+  responded_at?: string | null;
+  rejection_reason?: string | null;
   created_at: string;
+}
+
+export interface CollaborationPage {
+  data: CompanyCollaboration[];
+  pagination: Pagination;
 }
 
 export interface IgSponsorshipMetrics {

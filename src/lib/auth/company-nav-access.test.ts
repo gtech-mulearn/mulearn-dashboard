@@ -110,3 +110,21 @@ describe("company navigation (release 1.91 access model)", () => {
     expect(isCompanyFeatureItem(byId("mentor-sessions"))).toBe(false);
   });
 });
+
+describe("collaboration inbox access (BE-9)", () => {
+  it("is open to campus leads and IG leads, not campus IG leads", async () => {
+    const { findRouteConfig } = await import("./route-access");
+    const config = findRouteConfig("/dashboard/collaborations/incoming");
+    const allowed = (roles: string[]) =>
+      !!config &&
+      (config.roles.some((r) => roles.includes(r)) ||
+        (config.dynamicCheck?.(roles) ?? false));
+    expect(allowed([ROLES.CAMPUS_LEAD])).toBe(true);
+    expect(allowed(["WEB IGLead"])).toBe(true);
+    expect(allowed(["WEB CampusIGLead"])).toBe(false);
+    expect(allowed([ROLES.STUDENT])).toBe(false);
+    expect(isVisible(byId("collaboration-invites"), ["WEB IGLead"], {})).toBe(
+      true,
+    );
+  });
+});
