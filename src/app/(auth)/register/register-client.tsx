@@ -20,6 +20,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   type CompanyDetailsValues,
+  CompanySignupRequestSchema,
   RegisterForm,
   RegisterRoleDetails,
   RegisterRoleSelection,
@@ -27,6 +28,7 @@ import {
   useCompanyRegister,
   useRegister,
 } from "@/features/auth";
+import { buildCompanySignupPayload } from "@/features/auth/lib/company-signup-payload";
 import {
   useCollegeSearch,
   useCompanies,
@@ -174,8 +176,16 @@ export function RegisterClient({
   async function handleCompanySignup(values: CompanyDetailsValues) {
     if (!basicData || !values.companyName || !values.companyDescription) return;
 
-    if (!values.verificationDocument && !values.verification_document_url) {
-      toast.error("Please upload a verification document.");
+    // Build and validate the company payload BEFORE creating the account:
+    // the user is registered first, so a payload the backend would reject
+    // must never get that far (it would leave an account with no company).
+    const companyPayload = buildCompanySignupPayload(values);
+    const checked = CompanySignupRequestSchema.safeParse(companyPayload);
+    if (!checked.success) {
+      toast.error(
+        checked.error.issues[0]?.message ??
+          "Please check your company details and try again.",
+      );
       return;
     }
 
@@ -198,68 +208,8 @@ export function RegisterClient({
       ...(isGoogleSignup && tempToken ? { tempToken } : {}),
     });
 
-    // Helper to normalize URLs to valid http(s):// strings for Django URLValidator
-    const normalizeUrl = (url?: string | null): string | undefined => {
-      if (!url || typeof url !== "string") return undefined;
-      const trimmed = url.trim();
-      if (!trimmed || /^(data|blob):/i.test(trimmed)) return undefined;
-      if (/^https?:\/\//i.test(trimmed)) return trimmed;
-      return `https://${trimmed}`;
-    };
-
-    // 2. Prepare verification document URL
-    let verificationDocUrl = normalizeUrl(values.verification_document_url);
-    if (!verificationDocUrl && values.verificationDocument instanceof File) {
-      verificationDocUrl = `https://mulearn.org/documents/${encodeURIComponent(values.verificationDocument.name)}`;
-    }
-
-    if (!verificationDocUrl) {
-      toast.error(
-        "Please provide a valid Verification Document URL or upload a file.",
-      );
-      return;
-    }
-
-    // 3. Logo URL
-    const logoUrl = normalizeUrl(values.logo);
-
-    // 4. Gallery URLs
-    const galleryUrls: string[] = Array.isArray(values.gallery)
-      ? values.gallery
-          .map((g) => normalizeUrl(g))
-          .filter((g): g is string => typeof g === "string" && g.length > 0)
-      : [];
-
-    // 5. Register the company
-    await companyRegister.mutateAsync({
-      name: values.companyName,
-      description: values.companyDescription,
-      verification_document_url: verificationDocUrl,
-      logo: logoUrl || undefined,
-      short_pitch: values.shortPitch || undefined,
-      industry_sector: values.industrySector || undefined,
-      website_link: normalizeUrl(values.websiteLink) || undefined,
-      email: values.email || undefined,
-      location: values.location || undefined,
-      district_id: values.districtId || undefined,
-      state_id: values.stateId || undefined,
-      country_id: values.countryId || undefined,
-      legal_name: values.legalName || undefined,
-      registration_number: values.registrationNumber || undefined,
-      tax_id: values.taxId || undefined,
-      company_size: values.companySize || undefined,
-      linkedin_url: normalizeUrl(values.linkedinUrl) || undefined,
-      founded_year: values.foundedYear || undefined,
-      remote_policy: values.remotePolicy || undefined,
-      culture_text: values.cultureText || undefined,
-      tech_stack:
-        values.techStack && values.techStack.length > 0
-          ? values.techStack
-          : undefined,
-      perks: values.perks || undefined,
-      testimonials: values.testimonials || undefined,
-      gallery: galleryUrls.length > 0 ? galleryUrls : undefined,
-    });
+    // 2. Register the company
+    await companyRegister.mutateAsync(checked.data);
 
     toast.success(
       "Company registration submitted! Awaiting admin verification.",

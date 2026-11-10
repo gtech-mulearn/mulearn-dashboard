@@ -9,8 +9,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Upload, X } from "lucide-react";
-import Image from "next/image";
+import { ArrowLeft } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type Resolver, useForm } from "react-hook-form";
@@ -18,7 +17,6 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
-import { FileUpload } from "@/components/ui/file-upload";
 import {
   Form,
   FormControl,
@@ -27,8 +25,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
+import { LinkListInput } from "@/components/ui/link-list-input";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { TagInput } from "@/components/ui/tag-input";
@@ -233,72 +231,67 @@ const mentorDetailsSchema = z
 // Schema for Company
 // Note: poc_name and poc_email come from Step 1 (basicData); they are NOT
 // collected here. This form collects company-level details across 5 logical steps.
-const companyDetailsSchema = z
-  .object({
-    // Basic Information
-    companyName: z
-      .string()
-      .trim()
-      .min(1, "Company name is required")
-      .max(75, "Max 75 characters"),
-    companyDescription: z.string().trim().min(1, "Description is required"),
-    shortPitch: z.string().optional(),
-    email: z
-      .string()
-      .email("Invalid email address")
-      .or(z.literal(""))
-      .optional(),
-    websiteLink: z
-      .string()
-      .url("Please enter a valid URL (e.g. https://example.com)")
-      .or(z.literal(""))
-      .optional(),
-    linkedinUrl: z
-      .string()
-      .url("Please enter a valid LinkedIn URL")
-      .or(z.literal(""))
-      .optional(),
+const companyDetailsSchema = z.object({
+  // Basic Information
+  companyName: z
+    .string()
+    .trim()
+    .min(1, "Company name is required")
+    .max(75, "Max 75 characters"),
+  companyDescription: z.string().trim().min(1, "Description is required"),
+  shortPitch: z.string().optional(),
+  email: z.string().email("Invalid email address").or(z.literal("")).optional(),
+  websiteLink: z
+    .string()
+    .url("Please enter a valid URL (e.g. https://example.com)")
+    .or(z.literal(""))
+    .optional(),
+  linkedinUrl: z
+    .string()
+    .url("Please enter a valid LinkedIn URL")
+    .or(z.literal(""))
+    .optional(),
 
-    // Legal Information
-    legalName: z.string().optional(),
-    registrationNumber: z.string().optional(),
-    taxId: z.string().optional(),
-    verificationDocument: z.custom<File | null | undefined>().optional(),
-    verification_document_url: z.string().optional(),
+  // Legal Information
+  legalName: z.string().optional(),
+  registrationNumber: z.string().optional(),
+  taxId: z.string().optional(),
+  // Required: admins review this document before verifying the company.
+  verification_document_url: z
+    .string()
+    .trim()
+    .min(1, "Add a link to your registration document")
+    .refine(
+      (value) => {
+        const url = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+        try {
+          return Boolean(new URL(url).hostname.includes("."));
+        } catch {
+          return false;
+        }
+      },
+      { message: "Enter a valid link (e.g. a Google Drive or Dropbox link)" },
+    ),
 
-    // Company Details
-    industrySector: z.string().optional(),
-    companySize: z.string().optional(),
-    foundedYear: z.number().optional(),
-    location: z.string().optional(),
-    countryId: z.string().optional(),
-    stateId: z.string().optional(),
-    districtId: z.string().optional(),
+  // Company Details
+  industrySector: z.string().optional(),
+  companySize: z.string().optional(),
+  foundedYear: z.number().optional(),
+  location: z.string().optional(),
+  countryId: z.string().optional(),
+  stateId: z.string().optional(),
+  districtId: z.string().optional(),
 
-    // Culture & Hiring
-    remotePolicy: z.string().optional(),
-    cultureText: z.string().optional(),
-    techStack: z.array(z.string()).optional(),
-    perks: z.string().optional(),
-    testimonials: z.string().optional(),
+  // Culture & Hiring
+  remotePolicy: z.string().optional(),
+  cultureText: z.string().optional(),
+  techStack: z.array(z.string()).optional(),
+  perks: z.string().optional(),
 
-    // Media
-    logo: z.string().optional(),
-    logoFile: z.custom<File | null | undefined>().optional(),
-    gallery: z.array(z.string()).optional(),
-    galleryFiles: z.array(z.custom<File>()).optional(),
-  })
-  .refine(
-    (data) =>
-      (data.verification_document_url &&
-        data.verification_document_url.trim().length > 0) ||
-      data.verificationDocument instanceof File,
-    {
-      message:
-        "Please provide a verification document URL or upload a verification document",
-      path: ["verification_document_url"],
-    },
-  );
+  // Media (links only — there is no company file-upload endpoint)
+  logo: z.string().optional(),
+  gallery: z.array(z.string()).optional(),
+});
 
 type RoleDetailsValues =
   | z.infer<typeof studentDetailsSchema>
@@ -319,7 +312,6 @@ export interface CompanyDetailsValues {
   legalName?: string;
   registrationNumber?: string;
   taxId?: string;
-  verificationDocument?: File | null;
   verification_document_url?: string;
 
   // Company Details
@@ -336,13 +328,10 @@ export interface CompanyDetailsValues {
   cultureText?: string;
   techStack?: string[];
   perks?: string;
-  testimonials?: string;
 
   // Media
   logo?: string;
-  logoFile?: File | null;
   gallery?: string[];
-  galleryFiles?: File[];
 }
 
 interface RegisterRoleDetailsProps {
@@ -432,7 +421,6 @@ export function RegisterRoleDetails({
       legalName: "",
       registrationNumber: "",
       taxId: "",
-      verificationDocument: null,
       verification_document_url: "",
       industrySector: "",
       companySize: "",
@@ -445,11 +433,8 @@ export function RegisterRoleDetails({
       cultureText: "",
       techStack: [],
       perks: "",
-      testimonials: "",
       logo: "",
-      logoFile: null,
       gallery: [],
-      galleryFiles: [],
     };
   };
 
@@ -580,7 +565,6 @@ export function RegisterRoleDetails({
       "registrationNumber",
       "taxId",
       "verification_document_url",
-      "verificationDocument",
     ],
     3: [
       "industrySector",
@@ -591,8 +575,8 @@ export function RegisterRoleDetails({
       "stateId",
       "districtId",
     ],
-    4: ["remotePolicy", "cultureText", "techStack", "perks", "testimonials"],
-    5: ["logo", "logoFile", "gallery", "galleryFiles"],
+    4: ["remotePolicy", "cultureText", "techStack", "perks"],
+    5: ["logo", "gallery"],
   };
 
   const handleCompanyNext = async () => {
@@ -1429,61 +1413,24 @@ export function RegisterRoleDetails({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
-                          Verification Document URL{" "}
+                          Registration document link{" "}
                           <span className="text-destructive">*</span>
                         </FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="https://drive.google.com/... or document URL"
+                            type="url"
+                            inputMode="url"
+                            placeholder="https://drive.google.com/file/d/..."
                             className="h-12 rounded-xl border-border bg-muted/50 px-4"
                             disabled={isLoading}
                             {...field}
                           />
                         </FormControl>
                         <p className="text-xs text-muted-foreground">
-                          Provide a direct or cloud link (Google Drive, Cloud
-                          storage, etc.) to your Certificate of Incorporation or
-                          GST Certificate.
-                        </p>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="verificationDocument"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">
-                          Or Upload Verification Document
-                        </FormLabel>
-                        <FormControl>
-                          <FileUpload
-                            value={field.value ?? null}
-                            onChange={(file) => {
-                              field.onChange(file);
-                              if (
-                                file &&
-                                !form.getValues("verification_document_url")
-                              ) {
-                                form.setValue(
-                                  "verification_document_url",
-                                  `https://mulearn.org/documents/${encodeURIComponent(file.name)}`,
-                                  { shouldValidate: true },
-                                );
-                              }
-                            }}
-                            accept=".pdf,.jpg,.jpeg,.png"
-                            maxSizeMB={10}
-                            disabled={isLoading}
-                            placeholder="Upload verification document (PDF, JPG, PNG)"
-                          />
-                        </FormControl>
-                        <p className="text-xs text-muted-foreground">
-                          Upload certificate of incorporation, GST certificate,
-                          or official company registration document (PDF, JPG,
-                          PNG up to 10MB).
+                          Upload your Certificate of Incorporation or GST
+                          certificate to Google Drive or Dropbox, set sharing to
+                          “Anyone with the link can view”, and paste the link
+                          here. Our team uses it to verify your company.
                         </p>
                         <FormMessage />
                       </FormItem>
@@ -1812,30 +1759,9 @@ export function RegisterRoleDetails({
                             {...field}
                           />
                         </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="testimonials"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">
-                          Testimonials{" "}
-                          <span className="text-muted-foreground">
-                            (optional)
-                          </span>
-                        </FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="&quot;Great place to grow and build scalable systems&quot; — Alumnus"
-                            className="min-h-20 rounded-xl border-border bg-muted/50 p-3 text-sm"
-                            disabled={isLoading}
-                            {...field}
-                          />
-                        </FormControl>
+                        <p className="text-xs text-muted-foreground">
+                          Separate perks with commas or new lines.
+                        </p>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -1848,25 +1774,28 @@ export function RegisterRoleDetails({
                 <>
                   <FormField
                     control={form.control}
-                    name="logoFile"
+                    name="logo"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
-                          Company Logo{" "}
+                          Logo link{" "}
                           <span className="text-muted-foreground">
                             (optional)
                           </span>
                         </FormLabel>
                         <FormControl>
-                          <ImageUpload
-                            value={field.value ?? null}
-                            onChange={(file) => field.onChange(file)}
+                          <Input
+                            type="url"
+                            inputMode="url"
+                            placeholder="https://acme.com/logo.png"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
                             disabled={isLoading}
-                            maxSizeMB={5}
+                            {...field}
                           />
                         </FormControl>
                         <p className="text-xs text-muted-foreground">
-                          Upload company logo (PNG, JPG, WebP up to 5MB).
+                          A public link to a square PNG, JPG or WebP image. It
+                          appears on your company profile and job posts.
                         </p>
                         <FormMessage />
                       </FormItem>
@@ -1875,114 +1804,34 @@ export function RegisterRoleDetails({
 
                   <FormField
                     control={form.control}
-                    name="galleryFiles"
-                    render={({ field }) => {
-                      const files: File[] = field.value || [];
-                      const handleAddFiles = (
-                        e: React.ChangeEvent<HTMLInputElement>,
-                      ) => {
-                        const selected = Array.from(e.target.files || []);
-                        const validImages = selected.filter((file) => {
-                          if (!file.type.startsWith("image/")) {
-                            toast.error(`${file.name} is not an image.`);
-                            return false;
-                          }
-                          if (file.size > 10 * 1024 * 1024) {
-                            toast.error(
-                              `${file.name} is too large (max 10MB).`,
-                            );
-                            return false;
-                          }
-                          return true;
-                        });
-                        field.onChange([...files, ...validImages]);
-                        if (e.target) e.target.value = "";
-                      };
-
-                      const handleRemoveFile = (targetFile: File) => {
-                        field.onChange(files.filter((f) => f !== targetFile));
-                      };
-
-                      return (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium flex items-center justify-between">
-                            <span>Gallery Images</span>
-                            <span className="text-muted-foreground">
-                              (optional)
-                            </span>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="space-y-3">
-                              {files.length > 0 && (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                  {files.map((file) => {
-                                    const previewUrl =
-                                      URL.createObjectURL(file);
-                                    const fileKey = `${file.name}-${file.lastModified}-${file.size}`;
-                                    return (
-                                      <div
-                                        key={fileKey}
-                                        className="relative group aspect-video rounded-lg overflow-hidden border bg-muted"
-                                      >
-                                        <Image
-                                          src={previewUrl}
-                                          alt={file.name}
-                                          fill
-                                          unoptimized
-                                          className="object-cover"
-                                        />
-                                        <button
-                                          type="button"
-                                          onClick={() => handleRemoveFile(file)}
-                                          disabled={isLoading}
-                                          className="absolute top-1 right-1 p-1 rounded-full bg-background/80 text-foreground hover:bg-destructive hover:text-destructive-foreground transition-colors shadow"
-                                          aria-label={`Remove ${file.name}`}
-                                        >
-                                          <X className="w-3.5 h-3.5" />
-                                        </button>
-                                        <span className="absolute bottom-1 left-1 right-1 text-[10px] bg-background/80 px-1 py-0.5 rounded truncate">
-                                          {file.name}
-                                        </span>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              )}
-                              <div>
-                                <label
-                                  className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-4 cursor-pointer transition-colors ${
-                                    isLoading
-                                      ? "opacity-50 cursor-not-allowed border-muted"
-                                      : "border-border hover:border-primary/50 hover:bg-muted/50"
-                                  }`}
-                                >
-                                  <div className="flex flex-col items-center gap-1.5 text-center">
-                                    <Upload className="w-6 h-6 text-muted-foreground" />
-                                    <span className="text-sm font-medium text-foreground">
-                                      {files.length > 0
-                                        ? "Add more images"
-                                        : "Upload gallery photos"}
-                                    </span>
-                                    <span className="text-xs text-muted-foreground">
-                                      PNG, JPG, WebP up to 10MB each
-                                    </span>
-                                  </div>
-                                  <input
-                                    type="file"
-                                    multiple
-                                    accept="image/*"
-                                    disabled={isLoading}
-                                    className="hidden"
-                                    onChange={handleAddFiles}
-                                  />
-                                </label>
-                              </div>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
+                    name="gallery"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel
+                          htmlFor="company-gallery-links"
+                          className="text-sm font-medium"
+                        >
+                          Workplace photos{" "}
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
+                        </FormLabel>
+                        <LinkListInput
+                          id="company-gallery-links"
+                          aria-label="Workplace photo link"
+                          value={field.value ?? []}
+                          onChange={field.onChange}
+                          max={6}
+                          placeholder="https://acme.com/office.jpg"
+                          disabled={isLoading}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Add up to 6 public image links. Press Enter after each
+                          one.
+                        </p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </>
               )}
