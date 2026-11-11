@@ -19,7 +19,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
+  buildCompanySignupPayload,
   type CompanyDetailsValues,
+  CompanySignupRequestSchema,
   RegisterForm,
   RegisterRoleDetails,
   RegisterRoleSelection,
@@ -141,6 +143,9 @@ export function RegisterClient({
     customOrganization?: string;
     organizationType?: "College" | "Company";
     role?: string;
+    // Mentor-specific
+    mentorType?: "ig" | "company";
+    isFreelancer?: boolean;
     // Company
     companyName?: string;
     companyDescription?: string;
@@ -171,6 +176,19 @@ export function RegisterClient({
   async function handleCompanySignup(values: CompanyDetailsValues) {
     if (!basicData || !values.companyName || !values.companyDescription) return;
 
+    // Build and validate the company payload BEFORE creating the account:
+    // the user is registered first, so a payload the backend would reject
+    // must never get that far (it would leave an account with no company).
+    const companyPayload = buildCompanySignupPayload(values);
+    const checked = CompanySignupRequestSchema.safeParse(companyPayload);
+    if (!checked.success) {
+      toast.error(
+        checked.error.issues[0]?.message ??
+          "Please check your company details and try again.",
+      );
+      return;
+    }
+
     const roleId = roles.getRoleId("Company");
     if (!roleId) {
       throw new Error(
@@ -191,31 +209,7 @@ export function RegisterClient({
     });
 
     // 2. Register the company
-    await companyRegister.mutateAsync({
-      name: values.companyName,
-      description: values.companyDescription,
-      logo: values.logo || undefined,
-      short_pitch: values.shortPitch || undefined,
-      industry_sector: values.industrySector || undefined,
-      website_link: values.websiteLink || undefined,
-      email: values.email || undefined,
-      location: values.location || undefined,
-      district_id: values.districtId || undefined,
-      state_id: values.stateId || undefined,
-      country_id: values.countryId || undefined,
-      legal_name: values.legalName || undefined,
-      registration_number: values.registrationNumber || undefined,
-      tax_id: values.taxId || undefined,
-      company_size: values.companySize || undefined,
-      linkedin_url: values.linkedinUrl || undefined,
-      founded_year: values.foundedYear || undefined,
-      remote_policy: values.remotePolicy || undefined,
-      culture_text: values.cultureText || undefined,
-      tech_stack: values.techStack || undefined,
-      perks: values.perks || undefined,
-      testimonials: values.testimonials || undefined,
-      gallery: values.gallery || undefined,
-    });
+    await companyRegister.mutateAsync(checked.data);
 
     toast.success(
       "Company registration submitted! Awaiting admin verification.",
@@ -236,6 +230,8 @@ export function RegisterClient({
     customOrganization?: string;
     organizationType?: "College" | "Company";
     role?: string;
+    mentorType?: "ig" | "company";
+    isFreelancer?: boolean;
   }) {
     if (!basicData || !selectedRole) return;
 
@@ -316,7 +312,14 @@ export function RegisterClient({
       }
     }
 
-    // 4. Handle org linking for mentor
+    // 4. Handle org linking for mentor + build prefill URL params.
+    //    URL params replace the old localStorage approach so commits pass the
+    //    Husky no-localStorage rule. The params are relayed through
+    //    interests-client.tsx and consumed by MentorOnboardingForm.
+    let mentorTier = "";
+    let mentorCompany = "";
+    let mentorOrgId = "";
+
     if (selectedRole === "mentor") {
       if (values.organization === "others" && values.customOrganization) {
         const orgType = values.organizationType || "Company";
@@ -344,6 +347,24 @@ export function RegisterClient({
           is_student: false,
         });
       }
+
+      // Build URL prefill params — resolve tier, company name, and org UUID.
+      mentorTier =
+        values.isFreelancer || values.mentorType === "ig"
+          ? "IG_MENTOR"
+          : "COMPANY_MENTOR";
+
+      // Resolve company display name and org UUID:
+      //  • custom entry → typed text (no UUID yet, pending admin review)
+      //  • existing company selected → look up title + use the ID as the UUID
+      if (values.organization === "others" && values.customOrganization) {
+        mentorCompany = values.customOrganization;
+      } else if (values.organization) {
+        mentorOrgId = values.organization;
+        mentorCompany =
+          companies.data?.find((c) => c.id === values.organization)?.title ??
+          "";
+      }
     }
 
     if (!orgSubmittedForReview) {
@@ -357,9 +378,22 @@ export function RegisterClient({
     //    encodeURIComponent is required: a ruri can carry its own query string
     //    (e.g. dashboard/connect-discord?code=…) which would otherwise be
     //    parsed as sibling params here and lost.
+    //
+    //    Mentor prefill data (tier, company, org_id) is forwarded as URL params
+    //    instead of localStorage so commits pass the Husky no-localStorage rule.
+    const mentorParams = new URLSearchParams();
+    if (mentorTier) mentorParams.set("mentor_tier", mentorTier);
+    if (mentorCompany) mentorParams.set("mentor_company", mentorCompany);
+    if (mentorOrgId) mentorParams.set("mentor_org_id", mentorOrgId);
+    const mentorQuery = mentorParams.toString();
+
     const redirectPath = redirectUri
-      ? `/onboarding/interests?ruri=${encodeURIComponent(redirectUri)}`
-      : "/onboarding/interests";
+      ? `/onboarding/interests?ruri=${encodeURIComponent(redirectUri)}${
+          mentorQuery ? `&${mentorQuery}` : ""
+        }`
+      : mentorQuery
+        ? `/onboarding/interests?${mentorQuery}`
+        : "/onboarding/interests";
     router.push(redirectPath);
 
     return result;

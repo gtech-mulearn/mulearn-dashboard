@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,14 +21,12 @@ interface BroadcastTableProps {
   broadcasts: AdminBroadcast[];
   isLoading: boolean;
   onEdit: (broadcast: AdminBroadcast) => void;
-  onCreateClick: () => void;
 }
 
 export function BroadcastTable({
   broadcasts,
   isLoading,
   onEdit,
-  onCreateClick,
 }: BroadcastTableProps) {
   const {
     mutate: deleteBroadcast,
@@ -48,12 +46,11 @@ export function BroadcastTable({
 
   if (broadcasts.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 py-16 text-muted-foreground">
-        <Plus className="h-10 w-10" />
-        <p className="text-sm">No broadcasts yet</p>
-        <Button size="sm" onClick={onCreateClick}>
-          Create broadcast
-        </Button>
+      <div className="flex flex-col items-center justify-center gap-2 py-16 text-muted-foreground">
+        <p className="text-sm">
+          No active announcements yet. Click &ldquo;New announcement&rdquo;
+          above to create one.
+        </p>
       </div>
     );
   }
@@ -64,7 +61,7 @@ export function BroadcastTable({
         <TableRow>
           <TableHead>Title</TableHead>
           <TableHead className="hidden md:table-cell">Description</TableHead>
-          <TableHead className="hidden lg:table-cell">Target</TableHead>
+          <TableHead className="hidden lg:table-cell">Audience</TableHead>
           <TableHead className="hidden sm:table-cell">Expires</TableHead>
           <TableHead className="hidden lg:table-cell">Created by</TableHead>
           <TableHead className="w-[80px]">Actions</TableHead>
@@ -105,7 +102,7 @@ export function BroadcastTable({
                   size="icon"
                   className="h-7 w-7"
                   onClick={() => onEdit(b)}
-                  aria-label="Edit broadcast"
+                  aria-label="Edit announcement"
                 >
                   <Pencil className="h-3.5 w-3.5" />
                 </Button>
@@ -115,7 +112,7 @@ export function BroadcastTable({
                   className="h-7 w-7 text-destructive hover:text-destructive"
                   onClick={() => deleteBroadcast(b.id)}
                   disabled={isDeleting && deletingId === b.id}
-                  aria-label="Delete broadcast"
+                  aria-label="Delete announcement"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>

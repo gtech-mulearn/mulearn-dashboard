@@ -11,6 +11,7 @@ interface FetchParams {
   perPage: number;
   search?: string;
   sortBy?: string;
+  role?: string;
 }
 
 export async function fetchRoleVerifications(
@@ -28,6 +29,11 @@ export async function fetchRoleVerifications(
   if (params.sortBy?.trim()) {
     // Backend expects ascending columns normally, or prefixed by '-' for desc
     query.set("sortBy", params.sortBy.trim());
+  }
+
+  if (params.role?.trim()) {
+    // UserVerificationAPI filters on Role.title (?role=Enabler).
+    query.set("role", params.role.trim());
   }
 
   const response = await apiClient.get(
@@ -52,6 +58,7 @@ export async function updateRoleVerification(
 export async function deleteRoleVerification(id: string): Promise<void> {
   await apiClient.delete(
     endpoints.admin.roleVerification.delete(id),
+    undefined,
     GenericMutationResponseSchema,
   );
 }

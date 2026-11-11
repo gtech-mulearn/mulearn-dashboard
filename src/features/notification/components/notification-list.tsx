@@ -1,32 +1,24 @@
 "use client";
 
 import { Inbox } from "lucide-react";
-import type { BroadcastNotification, DirectNotification } from "../schemas";
+import type { NotificationItem as NotificationItemType } from "../schemas";
 import { NotificationItem } from "./notification-item";
 
-interface DirectListProps {
-  type: "direct";
-  items: DirectNotification[];
-  onDelete: (id: string) => void;
+interface NotificationListProps {
+  items: NotificationItemType[];
   deletingId?: string;
+  markingReadId?: string;
+  onDelete?: (id: string) => void;
+  onMarkRead?: (id: string) => void;
   emptyLabel?: string;
 }
-
-interface BroadcastListProps {
-  type: "broadcast";
-  items: BroadcastNotification[];
-  onDelete?: never;
-  deletingId?: never;
-  emptyLabel?: string;
-}
-
-type NotificationListProps = DirectListProps | BroadcastListProps;
 
 export function NotificationList({
-  type,
   items,
-  onDelete,
   deletingId,
+  markingReadId,
+  onDelete,
+  onMarkRead,
   emptyLabel = "No notifications",
 }: NotificationListProps) {
   if (items.length === 0) {
@@ -43,15 +35,11 @@ export function NotificationList({
       {items.map((item) => (
         <NotificationItem
           key={item.id}
-          id={item.id}
-          title={item.title}
-          description={item.description}
-          created_at={item.created_at}
-          url={item.url}
-          button={"button" in item ? item.button : undefined}
-          type={type}
-          onDelete={type === "direct" ? onDelete : undefined}
+          item={item}
           isDeleting={deletingId === item.id}
+          isMarkingRead={markingReadId === item.id}
+          onDelete={onDelete}
+          onMarkRead={onMarkRead}
         />
       ))}
     </div>

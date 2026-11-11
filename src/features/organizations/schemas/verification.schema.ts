@@ -18,6 +18,8 @@ export const UnverifiedOrgItemSchema = z.object({
   graduation_year: z.number().nullable().optional(),
   department: z.string().nullable().optional(),
   created_by: z.string(),
+  created_by_muid: z.string().nullable().optional(),
+  created_by_email: z.string().nullable().optional(),
   created_at: z.string(),
 });
 
@@ -54,11 +56,28 @@ export type UnverifiedOrgListData = {
 
 // ─── Verify form ──────────────────────────────────────────────────────────────
 
-export const VerifyOrgFormSchema = z.object({
-  verified: z.boolean(),
-  org_id: z.string().min(1, "Organization ID is required"),
-});
+// Only an approval maps the request onto an Organization; a rejection has
+// nothing to map to (OrganizationVerifySerializer.validate).
+export const VerifyOrgFormSchema = z
+  .object({
+    verified: z.boolean(),
+    org_id: z.string().min(1).optional(),
+  })
+  .refine((v) => !v.verified || Boolean(v.org_id), {
+    message: "Organization ID is required",
+    path: ["org_id"],
+  });
 
 export type VerifyOrgFormValues = z.infer<typeof VerifyOrgFormSchema>;
+
+/** Body for POST organisation/verify/<id>/. A rejection never carries an org. */
+export function toVerifyOrgPayload(
+  action: "approve" | "reject",
+  orgId: string,
+): VerifyOrgFormValues {
+  return action === "approve"
+    ? { verified: true, org_id: orgId.trim() }
+    : { verified: false };
+}
 
 export const VerificationMutationResponseSchema = z.unknown();

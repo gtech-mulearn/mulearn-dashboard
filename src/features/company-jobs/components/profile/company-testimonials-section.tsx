@@ -15,12 +15,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { CompanyTestimonial } from "../../types";
 
 function TestimonialCard({ testimonial }: { testimonial: CompanyTestimonial }) {
-  const initials = testimonial.learner_name
-    .split(" ")
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase();
+  const learnerName = testimonial.learner_name || "muLearn Hire";
+  const initials =
+    learnerName
+      .split(" ")
+      .slice(0, 2)
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase() || "MH";
 
   return (
     <div className="flex w-72 shrink-0 flex-col gap-4 rounded-xl border border-border bg-muted/30 p-4">
@@ -32,7 +34,7 @@ function TestimonialCard({ testimonial }: { testimonial: CompanyTestimonial }) {
         {testimonial.author_avatar ? (
           <Image
             src={testimonial.author_avatar}
-            alt={testimonial.learner_name}
+            alt={learnerName}
             width={36}
             height={36}
             className="size-9 rounded-full object-cover"
@@ -46,10 +48,10 @@ function TestimonialCard({ testimonial }: { testimonial: CompanyTestimonial }) {
         )}
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-foreground">
-            {testimonial.learner_name}
+            {learnerName}
           </p>
           <p className="truncate text-[11px] text-muted-foreground">
-            {testimonial.role}
+            {testimonial.role || "Hire"}
           </p>
         </div>
       </div>
@@ -64,7 +66,7 @@ interface CompanyTestimonialsSectionProps {
 export function CompanyTestimonialsSection({
   testimonials,
 }: CompanyTestimonialsSectionProps) {
-  if (!testimonials.length) return null;
+  if (!testimonials?.length) return null;
 
   return (
     <Card className="rounded-2xl border bg-card shadow-sm">
@@ -81,8 +83,11 @@ export function CompanyTestimonialsSection({
 
       <CardContent className="px-5 pb-5 pt-0">
         <div className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {testimonials.map((t) => (
-            <TestimonialCard key={t.learner_name} testimonial={t} />
+          {testimonials.map((t, idx) => (
+            <TestimonialCard
+              key={t.id || t.learner_name || `testimonial-${idx}`}
+              testimonial={t}
+            />
           ))}
         </div>
       </CardContent>

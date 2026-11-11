@@ -112,127 +112,263 @@ export const endpoints = {
   },
 
   // ============================================
-  // Company Endpoints
+  // Company Endpoints (Part A — Company System)
+  // Base: /api/v1/dashboard/company/
   // ============================================
   company: {
-    /** 1. POST/PATCH - Submit/Update company registration (Authenticated) */
+    // ── §1 Registration & Onboarding ────────────────────────
+    /** POST/PATCH - Submit (Public) or Update (Authenticated) company registration */
     register: "/api/v1/dashboard/company/register/",
-    /** 2. GET - Check onboarding status */
+    /** GET - Check company onboarding / verification status */
     status: "/api/v1/dashboard/company/status/",
-    /** 3. GET/PATCH - Full company profile for logged-in company user */
+
+    // ── §2 Company Profile & Admin Management ───────────────
+    /** GET/PATCH - Full company profile for logged-in company user */
     profile: "/api/v1/dashboard/company/profile/",
-    /** 4. GET - Public company profile */
+    /** GET - Public company profile (🌐 Public) */
     publicProfile: (slug: string) =>
       `/api/v1/dashboard/company/profile/public/${slug}/`,
-    /** 5. GET - Active jobs for a verified company (public) */
+    /** GET - Active jobs for a verified company (🌐 Public) */
     publicJobsBySlug: (slug: string) =>
       `/api/v1/dashboard/company/profile/public/${slug}/jobs/`,
-    /** 6. GET - Admin list of all companies with filters */
+    /** POST - Invite a platform user as co-admin */
+    adminLink: "/api/v1/dashboard/company/admin-link/",
+    /** POST - Invitee accepts or declines a co-admin invitation */
+    adminLinkRespond: (linkId: string) =>
+      `/api/v1/dashboard/company/admin-link/${linkId}/respond/`,
+    /** DELETE - Owner revokes an accepted co-admin (pending invites can't be cancelled) */
+    adminLinkRemove: (linkId: string) =>
+      `/api/v1/dashboard/company/admin-link/${linkId}/`,
+    /** DELETE - Co-admin voluntarily leaves the company */
+    adminLinkLeave: (linkId: string) =>
+      `/api/v1/dashboard/company/admin-link/${linkId}/leave/`,
+    /** GET - List all co-admins and invitations */
+    adminLinkList: "/api/v1/dashboard/company/admin-link/list/",
+    /** GET - The caller's pending co-admin invitations (BE-1) */
+    adminLinkInvitations: "/api/v1/dashboard/company/admin-link/invitations/",
+    /** POST - Company owner self-deactivation */
+    deactivateSelf: "/api/v1/dashboard/company/deactivate/",
+    /** POST - Platform admin deactivates a company */
+    deactivateAdmin: (companyId: string) =>
+      `/api/v1/dashboard/company/${companyId}/deactivate/`,
+    /** POST - Platform admin reactivates a deactivated company */
+    reactivateAdmin: (companyId: string) =>
+      `/api/v1/dashboard/company/${companyId}/reactivate/`,
+
+    // ── §3 Admin — Company Management ───────────────────────
+    /** GET - Admin list of all companies with filters */
     list: "/api/v1/dashboard/company/list/",
-    /** 7. GET - Admin detail view for one company */
+    /** GET - Admin detail view for one company */
     detail: (companyId: string) => `/api/v1/dashboard/company/${companyId}/`,
-    /** 8. PATCH - Approve or reject a pending company */
+    /** PATCH - Approve or reject a pending company */
     verify: (companyId: string) =>
       `/api/v1/dashboard/company/verify/${companyId}/`,
-    /** 9. GET/POST - List jobs for company / Create a job */
+
+    // ── §4 Job Management ───────────────────────────────────
+    /** POST - Create a new job */
     jobs: "/api/v1/dashboard/company/jobs/",
-    /** 10. GET - Public catalogue of all active jobs across companies */
+    /** GET - List company's own jobs */
+    myJobs: "/api/v1/dashboard/company/jobs/",
+    /** GET - Public catalogue of all active jobs across companies (🌐 Public) */
     jobsAll: "/api/v1/dashboard/company/jobs/all/",
-    /** 11. GET/PATCH/DELETE - Single job detail / Update / Soft-delete */
+    /** GET - Pending jobs queue for admin review */
+    jobsPending: "/api/v1/dashboard/company/jobs/pending/",
+    /** GET/PATCH/DELETE - Single job detail / Update / Soft-delete */
     jobDetail: (jobId: string) => `/api/v1/dashboard/company/jobs/${jobId}/`,
-    /** 12. POST - Apply to an active job */
+    /** POST - Admin approves a pending job */
+    jobApprove: (jobId: string) =>
+      `/api/v1/dashboard/company/jobs/${jobId}/approve/`,
+    /** POST - Admin rejects a pending job */
+    jobReject: (jobId: string) =>
+      `/api/v1/dashboard/company/jobs/${jobId}/reject/`,
+    /** POST - Admin requests changes on a pending job */
+    jobRequestChanges: (jobId: string) =>
+      `/api/v1/dashboard/company/jobs/${jobId}/request-changes/`,
+    /** POST - Apply to an active job */
     applyJob: (jobId: string) =>
       `/api/v1/dashboard/company/jobs/${jobId}/apply/`,
-    /** 13. GET - List applicants for a job owned by the company */
+    /** GET - List applicants for a job owned by the company */
     jobApplications: (jobId: string) =>
       `/api/v1/dashboard/company/jobs/${jobId}/applications/`,
-    /** 14. GET - List all jobs the current user has applied to */
+    /** GET - List all jobs the current user has applied to */
     myApplications: "/api/v1/dashboard/company/applications/me/",
-    /** 15. PATCH - Company updates an application's status */
+    /** PATCH - Company updates an application's status */
     applicationStatus: (appId: string) =>
       `/api/v1/dashboard/company/applications/${appId}/status/`,
-    /** 16. DELETE - Applicant withdraws their application */
+    /** DELETE - Applicant withdraws their application */
     applicationWithdraw: (appId: string) =>
       `/api/v1/dashboard/company/applications/${appId}/withdraw/`,
-    /** 17. PATCH - Resubmit a rejected application */
+    /** PATCH - Resubmit a rejected application */
     applicationResubmit: (appId: string) =>
       `/api/v1/dashboard/company/applications/${appId}/resubmit/`,
 
-    /** 19. GET - Talent directory of public muLearn users */
-    mulearners: "/api/v1/dashboard/company/mulearners/",
-    /** 19. GET - Analytics for gig-type jobs posted by the company */
+    // ── §5 Analytics & Engagement ───────────────────────────
+    /** POST - Track view on a job (🌐 Public/Auth) */
+    trackJobView: (jobId: string) =>
+      `/api/v1/dashboard/company/jobs/${jobId}/view/`,
+    /** GET - Per-job engagement metrics */
+    jobAnalytics: (jobId: string) =>
+      `/api/v1/dashboard/company/jobs/${jobId}/analytics/`,
+    /** GET - Campus-level analytics */
+    analyticsCampus: "/api/v1/dashboard/company/analytics/campus/",
+    /** GET - Campus quarterly trend */
+    analyticsCampusTrend: "/api/v1/dashboard/company/analytics/campus/trend/",
+    /** GET - Analytics for gig-type jobs posted by the company */
     analyticsGigs: "/api/v1/dashboard/company/analytics/gigs/",
-
-    // --- Legacy / Undocumented endpoints needed for frontend build ---
+    /** GET - Company tasks analytics */
+    analyticsTasks: "/api/v1/dashboard/company/analytics/tasks/",
     /** GET - Company home dashboard summary */
     homeSummary: "/api/v1/dashboard/company/home-summary/",
-    /** POST - Add eligibility rule to job (JWT required) */
-    createJobRule: (jobId: string) =>
-      `/api/v1/dashboard/company/jobs/${jobId}/rules/create/`,
-    /** PATCH - Update eligibility rule (JWT required) */
-    updateJobRule: (jobId: string, ruleId: string) =>
-      `/api/v1/dashboard/company/jobs/${jobId}/rules/${ruleId}/`,
-    /** DELETE - Hard delete eligibility rule (JWT required) */
-    deleteJobRule: (jobId: string, ruleId: string) =>
-      `/api/v1/dashboard/company/jobs/${jobId}/rules/${ruleId}/delete/`,
-    /** GET - Admin Summary Dashboard */
-    adminSummary: "/api/v1/dashboard/company/summary/",
+
+    // ── §6 Talent Pool & µLearner Discovery ─────────────────
+    /** GET - Company's bookmarked learners */
+    shortlist: "/api/v1/dashboard/company/mulearners/shortlist/",
+    /** POST - Add learner to shortlist */
+    shortlistAdd: "/api/v1/dashboard/company/mulearners/shortlist/",
+    /** DELETE - Remove learner from shortlist */
+    shortlistRemove: (userId: string) =>
+      `/api/v1/dashboard/company/mulearners/shortlist/${userId}/`,
+    /** GET - Talent directory of public muLearn users */
+    mulearners: "/api/v1/dashboard/company/mulearners/",
+    /** GET - Aggregated talent pool metrics & recommendations */
+    talentPoolInsights: "/api/v1/dashboard/company/talent-pool/insights/",
+    /** GET - Company Talent Pool Analytics */
+    talentPoolAnalytics: "/api/v1/dashboard/company/talent-pool/analytics/",
+
+    // ── §7 Company Tasks ────────────────────────────────────
     /** GET/POST - List company tasks / Create a company task */
     tasks: "/api/v1/dashboard/company/tasks/",
     /** GET/PUT/DELETE - Get / Update / Delete task detail */
     taskDetail: (taskId: string) =>
       `/api/v1/dashboard/company/tasks/${taskId}/`,
+    /** GET/POST - List / Create company task templates */
+    taskTemplates: "/api/v1/dashboard/company/tasks/templates/",
+    /** DELETE - Delete a company task template */
+    taskTemplateDetail: (templateId: string) =>
+      `/api/v1/dashboard/company/tasks/templates/${templateId}/`,
+
+    // ── §8 Feedback, Reviews & Impact ───────────────────────
+    /** POST - Submit structured feedback (Company <-> Learner) */
+    feedback: "/api/v1/dashboard/company/feedback/",
+    /** GET - List received feedback */
+    feedbackList: "/api/v1/dashboard/company/feedback/list/",
+    /** GET - Company impact report */
+    impactReport: "/api/v1/dashboard/company/impact-report/",
+    /** PATCH - Toggle impact report public visibility */
+    impactReportPublish: "/api/v1/dashboard/company/impact-report/publish/",
+
+    // ── §9 Inter-Company Collaboration ──────────────────────
+    /** GET/POST - List / Create collaboration proposals */
+    collaborations: "/api/v1/dashboard/company/collaborations/",
+    /** GET - Browse public/open collaboration proposals across all companies */
+    collaborationsDiscover:
+      "/api/v1/dashboard/company/collaborations/discover/",
+    /** POST - Respond to collaboration invitation */
+    /** GET - Collaboration invites for the caller's campus/IGs (BE-9) */
+    collaborationsIncoming:
+      "/api/v1/dashboard/company/collaborations/incoming/",
+    collaborationRespond: (id: string) =>
+      `/api/v1/dashboard/company/collaborations/${id}/respond/`,
+    /** DELETE - Withdraw an open or pending collaboration */
+    collaborationDetail: (id: string) =>
+      `/api/v1/dashboard/company/collaborations/${id}/`,
+
+    // ── §10 Interest Group (IG) Sponsorship & Requests ──────
+    /** POST - Submit sponsorship proposal for an Interest Group */
+    igSponsorship: (igId: string) =>
+      `/api/v1/dashboard/company/ig-sponsorship/${igId}/`,
+    /** PATCH - Admin review IG sponsorship proposal */
+    /** GET - Admin queue of pending IG sponsorship requests (BE-3) */
+    igSponsorshipPending: "/api/v1/dashboard/company/ig-sponsorship/pending/",
+    igSponsorshipReview: (igId: string) =>
+      `/api/v1/dashboard/company/ig-sponsorship/${igId}/review/`,
+    /** GET - Sponsor performance metrics for sponsored IG */
+    igSponsorshipMetrics: (igId: string) =>
+      `/api/v1/dashboard/company/ig-sponsorship/${igId}/metrics/`,
+
+    // ── §11 Company Event Templates ─────────────────────────
+    /** GET/POST - List / Create reusable event templates */
+    eventTemplates: "/api/v1/dashboard/company/events/templates/",
+    /** DELETE - Delete event template */
+    eventTemplateDetail: (templateId: string) =>
+      `/api/v1/dashboard/company/events/templates/${templateId}/`,
+
+    // ── §12 Company Mentor Integration ──────────────────────
     /** POST - Nominate a Company Mentor */
     mentorNominate: "/api/v1/dashboard/company/mentor/nominate/",
+    /** POST - User applies to be mentor linked to company via code or self-apply */
+    mentorApply: "/api/v1/dashboard/company/mentor/apply/",
     /** GET - List Company Mentor Nominations */
     mentorList: "/api/v1/dashboard/company/mentor/list/",
-    /** POST - Track Job View */
-    trackJobView: (jobId: string) =>
-      `/api/v1/dashboard/company/jobs/${jobId}/view/`,
-    /** GET - Company Job Engagement Analytics */
-    jobAnalytics: (jobId: string) =>
-      `/api/v1/dashboard/company/jobs/${jobId}/analytics/`,
-    /** GET - Company Talent Pool Analytics */
-    talentPoolAnalytics: "/api/v1/dashboard/company/talent-pool/analytics/",
+
+    // ── §13 Admin Summary ───────────────────────────────────
+    /** GET - Admin Summary Dashboard */
+    adminSummary: "/api/v1/dashboard/company/summary/",
   },
 
   // ============================================
   // Mentor Dashboard Endpoints
-  // (Only the 22 endpoints from the provided API doc)
   // Base: /api/v1/dashboard/mentor/
   // ============================================
   mentor: {
-    // ── Overview & Persona ──────────────────────────────────────────────────
-    /** GET - Mentor overview (scopes + metrics) */
-    overview: "/api/v1/dashboard/mentor/overview/",
-
-    // ── #1 POST/PATCH  register/ ─────────────────────────────────────────────
+    // ── §14 Registration ─────────────────────────────────────────────────────
     /** POST/PATCH - Submit or update a mentor application */
     register: "/api/v1/dashboard/mentor/register/",
-
-    // ── #2 GET  status/ ──────────────────────────────────────────────────────
     /** GET - Check mentor application status */
     status: "/api/v1/dashboard/mentor/status/",
+    /** PATCH - Tier-specific verifier: approve or reject a mentor application */
+    verify: (mentorId: string) =>
+      `/api/v1/dashboard/mentor/verify/${mentorId}/`,
 
-    // ── #3 GET/PATCH  profile/ ───────────────────────────────────────────────
+    // ── §15 Public Profile ───────────────────────────────────────────────────
+    /** GET - Public profile of an approved mentor (auth required) */
+    publicProfile: (mentorId: string) =>
+      `/api/v1/dashboard/mentor/public/profile/${mentorId}/`,
+    /** GET - Public availability of an approved mentor (auth required) */
+    publicAvailability: (mentorId: string) =>
+      `/api/v1/dashboard/mentor/public/availability/${mentorId}/`,
+
+    // ── §16 Overview, Activity, Analytics, Profile ───────────────────────────
+    /** GET - Mentor overview (scopes + metrics) */
+    overview: "/api/v1/dashboard/mentor/overview/",
+    /** GET - Merged timeline: sessions created + task submissions appraised */
+    activity: "/api/v1/dashboard/mentor/activity/",
+    /** GET - Personal analytics for the logged-in mentor */
+    analyticsPersonal: "/api/v1/dashboard/mentor/analytics/personal/",
+    /** GET - Profile completion percentage and missing fields */
+    profileCompletion: "/api/v1/dashboard/mentor/profile/completion/",
+    /** GET - Current persona of the authenticated user (Auth) */
+    personaCurrent: "/api/v1/dashboard/mentor/persona/current/",
     /** GET/PATCH - Approved mentor's own full profile */
     profile: "/api/v1/dashboard/mentor/profile/",
 
-    // ── #4 GET  list/ ────────────────────────────────────────────────────────
+    // ── §17 Admin Listing / Roster ───────────────────────────────────────────
     /** GET - Admin: paginated list of all mentor applications */
     list: "/api/v1/dashboard/mentor/list/",
-
-    // ── #5 GET  detail/<mentor_id>/ ──────────────────────────────────────────
+    /** GET - Admin: full mentor roster (simplified list) */
+    roster: "/api/v1/dashboard/mentor/roster/",
+    /** GET - Admin: pending change requests from mentors */
+    changeRequests: "/api/v1/dashboard/mentor/change-requests/",
     /** GET - Admin: single mentor application detail */
     detail: (mentorId: string) =>
       `/api/v1/dashboard/mentor/detail/${mentorId}/`,
 
-    // ── #6 PATCH  verify/<mentor_id>/ ────────────────────────────────────────
-    /** PATCH - Admin: approve or reject a mentor application */
-    verify: (mentorId: string) =>
-      `/api/v1/dashboard/mentor/verify/${mentorId}/`,
+    // ── §18 Admin Assignment ─────────────────────────────────────────────────
+    /** POST - Bulk-assign users as mentors of one tier (Admin) */
+    adminAssign: "/api/v1/dashboard/mentor/admin/assign/",
+    /** DELETE - Revoke a user's mentor tier(s); ?mentor_tier= narrows to one */
+    adminRevoke: (muid: string) =>
+      `/api/v1/dashboard/mentor/admin/assign/${muid}/`,
+    /** POST - Deactivate a mentor by user_mentor_id (Admin) */
+    adminDeactivate: (userMentorId: string) =>
+      `/api/v1/dashboard/mentor/admin/deactivate/${userMentorId}/`,
+    /** GET - Deactivated mentors, UserMentor rows (Admin, BE-5) */
+    adminDeactivated: "/api/v1/dashboard/mentor/admin/deactivated/",
+    /** POST - Reactivate a mentor by user_mentor_id (Admin) */
+    adminReactivate: (userMentorId: string) =>
+      `/api/v1/dashboard/mentor/admin/reactivate/${userMentorId}/`,
 
-    // ── §4 Mentor scope grants ───────────────────────────────────────────────
+    // ── §19 Scope Grants ─────────────────────────────────────────────────────
     /** GET - List a mentor's scope grants (Admin / owning Company user) */
     grants: (mentorId: string) =>
       `/api/v1/dashboard/mentor/${mentorId}/grants/`,
@@ -240,94 +376,77 @@ export const endpoints = {
     grantRevoke: (mentorId: string, grantId: string) =>
       `/api/v1/dashboard/mentor/${mentorId}/grants/${grantId}/`,
 
-    // ── §5 Admin bulk assignment ─────────────────────────────────────────────
-    /** POST - Bulk-assign users as mentors of one tier (Admin) */
-    adminAssign: "/api/v1/dashboard/mentor/admin/assign/",
-    /** DELETE - Revoke a user's mentor tier(s); ?mentor_tier= narrows to one */
-    adminRevoke: (muid: string) =>
-      `/api/v1/dashboard/mentor/admin/assign/${muid}/`,
+    // ── §20 Persona Switching ────────────────────────────────────────────────
+    /** GET - Persona switching status (Mentor) */
+    personaStatus: "/api/v1/dashboard/mentor/persona/status/",
+    /** POST - Switch active persona (Mentor) */
+    personaSwitch: "/api/v1/dashboard/mentor/persona/switch/",
 
-    // ── #7 GET  public/profile/<mentor_id>/ ──────────────────────────────────
-    /** GET - Public profile of an approved mentor (auth required) */
-    publicProfile: (mentorId: string) =>
-      `/api/v1/dashboard/mentor/public/profile/${mentorId}/`,
+    // ── §21 Company Affiliation Change ───────────────────────────────────────
+    /** POST - Request a company affiliation change (pending admin approval) */
+    changeCompany: "/api/v1/dashboard/mentor/change-company/",
+    /**
+     * GET/PATCH - Preferred IGs of one of the caller's APPROVED applications.
+     * PATCH creates a PENDING change request for the tier's verifier; the
+     * current IGs stay active until it is approved.
+     */
+    preferredIgs: (applicationId: string) =>
+      `/api/v1/dashboard/mentor/${applicationId}/preferred-igs/`,
 
-    // ── #8 GET  public/availability/<mentor_id>/ ─────────────────────────────
-    /** GET - Public availability of an approved mentor (auth required) */
-    publicAvailability: (mentorId: string) =>
-      `/api/v1/dashboard/mentor/public/availability/${mentorId}/`,
-
-    // ── #9 GET/POST  availability/ ───────────────────────────────────────────
-    /** GET/POST - Mentor's own availability slots */
-    availabilitySlots: "/api/v1/dashboard/mentor/availability/",
-
-    // ── #10 GET/PATCH/DELETE  availability/<slot_id>/ ────────────────────────
-    /** GET/PATCH/DELETE - Single availability slot */
-    availabilitySlot: (slotId: string) =>
-      `/api/v1/dashboard/mentor/availability/${slotId}/`,
-
-    // ── #11 POST  session/create/ ────────────────────────────────────────────
+    // ── §22 Sessions ─────────────────────────────────────────────────────────
     /** POST - Create a mentorship session */
     sessionCreate: "/api/v1/dashboard/mentor/session/create/",
-
-    // ── #12 GET  session/list/ ───────────────────────────────────────────────
     /** GET - List sessions created by the logged-in mentor */
     sessionList: "/api/v1/dashboard/mentor/session/list/",
-
-    // ── #13 GET  session/list/<session_id>/ ──────────────────────────────────
     /** GET - Single session detail */
     sessionDetail: (sessionId: string) =>
       `/api/v1/dashboard/mentor/session/list/${sessionId}/`,
-
-    // ── #14 PATCH/DELETE  session/update/<session_id>/ ───────────────────────
     /** PATCH/DELETE - Update or soft-delete a session */
     sessionUpdate: (sessionId: string) =>
       `/api/v1/dashboard/mentor/session/update/${sessionId}/`,
 
+    /** POST - Mark a session as complete */
+    sessionComplete: (sessionId: string) =>
+      `/api/v1/dashboard/mentor/session/complete/${sessionId}/`,
+
     // ── #15 GET  session/available/ ──────────────────────────────────────────
     /** GET - Learner: list SCHEDULED sessions for the user's IGs */
     sessionAvailable: "/api/v1/dashboard/mentor/session/available/",
-
-    // ── #16 GET  session/admin/list/ ─────────────────────────────────────────
     /** GET - Admin: list all non-deleted sessions */
     sessionAdminList: "/api/v1/dashboard/mentor/session/admin/list/",
-
-    // ── #17 PATCH  session/admin/verify/<session_id>/ ────────────────────────
     /** PATCH - Admin: approve or reject a PENDING_APPROVAL session */
     sessionAdminVerify: (sessionId: string) =>
       `/api/v1/dashboard/mentor/session/admin/verify/${sessionId}/`,
 
-    // ── #18 POST  session/participation/join/<session_id>/ ───────────────────
+    // ── §23 Availability ─────────────────────────────────────────────────────
+    /** GET/POST - Mentor's own availability slots */
+    availabilitySlots: "/api/v1/dashboard/mentor/availability/",
+    /** GET/PATCH/DELETE - Single availability slot */
+    availabilitySlot: (slotId: string) =>
+      `/api/v1/dashboard/mentor/availability/${slotId}/`,
+
+    // ── §24 Participation ────────────────────────────────────────────────────
     /** POST - Join a SCHEDULED session as a learner */
     sessionJoin: (sessionId: string) =>
       `/api/v1/dashboard/mentor/session/participation/join/${sessionId}/`,
-
-    // ── #19 GET  session/participant/history/ ────────────────────────────────
+    /** POST - Add a participant to a session (Mentor owner) */
+    sessionParticipantAdd: (sessionId: string) =>
+      `/api/v1/dashboard/mentor/session/participant/add/${sessionId}/`,
     /** GET - Sessions the current user has joined (learner history) */
     sessionParticipantHistory:
       "/api/v1/dashboard/mentor/session/participant/history/",
-
-    // ── #20 GET/POST  session/participant/list/<session_id>/ ─────────────────
     /** GET - List participants for a session */
     sessionParticipantList: (sessionId: string) =>
       `/api/v1/dashboard/mentor/session/participant/list/${sessionId}/`,
-
-    /** POST - Add a participant to a session */
-    sessionParticipantAdd: (sessionId: string) =>
-      `/api/v1/dashboard/mentor/session/participant/add/${sessionId}/`,
-
-    // ── #21 PATCH  session/participant/update/<link_id>/ ─────────────────────
     /** PATCH - Mentor updates attendance/progress for one participant */
     sessionParticipantUpdate: (linkId: string) =>
       `/api/v1/dashboard/mentor/session/participant/update/${linkId}/`,
-
-    // ── #22 PATCH  session/participant/feedback/<session_id>/ ────────────────
     /** PATCH - Participant submits feedback after attending a session */
     sessionParticipantFeedback: (sessionId: string) =>
       `/api/v1/dashboard/mentor/session/participant/feedback/${sessionId}/`,
 
-    // ── Student Session Requests ─────────────────────────────────────────────
-    /** POST - Submit a session request */
+    // ── §25 Student Requests ─────────────────────────────────────────────────
+    /** POST - Submit a session request (Auth student) */
     studentSessionRequestCreate:
       "/api/v1/dashboard/mentor/session/student/request/",
     /** GET - Student's own session requests */
@@ -340,21 +459,36 @@ export const endpoints = {
     studentSessionVerify: (sessionId: string) =>
       `/api/v1/dashboard/mentor/session/student-requests/${sessionId}/verify/`,
 
-    // ── Tasks: IG dropdown ───────────────────────────────────────────────
+    // ── §26 Tasks ────────────────────────────────────────────────────────────
     /** GET - IGs where the mentor has an active assignment (for task creation) */
     tasksIgDropdown: "/api/v1/dashboard/mentor/tasks/ig-dropdown/",
-
-    // ── Tasks: list + create ─────────────────────────────────────────────
     /** GET/POST - List mentor-submitted tasks or create a new task */
     tasks: "/api/v1/dashboard/mentor/tasks/",
-
-    // ── Tasks: detail + update + delete ──────────────────────────────────
     /** GET/PUT/DELETE - Single mentor task by ID */
     task: (taskId: string) => `/api/v1/dashboard/mentor/tasks/${taskId}/`,
 
-    // ── Activity feed ────────────────────────────────────────────────────
-    /** GET - Merged timeline: sessions created + task submissions appraised */
-    activity: "/api/v1/dashboard/mentor/activity/",
+    // ── §27 IG Opportunities ─────────────────────────────────────────────────
+    /** GET - List IG opportunities for the logged-in mentor */
+    opportunitiesList: "/api/v1/dashboard/mentor/opportunities/",
+    /** POST - Create a new IG opportunity (Mentor, active, scoped) */
+    opportunitiesCreate: "/api/v1/dashboard/mentor/opportunities/",
+    /** GET - Single opportunity detail (Mentor managing) */
+    opportunityDetail: (opportunityId: string) =>
+      `/api/v1/dashboard/mentor/opportunities/${opportunityId}/`,
+    /** PATCH - Update an opportunity (Mentor managing, active) */
+    opportunityUpdate: (opportunityId: string) =>
+      `/api/v1/dashboard/mentor/opportunities/${opportunityId}/`,
+    /** DELETE - Delete an opportunity (Mentor managing) */
+    opportunityDelete: (opportunityId: string) =>
+      `/api/v1/dashboard/mentor/opportunities/${opportunityId}/`,
+    /** POST - Publish an opportunity (Mentor managing, active) */
+    opportunityPublish: (opportunityId: string) =>
+      `/api/v1/dashboard/mentor/opportunities/${opportunityId}/publish/`,
+    /** POST - Close an opportunity (Mentor managing, active) */
+    opportunityClose: (opportunityId: string) =>
+      `/api/v1/dashboard/mentor/opportunities/${opportunityId}/close/`,
+    /** GET - Public catalogue of all open opportunities (public) */
+    opportunitiesPublic: "/api/v1/dashboard/mentor/opportunities/public/",
   },
 
   // ============================================
@@ -577,6 +711,13 @@ export const endpoints = {
     /** DELETE - Delete a specific social link record (requires bearer token) */
     socialLinkDetail: (linkId: string) =>
       `/api/v1/dashboard/campus/social-links/${linkId}/`,
+
+    // --- Organization Link Verification ---
+    /** GET - Paginated list of unverified organization link users (Admin / Campus Lead) */
+    unverifiedOrgLinks: "/api/v1/dashboard/user/unverified-org-links/",
+    /** PATCH - Update verification status of a specific organization link */
+    updateOrgLinkVerification: (linkId: string) =>
+      `/api/v1/dashboard/user/unverified-org-links/${linkId}/`,
   },
 
   // ============================================
@@ -978,6 +1119,10 @@ export const endpoints = {
     tasks: {
       /** GET/POST - List tasks or Create task */
       base: "/api/v1/dashboard/task/",
+      /** GET - List tasks pre-filtered to active: true (server-side, paginated correctly) */
+      active: "/api/v1/dashboard/task/active/",
+      /** GET - List tasks pre-filtered to active: false (server-side, paginated correctly) */
+      inactive: "/api/v1/dashboard/task/inactive/",
       /** GET - Retrieve Task Public List */
       publicList: "/api/v1/dashboard/task/list/",
       /** GET/PUT/DELETE - Single task operations */
@@ -1429,17 +1574,17 @@ export const endpoints = {
         `/api/v1/dashboard/media-content/inspiration-station/${id}/`,
     },
     grabYourSuperpowers: {
-      /** GET - List Grab Your Superpowers sessions (public) */
+      /** GET - List GYS sessions (public) */
       list: "/api/v1/dashboard/media-content/grab-your-superpowers/",
-      /** GET - Single Grab Your Superpowers session (public) */
+      /** GET - Single GYS session (public) */
       detail: (id: string) =>
         `/api/v1/dashboard/media-content/grab-your-superpowers/${id}/`,
-      /** POST - Create Grab Your Superpowers session (admin) */
+      /** POST - Create GYS session (admin) */
       create: "/api/v1/dashboard/media-content/grab-your-superpowers/",
-      /** PATCH - Update Grab Your Superpowers session (admin) */
+      /** PATCH - Update GYS session (admin) */
       update: (id: string) =>
         `/api/v1/dashboard/media-content/grab-your-superpowers/${id}/`,
-      /** DELETE - Soft-delete Grab Your Superpowers session (admin) */
+      /** DELETE - Soft-delete GYS session (admin) */
       delete: (id: string) =>
         `/api/v1/dashboard/media-content/grab-your-superpowers/${id}/`,
     },
@@ -1449,12 +1594,28 @@ export const endpoints = {
   // Notifications
   // ============================================
   notifications: {
-    /** GET - List direct + broadcast notifications for authenticated user */
-    list: "/api/v1/notification/list/",
-    /** DELETE - Delete a single direct notification */
-    deleteOne: (id: string) => `/api/v1/notification/delete/id/${id}/`,
-    /** DELETE - Delete all direct notifications for authenticated user */
+    /** DELETE - Delete all personal notifications for the authenticated user */
     deleteAll: "/api/v1/notification/delete/all/",
+
+    // ── New unified feed API ─────────────────────────────────────────────────
+    /** GET - Unified notification feed (personal + broadcast) */
+    feed: "/api/v1/notification/",
+    /** GET - Unread count for authenticated user */
+    unreadCount: "/api/v1/notification/unread-count/",
+    /** PATCH - Mark a single notification as read */
+    markOneRead: (id: string) => `/api/v1/notification/${id}/read/`,
+    /** PATCH - Mark specific notifications as read */
+    markManyRead: "/api/v1/notification/read/",
+    /** PATCH - Mark all notifications as read */
+    markAllRead: "/api/v1/notification/read-all/",
+    /** DELETE - Soft-delete one notification (new unified path) */
+    deleteNotification: (id: string) => `/api/v1/notification/${id}/`,
+
+    // ── Admin dispatch (new API) ─────────────────────────────────────────────
+    /** POST - Admin: dispatch a free-text announcement to every active user */
+    adminBroadcast: "/api/v1/notification/admin/broadcast/",
+
+    // ── Admin broadcast management ───────────────────────────────────────────
     broadcast: {
       /** GET - Admin: list all broadcasts */
       listAll: "/api/v1/notification/broadcast/list/all/",
@@ -1501,6 +1662,91 @@ export const endpoints = {
     /** POST - Approve or reject an unverified org */
     verification: (uorgId: string) =>
       `/api/v1/dashboard/organisation/verify/${uorgId}/`,
+  },
+
+  // ============================================
+  // Problem Statements
+  // Base: /api/v1/dashboard/problem-statements/
+  // All paths relative to /api/v1/dashboard/problem-statements/
+  // Roles: Learner (no prefix) | Company (company/) | Admin (admin/)
+  // ============================================
+  problemStatements: {
+    // ── §1 Learner / Public ──────────────────────────────────────
+    /** GET - Paginated feed of Published statements (🌐 Public, optional auth for my_interaction) */
+    feed: "/api/v1/dashboard/problem-statements/",
+    /** GET - Single statement by UUID (🌐 Public; Draft/Unpublished returns 404 to learners) */
+    detail: (id: string) => `/api/v1/dashboard/problem-statements/${id}/`,
+    /** GET - Learner's current interaction ({ status, created_at, updated_at }); null if none */
+    interaction: (id: string) =>
+      `/api/v1/dashboard/problem-statements/${id}/interaction/`,
+    /** PUT - Add / change interaction ({ status: "Trying" }) */
+    interactionPut: (id: string) =>
+      `/api/v1/dashboard/problem-statements/${id}/interaction/`,
+    /** DELETE - Remove own interaction (still allowed after deadline) */
+    interactionDelete: (id: string) =>
+      `/api/v1/dashboard/problem-statements/${id}/interaction/`,
+    /** GET - Interaction counts object ({ "Trying": N, "Submitted": M }) */
+    interactionCounts: (id: string) =>
+      `/api/v1/dashboard/problem-statements/${id}/interaction/counts/`,
+    /** PUT - Submit or replace solution link ({ submission_url: "https://..." }) */
+    submissionPut: (id: string) =>
+      `/api/v1/dashboard/problem-statements/${id}/submission/`,
+    /** DELETE - Withdraw submission (clears link and reverts status to Trying) */
+    submissionDelete: (id: string) =>
+      `/api/v1/dashboard/problem-statements/${id}/submission/`,
+
+    // ── §2 Company Endpoints (company/) ─────────────────────────
+    // Requires Company role + verified company. Only own company's statements.
+    /** GET - Paginated list of company's own statements */
+    companyList: "/api/v1/dashboard/problem-statements/company/",
+    /** POST - Create a new problem statement (always created as Draft) */
+    companyCreate: "/api/v1/dashboard/problem-statements/company/",
+    /** GET - Single statement detail (own company only; another company's returns 404) */
+    companyDetail: (id: string) =>
+      `/api/v1/dashboard/problem-statements/company/${id}/`,
+    /** PATCH - Partial update (same fields as create; works in any status) */
+    companyUpdate: (id: string) =>
+      `/api/v1/dashboard/problem-statements/company/${id}/`,
+    /** DELETE - Permanently delete statement and all its interactions (confirm first) */
+    companyDelete: (id: string) =>
+      `/api/v1/dashboard/problem-statements/company/${id}/`,
+    /** POST - Transition to Published; 409 if already published or deadline passed */
+    companyPublish: (id: string) =>
+      `/api/v1/dashboard/problem-statements/company/${id}/publish/`,
+    /** POST - Transition to Unpublished; 409 if not currently Published */
+    companyUnpublish: (id: string) =>
+      `/api/v1/dashboard/problem-statements/company/${id}/unpublish/`,
+    /** GET - Counts + paginated list of learners trying this statement */
+    companyInteractions: (id: string) =>
+      `/api/v1/dashboard/problem-statements/company/${id}/interactions/`,
+
+    // ── §3 Admin Endpoints (admin/) ──────────────────────────────
+    // Requires Admins role. Can act on any statement in any status.
+    /** GET - All statements across all companies (extra filter: company_id) */
+    adminList: "/api/v1/dashboard/problem-statements/admin/",
+    /** POST - Create statement for any company (body must include company_id) */
+    adminCreate: "/api/v1/dashboard/problem-statements/admin/",
+    /** GET - Any single statement detail */
+    adminDetail: (id: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/`,
+    /** PATCH - Update any statement (company cannot be changed) */
+    adminUpdate: (id: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/`,
+    /** DELETE - Delete any statement (with its interactions) */
+    adminDelete: (id: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/`,
+    /** POST - Publish any statement */
+    adminPublish: (id: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/publish/`,
+    /** POST - Unpublish any statement */
+    adminUnpublish: (id: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/unpublish/`,
+    /** GET - Counts + list of learners trying a statement */
+    adminInteractions: (id: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/interactions/`,
+    /** DELETE - Remove a specific user's interaction (404 if it does not exist) */
+    adminDeleteInteraction: (id: string, userId: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/interactions/${userId}/`,
   },
 } as const;
 

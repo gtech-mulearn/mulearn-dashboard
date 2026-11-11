@@ -13,7 +13,13 @@ export const metadata: Metadata = {
 };
 
 interface InterestsPageProps {
-  searchParams: Promise<{ ruri?: string; mode?: string }>;
+  searchParams: Promise<{
+    ruri?: string;
+    mode?: string;
+    mentor_tier?: string;
+    mentor_company?: string;
+    mentor_org_id?: string;
+  }>;
 }
 
 export default async function InterestsPage({
@@ -24,6 +30,9 @@ export default async function InterestsPage({
     <InterestsClient
       redirectUri={params.ruri}
       mode={params.mode as "quiz" | "direct" | undefined}
+      mentorTier={params.mentor_tier}
+      mentorCompany={params.mentor_company}
+      mentorOrgId={params.mentor_org_id}
     />
   );
 }

@@ -1,4 +1,15 @@
-import { BarChart2, Briefcase, ClipboardList } from "lucide-react";
+import {
+  BarChart2,
+  Briefcase,
+  Calendar,
+  ClipboardList,
+  Handshake,
+  HeartHandshake,
+  Layers,
+  ShieldCheck,
+  Users,
+  Zap,
+} from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
@@ -11,10 +22,94 @@ import {
 
 export const metadata: Metadata = {
   title: "Company Dashboard | μLearn",
-  description: "Manage your Company Jobs and Tasks",
+  description:
+    "Manage your Company Jobs, Tasks, Collaborations, and Community Engagement",
 };
 
 export default function CompanyDashboardPage() {
+  const companyFeatures = [
+    {
+      title: "Manage Jobs & Gigs",
+      description:
+        "Post job opportunities, gigs, and internships. Review applications and move candidates through your hiring funnel.",
+      href: "/dashboard/company/jobs",
+      icon: Briefcase,
+      action: "View Jobs →",
+    },
+    {
+      title: "Task Management",
+      description:
+        "Create and monitor tasks submitted by your company. Track admin approval status and community karma engagement.",
+      href: "/dashboard/company/tasks",
+      icon: ClipboardList,
+      action: "View Tasks →",
+    },
+    {
+      title: "Mentor Management",
+      description:
+        "Nominate and manage company mentors to support your community tasks, challenges, and domain learning tracks.",
+      href: "/dashboard/company/mentors",
+      icon: Users,
+      action: "View Mentors →",
+    },
+    {
+      title: "Analytics & Insights",
+      description:
+        "Track job view rates, gig funnel stages, candidate conversion indexes, and ecosystem talent distribution.",
+      href: "/dashboard/company/analytics",
+      icon: BarChart2,
+      action: "View Analytics →",
+    },
+    {
+      title: "Co-Admin Management",
+      description:
+        "Invite colleagues, assign administrative roles, manage permissions, and track active company co-administrators.",
+      href: "/dashboard/company/admin",
+      icon: ShieldCheck,
+      action: "Manage Admins →",
+    },
+    {
+      title: "Impact & Feedback",
+      description:
+        "Track verified campus placements, total karma awarded, publish public impact reports, and read candidate reviews.",
+      href: "/dashboard/company/feedback",
+      icon: HeartHandshake,
+      action: "View Impact →",
+    },
+    {
+      title: "Collaborations",
+      description:
+        "Partner with other industry organizations on hackathons, joint hiring drives, and cross-company task sponsorships.",
+      href: "/dashboard/company/collaborations",
+      icon: Handshake,
+      action: "View Collaborations →",
+    },
+    {
+      title: "Interest Group Sponsorships",
+      description:
+        "Sponsor specialized interest groups to sponsor tasks, host AMAs, and build direct pipelines with top student talent.",
+      href: "/dashboard/company/ig-sponsorship",
+      icon: Zap,
+      action: "View Sponsorships →",
+    },
+    {
+      title: "Templates Management",
+      description:
+        "Save and reuse standardized blueprints for coding challenges, micro-task assignments, and event schedules.",
+      href: "/dashboard/company/event-templates",
+      icon: Layers,
+      action: "View Templates →",
+    },
+    {
+      title: "Manage Events",
+      description:
+        "Create and manage company events, track interest, and connect with attendees from the community.",
+      href: "/dashboard/manage-events",
+      icon: Calendar,
+      action: "View Events →",
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <div>
@@ -22,147 +117,35 @@ export default function CompanyDashboardPage() {
           Company Dashboard
         </h1>
         <p className="text-muted-foreground mt-2">
-          Manage your job postings, track applicant progress, and create tasks
-          for the community.
+          Manage your job postings, track applicant progress, partner on
+          collaborations, and sponsor community learning tracks.
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Link href="/dashboard/company/jobs" className="block group">
-          <Card className="h-full transition-colors hover:bg-muted/50">
-            <CardHeader>
-              <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                <Briefcase className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle>Manage Jobs</CardTitle>
-              <CardDescription>
-                Post new job opportunities, review applications, and move
-                candidates through your hiring funnel.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm font-medium text-primary flex items-center">
-                View Jobs →
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/dashboard/company/tasks" className="block group">
-          <Card className="h-full transition-colors hover:bg-muted/50">
-            <CardHeader>
-              <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                <ClipboardList className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle>Manage Tasks</CardTitle>
-              <CardDescription>
-                Create and monitor tasks submitted by your company. Track admin
-                approval status and community engagement.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm font-medium text-primary flex items-center">
-                View Tasks →
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/dashboard/company/mentors" className="block group">
-          <Card className="h-full transition-colors hover:bg-muted/50">
-            <CardHeader>
-              <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-6 w-6 text-primary"
-                  role="img"
-                >
-                  <title>Mentors Icon</title>
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
-              </div>
-              <CardTitle>Manage Mentors</CardTitle>
-              <CardDescription>
-                Nominate new company mentors to support your community tasks and
-                initiatives.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm font-medium text-primary flex items-center">
-                View Mentors →
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/dashboard/company/analytics" className="block group">
-          <Card className="h-full transition-colors hover:bg-muted/50">
-            <CardHeader>
-              <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                <BarChart2 className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle>Analytics & Performance</CardTitle>
-              <CardDescription>
-                Track job view rates, gig funnel stages, conversion indexes, and
-                view ecosystem talent distribution.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm font-medium text-primary flex items-center">
-                View Analytics →
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/dashboard/manage-events" className="block group">
-          <Card className="h-full transition-colors hover:bg-muted/50">
-            <CardHeader>
-              <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-6 w-6 text-primary"
-                  role="img"
-                >
-                  <title>Events Icon</title>
-                  <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-                  <line x1="16" x2="16" y1="2" y2="6" />
-                  <line x1="8" x2="8" y1="2" y2="6" />
-                  <line x1="3" x2="21" y1="10" y2="10" />
-                </svg>
-              </div>
-              <CardTitle>Manage Events</CardTitle>
-              <CardDescription>
-                Create and manage company events, track interest, and connect
-                with attendees from the community.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm font-medium text-primary flex items-center">
-                View Events →
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {companyFeatures.map((feat) => {
+          const Icon = feat.icon;
+          return (
+            <Link key={feat.href} href={feat.href} className="block group">
+              <Card className="h-full transition-colors hover:bg-muted/50 flex flex-col justify-between">
+                <CardHeader>
+                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                    <Icon className="h-6 w-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg">{feat.title}</CardTitle>
+                  <CardDescription className="text-xs leading-relaxed">
+                    {feat.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-xs font-semibold text-primary flex items-center">
+                    {feat.action}
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

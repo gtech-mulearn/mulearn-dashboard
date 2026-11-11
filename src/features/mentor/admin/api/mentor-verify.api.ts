@@ -1,7 +1,17 @@
+import { z } from "zod";
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import type { MentorApplicationListItem, VerifyActionValues } from "../schemas";
-import { GenericResponseSchema, MentorListResponseSchema } from "../schemas";
+import type {
+  MentorApplicationListItem,
+  MentorRosterItem,
+  VerifyActionValues,
+} from "../schemas";
+import {
+  GenericResponseSchema,
+  MentorDetailResponseSchema,
+  MentorListResponseSchema,
+  MentorRosterResponseSchema,
+} from "../schemas";
 
 interface ListParams {
   search?: string;
@@ -43,16 +53,143 @@ export async function fetchMentorList(params: ListParams = {}): Promise<{
   };
 }
 
+// ─── GET /roster/ ─────────────────────────────────────────────────────────────
+// Admin: lists active, APPROVED mentors with avg_rating / rating_count.
+// Supports ?mentor_tier= and ?low_rating=true (avg < 3.0, 5+ rated sessions).
+// Pagination keys: page / per_page / total (different from /list/).
+interface RosterParams {
+  mentor_tier?: string;
+  low_rating?: boolean;
+  page?: number;
+  per_page?: number;
+  sortBy?: string;
+}
+
+export async function fetchMentorRoster(params: RosterParams = {}): Promise<{
+  data: MentorRosterItem[];
+  totalPages: number;
+  totalItems: number;
+}> {
+  const q = new URLSearchParams();
+  if (params.mentor_tier) q.set("mentor_tier", params.mentor_tier);
+  if (params.low_rating) q.set("low_rating", "true");
+  if (params.page && params.page > 1) q.set("pageIndex", String(params.page));
+  if (params.per_page) q.set("perPage", String(params.per_page));
+  if (params.sortBy) q.set("sortBy", params.sortBy);
+
+  const query = q.toString();
+  const url = query
+    ? `${endpoints.mentor.roster}?${query}`
+    : endpoints.mentor.roster;
+
+  const res = await apiClient.get(url, MentorRosterResponseSchema);
+  const rawData = Array.isArray(res.response?.data) ? res.response.data : [];
+  return {
+    data: rawData,
+    totalPages: res.response?.pagination?.totalPages ?? 1,
+    totalItems: res.response?.pagination?.count ?? rawData.length,
+  };
+}
+
+// ─── GET /admin/deactivated/ (BE-5) ───────────────────────────────────────────
+// UserMentor profiles with is_active = false; row.id is the UserMentor id that
+// admin/reactivate/<user_mentor_id>/ takes (application ids won't work there).
+export const DeactivatedMentorSchema = z.object({
+  id: z.string(),
+  user_full_name: z.string().nullable().optional(),
+  muid: z.string().nullable().optional(),
+  updated_at: z.string().nullable().optional(),
+});
+export type DeactivatedMentor = z.infer<typeof DeactivatedMentorSchema>;
+
+const DeactivatedMentorListResponseSchema = z.object({
+  response: z
+    .object({
+      data: z.array(DeactivatedMentorSchema).default([]),
+      pagination: z
+        .object({
+          count: z.number().optional(),
+          totalPages: z.number().optional(),
+        })
+        .passthrough()
+        .optional(),
+    })
+    .passthrough(),
+});
+
+export async function fetchDeactivatedMentors(
+  params: { page?: number; perPage?: number } = {},
+): Promise<{
+  data: DeactivatedMentor[];
+  totalPages: number;
+  totalItems: number;
+}> {
+  const q = new URLSearchParams();
+  if (params.page && params.page > 1) q.set("pageIndex", String(params.page));
+  if (params.perPage) q.set("perPage", String(params.perPage));
+  const query = q.toString();
+  const url = query
+    ? `${endpoints.mentor.adminDeactivated}?${query}`
+    : endpoints.mentor.adminDeactivated;
+  const res = await apiClient.get(url, DeactivatedMentorListResponseSchema, {
+    skipAuthRedirectOn403: true,
+  });
+  const data = res.response?.data ?? [];
+  return {
+    data,
+    totalPages: res.response?.pagination?.totalPages ?? 1,
+    totalItems: res.response?.pagination?.count ?? data.length,
+  };
+}
+
+// ─── GET /change-requests/ ────────────────────────────────────────────────────
+// Admin: PENDING applications from users who already hold an APPROVED grant for
+// the same tier (affiliation-change requests). Same response shape as /list/.
+interface ChangeRequestParams {
+  search?: string;
+  page?: number;
+  perPage?: number;
+  mentor_tier?: string;
+  sortBy?: string;
+}
+
+export async function fetchMentorChangeRequests(
+  params: ChangeRequestParams = {},
+): Promise<{
+  data: MentorApplicationListItem[];
+  totalPages: number;
+  totalItems: number;
+}> {
+  const q = new URLSearchParams();
+  if (params.search) q.set("search", params.search);
+  if (params.page) q.set("pageIndex", String(params.page));
+  if (params.perPage) q.set("perPage", String(params.perPage));
+  if (params.mentor_tier) q.set("mentor_tier", params.mentor_tier);
+  if (params.sortBy) q.set("sortBy", params.sortBy);
+
+  const query = q.toString();
+  const url = query
+    ? `${endpoints.mentor.changeRequests}?${query}`
+    : endpoints.mentor.changeRequests;
+
+  const res = await apiClient.get(url, MentorListResponseSchema);
+  const rawData = Array.isArray(res.response?.data) ? res.response.data : [];
+  return {
+    data: rawData,
+    totalPages: res.response?.pagination?.totalPages ?? 1,
+    totalItems: res.response?.pagination?.count ?? rawData.length,
+  };
+}
+
 // ─── GET /detail/<mentor_id>/ ─────────────────────────────────────────────────
 export async function fetchMentorDetail(
   mentorId: string,
 ): Promise<MentorApplicationListItem> {
   const res = await apiClient.get(
     endpoints.mentor.detail(mentorId),
-    MentorListResponseSchema,
+    MentorDetailResponseSchema,
   );
-  // Detail endpoint returns a single object in response, not paginated
-  return res.response as unknown as MentorApplicationListItem;
+  return res.response;
 }
 
 // ─── PATCH /verify/<mentor_id>/ ───────────────────────────────────────────────

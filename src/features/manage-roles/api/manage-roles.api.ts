@@ -61,6 +61,7 @@ export async function updateRole(
 export async function deleteRole(id: string): Promise<void> {
   await apiClient.delete(
     endpoints.manageRoles.delete(id),
+    undefined,
     GenericMutationResponseSchema,
   );
 }

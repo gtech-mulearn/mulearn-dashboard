@@ -29,8 +29,10 @@ export function PublicUserJourneyPageClient({
 
   // Map legacy journey tasks to TaskListPublic shape for LevelCard compatibility
   const mappedLevels = useMemo(() => {
+    // biome-ignore lint/suspicious/noExplicitAny: Legacy mapping
     return levels.map((level: any) => {
       const levelName = level.name || "General";
+      // biome-ignore lint/suspicious/noExplicitAny: Legacy mapping
       const tasks: TaskListPublic[] = (level.tasks || []).map((task: any) => ({
         id: task.id || task.task_id || "",
         hashtag: task.hashtag || "",

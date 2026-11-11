@@ -121,7 +121,7 @@ function PublicJobCard({ job }: { job: PublicJobBySlug }) {
         </span>
       </div>
 
-      {job.rules.length > 0 && (
+      {Array.isArray(job.rules) && job.rules.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {job.rules.map((rule) => (
             <span

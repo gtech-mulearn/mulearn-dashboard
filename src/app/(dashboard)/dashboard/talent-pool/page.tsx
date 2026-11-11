@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CompanyAccessGate } from "@/features/company-jobs/components/company-access-gate";
 import { TalentPoolPageClient } from "./talent-pool-client";
 
 export const metadata: Metadata = {
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function TalentPoolPage() {
-  return <TalentPoolPageClient />;
+  return (
+    <CompanyAccessGate capability="viewTalentPool">
+      <TalentPoolPageClient />
+    </CompanyAccessGate>
+  );
 }

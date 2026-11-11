@@ -24,6 +24,9 @@ export const RoleVerificationItemSchema = z.object({
   gender: z.string().nullable().optional(),
   dob: z.string().nullable().optional(),
   joined: z.string().nullable().optional(),
+  // The role link's own creation time (UserRoleLink.created_at) — when the
+  // request was made. `joined` is the user's account creation.
+  created_at: z.string().nullable().optional(),
   district: z
     .object({ id: z.string(), name: z.string() })
     .nullable()

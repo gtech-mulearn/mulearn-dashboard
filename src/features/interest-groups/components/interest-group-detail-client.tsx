@@ -32,7 +32,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { IGIcon, useInterestGroupDetail } from "@/features/interest-groups";
-import { ImpactProjectsSection } from "@/features/manage-ig";
+import { IgImpactProjects, IgSponsorChip } from "./ig-sponsor-and-projects";
 import { PersonCard } from "./person-card";
 
 export function InterestGroupDetailClient() {
@@ -163,6 +163,11 @@ export function InterestGroupDetailClient() {
                   {group.code}
                 </div>
               )}
+              <IgSponsorChip
+                isSponsored={group.is_sponsored}
+                name={group.sponsor_company_name}
+                logo={group.sponsor_company_logo}
+              />
             </div>
 
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold tracking-tight text-primary-foreground">
@@ -675,8 +680,8 @@ export function InterestGroupDetailClient() {
               </p>
             </div>
 
-            {/* TODO: Impact Projects disabled — backend conflict */}
-            {/* <ImpactProjectsSection igId={group.id} /> */}
+            {/* Release 1.91: impact projects ship with the IG detail. */}
+            <IgImpactProjects projects={group.impact_projects ?? []} />
           </div>
         </div>
       </div>

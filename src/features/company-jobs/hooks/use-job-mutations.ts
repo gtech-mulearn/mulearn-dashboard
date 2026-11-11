@@ -11,7 +11,14 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
-import { createJob, deleteJob, updateJob } from "../api";
+import {
+  approveJob,
+  createJob,
+  deleteJob,
+  rejectJob,
+  requestJobChanges,
+  updateJob,
+} from "../api";
 import type {
   CreateJobPayload,
   JobsListResponse,
@@ -132,6 +139,70 @@ export function useDeleteJob() {
         queryKey: ["home", "company", "home-summary"],
       });
       toast.success("Job deleted successfully");
+    },
+  });
+}
+
+// ─── Approve Job ────────────────────────────────────────────
+
+export function useApproveJob() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (jobId: string) => approveJob(jobId),
+    onSuccess: (_data, jobId) => {
+      queryClient.invalidateQueries({ queryKey: JOBS_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: JOBS_KEYS.detail(jobId) });
+      toast.success("Job approved and published successfully.");
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to approve job." }),
+      );
+    },
+  });
+}
+
+// ─── Reject Job ────────────────────────────────────────────
+
+export function useRejectJob() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ jobId, reason }: { jobId: string; reason: string }) =>
+      rejectJob(jobId, reason),
+    onSuccess: (_data, { jobId }) => {
+      queryClient.invalidateQueries({ queryKey: JOBS_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: JOBS_KEYS.detail(jobId) });
+      toast.success("Job rejected successfully.");
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to reject job." }),
+      );
+    },
+  });
+}
+
+// ─── Request Job Changes ────────────────────────────────────
+
+export function useRequestJobChanges() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ jobId, note }: { jobId: string; note: string }) =>
+      requestJobChanges(jobId, note),
+    onSuccess: (_data, { jobId }) => {
+      queryClient.invalidateQueries({ queryKey: JOBS_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: JOBS_KEYS.detail(jobId) });
+      toast.success("Revision requested. Mentor notified.");
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to request changes on job.",
+        }),
+      );
     },
   });
 }

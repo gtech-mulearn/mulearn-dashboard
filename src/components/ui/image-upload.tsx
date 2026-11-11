@@ -94,7 +94,7 @@ export function ImageUpload({
     if (file) handleFile(file);
   };
 
-  const handleRemove = () => {
+  const _handleRemove = () => {
     onChange(null);
     setPreviewUrl(currentUrl ?? null);
     if (inputRef.current) inputRef.current.value = "";

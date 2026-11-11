@@ -1,6 +1,5 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Check,
   Github as GithubIcon,
@@ -18,7 +17,6 @@ import { useCallback, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
@@ -39,17 +37,7 @@ import {
 import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
 import type { InterestGroupDetail } from "@/features/interest-groups/schemas";
-import {
-  createCommunityPartner,
-  deleteCommunityPartner,
-  fetchCommunityPartners,
-  updateCommunityPartner,
-} from "../api/community-partner.api";
-import {
-  IG_COVER_IMAGE_ASPECT,
-  IG_ICON_IMAGE_ASPECT,
-  IG_IMAGE_MAX_MB,
-} from "../constants/ig-images.constants";
+import { useCommunityPartners } from "../hooks/use-community-partners";
 import { useEditInterestGroup } from "../hooks/use-edit-interest-group";
 import type {
   CommunityPartner,
@@ -117,8 +105,6 @@ export function EditInterestGroupForm({
     isPending,
     removeCoverImage,
     removeIconImage,
-    uploadCoverImage,
-    uploadIconImage,
     isRemovingCoverImage,
     isRemovingIconImage,
     isUploadingCoverImage,
@@ -135,10 +121,12 @@ export function EditInterestGroupForm({
 
   // ── Cover / icon images — replaced/removed via standalone endpoints,
   // never sent as part of the PATCH payload below ──────────
-  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
-  const [iconImageFile, setIconImageFile] = useState<File | null>(null);
-  const [coverImageUrl, setCoverImageUrl] = useState(group.cover_image ?? null);
-  const [iconImageUrl, setIconImageUrl] = useState(group.icon_image ?? null);
+  const [_coverImageFile, setCoverImageFile] = useState<File | null>(null);
+  const [_iconImageFile, setIconImageFile] = useState<File | null>(null);
+  const [_coverImageUrl, setCoverImageUrl] = useState(
+    group.cover_image ?? null,
+  );
+  const [_iconImageUrl, setIconImageUrl] = useState(group.icon_image ?? null);
 
   // ── Array (tag) fields ─────────────────────────────────
   const [prerequisites, setPrerequisites] = useState<string[]>(
@@ -676,16 +664,21 @@ const EMPTY_PARTNER: CommunityPartnerWrite = {
   instagram: "",
 };
 
-function CommunityPartnersEditor({ igId }: { igId: string }) {
-  const queryClient = useQueryClient();
-  const qKey = ["community-partners", igId];
-
-  // ── Fetch existing partners for this IG ──────────────────────
-  const { data, isLoading } = useQuery({
-    queryKey: qKey,
-    queryFn: () => fetchCommunityPartners({ ig_id: igId }),
-  });
-  const partners: CommunityPartner[] = data?.data ?? [];
+export function CommunityPartnersEditor({ igId }: { igId: string }) {
+  // Requests, cache keys and success/error toasts all live in the hook; this
+  // component only resets its own form state once a call succeeds.
+  const {
+    partners,
+    isLoading,
+    isError,
+    refetch,
+    createPartner,
+    updatePartner,
+    deletePartner,
+    isCreating,
+    isUpdating,
+    isDeleting,
+  } = useCommunityPartners(igId);
 
   // ── "New partner" form state ──────────────────────────────────
   const [showAdd, setShowAdd] = useState(false);
@@ -701,41 +694,25 @@ function CommunityPartnersEditor({ igId }: { igId: string }) {
   // ── Delete confirm ────────────────────────────────────────────
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
-  // ── CREATE mutation ───────────────────────────────────────────
-  const createMutation = useMutation({
-    mutationFn: (data: CommunityPartnerWrite) =>
-      createCommunityPartner({ ...data, interest_groups: [igId] }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: qKey });
-      setShowAdd(false);
-      setNewPartner(EMPTY_PARTNER);
-    },
-  });
+  // A failed call is already reported by the hook's toast; swallowing the
+  // rejection here only keeps the form open for another try.
+  const ignoreReportedError = () => {};
 
-  // ── PATCH mutation ────────────────────────────────────────────
-  const updateMutation = useMutation({
-    mutationFn: ({
-      id,
-      data,
-    }: {
-      id: string;
-      data: Partial<CommunityPartnerWrite>;
-    }) => updateCommunityPartner(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: qKey });
-      setEditingId(null);
-      setEditDraft({});
-    },
-  });
+  const createNewPartner = () => {
+    createPartner(newPartner)
+      .then(() => {
+        setShowAdd(false);
+        setNewPartner(EMPTY_PARTNER);
+      })
+      .catch(ignoreReportedError);
+  };
 
-  // ── DELETE mutation ───────────────────────────────────────────
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteCommunityPartner(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: qKey });
-      setDeleteTargetId(null);
-    },
-  });
+  const confirmDelete = () => {
+    if (!deleteTargetId) return;
+    deletePartner(deleteTargetId)
+      .then(() => setDeleteTargetId(null))
+      .catch(ignoreReportedError);
+  };
 
   // ── Helpers ───────────────────────────────────────────────────
   const startEdit = (partner: CommunityPartner) => {
@@ -758,7 +735,9 @@ function CommunityPartnersEditor({ igId }: { igId: string }) {
 
   const saveEdit = (id: string) => {
     if (!editDraft.name?.trim()) return;
-    updateMutation.mutate({ id, data: editDraft });
+    updatePartner({ id, data: editDraft })
+      .then(cancelEdit)
+      .catch(ignoreReportedError);
   };
 
   return (
@@ -839,10 +818,10 @@ function CommunityPartnersEditor({ igId }: { igId: string }) {
           <Button
             type="button"
             size="sm"
-            disabled={!newPartner.name.trim() || createMutation.isPending}
-            onClick={() => createMutation.mutate(newPartner)}
+            disabled={!newPartner.name.trim() || isCreating}
+            onClick={createNewPartner}
           >
-            {createMutation.isPending ? "Creating…" : "Create Partner"}
+            {isCreating ? "Creating…" : "Create Partner"}
           </Button>
         </div>
       )}
@@ -851,7 +830,25 @@ function CommunityPartnersEditor({ igId }: { igId: string }) {
       {isLoading && (
         <p className="text-xs text-muted-foreground">Loading partners…</p>
       )}
-      {!isLoading && partners.length === 0 && !showAdd && (
+      {isError && (
+        <div
+          role="alert"
+          className="flex items-center justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-3"
+        >
+          <p className="text-xs text-destructive">
+            Couldn't load community partners.
+          </p>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => void refetch()}
+          >
+            Retry
+          </Button>
+        </div>
+      )}
+      {!isLoading && !isError && partners.length === 0 && !showAdd && (
         <p className="text-xs text-muted-foreground">
           No community partners linked yet.
         </p>
@@ -919,11 +916,11 @@ function CommunityPartnersEditor({ igId }: { igId: string }) {
                 <Button
                   type="button"
                   size="sm"
-                  disabled={!editDraft.name?.trim() || updateMutation.isPending}
+                  disabled={!editDraft.name?.trim() || isUpdating}
                   onClick={() => saveEdit(partner.id)}
                 >
                   <Check className="h-3 w-3" />
-                  {updateMutation.isPending ? "Saving…" : "Save"}
+                  {isUpdating ? "Saving…" : "Save"}
                 </Button>
                 <Button
                   type="button"
@@ -943,6 +940,7 @@ function CommunityPartnersEditor({ igId }: { igId: string }) {
               className="flex items-start gap-3 rounded-xl border border-border/50 bg-muted/20 p-3"
             >
               {partner.logo_key ? (
+                // biome-ignore lint/performance/noImgElement: External logo source
                 <img
                   src={partner.logo_key}
                   alt={partner.name}
@@ -1011,10 +1009,8 @@ function CommunityPartnersEditor({ igId }: { igId: string }) {
         title="Remove community partner?"
         description="This will unlink the partner from this interest group. The partner record itself is deleted."
         confirmLabel="Delete"
-        isPending={deleteMutation.isPending}
-        onConfirm={() =>
-          deleteTargetId && deleteMutation.mutate(deleteTargetId)
-        }
+        isPending={isDeleting}
+        onConfirm={confirmDelete}
       />
     </fieldset>
   );

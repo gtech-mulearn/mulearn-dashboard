@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { StateDisplay } from "@/components/ui/state-display";
 import { useIsList, useSmtList } from "../hooks";
+import { ZONE_OPTIONS } from "../lib/zones";
 import type { CampusContentItem, CampusContentType } from "../schemas";
 import { CampusContentDetailDialog } from "./campus-content-detail-dialog";
 import { MediaCard, MediaCardSkeleton } from "./media-card";
@@ -104,9 +105,11 @@ export function CampusContentCards({ contentType }: Props) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All zones</SelectItem>
-              <SelectItem value="north">North</SelectItem>
-              <SelectItem value="central">Central</SelectItem>
-              <SelectItem value="south">South</SelectItem>
+              {ZONE_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Select

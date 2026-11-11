@@ -11,10 +11,10 @@ type Props = {
 const CARDS = [
   {
     key: "active_mentees",
-    label: "Active Mentees",
+    label: "Active Learners",
     icon: Users,
     accent: "chart-1" as const,
-    description: "mentees total",
+    description: "learners total",
   },
   {
     key: "volunteer_hours",

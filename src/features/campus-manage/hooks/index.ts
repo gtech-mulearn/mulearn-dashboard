@@ -22,7 +22,9 @@ export {
   useTransferEnablerRole,
   useTransferIgRole,
   useTransferLeadRole,
+  useUnverifiedOrgLinks,
   useUpdateIgChapter,
+  useUpdateOrgLinkVerification,
   useUpsertSocialLink,
   useUserProfile,
 } from "./use-campus-manage";

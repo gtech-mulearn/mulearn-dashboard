@@ -45,14 +45,42 @@ export type RoleKey = keyof typeof ROLES;
 
 // ─── Dynamic Role Helpers ──────────────────────────────────
 // Some roles are generated dynamically per-IG on the backend.
-// e.g., "WebDev CampusLead", "AI IGLead"
+// e.g., "WEBDEV CampusIGLead", "AI IGLead"
+
+/** Per-IG campus lead role suffix since release 1.91 (`{code} CampusIGLead`). */
+export const IG_CAMPUS_LEAD_SUFFIX = " CampusIGLead";
+
+/**
+ * Pre-1.91 title (`{code} CampusLead`). The 1.91 DB script renames every such
+ * role, but JWTs issued before the release still carry the old title until
+ * they expire; the backend maps it the same way (utils/permission.py).
+ * The core "Campus Lead" role has a space, so it never ends with this.
+ */
+export const LEGACY_IG_CAMPUS_LEAD_SUFFIX = " CampusLead";
 
 /**
  * Build a dynamic IG Campus Lead role string.
  * Matches: `RoleType.IG_CAMPUS_LEAD_ROLE(ig_code)` on backend.
  */
 export function igCampusLeadRole(igCode: string): string {
-  return `${igCode} CampusLead`;
+  return `${igCode}${IG_CAMPUS_LEAD_SUFFIX}`;
+}
+
+/**
+ * True for a per-IG campus lead role. Deliberately excludes the co-lead
+ * (`{code} CampusIGCoLead`): the backend does not treat co-leads as event
+ * managers (api/dashboard/events/manage_views.py).
+ */
+export function isIgCampusLeadRole(role: string): boolean {
+  return (
+    role.endsWith(IG_CAMPUS_LEAD_SUFFIX) ||
+    role.endsWith(LEGACY_IG_CAMPUS_LEAD_SUFFIX)
+  );
+}
+
+/** True if any role in the array is a per-IG campus lead role. */
+export function hasIgCampusLeadRole(roles: readonly string[]): boolean {
+  return roles.some(isIgCampusLeadRole);
 }
 
 /**

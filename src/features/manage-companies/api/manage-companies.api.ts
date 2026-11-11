@@ -16,29 +16,30 @@ export interface FetchCompanyVerificationParams {
   search?: string;
   sortBy?: string;
   status?: string;
-  dateFrom?: string;
-  dateTo?: string;
+  industry_sector?: string;
 }
 
 // ─── Verification Requests ────────────────────────────────────────────────────
 
 /**
  * Admin: List companies in the verification queue.
- * Supports filtering by status, date range, search, and pagination.
+ * Supports filtering by status, industry_sector, search, sort, and pagination.
+ * Pagination/search/sort param names must match CommonUtils.get_paginated_queryset
+ * on the backend (pageIndex, perPage, search, sortBy) — anything else is ignored.
  */
 export async function fetchCompanyVerificationRequests(
   params: FetchCompanyVerificationParams,
 ): Promise<CompanyVerificationListData> {
   const query = new URLSearchParams({
-    perPage: String(params.perPage),
     pageIndex: String(params.pageIndex),
+    perPage: String(params.perPage),
   });
 
   if (params.search?.trim()) query.set("search", params.search.trim());
   if (params.sortBy?.trim()) query.set("sortBy", params.sortBy.trim());
   if (params.status) query.set("status", params.status);
-  if (params.dateFrom) query.set("dateFrom", params.dateFrom);
-  if (params.dateTo) query.set("dateTo", params.dateTo);
+  if (params.industry_sector)
+    query.set("industry_sector", params.industry_sector);
 
   const response = await apiClient.get(
     `${endpoints.company.list}?${query.toString()}`,
@@ -95,4 +96,28 @@ export async function fetchCompanyDetails(
     }
     throw error;
   }
+}
+
+/**
+ * Admin: Deactivate a company.
+ */
+export async function deactivateCompanyAdmin(companyId: string) {
+  const res = await apiClient.post(
+    endpoints.company.deactivateAdmin(companyId),
+    undefined,
+    GenericMutationResponseSchema,
+  );
+  return res.response;
+}
+
+/**
+ * Admin: Reactivate a deactivated company.
+ */
+export async function reactivateCompanyAdmin(companyId: string) {
+  const res = await apiClient.post(
+    endpoints.company.reactivateAdmin(companyId),
+    undefined,
+    GenericMutationResponseSchema,
+  );
+  return res.response;
 }

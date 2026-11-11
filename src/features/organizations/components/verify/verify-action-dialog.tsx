@@ -16,64 +16,87 @@ import {
 import { Label } from "@/components/ui/label";
 import { useOrgsList } from "../../hooks/use-organizations";
 import { useVerifyOrganization } from "../../hooks/use-verification";
-import type { UnverifiedOrgItem } from "../../schemas/verification.schema";
+import {
+  toVerifyOrgPayload,
+  type UnverifiedOrgItem,
+} from "../../schemas/verification.schema";
+
+// "View" is the OrgRequestSheet, like the Mentor and Company tabs; this
+// dialog only confirms a decision.
+export type OrgRequestDialogMode = "approve" | "reject";
+
+const COPY: Record<
+  OrgRequestDialogMode,
+  { title: string; description: string }
+> = {
+  approve: {
+    title: "Approve Organization Request",
+    description:
+      "Map this request to the existing Organization it refers to. The submitter is linked to that organization.",
+  },
+  reject: {
+    title: "Reject Organization Request",
+    description:
+      "Closes the request without linking the submitter to any organization.",
+  },
+};
 
 interface VerifyActionDialogProps {
   isOpen: boolean;
   onClose: () => void;
   org: UnverifiedOrgItem | null;
+  mode: OrgRequestDialogMode;
 }
 
 export function VerifyActionDialog({
   isOpen,
   onClose,
   org,
+  mode,
 }: VerifyActionDialogProps) {
   const [orgId, setOrgId] = useState("");
   const mutation = useVerifyOrganization();
 
-  // Fetch all organizations of the matching type to populate dropdown
+  // Only an approval needs the destination list.
   const { data: orgsData, isLoading: isLoadingOrgs } = useOrgsList({
     pageIndex: 1,
     perPage: 1000,
     search: "",
     sortBy: "title",
     org_type: org?.org_type || "College",
-    enabled: isOpen && !!org,
+    enabled: isOpen && !!org && mode === "approve",
   });
 
-  // Map to format required by Combobox
   const orgOptions =
     orgsData?.data?.map((o) => ({
       id: o.id,
       title: `${o.title} (${o.code})`,
     })) || [];
 
-  const handleAction = (verified: boolean) => {
+  const handleClose = () => {
+    setOrgId("");
+    onClose();
+  };
+
+  const submit = (action: "approve" | "reject") => {
     if (!org) return;
-    if (!orgId.trim()) {
+    if (action === "approve" && !orgId.trim()) {
       toast.error("Please select a destination Organization");
       return;
     }
     mutation.mutate(
-      { uorgId: org.id, data: { verified, org_id: orgId.trim() } },
+      { uorgId: org.id, data: toVerifyOrgPayload(action, orgId) },
       {
         onSuccess: () => {
           toast.success(
-            verified
+            action === "approve"
               ? "Organization approved successfully"
               : "Organization rejected successfully",
           );
-          setOrgId("");
-          onClose();
+          handleClose();
         },
       },
     );
-  };
-
-  const handleClose = () => {
-    setOrgId("");
-    onClose();
   };
 
   if (!org) return null;
@@ -82,14 +105,11 @@ export function VerifyActionDialog({
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Review Organization Request</DialogTitle>
-          <DialogDescription>
-            Approve or reject this unverified organization submission.
-          </DialogDescription>
+          <DialogTitle>{COPY[mode].title}</DialogTitle>
+          <DialogDescription>{COPY[mode].description}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          {/* Org details */}
           <div className="rounded-lg border bg-muted/40 p-4 space-y-2 text-sm">
             <div className="flex items-center justify-between">
               <span className="font-semibold text-base">{org.title}</span>
@@ -113,35 +133,48 @@ export function VerifyActionDialog({
               <span className="font-medium text-foreground">Submitted by:</span>{" "}
               {org.created_by}
             </p>
+            {org.created_by_muid && (
+              <p className="text-muted-foreground">
+                <span className="font-medium text-foreground">MuID:</span>{" "}
+                {org.created_by_muid}
+              </p>
+            )}
+            {org.created_by_email && (
+              <p className="text-muted-foreground">
+                <span className="font-medium text-foreground">Email:</span>{" "}
+                {org.created_by_email}
+              </p>
+            )}
             <p className="text-muted-foreground">
               <span className="font-medium text-foreground">Submitted at:</span>{" "}
               {new Date(org.created_at).toLocaleString()}
             </p>
           </div>
 
-          {/* Org select dropdown */}
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="verify-org-id" className="font-medium">
-              Destination Organization{" "}
-              <span className="text-destructive">*</span>
-            </Label>
-            <Combobox
-              options={orgOptions}
-              value={orgId}
-              onValueChange={setOrgId}
-              placeholder={
-                isLoadingOrgs
-                  ? "Loading organizations..."
-                  : "Select destination organization"
-              }
-              searchPlaceholder="Search organizations..."
-              emptyText="No matching organizations found."
-              disabled={isLoadingOrgs || mutation.isPending}
-            />
-            <p className="text-xs text-muted-foreground">
-              Select the actual Organization record to map this submission to.
-            </p>
-          </div>
+          {mode === "approve" && (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="verify-org-id" className="font-medium">
+                Destination Organization{" "}
+                <span className="text-destructive">*</span>
+              </Label>
+              <Combobox
+                options={orgOptions}
+                value={orgId}
+                onValueChange={setOrgId}
+                placeholder={
+                  isLoadingOrgs
+                    ? "Loading organizations..."
+                    : "Select destination organization"
+                }
+                searchPlaceholder="Search organizations..."
+                emptyText="No matching organizations found."
+                disabled={isLoadingOrgs || mutation.isPending}
+              />
+              <p className="text-xs text-muted-foreground">
+                Select the actual Organization record to map this submission to.
+              </p>
+            </div>
+          )}
         </div>
 
         <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
@@ -153,21 +186,25 @@ export function VerifyActionDialog({
           >
             Cancel
           </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={() => handleAction(false)}
-            disabled={mutation.isPending}
-          >
-            {mutation.isPending ? "Rejecting…" : "Reject"}
-          </Button>
-          <Button
-            type="button"
-            onClick={() => handleAction(true)}
-            disabled={mutation.isPending}
-          >
-            {mutation.isPending ? "Approving…" : "Approve"}
-          </Button>
+          {mode === "reject" && (
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => submit("reject")}
+              disabled={mutation.isPending}
+            >
+              {mutation.isPending ? "Rejecting…" : "Reject"}
+            </Button>
+          )}
+          {mode === "approve" && (
+            <Button
+              type="button"
+              onClick={() => submit("approve")}
+              disabled={mutation.isPending || !orgId.trim()}
+            >
+              {mutation.isPending ? "Approving…" : "Approve"}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

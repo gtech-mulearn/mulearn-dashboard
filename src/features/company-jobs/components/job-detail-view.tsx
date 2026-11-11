@@ -13,8 +13,8 @@ import {
   Briefcase,
   Calendar,
   Clock,
-  DollarSign,
   Edit,
+  IndianRupee,
   MapPin,
   Package,
   Plus,
@@ -33,6 +33,7 @@ import type { RuleFormValues } from "../schemas";
 import type { Job } from "../types";
 import { ApplicantsSection } from "./applicants-section";
 import { JobDeleteDialog } from "./job-delete-dialog";
+import { isJobEditable, JobReviewPanel } from "./job-review-panel";
 import { RuleAddDialog, RuleList } from "./rules";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -161,15 +162,17 @@ export function JobDetailView({
                     : "Close Job"}
               </Button>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onEdit(job.id)}
-              className="gap-1.5"
-            >
-              <Edit className="h-3.5 w-3.5" />
-              Edit
-            </Button>
+            {isJobEditable(job.status) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onEdit(job.id)}
+                className="gap-1.5"
+              >
+                <Edit className="h-3.5 w-3.5" />
+                Edit
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -229,7 +232,7 @@ export function JobDetailView({
               Hourly Rate
             </p>
             <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
-              <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+              <IndianRupee className="h-3.5 w-3.5 text-muted-foreground" />
               {job.hourly_rate || "Not specified"}
             </div>
           </div>
@@ -238,7 +241,7 @@ export function JobDetailView({
               Stipend
             </p>
             <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
-              <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+              <IndianRupee className="h-3.5 w-3.5 text-muted-foreground" />
               {job.stipend || "Not specified"}
             </div>
           </div>
@@ -255,6 +258,9 @@ export function JobDetailView({
           </div>
         </div>
       </div>
+
+      {/* Approval state: revision note, rejection, review actions */}
+      <JobReviewPanel job={job} />
 
       {/* Description */}
       {job.job_description && (

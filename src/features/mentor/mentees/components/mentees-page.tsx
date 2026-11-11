@@ -1,6 +1,6 @@
 "use client";
 
-import { LogIn, MessageSquarePlus, Search } from "lucide-react";
+import { MessageSquarePlus, Search } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/table";
 import { useMentees } from "../hooks/use-mentees";
 
-import { JoinSessionDialog } from "./join-session-dialog";
 import { ParticipantHistorySheet } from "./participant-history-sheet";
 import { SessionFeedbackDialog } from "./session-feedback-dialog";
 
@@ -57,11 +56,6 @@ export function MenteesPage({ title = "Mentees" }: { title?: string } = {}) {
     sessionTitle: string;
   }>({ open: false, sessionId: "", sessionTitle: "" });
 
-  const [joinDialog, setJoinDialog] = useState<{
-    open: boolean;
-    sessionId: string;
-  }>({ open: false, sessionId: "" });
-
   const { data, isLoading } = useMentees();
 
   // Client-side search filter on name or mu_id
@@ -95,15 +89,6 @@ export function MenteesPage({ title = "Mentees" }: { title?: string } = {}) {
               </p>
             )}
           </div>
-          {/* Mobile Join Session Button */}
-          <Button
-            variant="outline"
-            className="md:hidden"
-            onClick={() => setJoinDialog({ open: true, sessionId: "" })}
-          >
-            <LogIn className="mr-2 h-4 w-4" />
-            Join Session
-          </Button>
         </div>
 
         <div className="flex items-center gap-2">
@@ -116,15 +101,6 @@ export function MenteesPage({ title = "Mentees" }: { title?: string } = {}) {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          {/* Desktop Join Session Button */}
-          <Button
-            variant="outline"
-            className="hidden md:flex"
-            onClick={() => setJoinDialog({ open: true, sessionId: "" })}
-          >
-            <LogIn className="mr-2 h-4 w-4" />
-            Join Session
-          </Button>
         </div>
       </div>
 
@@ -228,12 +204,6 @@ export function MenteesPage({ title = "Mentees" }: { title?: string } = {}) {
         }
         sessionId={feedbackDialog.sessionId}
         sessionTitle={feedbackDialog.sessionTitle}
-      />
-
-      <JoinSessionDialog
-        open={joinDialog.open}
-        onOpenChange={(open) => setJoinDialog((prev) => ({ ...prev, open }))}
-        defaultSessionId={joinDialog.sessionId}
       />
     </div>
   );

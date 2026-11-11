@@ -18,9 +18,11 @@ export function useCommunityPartners(igId: string) {
   const queryClient = useQueryClient();
   const qKey = ["community-partners", igId];
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: qKey,
     queryFn: () => fetchCommunityPartners({ ig_id: igId }),
+    // Without an id the API returns every partner, not this group's.
+    enabled: Boolean(igId),
   });
   const partners: CommunityPartner[] = data?.data ?? [];
 
@@ -79,6 +81,8 @@ export function useCommunityPartners(igId: string) {
   return {
     partners,
     isLoading,
+    isError,
+    refetch,
     createPartner: createMutation.mutateAsync,
     updatePartner: updateMutation.mutateAsync,
     deletePartner: deleteMutation.mutateAsync,

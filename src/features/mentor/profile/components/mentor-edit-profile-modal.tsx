@@ -18,6 +18,7 @@ import { type Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import {
   Dialog,
   DialogContent,
@@ -37,29 +38,45 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useInterestGroupsList } from "@/features/home/hooks";
-import { useMentorOverview } from "@/features/mentor/hooks";
-import { useUpdateMentorProfile } from "@/features/mentor/onboarding/hooks/use-onboarding";
-import type {
-  MentorApplication,
-  MentorProfileWrite,
-} from "@/features/mentor/onboarding/schemas";
+import {
+  MENTOR_HOURS_OPTIONS,
+  MentorHoursSchema,
+  toMentorHours,
+} from "@/features/mentor/lib/hours";
+import {
+  useChangeCompany,
+  useMentorApplicationStatus,
+  useRequestPreferredIgChange,
+  useUpdateMentorProfile,
+} from "@/features/mentor/onboarding/hooks/use-onboarding";
+import { mentorTierLabel } from "@/features/mentor/onboarding/lib/mentor-status";
+import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
+import { useCompanies } from "@/features/onboarding";
 import { useUpdateProfile, useUpdateProfileImage } from "@/features/profile";
 import type { UserProfile } from "@/features/profile/schemas";
 import {
   MAX_IMAGE_UPLOAD_LABEL,
   validateImageFile,
 } from "@/lib/constants/upload";
+import { splitProfileEdit } from "../lib/split-profile-edit";
 
-const MentorEditSchema = z.object({
+/** Backend cap on a mentor's Interest Groups (dash_mentor_helper.MAX_PREFERRED_IGS). */
+const MAX_PREFERRED_IGS = 5;
+
+/** Select sentinel for "no availability set" (Radix items can't use ""). */
+const HOURS_UNSET = "__unset__";
+
+const baseMentorEditSchema = z.object({
   full_name: z.string().trim().min(1, "Name is required"),
   about: z.string().trim().optional(),
   // Edit form: expertise is optional and must NOT hard-block saving other
@@ -68,15 +85,42 @@ const MentorEditSchema = z.object({
   // with fewer than 3 skills — making "Save" do nothing. The onboarding form
   // keeps its own min(3) quality bar for new applicants.
   expertise: z.array(z.string()).optional(),
-  // §2.5: an approved mentor must always mentor at least one Interest Group
+  // §2.5: an approved mentor must always mentor at least one Interest Group;
+  // the backend caps a mentor at MAX_PREFERRED_IGS = 5.
   preferred_ig_ids: z
     .array(z.string())
-    .min(1, "You must mentor at least one Interest Group"),
+    .min(1, "You must mentor at least one Interest Group")
+    .max(
+      MAX_PREFERRED_IGS,
+      `You can mentor up to ${MAX_PREFERRED_IGS} Interest Groups`,
+    ),
+  hours: MentorHoursSchema.optional(),
   org: z.string().optional(),
+  org_reason: z.string().trim().optional(),
+  linkedin: z
+    .string()
+    .trim()
+    .regex(
+      /^https?:\/\/(www\.)?linkedin\.com\/.*$/,
+      "Enter a valid LinkedIn URL",
+    )
+    .optional()
+    .or(z.literal("")),
   profile_pic: z.instanceof(File).optional(),
 });
 
-type MentorEditValues = z.infer<typeof MentorEditSchema>;
+const getMentorEditSchema = (originalOrg: string | undefined | null) =>
+  baseMentorEditSchema.superRefine((data, ctx) => {
+    if (data.org && data.org !== (originalOrg ?? "") && !data.org_reason) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please provide a reason for changing your company.",
+        path: ["org_reason"],
+      });
+    }
+  });
+
+type MentorEditValues = z.infer<typeof baseMentorEditSchema>;
 
 interface MentorEditProfileModalProps {
   open: boolean;
@@ -99,17 +143,37 @@ export function MentorEditProfileModal({
   const updateProfileMutation = useUpdateProfile();
   const updateProfileImageMutation = useUpdateProfileImage();
   const updateMentorProfileMutation = useUpdateMentorProfile();
+  const changeCompanyMutation = useChangeCompany();
+  const igChangeMutation = useRequestPreferredIgChange();
+  const { data: applicationStatus } = useMentorApplicationStatus(open);
+
+  // IG changes are requested on the approved application being edited; the
+  // backend allows one pending request per tier.
+  const igApplicationId =
+    mentorProfile.status === "APPROVED"
+      ? mentorProfile.id
+      : applicationStatus?.approvedApplications[0]?.id;
+  const igChangePending =
+    !!applicationStatus?.pendingApplication &&
+    applicationStatus.pendingApplication.mentor_tier ===
+      (mentorProfile.mentor_tier ?? null);
 
   const isPending =
     updateProfileMutation.isPending ||
     updateProfileImageMutation.isPending ||
-    updateMentorProfileMutation.isPending;
+    updateMentorProfileMutation.isPending ||
+    changeCompanyMutation.isPending ||
+    igChangeMutation.isPending;
 
   const { data: igList = [] } = useInterestGroupsList();
   const igOptions = igList.map((ig) => ({ value: ig.id, label: ig.name }));
+  const { data: companies = [] } = useCompanies();
+  const companyOptions = companies.map((c) => ({ id: c.id, title: c.title }));
 
   const form = useForm<MentorEditValues>({
-    resolver: zodResolver(MentorEditSchema) as Resolver<MentorEditValues>,
+    resolver: zodResolver(
+      getMentorEditSchema(mentorProfile.org),
+    ) as Resolver<MentorEditValues>,
     defaultValues: {
       full_name: userProfile.full_name ?? "",
       about: mentorProfile.about ?? "",
@@ -120,7 +184,10 @@ export function MentorEditProfileModal({
             .filter(Boolean)
         : [],
       preferred_ig_ids: mentorProfile.preferred_ig_ids ?? [],
+      hours: toMentorHours(mentorProfile.hours),
       org: mentorProfile.org ?? "",
+      org_reason: "",
+      linkedin: mentorProfile.linkedin ?? mentorProfile.linkedin_url ?? "",
       profile_pic: undefined,
     },
   });
@@ -138,7 +205,10 @@ export function MentorEditProfileModal({
               .filter(Boolean)
           : [],
         preferred_ig_ids: mentorProfile.preferred_ig_ids ?? [],
+        hours: toMentorHours(mentorProfile.hours),
         org: mentorProfile.org ?? "",
+        org_reason: "",
+        linkedin: mentorProfile.linkedin ?? mentorProfile.linkedin_url ?? "",
         profile_pic: undefined,
       });
       setPreviewUrl(null);
@@ -149,7 +219,10 @@ export function MentorEditProfileModal({
     mentorProfile.about,
     mentorProfile.expertise,
     mentorProfile.preferred_ig_ids,
+    mentorProfile.hours,
     mentorProfile.org,
+    mentorProfile.linkedin,
+    mentorProfile.linkedin_url,
     form,
   ]);
 
@@ -169,17 +242,7 @@ export function MentorEditProfileModal({
     setPreviewUrl(url);
   };
 
-  // Resolve the org's display name (the profile only carries the org UUID).
-  const { data: overview } = useMentorOverview();
-  const orgName = overview?.scopes?.find(
-    (s) =>
-      s.scope_type === "COMPANY_MENTOR" || s.scope_type === "CAMPUS_MENTOR",
-  )?.scope_name;
-
   const handleSubmit = async (values: MentorEditValues) => {
-    // IG selection is open to every tier (org and IG scopes coexist). The
-    // backend enforces "keep at least one scope" — surfaced via the mutation's
-    // error toast — so no tier-specific block is needed here.
     try {
       // 1. Update learner profile fields (name) if changed
       if (values.full_name !== userProfile.full_name) {
@@ -188,25 +251,49 @@ export function MentorEditProfileModal({
         });
       }
 
-      // 2. Update mentor profile fields if changed
-      const newExpertise = values.expertise?.join(", ") ?? "";
-      const isAboutChanged = values.about !== (mentorProfile.about ?? "");
-      const isExpertiseChanged =
-        newExpertise !== (mentorProfile.expertise ?? "");
-      const isIgsChanged =
-        JSON.stringify(values.preferred_ig_ids ?? []) !==
-        JSON.stringify(mentorProfile.preferred_ig_ids ?? []);
+      // 2. Profile fields go to PATCH mentor/profile/; an IG change is a
+      //    reviewed request on the approved application (release 1.91).
+      const { profilePatch, igChange } = splitProfileEdit(
+        {
+          about: values.about,
+          expertise: values.expertise,
+          linkedin: values.linkedin,
+          hours: values.hours,
+          preferred_ig_ids: values.preferred_ig_ids,
+        },
+        {
+          about: mentorProfile.about,
+          expertise: mentorProfile.expertise,
+          linkedin: mentorProfile.linkedin ?? mentorProfile.linkedin_url,
+          hours: mentorProfile.hours,
+          preferred_ig_ids: mentorProfile.preferred_ig_ids,
+        },
+      );
 
-      if (isAboutChanged || isExpertiseChanged || isIgsChanged) {
-        const payload: Partial<MentorProfileWrite> = {};
-        if (isAboutChanged) payload.about = values.about ?? "";
-        if (isExpertiseChanged) payload.expertise = newExpertise;
-        if (isIgsChanged) payload.preferred_ig_ids = values.preferred_ig_ids;
-
-        await updateMentorProfileMutation.mutateAsync(payload);
+      if (Object.keys(profilePatch).length > 0) {
+        await updateMentorProfileMutation.mutateAsync(profilePatch);
       }
 
-      // 3. Update profile photo if changed
+      if (igChange && igApplicationId && !igChangePending) {
+        await igChangeMutation.mutateAsync({
+          applicationId: igApplicationId,
+          igIds: igChange,
+        });
+      }
+
+      // 3. Request company affiliation change if org changed
+      const isOrgChanged =
+        values.org && values.org !== (mentorProfile.org ?? "");
+      if (isOrgChanged) {
+        await changeCompanyMutation.mutateAsync({
+          org_id: values.org as string,
+          ...(values.org_reason?.trim()
+            ? { reason: values.org_reason.trim() }
+            : {}),
+        });
+      }
+
+      // 4. Update profile photo if changed
       if (values.profile_pic instanceof File) {
         await updateProfileImageMutation.mutateAsync({
           profilePic: values.profile_pic,
@@ -313,6 +400,24 @@ export function MentorEditProfileModal({
                 )}
               />
 
+              {/* LinkedIn */}
+              <FormField
+                control={form.control}
+                name="linkedin"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>LinkedIn</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="https://www.linkedin.com/in/username"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               {/* Bio */}
               <FormField
                 control={form.control}
@@ -364,37 +469,96 @@ export function MentorEditProfileModal({
                   onChange={(vals) =>
                     form.setValue("preferred_ig_ids", vals, {
                       shouldDirty: true,
+                      shouldValidate: true,
                     })
                   }
                   placeholder="Select IGs you want to mentor in..."
+                  disabled={igChangePending || !igApplicationId}
                 />
                 <p className="text-[0.8rem] text-muted-foreground">
-                  Changes to your Interest Groups apply immediately.
+                  {igChangePending
+                    ? "An Interest Group change request is already pending review."
+                    : `Up to ${MAX_PREFERRED_IGS}. Changes are reviewed first — your current Interest Groups stay active until approved.`}
                 </p>
+                {form.formState.errors.preferred_ig_ids?.message && (
+                  <p className="text-[0.8rem] font-medium text-destructive">
+                    {form.formState.errors.preferred_ig_ids.message}
+                  </p>
+                )}
               </div>
 
-              {/* Affiliation */}
+              {/* Weekly availability — PATCH mentor/profile/ accepts `hours` */}
+              <FormField
+                control={form.control}
+                name="hours"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Weekly availability</FormLabel>
+                    <Select
+                      value={field.value ?? ""}
+                      onValueChange={(value) =>
+                        field.onChange(
+                          value === HOURS_UNSET ? undefined : value,
+                        )
+                      }
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Not specified" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value={HOURS_UNSET}>
+                          Not specified
+                        </SelectItem>
+                        {MENTOR_HOURS_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label} per week
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Affiliation — editable via mentor/change-company/ */}
               <div className="space-y-2">
                 <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Company / Campus Affiliation
+                  Company
                 </div>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div>
-                        <Input
-                          value={orgName ?? form.watch("org") ?? ""}
-                          placeholder="Affiliation"
-                          disabled
-                          className="cursor-not-allowed"
-                        />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Affiliation editing coming soon.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <Combobox
+                  options={companyOptions}
+                  value={form.watch("org") ?? ""}
+                  onValueChange={(val: string) => {
+                    form.setValue("org", val, { shouldDirty: true });
+                  }}
+                  placeholder="Select your company…"
+                />
+                {/* Show reason field only when org has been changed */}
+                {form.watch("org") &&
+                  form.watch("org") !== (mentorProfile.org ?? "") && (
+                    <FormField
+                      control={form.control}
+                      name="org_reason"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Reason for change</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="e.g. Relocating to a new employer"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormDescription className="text-xs">
+                            This request will be pending admin approval.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
               </div>
 
               {/* Read-only: Tier */}
@@ -404,27 +568,13 @@ export function MentorEditProfileModal({
                     Mentor Tier
                   </p>
                   <div className="rounded-lg border border-border/50 bg-muted/30 px-3 py-2.5">
-                    <span className="text-sm capitalize text-muted-foreground">
-                      {mentorProfile.mentor_tier}
+                    <span className="text-sm text-muted-foreground">
+                      {mentorTierLabel(mentorProfile.mentor_tier)}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Tier is set by an admin and cannot be self-edited.
                   </p>
-                </div>
-              )}
-
-              {/* Read-only: Hours */}
-              {typeof mentorProfile.hours === "number" && (
-                <div className="space-y-1.5">
-                  <p className="text-sm font-medium text-foreground">
-                    Accumulated Hours
-                  </p>
-                  <div className="rounded-lg border border-border/50 bg-muted/30 px-3 py-2.5">
-                    <span className="text-sm text-muted-foreground">
-                      {mentorProfile.hours} hrs (system-calculated)
-                    </span>
-                  </div>
                 </div>
               )}
             </div>

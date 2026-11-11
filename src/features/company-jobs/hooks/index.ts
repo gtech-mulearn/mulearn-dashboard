@@ -1,18 +1,52 @@
 export { useApplyJob } from "./use-apply-job";
+export { type CompanyAccess, useCompanyAccess } from "./use-company-access";
+export {
+  COMPANY_ADMIN_LINK_KEYS,
+  useCancelCompanyAdminInvite,
+  useCompanyAdminLinks,
+  useDeactivateCompanySelf,
+  useInviteCompanyAdmin,
+  useLeaveCompanyAdmin,
+  useMyCompanyInvitations,
+  useRemoveCompanyAdmin,
+  useRespondCompanyAdminInvitation,
+} from "./use-company-admin-links";
 export {
   COMPANY_ANALYTICS_KEYS,
   useAdminSummary,
+  useCampusAnalytics,
+  useCampusQuarterTrend,
   useCompanyDashboardSummary,
   useGigAnalytics,
   useJobEngagementAnalytics,
   useTalentPoolAnalytics,
+  useTasksAnalytics,
   useTrackJobView,
 } from "./use-company-analytics";
 export {
+  COLLABORATION_KEYS,
+  useCollaborations,
+  useCreateCollaboration,
+  useDiscoverCollaborations,
+  useIncomingCollaborations,
+  useRespondCollaboration,
+  useWithdrawCollaboration,
+} from "./use-company-collaborations";
+export {
+  FEEDBACK_KEYS,
+  useCompanyFeedbackList,
+  useCompanyImpactReport,
+  useImpactReportPublished,
+  useSetImpactReportPublished,
+  useSubmitCompanyFeedback,
+} from "./use-company-feedback";
+export {
   COMPANY_KEYS,
   useCompanyProfile,
+  usePatchCompanyProfile,
   usePublicCompanyJobs,
   usePublicCompanyProfile,
+  useUpdateCompanyProfile,
 } from "./use-company-profile";
 export {
   COMPANY_TASKS_KEYS,
@@ -23,16 +57,38 @@ export {
   useUpdateCompanyTask,
 } from "./use-company-tasks";
 export {
+  TEMPLATES_KEYS,
+  useCreateEventTemplate,
+  useDeleteEventTemplate,
+  useEventTemplates,
+} from "./use-company-templates";
+export {
   type EligibilityLevel,
+  type EligibilitySkill,
   useEligibilityLevels,
+  useEligibilitySkills,
 } from "./use-eligibility-refs";
+export {
+  IG_SPONSORSHIP_KEYS,
+  useIgSponsorshipMetrics,
+  usePendingIgSponsorships,
+  useReviewIgSponsorship,
+  useSubmitIgSponsorship,
+} from "./use-ig-sponsorships";
 export {
   JOB_APPLICANTS_KEYS,
   useJobApplicants,
   useUpdateApplicantStatus,
 } from "./use-job-applicants";
 export { useJobDetail } from "./use-job-detail";
-export { useCreateJob, useDeleteJob, useUpdateJob } from "./use-job-mutations";
+export {
+  useApproveJob,
+  useCreateJob,
+  useDeleteJob,
+  useRejectJob,
+  useRequestJobChanges,
+  useUpdateJob,
+} from "./use-job-mutations";
 export {
   useCreateJobRule,
   useDeleteJobRule,
@@ -56,3 +112,10 @@ export {
   useNominateCompanyMentor,
 } from "./use-mentor-nominate";
 export { PUBLIC_JOBS_KEYS, usePublicJobs } from "./use-public-jobs";
+export {
+  SHORTLIST_KEYS,
+  useAddLearnerToShortlist,
+  useRemoveLearnerFromShortlist,
+  useShortlistedLearners,
+  useTalentPoolInsights,
+} from "./use-talent-pool-shortlist";

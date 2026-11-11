@@ -61,7 +61,7 @@ export function AvailabilityTab() {
             ))}
           </div>
         ) : !schedule || schedule.length === 0 ? (
-          <div className="flex min-h-[100px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed text-muted-foreground">
+          <div className="flex py-10 flex-col items-center justify-center gap-2 rounded-xl border border-dashed text-muted-foreground">
             <Clock className="h-8 w-8 opacity-30" />
             <p className="text-sm">No availability set.</p>
             <Button asChild size="sm" variant="outline">

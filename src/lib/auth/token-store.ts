@@ -67,6 +67,12 @@ export const authStore = {
     Cookies.remove(REFRESH_TOKEN_KEY, { path: "/" });
     Cookies.remove(IS_AUTHENTICATED_KEY, { path: "/" });
     Cookies.remove(TEMP_TOKEN_KEY, { path: "/" });
+
+    // Wipe form drafts that are persisted to localStorage so they don't bleed
+    // over to the next user who logs in on the same browser.
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("mentor-onboarding-draft");
+    }
   },
 
   clearTempToken: async () => {

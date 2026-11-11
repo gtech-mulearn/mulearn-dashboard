@@ -4,16 +4,20 @@ import {
   CompanyTaskDetailResponseSchema,
   CompanyTasksResponseSchema,
   GenericResponseSchema,
+  TaskTemplateDetailResponseSchema,
+  TaskTemplatesListResponseSchema,
 } from "../schemas/tasks.schema";
 import type {
   CompanyTask,
+  CompanyTaskApprovalStatus,
   CompanyTasksResponse,
   CreateCompanyTaskPayload,
+  TaskTemplate,
   UpdateCompanyTaskPayload,
 } from "../types/tasks.types";
 
 export interface FetchCompanyTasksParams {
-  approval_status?: "pending" | "approved" | "rejected";
+  approval_status?: CompanyTaskApprovalStatus;
   search?: string;
   sort_by?: string;
   sort_order?: "asc" | "desc";
@@ -40,7 +44,72 @@ export async function fetchCompanyTasks(
     : endpoints.company.tasks;
 
   const res = await apiClient.get(url, CompanyTasksResponseSchema);
-  return res.response as CompanyTasksResponse;
+  // Normalize response shape whether enveloped or direct
+  if ("response" in res && res.response && typeof res.response === "object") {
+    const respObj = res.response as unknown as CompanyTasksResponse;
+    const pagination = respObj.pagination ?? {
+      page: params?.page ?? 1,
+      per_page: params?.per_page ?? 10,
+      total: respObj.data?.length ?? 0,
+    };
+    return {
+      data: respObj.data ?? [],
+      pagination: {
+        page: pagination.page ?? pagination.current_page ?? 1,
+        per_page: pagination.per_page ?? 10,
+        total:
+          pagination.total ?? pagination.count ?? respObj.data?.length ?? 0,
+        count:
+          pagination.count ?? pagination.total ?? respObj.data?.length ?? 0,
+        total_pages:
+          pagination.total_pages ??
+          Math.max(
+            1,
+            Math.ceil(
+              (pagination.total ??
+                pagination.count ??
+                respObj.data?.length ??
+                0) / (pagination.per_page ?? 10),
+            ),
+          ),
+        current_page: pagination.current_page ?? pagination.page ?? 1,
+        next: pagination.next ?? null,
+        previous: pagination.previous ?? null,
+      },
+    };
+  }
+
+  const directObj = res as unknown as CompanyTasksResponse;
+  const pagination = directObj.pagination ?? {
+    page: params?.page ?? 1,
+    per_page: params?.per_page ?? 10,
+    total: directObj.data?.length ?? 0,
+  };
+  return {
+    data: directObj.data ?? [],
+    pagination: {
+      page: pagination.page ?? pagination.current_page ?? 1,
+      per_page: pagination.per_page ?? 10,
+      total:
+        pagination.total ?? pagination.count ?? directObj.data?.length ?? 0,
+      count:
+        pagination.count ?? pagination.total ?? directObj.data?.length ?? 0,
+      total_pages:
+        pagination.total_pages ??
+        Math.max(
+          1,
+          Math.ceil(
+            (pagination.total ??
+              pagination.count ??
+              directObj.data?.length ??
+              0) / (pagination.per_page ?? 10),
+          ),
+        ),
+      current_page: pagination.current_page ?? pagination.page ?? 1,
+      next: pagination.next ?? null,
+      previous: pagination.previous ?? null,
+    },
+  };
 }
 
 export async function createCompanyTask(
@@ -56,7 +125,10 @@ export async function fetchCompanyTaskDetail(
     endpoints.company.taskDetail(taskId),
     CompanyTaskDetailResponseSchema,
   );
-  return res.response as CompanyTask;
+  if ("response" in res && res.response) {
+    return res.response as CompanyTask;
+  }
+  return res as CompanyTask;
 }
 
 export async function updateCompanyTask({
@@ -66,7 +138,7 @@ export async function updateCompanyTask({
   taskId: string;
   payload: UpdateCompanyTaskPayload;
 }): Promise<void> {
-  await apiClient.put(
+  await apiClient.patch(
     endpoints.company.taskDetail(taskId),
     payload,
     GenericResponseSchema,
@@ -74,8 +146,46 @@ export async function updateCompanyTask({
 }
 
 export async function deleteCompanyTask(taskId: string): Promise<void> {
+  await apiClient.delete(endpoints.company.taskDetail(taskId), undefined);
+}
+
+export async function fetchTaskTemplates(): Promise<TaskTemplate[]> {
+  const res = await apiClient.get(
+    endpoints.company.taskTemplates,
+    TaskTemplatesListResponseSchema,
+  );
+  if ("response" in res && res.response) {
+    if (Array.isArray(res.response)) return res.response;
+    if ("data" in res.response && Array.isArray(res.response.data)) {
+      return res.response.data;
+    }
+  }
+  if ("data" in res && Array.isArray(res.data)) {
+    return res.data;
+  }
+  if (Array.isArray(res)) {
+    return res;
+  }
+  return [];
+}
+
+export async function createTaskTemplate(
+  payload: Partial<TaskTemplate>,
+): Promise<TaskTemplate> {
+  const res = await apiClient.post(
+    endpoints.company.taskTemplates,
+    payload,
+    TaskTemplateDetailResponseSchema,
+  );
+  if ("response" in res && res.response) {
+    return res.response as TaskTemplate;
+  }
+  return res as unknown as TaskTemplate;
+}
+
+export async function deleteTaskTemplate(templateId: string): Promise<void> {
   await apiClient.delete(
-    endpoints.company.taskDetail(taskId),
+    endpoints.company.taskTemplateDetail(templateId),
     undefined,
     GenericResponseSchema,
   );
@@ -90,7 +200,7 @@ export async function fetchPublicTaskList(): Promise<unknown> {
     endpoints.admin.tasks.publicList,
     GenericResponseSchema,
   );
-  return res.response;
+  return "response" in res ? res.response : res;
 }
 
 export async function fetchTaskTypes(): Promise<unknown> {
@@ -98,7 +208,7 @@ export async function fetchTaskTypes(): Promise<unknown> {
     endpoints.admin.tasks.taskTypes,
     GenericResponseSchema,
   );
-  return res.response;
+  return "response" in res ? res.response : res;
 }
 
 export async function createTaskType(payload: unknown): Promise<void> {
@@ -123,4 +233,26 @@ export async function deleteTaskType(payload: unknown): Promise<void> {
     payload,
     GenericResponseSchema,
   );
+}
+
+export async function fetchTaskLevels(): Promise<
+  { id: string; name: string }[]
+> {
+  const data = await apiClient.get<unknown>(endpoints.adminTask.taskLevelList);
+  // Pull array out of envelope
+  let arr: Record<string, unknown>[] = [];
+  if (Array.isArray(data)) arr = data as Record<string, unknown>[];
+  else if (data && typeof data === "object") {
+    const obj = data as Record<string, unknown>;
+    for (const key of ["data", "results", "items", "response"]) {
+      if (Array.isArray(obj[key])) {
+        arr = obj[key] as Record<string, unknown>[];
+        break;
+      }
+    }
+  }
+  return arr.map((it) => ({
+    id: String(it.id),
+    name: String(it.name ?? `Level ${it.level_order}`).trim(),
+  }));
 }

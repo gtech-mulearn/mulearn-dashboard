@@ -61,6 +61,9 @@ export function KarmaDistribution({ profile }: KarmaDistributionProps) {
   const chartData = useMemo(() => {
     const kd = profile.karma_distribution;
 
+    // karma_distribution is optional in the schema (may be absent for some users)
+    if (!kd) return [];
+
     const slices = [
       ...kd.ig.map((ig) => ({
         name: ig.ig_name,

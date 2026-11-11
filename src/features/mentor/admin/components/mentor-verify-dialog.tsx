@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { formatMentorHours } from "@/features/mentor/lib/hours";
 import { useVerifyMentor } from "../hooks/use-mentor-verify";
 import type { MentorApplicationListItem } from "../schemas";
 
@@ -184,10 +185,10 @@ export function MentorVerifyDialog({
                       {appliedAt}
                     </span>
                   )}
-                  {typeof mentor.hours === "number" && mentor.hours > 0 && (
+                  {formatMentorHours(mentor.hours) && (
                     <span className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
-                      {mentor.hours}h committed
+                      {formatMentorHours(mentor.hours)} / week
                     </span>
                   )}
                 </div>

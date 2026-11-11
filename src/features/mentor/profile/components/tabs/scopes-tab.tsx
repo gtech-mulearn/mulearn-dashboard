@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
+import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import type { MentorOverview, MentorScope } from "@/features/mentor/types";
 
 interface ScopesTabProps {
@@ -53,6 +54,7 @@ export function ScopesTab({
   overview,
   onEditIgs,
 }: ScopesTabProps) {
+  const { data: igRoles } = useTaskIgDropdown();
   const orgScopes = overview?.scopes?.filter(isOrgScope) ?? [];
   const igScopes = overview?.scopes?.filter(isIgScope) ?? [];
 
@@ -154,25 +156,34 @@ export function ScopesTab({
             </div>
           ) : igScopes.length > 0 ? (
             <ul className="space-y-2">
-              {igScopes.map((scope) => (
-                <li
-                  key={scope.scope_name}
-                  className="flex items-center gap-3 rounded-xl border border-border/50 bg-muted/40 px-4 py-3"
-                >
-                  <Target className="h-4 w-4 shrink-0 text-primary/60" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">
-                      {scope.scope_name}
-                    </p>
-                  </div>
-                  <Link
-                    href="/dashboard/mentor/sessions"
-                    className="shrink-0 text-xs text-primary hover:underline"
+              {igScopes.map((scope) => {
+                const igId = igRoles?.find(
+                  (r) => r.name === scope.scope_name,
+                )?.id;
+                return (
+                  <li
+                    key={scope.scope_name}
+                    className="flex items-center gap-3 rounded-xl border border-border/50 bg-muted/40 px-4 py-3"
                   >
-                    View sessions →
-                  </Link>
-                </li>
-              ))}
+                    <Target className="h-4 w-4 shrink-0 text-primary/60" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">
+                        {scope.scope_name}
+                      </p>
+                    </div>
+                    <Link
+                      href={
+                        igId
+                          ? `/dashboard/interest-groups/${igId}`
+                          : "/dashboard/interest-groups"
+                      }
+                      className="shrink-0 text-xs text-primary hover:underline"
+                    >
+                      View IG →
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <div className="flex min-h-20 items-center justify-center rounded-xl border border-dashed px-4 text-center text-sm text-muted-foreground">

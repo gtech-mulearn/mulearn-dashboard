@@ -23,12 +23,14 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { VersionBadge } from "@/components/ui/version-badge";
+// Direct imports on purpose: the sidebar renders on every page, and feature
+// barrels aren't tree-shaken in this build (no package.json "sideEffects"), so
+// importing @/features/company-jobs here would add ~800 KB of JS to most routes.
+import { useCompanyAccess } from "@/features/company-jobs/hooks/use-company-access";
 import { useCompanyProfile } from "@/features/company-jobs/hooks/use-company-profile";
-import { useUserProfile } from "@/features/profile";
 import { useFilteredNav } from "@/hooks/use-filtered-nav";
 import { authStore } from "@/lib/auth";
-import { ROLES } from "@/lib/auth/roles";
-import type { NavItem } from "@/lib/nav-config";
+import { isCompanyFeatureItem, type NavItem } from "@/lib/nav-config";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
 
@@ -41,12 +43,15 @@ export function AppSidebar() {
 
   const isCollapsed = state === "collapsed";
 
-  const { data: userProfile } = useUserProfile();
-  const isCompany = userProfile?.roles?.includes(ROLES.COMPANY);
+  // Only an owner's company can be unverified: co-admin and company-mentor
+  // access exists for verified companies only.
+  const { role: companyRole } = useCompanyAccess();
+  const isCompanyOwner = companyRole === "owner";
   const { profile: companyProfile } = useCompanyProfile({
-    enabled: !!isCompany,
+    enabled: isCompanyOwner,
   });
-  const isCompanyVerified = companyProfile?.status === "verified";
+  const isCompanyUnverified =
+    !!companyProfile && companyProfile.status !== "verified";
 
   const handleLogout = useCallback(async () => {
     try {
@@ -84,15 +89,7 @@ export function AppSidebar() {
 
     // Determine if this item is a locked company feature
     const isRestrictedCompanyFeature =
-      isCompany &&
-      !isCompanyVerified &&
-      (item.roles?.includes(ROLES.COMPANY) ||
-        item.id === "talent-pool" ||
-        item.id === "company-jobs" ||
-        item.id === "company-tasks" ||
-        item.id === "company-mentors" ||
-        item.id === "company-ig-requests" ||
-        item.id === "company-analytics");
+      isCompanyOwner && isCompanyUnverified && isCompanyFeatureItem(item);
 
     const Icon = isRestrictedCompanyFeature ? Lock : item.icon;
 

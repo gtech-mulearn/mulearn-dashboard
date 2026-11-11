@@ -112,6 +112,35 @@ export function StepRequirements({ form }: StepRequirementsProps) {
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="expires_at"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                Application Deadline{" "}
+                <span className="font-normal text-muted-foreground">
+                  (optional)
+                </span>
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="datetime-local"
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
+                />
+              </FormControl>
+              <FieldHint>
+                Leave empty to accept applications until you close the job.
+              </FieldHint>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
 
       {/* Engagement details — fixed-term job types only */}

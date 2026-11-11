@@ -13,6 +13,9 @@ export const JOB_APPLICANTS_KEYS = {
     params?: {
       status?: string;
       search?: string;
+      sort_by?: string;
+      page?: number;
+      per_page?: number;
       sortBy?: string;
       pageIndex?: number;
       perPage?: number;
@@ -25,6 +28,9 @@ export function useJobApplicants(
   params?: {
     status?: string;
     search?: string;
+    sort_by?: string;
+    page?: number;
+    per_page?: number;
     sortBy?: string;
     pageIndex?: number;
     perPage?: number;
@@ -33,9 +39,19 @@ export function useJobApplicants(
     enabled?: boolean;
   },
 ) {
+  const normalizedParams = params
+    ? {
+        status: params.status,
+        search: params.search,
+        sort_by: params.sort_by ?? params.sortBy,
+        page: params.page ?? params.pageIndex,
+        per_page: params.per_page ?? params.perPage,
+      }
+    : undefined;
+
   return useQuery({
     queryKey: JOB_APPLICANTS_KEYS.list(jobId, params),
-    queryFn: () => fetchJobApplicants(jobId, params),
+    queryFn: () => fetchJobApplicants(jobId, normalizedParams),
     refetchOnWindowFocus: false,
     enabled: options?.enabled ?? true,
   });

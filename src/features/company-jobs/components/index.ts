@@ -1,9 +1,12 @@
+export { CompanyAdminsPageClient } from "./admin/company-admins-client";
 export { ApplicantRow } from "./applicant-row";
 export { ApplicantsSection } from "./applicants-section";
 export { ApplicationRow } from "./application-row";
 export { ApplicationStatusBadge } from "./application-status-badge";
 export { ApplyJobDialog } from "./apply-job-dialog";
+export { CompanyCollaborationsPageClient } from "./collaborations/company-collaborations-client";
 export { CompanyStatusGuard } from "./company-status-guard";
+export { CompanyFeedbackPageClient } from "./feedback/company-feedback-client";
 export { JobCard } from "./job-card";
 export { JobDeleteDialog } from "./job-delete-dialog";
 export { JobDetailModal } from "./job-detail-modal";
@@ -24,3 +27,5 @@ export { CompanyPublicView } from "./profile/company-public-view";
 export { CompanyTestimonialsSection } from "./profile/company-testimonials-section";
 export { PublicJobCard } from "./public-job-card";
 export { RuleAddDialog, RuleEmptyState, RuleItem, RuleList } from "./rules";
+export { CompanySponsorshipPageClient } from "./sponsorship/company-sponsorship-client";
+export { CompanyTemplatesPageClient } from "./templates/company-templates-client";

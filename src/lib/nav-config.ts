@@ -22,7 +22,10 @@ import {
   FileText,
   Folder,
   Globe,
+  Handshake,
+  HeartHandshake,
   Home,
+  Layers,
   LayoutDashboard,
   LineChart,
   Link,
@@ -33,10 +36,18 @@ import {
   Search,
   Settings,
   Shield,
+  ShieldCheck,
   Trophy,
   User,
+  UserCheck,
   Users,
+  Zap,
 } from "lucide-react";
+import {
+  COMPANY_CAPABILITIES,
+  type CompanyAccessRole,
+  canOpenCompanyPage,
+} from "@/lib/auth/company-access";
 import type { Permission } from "@/lib/auth/permissions";
 import {
   ASSOCIATE_MANAGEMENT_ROLES,
@@ -56,6 +67,8 @@ export type NavSection = "main" | "management" | "bottom";
 
 export interface DynamicNavContext {
   isMentorVerified?: boolean;
+  /** Owner, co-admin or company mentor of a company (release 1.91). */
+  companyAccess?: CompanyAccessRole | null;
 }
 
 export interface NavItem {
@@ -96,6 +109,27 @@ export interface NavItem {
   linkHref?: string;
 }
 
+/**
+ * A company page entry. Only the owner holds the Company role, so these are
+ * shown by company relationship instead, using the same table as the page
+ * gate (canOpenCompanyPage).
+ */
+function companyPage(
+  item: Omit<NavItem, "section" | "roles" | "dynamicCheck">,
+): NavItem {
+  return {
+    ...item,
+    section: "management",
+    dynamicCheck: (_, context) =>
+      canOpenCompanyPage(item.href, context.companyAccess ?? null),
+  };
+}
+
+/** Company entries the sidebar locks until an owner's company is verified. */
+export function isCompanyFeatureItem(item: NavItem): boolean {
+  return item.id === "talent-pool" || item.id.startsWith("company-");
+}
+
 // ─── Navigation Items ───────────────────────────────────────
 
 export const NAV_ITEMS: readonly NavItem[] = [
@@ -131,7 +165,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   },
   {
     id: "learning-circle",
-    title: "Learning Circles",
+    title: "Learning Circle",
     href: "/dashboard/learning-circle",
     icon: BookOpen,
     section: "main",
@@ -171,6 +205,13 @@ export const NAV_ITEMS: readonly NavItem[] = [
     section: "main",
   },
   {
+    id: "problem-statements",
+    title: "Problem Statements",
+    href: "/dashboard/problem-statements",
+    icon: BookOpen,
+    section: "main",
+  },
+  {
     id: "weekly-twitches",
     title: "Weekly Twitches",
     href: "/dashboard/weekly-twitches",
@@ -201,15 +242,18 @@ export const NAV_ITEMS: readonly NavItem[] = [
   //   dynamicCheck: (roles) =>
   //     !roles.some((r) => r === ROLES.MENTOR || r === ROLES.COMPANY),
   // },
-  // {
-  //   id: "talent-pool",
-  //   title: "Talent Pool",
-  //   href: "/dashboard/talent-pool",
-  //   icon: UserCheck,
-  //   section: "main",
-  //   dynamicCheck: (roles) =>
-  //     roles.some((r) => r === ROLES.MENTOR || r === ROLES.COMPANY),
-  // },
+  {
+    id: "talent-pool",
+    title: "Talent Pool",
+    href: "/dashboard/talent-pool",
+    icon: UserCheck,
+    section: "main",
+    // Any company actor (owner, co-admin, company mentor); the backend
+    // refuses learners who are not acting for a company.
+    dynamicCheck: (_, context) =>
+      !!context.companyAccess &&
+      COMPANY_CAPABILITIES[context.companyAccess].viewTalentPool,
+  },
   {
     id: "intern-dashboard",
     title: "Intern",
@@ -248,30 +292,33 @@ export const NAV_ITEMS: readonly NavItem[] = [
     section: "management",
     roles: [ROLES.MENTOR],
   },
-  {
+  companyPage({
     id: "company-jobs",
     title: "Job Management",
     href: "/dashboard/company/jobs",
     icon: Briefcase,
-    section: "management",
-    roles: [ROLES.COMPANY],
-  },
-  {
+  }),
+  companyPage({
     id: "company-tasks",
     title: "Task Management",
     href: "/dashboard/company/tasks",
     icon: ClipboardCheck,
-    section: "management",
-    roles: [ROLES.COMPANY],
-  },
+  }),
   {
+    id: "company-problem-statements",
+    title: "Problem Statements",
+    href: "/dashboard/manage-problem-statements",
+    icon: BookOpen,
+    section: "management",
+    roles: [ROLES.COMPANY, ROLES.ADMIN],
+  },
+
+  companyPage({
     id: "company-mentors",
     title: "Mentor Management",
     href: "/dashboard/company/mentors",
     icon: Users,
-    section: "management",
-    roles: [ROLES.COMPANY],
-  },
+  }),
   {
     id: "company-ig-requests",
     title: "IG Requests",
@@ -280,13 +327,52 @@ export const NAV_ITEMS: readonly NavItem[] = [
     section: "management",
     roles: [ROLES.COMPANY],
   },
-  {
+  companyPage({
     id: "company-analytics",
     title: "Analytics & Performance",
     href: "/dashboard/company/analytics",
     icon: LineChart,
+  }),
+  companyPage({
+    id: "company-admins",
+    title: "Co-Administrators",
+    href: "/dashboard/company/admin",
+    icon: ShieldCheck,
+  }),
+  companyPage({
+    id: "company-feedback",
+    title: "Impact & Feedback",
+    href: "/dashboard/company/feedback",
+    icon: HeartHandshake,
+  }),
+  companyPage({
+    id: "company-collaborations",
+    title: "Collaborations",
+    href: "/dashboard/company/collaborations",
+    icon: Handshake,
+  }),
+  companyPage({
+    id: "company-ig-sponsorship",
+    title: "IG Sponsorships",
+    href: "/dashboard/company/ig-sponsorship",
+    icon: Zap,
+  }),
+  companyPage({
+    id: "company-templates",
+    title: "Templates",
+    href: "/dashboard/company/event-templates",
+    icon: Layers,
+  }),
+  {
+    id: "collaboration-invites",
+    title: "Collaboration Invites",
+    href: "/dashboard/collaborations/incoming",
+    icon: Handshake,
     section: "management",
-    roles: [ROLES.COMPANY],
+    // Campus Lead (static role) or any "{code} IGLead" — same rule as the route.
+    roles: [ROLES.CAMPUS_LEAD],
+    dynamicCheck: (roles) =>
+      roles.includes(ROLES.CAMPUS_LEAD) || hasIgLeadRole(roles),
   },
   {
     id: "campus-manage",
@@ -327,6 +413,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
       IG_ROLES.some((role) => userRoles.includes(role)) ||
       hasIgLeadRole(userRoles),
   },
+
   {
     id: "management",
     title: "Management",

@@ -1,26 +1,14 @@
 import type { Metadata } from "next";
-import { RoleVerificationTable } from "@/features/role-verification";
-import { FELLOW_MANAGEMENT_ROLES } from "@/lib/auth/roles";
+import { ADMIN_ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
+import { RoleVerificationClient } from "./role-verification-client";
 
 export const metadata: Metadata = {
   title: "Role Verification",
-  description: "Verify or reject pending user-role link requests.",
+  description: "Review mentor, enabler, organization and company requests.",
 };
 
 export default async function RoleVerificationPage() {
-  await requireRole(FELLOW_MANAGEMENT_ROLES);
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-          Role Verification Management
-        </h1>
-        <p className="text-sm text-muted-foreground md:text-base mt-2">
-          Verify or reject pending user-role link requests.
-        </p>
-      </div>
-      <RoleVerificationTable />
-    </div>
-  );
+  await requireRole(ADMIN_ROLES);
+  return <RoleVerificationClient />;
 }

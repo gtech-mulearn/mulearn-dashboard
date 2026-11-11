@@ -23,6 +23,8 @@ export {
   requestPasswordReset,
   resetPassword,
   updateCompanyRegistration,
+  uploadCompanyAsset,
+  uploadVerificationDocument,
   validateRegistrationData,
   verifyResetToken,
 } from "./api";
@@ -37,7 +39,6 @@ export {
   RegisterRoleSelection,
   ResetPasswordForm,
 } from "./components";
-
 // Hooks (primary way to use the feature)
 export {
   authKeys,
@@ -56,6 +57,8 @@ export {
   useUserProfile,
   useVerifyResetToken,
 } from "./hooks";
+// Helpers
+export { buildCompanySignupPayload } from "./lib/company-signup-payload";
 export type {
   CompanyOnboardingStatus,
   CompanySignupRequest,

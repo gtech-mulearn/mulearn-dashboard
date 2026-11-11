@@ -81,7 +81,7 @@ export function VenueSection({
                 id="venue_maps_url"
                 {...field}
                 value={field.value ?? ""}
-                placeholder="Google Maps URL"
+                placeholder="https://maps.google.com/..."
               />
             </div>
           )}
@@ -154,7 +154,7 @@ export function VenueSection({
                   id="venue_online_link"
                   {...field}
                   value={field.value ?? ""}
-                  placeholder="Online Link"
+                  placeholder="https://meet.google.com/abc-defg-hij"
                 />
               </div>
             )}

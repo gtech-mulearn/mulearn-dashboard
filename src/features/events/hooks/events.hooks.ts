@@ -64,6 +64,17 @@ export function useManageEventDetail(id?: string) {
   });
 }
 
+/** RSVPs, attendance and satisfaction for an event the caller manages. */
+export function useEventAnalytics(id?: string) {
+  return useQuery({
+    queryKey: ["events", "analytics", id] as const,
+    queryFn: () => eventsApi.analytics(id as string),
+    enabled: !!id,
+    retry: false,
+    staleTime: 60 * 1000,
+  });
+}
+
 export function useEventCoOwners(eventId?: string) {
   return useQuery({
     queryKey: eventKeys.coOwners(eventId as string),
@@ -127,10 +138,11 @@ export function usePendingCollaboratorInvites() {
   };
 }
 
-export function useOrganizerOptions() {
+export function useOrganizerOptions(enabled = true) {
   return useQuery<OrganizerOptionsResponse>({
     queryKey: eventKeys.organizerOptions(),
     queryFn: () => eventsApi.getOrganizerOptions(),
+    enabled,
   });
 }
 

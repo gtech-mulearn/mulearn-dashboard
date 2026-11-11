@@ -56,7 +56,8 @@ export function ApplyJobDialog({
   const existingApp = appsResponse?.applications.find(
     (app) => app.job.id === job?.id,
   );
-  const isRejected = existingApp?.status === "rejected";
+  const canResubmit =
+    existingApp?.status === "rejected" || existingApp?.status === "withdrawn";
   const isPending = isApplying || isResubmitting;
   const isSuccess = applySuccess || resubmitSuccess;
 
@@ -73,7 +74,7 @@ export function ApplyJobDialog({
       },
     };
 
-    if (isRejected && existingApp) {
+    if (canResubmit && existingApp) {
       resubmit(
         {
           appId: existingApp.id,
@@ -169,15 +170,15 @@ export function ApplyJobDialog({
             {isSuccess ? (
               <>
                 <CheckCircle className="h-4 w-4 mr-2" />
-                {isRejected ? "Resubmitted!" : "Applied!"}
+                {canResubmit ? "Resubmitted!" : "Applied!"}
               </>
             ) : isPending ? (
-              isRejected ? (
+              canResubmit ? (
                 "Resubmitting…"
               ) : (
                 "Applying…"
               )
-            ) : isRejected ? (
+            ) : canResubmit ? (
               "Resubmit Application"
             ) : (
               "Apply Now"

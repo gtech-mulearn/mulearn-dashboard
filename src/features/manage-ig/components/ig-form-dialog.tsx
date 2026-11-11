@@ -6,7 +6,6 @@ import {
   Check,
   Github as GithubIcon,
   Globe,
-  Handshake,
   Instagram,
   Linkedin,
   Loader2,
@@ -27,7 +26,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { MarkdownEditor } from "@/components/ui/markdown-editor";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
@@ -39,11 +37,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  IG_COVER_IMAGE_ASPECT,
-  IG_ICON_IMAGE_ASPECT,
-  IG_IMAGE_MAX_MB,
-} from "../constants/ig-images.constants";
 import { useCommunityPartners } from "../hooks/use-community-partners";
 import { useInterestGroupsAdmin } from "../hooks/use-manage-ig";
 import {
@@ -230,8 +223,6 @@ export function InterestGroupFormDialog({
     createInterestGroup,
     updateInterestGroup,
     partialUpdateInterestGroup,
-    uploadCoverImage,
-    uploadIconImage,
   } = useInterestGroupsAdmin();
 
   const queryClient = useQueryClient();

@@ -165,6 +165,8 @@ export const RULE_TYPE_OPTIONS = [
   { value: "max_karma", label: "Max Karma" },
   { value: "min_level", label: "Min Level" },
   { value: "max_level", label: "Max Level" },
+  // Release 1.91: rule_value must be an active Skill id.
+  { value: "skill", label: "Required skill" },
 ] as const;
 
 // ─── Rule value input categories ────────────────────────────
@@ -174,6 +176,7 @@ export const RULE_TYPE_OPTIONS = [
 
 export const KARMA_RULE_TYPES = ["min_karma", "max_karma"] as const;
 export const LEVEL_RULE_TYPES = ["min_level", "max_level"] as const;
+export const SKILL_RULE_TYPES = ["skill"] as const;
 
 export function formatNumericRuleValue(
   rule_type: string,
@@ -284,6 +287,13 @@ export const COMPANY_STATUS_CONFIG = {
     message:
       "Your company profile is inactive. Contact support for assistance.",
   },
+  deactivated: {
+    label: "Deactivated",
+    color: "text-red-600",
+    bgColor: "bg-red-50",
+    borderColor: "border-red-200",
+    message: "This company has been deactivated.",
+  },
 } as const;
 
 export const JOB_STATUS_CONFIG = {
@@ -304,6 +314,24 @@ export const JOB_STATUS_CONFIG = {
     dotColor: "bg-amber-500",
     textColor: "text-amber-700",
     bgColor: "bg-amber-50",
+  },
+  "Pending Approval": {
+    label: "Pending Approval",
+    dotColor: "bg-blue-500",
+    textColor: "text-blue-700",
+    bgColor: "bg-blue-50",
+  },
+  "Needs Revision": {
+    label: "Needs Revision",
+    dotColor: "bg-amber-500",
+    textColor: "text-amber-700",
+    bgColor: "bg-amber-50",
+  },
+  Rejected: {
+    label: "Rejected",
+    dotColor: "bg-red-500",
+    textColor: "text-red-700",
+    bgColor: "bg-red-50",
   },
   Closed: {
     label: "Closed",

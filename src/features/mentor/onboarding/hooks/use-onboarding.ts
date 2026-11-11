@@ -2,9 +2,15 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import type { ChangeCompanyPayload } from "@/features/mentor/api/mentor.api";
+import {
+  changeCompany,
+  requestPreferredIgChange,
+} from "@/features/mentor/api/mentor.api";
 import { mentorKeys } from "@/features/mentor/hooks";
 import { mentorTaskKeys } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import { getApiResponseError } from "@/hooks/use-get-error";
+import type { MentorProfilePatch } from "../../profile/lib/split-profile-edit";
 import {
   getMentorApplicationStatus,
   getMentorProfile,
@@ -117,8 +123,7 @@ export function useUpdateMentorApplication() {
 export function useUpdateMentorProfile() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<MentorProfileWrite>) =>
-      updateMentorProfile(data),
+    mutationFn: (data: MentorProfilePatch) => updateMentorProfile(data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ONBOARDING_KEYS.all });
       void queryClient.invalidateQueries({ queryKey: mentorKeys.overview() });
@@ -136,3 +141,51 @@ export function useUpdateMentorProfile() {
 
 // ─── Backward compat alias ────────────────────────────────────────────────────
 export const useMentorApplication = useMentorApplicationStatus;
+
+// ─── POST /mentor/change-company/ ─────────────────────────────────────────────
+export function useChangeCompany() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: ChangeCompanyPayload) => changeCompany(payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ONBOARDING_KEYS.all });
+      void queryClient.invalidateQueries({ queryKey: mentorKeys.overview() });
+      toast.success(
+        "Company change request submitted. It is pending admin approval.",
+      );
+    },
+    onError: (error) =>
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to submit company change request",
+        }),
+      ),
+  });
+}
+
+/** PATCH mentor/<application_id>/preferred-igs/ — IG change request. */
+export function useRequestPreferredIgChange() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      applicationId,
+      igIds,
+    }: {
+      applicationId: string;
+      igIds: string[];
+    }) => requestPreferredIgChange(applicationId, igIds),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ONBOARDING_KEYS.all });
+      void queryClient.invalidateQueries({ queryKey: mentorKeys.overview() });
+      toast.success(
+        "Interest Group change submitted for review. Your current IGs stay active until it's approved.",
+      );
+    },
+    onError: (error) =>
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to submit the Interest Group change",
+        }),
+      ),
+  });
+}

@@ -4,12 +4,13 @@ import { endpoints } from "@/api/endpoints";
 import { ApiResponseSchema } from "@/lib/schemas/api-response";
 import type {
   ReviewActionValues,
+  TaskApprovalStatus,
   TaskVerificationItem,
 } from "../schemas/task-verification.schema";
 import { TaskVerificationListResponseSchema } from "../schemas/task-verification.schema";
 
 interface ListParams {
-  approval_status?: "pending" | "approved" | "rejected";
+  approval_status?: TaskApprovalStatus;
   source?: "mentor" | "company";
   mentor_name?: string;
   company_name?: string;

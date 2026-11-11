@@ -41,6 +41,7 @@ const FILTER_TABS: Array<{ key: FilterTab; label: string }> = [
   { key: "interview", label: APP_STATUS_META.interview.label },
   { key: "selected", label: APP_STATUS_META.selected.label },
   { key: "rejected", label: APP_STATUS_META.rejected.label },
+  { key: "withdrawn", label: APP_STATUS_META.withdrawn.label },
 ];
 
 const APPLICANT_SKELETONS = ["a1", "a2", "a3"];
@@ -58,7 +59,8 @@ function ApplicantRowSkeleton() {
   );
 }
 
-function normalizeStatus(status: string): AppStatus {
+/** Backend applicant status → the UI key (case/format tolerant). */
+export function normalizeStatus(status: string): AppStatus {
   if (!status) return "pending";
   const lower = status.toLowerCase();
   if (lower === "pending") return "pending";
@@ -68,6 +70,7 @@ function normalizeStatus(status: string): AppStatus {
   if (lower === "interview") return "interview";
   if (lower === "selected" || lower === "accepted") return "selected";
   if (lower === "rejected") return "rejected";
+  if (lower === "withdrawn") return "withdrawn";
   return "pending";
 }
 
@@ -117,6 +120,10 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
     status: APP_STATUS_META.rejected.backendStatus,
     perPage: 1,
   });
+  const { data: withdrawnCountData } = useJobApplicants(jobId, {
+    status: APP_STATUS_META.withdrawn.backendStatus,
+    perPage: 1,
+  });
 
   const rawApplicants = data?.applicants ?? [];
 
@@ -156,6 +163,7 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
   const interviewCnt = interviewCountData?.pagination.count;
   const selectedCnt = selectedCountData?.pagination.count;
   const rejectedCnt = rejectedCountData?.pagination.count;
+  const withdrawnCnt = withdrawnCountData?.pagination.count;
 
   const backendSupportsStatusCounts =
     (pendingCnt !== undefined && pendingCnt !== totalAllCount) ||
@@ -163,7 +171,8 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
     (shortlistedCnt !== undefined && shortlistedCnt !== totalAllCount) ||
     (interviewCnt !== undefined && interviewCnt !== totalAllCount) ||
     (selectedCnt !== undefined && selectedCnt !== totalAllCount) ||
-    (rejectedCnt !== undefined && rejectedCnt !== totalAllCount);
+    (rejectedCnt !== undefined && rejectedCnt !== totalAllCount) ||
+    (withdrawnCnt !== undefined && withdrawnCnt !== totalAllCount);
 
   const tabCounts: Record<FilterTab, number> = {
     all: totalAllCount,
@@ -185,6 +194,9 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
     rejected: backendSupportsStatusCounts
       ? (rejectedCnt ?? 0)
       : (localCountByStatus.rejected ?? 0),
+    withdrawn: backendSupportsStatusCounts
+      ? (withdrawnCnt ?? 0)
+      : (localCountByStatus.withdrawn ?? 0),
   };
 
   return (

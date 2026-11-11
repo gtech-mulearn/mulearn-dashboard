@@ -4,8 +4,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { verifyMentor } from "@/features/mentor/admin/api/mentor-verify.api";
 import { getApiResponseError } from "@/hooks/use-get-error";
-import { fetchCompanyMentors, nominateCompanyMentor } from "../api";
-import type { NominateMentorPayload } from "../api/company-mentor.api";
+import {
+  applyAsCompanyMentor,
+  fetchCompanyMentors,
+  nominateCompanyMentor,
+} from "../api";
+import type {
+  ApplyMentorPayload,
+  NominateMentorPayload,
+} from "../api/company-mentor.api";
 
 export const COMPANY_MENTOR_KEYS = {
   all: ["company-mentor"] as const,
@@ -33,6 +40,27 @@ export function useNominateCompanyMentor() {
     onError: (error) => {
       toast.error(
         getApiResponseError(error, { fallback: "Failed to nominate mentor" }),
+      );
+    },
+  });
+}
+
+export function useApplyCompanyMentor() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: ApplyMentorPayload) => applyAsCompanyMentor(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: COMPANY_MENTOR_KEYS.all });
+      toast.success(
+        "Application submitted successfully. It is pending review by the company owner.",
+      );
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to submit application",
+        }),
       );
     },
   });

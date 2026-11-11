@@ -1,7 +1,7 @@
 import { ROLES } from "@/lib/auth/roles";
 import type { EventScope, OrganizerType } from "../types";
 
-export type ApprovalTier = "mentor" | "campus" | "admin";
+export type ApprovalTier = "mentor" | "campus" | "company" | "admin";
 
 /** The single status→tier source of truth (mirrors Django approval chain). */
 const STATUS_TIER: Record<string, ApprovalTier> = {
@@ -10,8 +10,50 @@ const STATUS_TIER: Record<string, ApprovalTier> = {
   pending_approval: "admin",
 };
 
-export function resolveApprovalTier(status: string): ApprovalTier | null {
-  return STATUS_TIER[status] ?? null;
+/**
+ * The approval tier for an event's current status. A company event's first
+ * stage (`pending_mentor_approval`, reached when a company mentor submits it)
+ * is decided by the company owner or an accepted co-admin through
+ * events/company/<id>/approve|reject/ — the mentor endpoint refuses company
+ * events (release 1.91).
+ */
+export function resolveApprovalTier(
+  status: string,
+  organiserType?: string | null,
+): ApprovalTier | null {
+  const tier = STATUS_TIER[status] ?? null;
+  if (tier === "mentor" && organiserType === "company") return "company";
+  return tier;
+}
+
+export interface ApprovalContext {
+  organiserType?: string | null;
+  /** The event's organiser organisation (`event.organiser_org`). */
+  organiserOrgId?: string | null;
+  /** Company org ids the viewer owns or co-administers
+   *  (organizer-options `can_create_as_company`). */
+  manageableCompanyOrgIds?: readonly string[];
+}
+
+interface OrganizerLike {
+  type?: string | null;
+  organiser_type?: string | null;
+  company?: { id?: string | null } | null;
+  organiser_company?: { id?: string | null } | null;
+}
+
+/** Build the approval context from an event's organiser, whichever field
+ *  names the API used (`type`/`company` or `organiser_type`/`organiser_company`). */
+export function approvalContextFor(
+  organizer: OrganizerLike | null | undefined,
+  manageableCompanyOrgIds: readonly string[],
+): Required<ApprovalContext> {
+  return {
+    organiserType: organizer?.type ?? organizer?.organiser_type ?? null,
+    organiserOrgId:
+      organizer?.company?.id ?? organizer?.organiser_company?.id ?? null,
+    manageableCompanyOrgIds,
+  };
 }
 
 const CAMPUS_APPROVER_ROLES = [
@@ -24,14 +66,23 @@ const CAMPUS_APPROVER_ROLES = [
 
 /** Whether this viewer may act at the event's current approval stage. The
  *  backend still authorises precisely (e.g. campus match); this only decides
- *  whether to surface the approve/reject UI. Admin/is_staff may act anywhere. */
+ *  whether to surface the approve/reject UI. Admin/is_staff may act at every
+ *  tier except the company tier, which only the company's owner or an
+ *  accepted co-admin may decide. */
 export function canApproveStatus(
   status: string,
   roles: string[],
   isStaff: boolean,
+  ctx: ApprovalContext = {},
 ): boolean {
-  const tier = resolveApprovalTier(status);
+  const tier = resolveApprovalTier(status, ctx.organiserType);
   if (!tier) return false;
+  if (tier === "company") {
+    return (
+      !!ctx.organiserOrgId &&
+      !!ctx.manageableCompanyOrgIds?.includes(ctx.organiserOrgId)
+    );
+  }
   if (isStaff || roles.includes(ROLES.ADMIN)) return true;
   if (tier === "mentor") return roles.includes(ROLES.MENTOR);
   if (tier === "campus")

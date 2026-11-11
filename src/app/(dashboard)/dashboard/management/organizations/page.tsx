@@ -11,6 +11,7 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { verificationTabHref } from "@/features/role-verification";
 import { hasAnyRole } from "@/lib/auth/permissions";
 import {
   ADMIN_ROLES,
@@ -70,10 +71,10 @@ const ORG_ITEMS: OrgItem[] = [
   {
     title: "Organization Verification",
     description: "Verify legitimacy of registered organizations.",
-    href: "/dashboard/management/organizations/verify",
+    href: verificationTabHref("college"),
     icon: CheckCircle,
     iconBg: "bg-destructive/15 text-destructive",
-    roles: FELLOW_MANAGEMENT_ROLES,
+    roles: ADMIN_ROLES,
   },
 ];
 

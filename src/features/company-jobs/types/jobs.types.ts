@@ -8,27 +8,34 @@
 
 // ─── Enums / Unions ─────────────────────────────────────────
 
-/** Mirrors db/job.py :: CompanyJob.job_type (# Enum: Hybrid, Full-Time, Remote, Part-Time, Internship, Gig). */
 export type JobType =
   | "Full-Time"
   | "Part-Time"
-  | "Remote"
-  | "Hybrid"
   | "Internship"
+  | "Contract"
+  | "Freelance"
   | "Gig";
 
-/**
- * Wire format for CompanyJob.certificate_provided — CharField(max_length=3)
- * with enum Yes/No. DRF's CharField rejects booleans ("Not a valid string."),
- * so this must never widen to include `boolean`.
- */
-export type CertificateProvided = "Yes" | "No";
-
-export type JobStatus = "Active" | "Inactive" | "Draft";
+export type JobStatus =
+  | "Draft"
+  | "Pending Approval"
+  | "Active"
+  | "Closed"
+  | "Expired"
+  | "Rejected"
+  | "NeedsRevision"
+  | "Inactive";
 
 export type RuleType = "skill" | "interest_group" | "achievement";
 
-export type CompanyStatus = "verified" | "pending" | "rejected" | "inactive";
+export type CompanyStatus =
+  | "verified"
+  | "pending"
+  | "rejected"
+  | "inactive"
+  | "deactivated";
+
+export type JobSortValue = "-created_at" | "created_at" | "title" | "-title";
 
 // ─── Core Entities ──────────────────────────────────────────
 
@@ -57,7 +64,7 @@ export interface Job {
   duration_value?: number | null;
   duration_unit?: string | null;
   hourly_rate?: string | null;
-  deliverables?: string[] | string | null;
+  deliverables?: Record<string, unknown> | string[] | string | null;
   stipend?: string | null;
   certificate_provided?: boolean | null;
   applicant_count?: number | null;
@@ -65,6 +72,21 @@ export interface Job {
   total_applicants?: number | null;
   applicantCount?: number | null;
   applicationsCount?: number | null;
+  expires_at?: string | null;
+  created_by_name?: string | null;
+  /** Rejection reason, or the owner's revision note for "Needs Revision". */
+  rejection_reason?: string | null;
+  approved_at?: string | null;
+  approved_by_name?: string | null;
+  eligibility?: {
+    eligible: boolean;
+    rules: {
+      rule_type: string;
+      rule_value: string;
+      met: boolean;
+      message?: string;
+    }[];
+  } | null;
 }
 
 export interface Pagination {
@@ -103,15 +125,37 @@ export interface PublicJob {
   duration_value?: number | null;
   duration_unit?: string | null;
   hourly_rate?: string | null;
-  deliverables?: string[] | string | null;
+  deliverables?: Record<string, unknown> | string[] | string | null;
   stipend?: string | null;
   certificate_provided?: boolean | null;
   rules: JobRule[];
+  expires_at?: string | null;
+  eligibility?: {
+    eligible: boolean;
+    rules: {
+      rule_type: string;
+      rule_value: string;
+      met: boolean;
+      message?: string;
+    }[];
+  } | null;
+}
+
+export interface LearnerJobSummary {
+  id: string;
+  title: string;
+  company_name?: string | null;
+  company_logo?: string | null;
+  location?: string | null;
+  job_type?: string | null;
+  salary_range?: string | null;
+  experience?: string | null;
+  [key: string]: unknown;
 }
 
 export interface LearnerApplication {
   id: string;
-  job: Job;
+  job: Job | LearnerJobSummary;
   resume_link?: string | null;
   cover_letter?: string | null;
   status: string;
@@ -178,11 +222,11 @@ export interface CreateJobPayload {
 
   duration_value?: number;
   duration_unit?: string;
-  /** DecimalField(10, 2) — digits only, e.g. "499.50". */
-  hourly_rate?: string;
-  deliverables?: string[];
-  stipend?: string;
-  certificate_provided?: CertificateProvided;
+  hourly_rate?: string | number;
+  deliverables?: Record<string, unknown> | string[] | string;
+  stipend?: string | number;
+  certificate_provided?: boolean | string;
+  expires_at?: string;
   rules?: { rule_type: string; rule_value: string | number }[];
 }
 
@@ -198,11 +242,11 @@ export interface UpdateJobPayload {
 
   duration_value?: number | null;
   duration_unit?: string | null;
-  /** DecimalField(10, 2) — digits only. `null` clears it; "" is rejected. */
-  hourly_rate?: string | null;
-  deliverables?: string[] | null;
-  stipend?: string | null;
-  certificate_provided?: CertificateProvided | null;
+  hourly_rate?: string | number | null;
+  deliverables?: Record<string, unknown> | string[] | string | null;
+  stipend?: string | number | null;
+  certificate_provided?: boolean | string | null;
+  expires_at?: string | null;
   rules?: { rule_type: string; rule_value: string | number }[];
 }
 
@@ -218,9 +262,13 @@ export interface UpdateRulePayload {
 
 // ─── API Mutation Responses ─────────────────────────────────
 
-export type CreateJobResponse = Job;
+export type CreateJobResponse =
+  | Job
+  | { id: string; status?: string; title?: string; [key: string]: unknown };
 
-export type UpdateJobResponse = Job;
+export type UpdateJobResponse =
+  | Job
+  | { status?: string; salary_range?: string | null; [key: string]: unknown };
 
 export interface DeleteJobResponse {
   job_id: string;
@@ -249,14 +297,20 @@ export interface DeleteRuleResponse {
 }
 
 export interface ApplyJobResponse {
-  application_id: string;
-  job_id: string;
-  job_title: string;
-  status: string;
-  applied_at: string;
+  application_id?: string;
+  id?: string;
+  job_id?: string;
+  job_title?: string;
+  status?: string;
+  applied_at?: string;
 }
 
-export interface UpdateApplicantStatusResponse extends JobApplicant {}
+export type UpdateApplicantStatusResponse =
+  | JobApplicant
+  | {
+      status?: string;
+      [key: string]: unknown;
+    };
 
 // ─── Company Profile Sub-types ──────────────────────────────
 
@@ -285,18 +339,39 @@ export interface CompanyProfile {
   status?: string;
   logo?: string | null;
   description?: string | null;
+  short_pitch?: string | null;
   industry_sector?: string | null;
   website_link?: string | null;
   email?: string | null;
   slug: string;
   location?: string | null;
+  country?: string | null;
+  state?: string | null;
+  district?: string | null;
+  country_name?: string | null;
+  state_name?: string | null;
+  district_name?: string | null;
   // Extended fields from the full backend schema
   company_size?: string | null;
   linkedin_url?: string | null;
   legal_name?: string | null;
   verified_at?: string | null;
+  verified_since?: string | null;
+  verified_by?: string | null;
+  verification_requested_at?: string | null;
   created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
   rejection_reason?: string | null;
+  profile_completeness?: number | null;
+  verification_sla_message?: string | null;
+  collaboration_summary?: {
+    total_partnerships?: number;
+    campus_partnerships?: number;
+    ig_partnerships?: number;
+  } | null;
+  impact_summary?: unknown;
+  publish_impact_report?: boolean | null;
   // Frontend-only permission flags (not from API)
   can_edit_profile?: boolean;
   can_access_advanced_features?: boolean;
@@ -307,8 +382,8 @@ export interface CompanyProfile {
   founded_year?: number | null;
   remote_policy?: string | null;
   culture_text?: string | null;
-  tech_stack?: string[];
-  perks?: string[];
+  tech_stack?: string[] | null;
+  perks?: string[] | null;
   testimonials?: CompanyTestimonial[];
   gallery?: CompanyGalleryItem[];
   hire_count?: number;
@@ -328,15 +403,16 @@ export interface StepDefinition {
 }
 
 // ─── Query Parameter Types ──────────────────────────────────
-export type JobSortValue = "-created_at" | "created_at" | "title" | "-title";
 
 export interface JobsListParams {
   pageIndex?: number;
   perPage?: number;
   search?: string;
-  sortBy?: JobSortValue;
+  sortBy?: string;
   page?: number;
   per_page?: number;
+  sort_by?: string;
+  job_type?: string;
 }
 
 export interface LearnerDiscoveryParams {
@@ -450,6 +526,7 @@ export interface AdminSummary {
   verified_companies: number;
   pending_companies: number;
   rejected_companies: number;
+  deactivated_companies?: number;
   total_jobs: number;
   total_company_tasks: number;
 }
@@ -471,4 +548,231 @@ export interface MuLearner {
 export interface MuLearnersResponse {
   data: MuLearner[];
   pagination: Pagination;
+}
+
+// ─── New Part A Types (Admin Links, Analytics, Feedback, etc.) ─
+
+export type CompanyAdminLinkStatus =
+  | "Pending"
+  | "Accepted"
+  | "Declined"
+  | "Revoked";
+
+/** An IG sponsorship request waiting for platform-admin review. */
+export interface PendingIgSponsorship {
+  ig_id: string;
+  ig_name: string;
+  company_id: string;
+  company_name: string;
+  requested_at?: string | null;
+}
+
+/** A pending co-admin invitation addressed to the signed-in user. */
+export interface CompanyInvitation {
+  id: string;
+  company_id: string;
+  company_name: string;
+  company_logo?: string | null;
+  invited_by_name?: string | null;
+  invited_at: string;
+}
+
+/** One row of the company's co-admin history (CompanyAdminLinkSerializer). */
+export interface CompanyAdminLink {
+  id: string;
+  user_muid: string;
+  user_name?: string | null;
+  status: CompanyAdminLinkStatus;
+  invited_by_name?: string | null;
+  invited_at: string;
+  responded_at?: string | null;
+  revoked_by_name?: string | null;
+  revoked_at?: string | null;
+}
+
+export interface CampusJobApplicant {
+  campus_id: string;
+  campus_name: string;
+  applicant_count: number;
+}
+
+export interface CampusTaskCompleter {
+  campus_id: string;
+  campus_name: string;
+  completer_count: number;
+}
+
+export interface CampusEventAttendee {
+  campus_id: string;
+  campus_name: string;
+  attendee_count: number;
+}
+
+export interface CampusAnalytics {
+  job_applicants_by_campus: CampusJobApplicant[];
+  task_completers_by_campus: CampusTaskCompleter[];
+  event_attendees_by_campus: CampusEventAttendee[];
+}
+
+export interface CampusTrendItem {
+  quarter: string;
+  active_learners: number;
+  job_applicants: number;
+  karma_earned: number;
+  sessions_held: number;
+}
+
+export interface CampusTrend {
+  campus_id: string;
+  campus_name: string;
+  trend: CampusTrendItem[];
+}
+
+export interface TaskLearnerSatisfaction {
+  average_rating: number;
+  rating_count: number;
+}
+
+export interface TasksAnalytics {
+  total_tasks_submitted: number;
+  approval_funnel: Record<string, number>;
+  total_completions: number;
+  completion_rate: string;
+  karma_distributed: number;
+  learner_satisfaction?: TaskLearnerSatisfaction;
+}
+
+export interface ShortlistedLearner {
+  /** The learner's user ID — matches LearnerProfile.id for card comparison */
+  id: string;
+  full_name: string;
+  karma: number;
+  shortlist_note?: string | null;
+}
+
+export interface TalentPoolInsights {
+  total_learners: number;
+  top_skills: Array<{
+    skill_id: string;
+    skill_name: string;
+    learner_count: number;
+  }>;
+  top_colleges: Array<{
+    college_id: string;
+    college_name: string;
+    learner_count: number;
+  }>;
+}
+
+export interface TaskTemplate {
+  id: string;
+  title: string;
+  description?: string | null;
+  hashtag_prefix?: string | null;
+  hashtag?: string | null;
+  karma: number;
+  type_id?: string | null;
+  type_title?: string | null;
+  type?: string | null;
+  skills?: string[];
+  created_at?: string | null;
+}
+
+export type FeedbackInteractionType = "JOB" | "TASK" | "EVENT" | "SESSION";
+
+/** Feedback a learner left about the company (CompanyFeedbackSerializer). */
+export interface CompanyFeedback {
+  id: string;
+  interaction_type: FeedbackInteractionType;
+  entity_id?: string | null;
+  submitted_by_name?: string | null;
+  rating: number;
+  comment?: string | null;
+  created_at: string;
+}
+
+export interface CompanyFeedbackPage {
+  data: CompanyFeedback[];
+  pagination: Pagination;
+}
+
+/** build_impact_summary() output. */
+export interface ImpactReport {
+  company: { id: string; name: string };
+  reach: {
+    total_learners_touched: number;
+    job_applicants: number;
+    task_completers: number;
+    event_attendees: number;
+    session_mentees: number;
+  };
+  quality_signal: {
+    average_rating: number | null;
+    total_ratings: number;
+    feedback_average_rating: number | null;
+    feedback_count: number;
+    session_average_rating: number | null;
+    session_rating_count: number;
+  };
+  outcome_signal: { hires: number; karma_distributed: number };
+}
+
+export type CollabType =
+  | "EVENT_COHOST"
+  | "IG_SPONSORSHIP"
+  | "CAMPUS_PARTNERSHIP"
+  | "MENTORSHIP_EXCHANGE";
+export type CollabTargetType = "IG" | "CAMPUS";
+export type CollabStatus =
+  | "OPEN"
+  | "PENDING"
+  | "ACCEPTED"
+  | "DECLINED"
+  | "WITHDRAWN";
+
+/** A company's collaboration post (CollaborationSerializer). */
+export interface CompanyCollaboration {
+  id: string;
+  company_name?: string | null;
+  company_logo?: string | null;
+  collab_type: CollabType;
+  title: string;
+  description?: string | null;
+  target_type?: CollabTargetType | null;
+  target_org_id?: string | null;
+  event_id?: string | null;
+  status: CollabStatus;
+  responded_by_name?: string | null;
+  responded_at?: string | null;
+  rejection_reason?: string | null;
+  created_at: string;
+}
+
+export interface CollaborationPage {
+  data: CompanyCollaboration[];
+  pagination: Pagination;
+}
+
+export interface IgSponsorshipMetrics {
+  ig_id: string;
+  ig_name: string;
+  membership: {
+    total_members: number;
+    new_members_last_30_days: number;
+  };
+  activity_level: {
+    active_tasks: number;
+    task_completions_last_30_days: number;
+    sessions_last_30_days: number;
+  };
+}
+
+export interface EventTemplate {
+  id: string;
+  title: string;
+  description?: string | null;
+  event_type: string;
+  default_duration_minutes?: number | null;
+  mode?: string | null;
+  created_at?: string | null;
 }

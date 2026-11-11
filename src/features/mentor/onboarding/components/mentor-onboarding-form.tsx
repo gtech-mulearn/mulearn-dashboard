@@ -1,9 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,38 +11,71 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Combobox } from "@/components/ui/combobox";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
 import { useInterestGroupsList } from "@/features/home/hooks";
+import { useCollegeSearch, useCompanies } from "@/features/onboarding";
+import { MENTOR_HOURS_OPTIONS, toMentorHours } from "../../lib/hours";
 import { useOnboardingDraftStore } from "../hooks/use-draft-store";
 import {
   useSubmitMentorApplication,
   useUpdateMentorApplication,
 } from "../hooks/use-onboarding";
+import { buildMentorApplicationPayload } from "../lib/build-payload";
 import type { MentorApplication } from "../schemas";
 import { OnboardingFormSchema, type OnboardingFormValues } from "../schemas";
+
+/** Select sentinel for "no hours picked" (Radix items can't use an empty value). */
+const HOURS_UNSET = "__unset__";
 
 interface MentorOnboardingFormProps {
   existing?: MentorApplication;
   isEdit?: boolean;
   isReapply?: boolean;
+  isPendingEdit?: boolean;
+  /**
+   * Prefill data forwarded from the registration flow via URL params.
+   * Replaces the old localStorage approach to satisfy the Husky no-localStorage rule.
+   */
+  prefillData?: {
+    mentor_tier?: string;
+    company?: string;
+    org?: string;
+  };
 }
 
 export function MentorOnboardingForm({
   existing,
   isEdit = false,
   isReapply = false,
+  isPendingEdit = false,
+  prefillData,
 }: MentorOnboardingFormProps) {
   const { data: igList = [] } = useInterestGroupsList();
+  const { data: companies = [] } = useCompanies();
+  // Campus Mentor: colleges are searched server-side as the user types.
+  const [collegeSearch, setCollegeSearch] = useState("");
+  const { data: colleges = [], isFetching: isSearchingColleges } =
+    useCollegeSearch(collegeSearch);
   const { mutate: submit, isPending: isSubmitting } =
     useSubmitMentorApplication();
   const { mutate: update, isPending: isUpdating } =
@@ -51,23 +83,81 @@ export function MentorOnboardingForm({
 
   const isPending = isSubmitting || isUpdating;
 
-  const defaultValues: OnboardingFormValues = {
-    about: existing?.about ?? "",
-    // Expertise is stored as a comma string on the backend; split into chips.
-    expertise:
-      typeof existing?.expertise === "string"
-        ? existing.expertise
-            .split(",")
-            .map((t) => t.trim())
-            .filter(Boolean)
-        : Array.isArray(existing?.expertise)
-          ? (existing.expertise as string[])
-          : [],
-    reason: existing?.reason ?? "",
-    preferred_ig_ids: existing?.preferred_ig_ids ?? [],
-  };
+  // Read mentor prefill data from the prop (forwarded via URL params from
+  // register-client.tsx → interests-client.tsx → mentor-home.tsx).
+  // The old localStorage approach was replaced to satisfy the Husky rule.
+  const savedOnboardingTier = prefillData?.mentor_tier ?? null;
+  const savedOnboardingCompany = prefillData?.company ?? null;
+  const savedOnboardingOrgId = prefillData?.org ?? null;
 
-  const { draft, setDraft, clearDraft } = useOnboardingDraftStore();
+  // Draft must be declared BEFORE defaultValues so it's in scope when used below.
+  const {
+    draft,
+    setDraft,
+    clearDraft,
+    lastSubmitted,
+    saveSnapshot,
+    clearSnapshot,
+  } = useOnboardingDraftStore();
+
+  const rawDraftTier = draft?.mentor_tier || savedOnboardingTier;
+  const normalizedTier =
+    rawDraftTier === "IG Mentor"
+      ? "IG_MENTOR"
+      : rawDraftTier === "Company Mentor"
+        ? "COMPANY_MENTOR"
+        : rawDraftTier === "Campus Mentor"
+          ? "CAMPUS_MENTOR"
+          : rawDraftTier;
+
+  // When reapplying or editing pending, the backend profile endpoint (/mentor/profile/) returns
+  // 403 for rejected/pending users, so `existing` will be undefined. We fall back to
+  // `lastSubmitted` — a persisted snapshot saved every time the user submits
+  // the application — so every field is reliably prefilled.
+  const fallbackSource =
+    isReapply || isPendingEdit ? (lastSubmitted ?? undefined) : undefined;
+
+  const existingExpertise =
+    typeof existing?.expertise === "string"
+      ? existing.expertise
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean)
+      : Array.isArray(existing?.expertise)
+        ? (existing.expertise as string[])
+        : null;
+
+  const defaultValues: OnboardingFormValues = {
+    mentor_tier:
+      existing?.mentor_tier ??
+      fallbackSource?.mentor_tier ??
+      normalizedTier ??
+      "",
+    // `company` is display-only (human-readable name shown in the form).
+    company:
+      existing?.company ??
+      fallbackSource?.company ??
+      (draft?.company || savedOnboardingCompany) ??
+      "",
+    // `org` is the UUID that actually gets sent to the API.
+    org:
+      existing?.org ??
+      fallbackSource?.org ??
+      (draft?.org || savedOnboardingOrgId) ??
+      "",
+    about: existing?.about ?? fallbackSource?.about ?? "",
+    expertise: existingExpertise ?? fallbackSource?.expertise ?? [],
+    linkedin_url:
+      existing?.linkedin ??
+      existing?.linkedin_url ??
+      fallbackSource?.linkedin_url ??
+      "",
+    reason: existing?.reason ?? fallbackSource?.reason ?? "",
+    hours:
+      toMentorHours(existing?.hours) ?? toMentorHours(fallbackSource?.hours),
+    preferred_ig_ids:
+      existing?.preferred_ig_ids ?? fallbackSource?.preferred_ig_ids ?? [],
+  };
 
   const form = useForm<OnboardingFormValues>({
     resolver: zodResolver(OnboardingFormSchema),
@@ -82,17 +172,37 @@ export function MentorOnboardingForm({
   }, [form, setDraft]);
 
   const igOptions = igList.map((ig) => ({ value: ig.id, label: ig.name }));
+  const companyOptions = companies.map((c) => ({
+    id: c.id,
+    title: c.title,
+  }));
+
+  const handleSuccess = (submittedValues: OnboardingFormValues) => {
+    // Save the submitted values as a persistent snapshot so the Reapply
+    // form can prefill every field if this application gets rejected.
+    saveSnapshot(submittedValues);
+    clearDraft();
+    // On a successful reapply the old snapshot is no longer needed.
+    if (isReapply) clearSnapshot();
+    // No localStorage cleanup needed — prefill data now travels via URL params.
+  };
 
   function onSubmit(values: OnboardingFormValues) {
-    // Join expertise chips into the comma string the backend stores.
-    const payload = {
-      ...values,
-      expertise: (values.expertise ?? []).join(", "),
-    };
-    if (isEdit) {
-      update(payload, { onSuccess: clearDraft });
+    const payload = buildMentorApplicationPayload(values, {
+      existingId: existing?.id,
+      isEdit,
+      isReapply,
+      isPendingEdit,
+      companies,
+      colleges,
+    });
+
+    // If it's purely an edit of an existing profile, use PATCH (update).
+    // If it's a new application OR a reapplication, use POST (submit) as requested.
+    if (isEdit && !isReapply) {
+      update(payload, { onSuccess: () => handleSuccess(values) });
     } else {
-      submit(payload, { onSuccess: clearDraft });
+      submit(payload, { onSuccess: () => handleSuccess(values) });
     }
   }
 
@@ -115,6 +225,122 @@ export function MentorOnboardingForm({
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div
+              className={
+                (!isEdit && !isReapply) || isPendingEdit
+                  ? "hidden"
+                  : "space-y-6"
+              }
+            >
+              <FormField
+                control={form.control}
+                name="mentor_tier"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mentor Tier</FormLabel>
+                    <Select
+                      onValueChange={(val) => {
+                        // Company and campus tiers take different kinds of
+                        // organisation, so a tier change clears the pick.
+                        if (val !== field.value) {
+                          form.setValue("org", "");
+                          form.setValue("company", "");
+                        }
+                        field.onChange(val);
+                      }}
+                      defaultValue={field.value}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a mentor tier" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="IG_MENTOR">IG Mentor</SelectItem>
+                        <SelectItem value="COMPANY_MENTOR">
+                          Company Mentor
+                        </SelectItem>
+                        <SelectItem value="CAMPUS_MENTOR">
+                          Campus Mentor
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Company field — visible if the user selected a company during registration 
+                  OR if the mentor tier is explicitly set to COMPANY_MENTOR. */}
+              {form.watch("mentor_tier") === "CAMPUS_MENTOR" && (
+                <FormField
+                  control={form.control}
+                  name="org"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>College</FormLabel>
+                      <FormControl>
+                        <Combobox
+                          options={colleges}
+                          value={field.value ?? ""}
+                          selectedLabel={form.watch("company") || undefined}
+                          onValueChange={(val: string) => {
+                            field.onChange(val);
+                            const selected = colleges.find((c) => c.id === val);
+                            form.setValue("company", selected?.title ?? "");
+                          }}
+                          onSearchChange={setCollegeSearch}
+                          loading={isSearchingColleges}
+                          placeholder="Search your college..."
+                          searchPlaceholder="Type your college name"
+                          emptyText="No colleges found."
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Campus mentors support learners at one college.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {form.watch("mentor_tier") !== "CAMPUS_MENTOR" &&
+                (!!form.watch("company") ||
+                  !!form.watch("org") ||
+                  form.watch("mentor_tier") === "COMPANY_MENTOR") && (
+                  <FormField
+                    control={form.control}
+                    name="org"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Company</FormLabel>
+                        <FormControl>
+                          <Combobox
+                            options={companyOptions}
+                            value={field.value ?? ""}
+                            onValueChange={(val: string) => {
+                              field.onChange(val);
+                              const selected = companies.find(
+                                (c) => c.id === val,
+                              );
+                              if (selected) {
+                                form.setValue("company", selected.title);
+                              } else {
+                                form.setValue("company", "");
+                              }
+                            }}
+                            placeholder="Select your company..."
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+            </div>
+
             <FormField
               control={form.control}
               name="about"
@@ -176,6 +402,65 @@ export function MentorOnboardingForm({
 
             <FormField
               control={form.control}
+              name="hours"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Weekly availability{" "}
+                    <span className="font-normal text-muted-foreground">
+                      (optional)
+                    </span>
+                  </FormLabel>
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={(value) =>
+                      field.onChange(value === HOURS_UNSET ? undefined : value)
+                    }
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="How much time can you give each week?" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value={HOURS_UNSET}>Not sure yet</SelectItem>
+                      {MENTOR_HOURS_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label} per week
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Helps learners and reviewers know what to expect. You can
+                    change it later from your profile.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="linkedin_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>LinkedIn Profile URL</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="url"
+                      placeholder="https://www.linkedin.com/in/your-username"
+                      {...field}
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="preferred_ig_ids"
               render={({ field }) => (
                 <FormItem>
@@ -186,23 +471,9 @@ export function MentorOnboardingForm({
                       value={field.value}
                       onChange={field.onChange}
                       placeholder="Select IGs you want to mentor in..."
+                      dropUp
                     />
                   </FormControl>
-                  {field.value.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {igOptions
-                        .filter((o) => field.value.includes(o.value))
-                        .map((o) => (
-                          <Badge
-                            key={o.value}
-                            variant="outline"
-                            className="text-xs"
-                          >
-                            {o.label}
-                          </Badge>
-                        ))}
-                    </div>
-                  )}
                   <FormMessage />
                 </FormItem>
               )}

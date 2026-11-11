@@ -10,6 +10,7 @@ import type {
   CollaboratorInviteBody,
   CollaboratorsListData,
   CoOwnersListData,
+  EventAnalyticsSummary,
   EventCollaborator,
   EventCoOwner,
   EventCoOwnerInput,
@@ -463,6 +464,16 @@ export const eventsApi = {
       { isFormData },
     );
     return mirrorEventTypeToCategory(response);
+  },
+
+  /** Organiser analytics; null when the caller can't view them. */
+  analytics: async (id: string): Promise<EventAnalyticsSummary | null> => {
+    const response = await apiClient.get<{ summary?: EventAnalyticsSummary }>(
+      `${endpoints.events.manage}${id}/analytics/`,
+      undefined,
+      { skipAuthRedirectOn403: true },
+    );
+    return response?.summary ?? null;
   },
 
   manageDetail: async (id: string): Promise<EventDetailManageData> => {

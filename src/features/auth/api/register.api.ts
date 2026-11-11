@@ -6,7 +6,7 @@
  * All registration-related API calls.
  */
 
-import { apiClient } from "@/api/client";
+import { ApiError, apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
   type CompanySignupRequest,
@@ -23,28 +23,6 @@ import {
 /**
  * Register a new user account
  */
-// export function registerUser(data: RegisterRequest) {
-//   // Flatten user data to top level as backend expects it
-//   const payload = {
-//     ...data.user,
-//     ...(data.referral && { referral: data.referral }),
-//     ...(data.interests && { interests: data.interests }),
-//     ...(data.gender && { gender: data.gender }),
-//     ...(data.dob && { dob: data.dob }),
-//     ...(data.communities && { communities: data.communities }),
-//     ...(data.integration && { integration: data.integration }),
-//     ...(data.role && { role: data.role }),
-//     ...(data.organization && { organization: data.organization }),
-//     ...(data.department && { department: data.department }),
-//     ...(data.graduation_year && { graduation_year: data.graduation_year }),
-//   };
-
-//   return apiClient.post(
-//     endpoints.register.create,
-//     payload,
-//     RegisterResponseSchema,
-//   );
-// }
 export function registerUser(data: RegisterRequest) {
   return apiClient.post(
     endpoints.register.create,
@@ -123,3 +101,53 @@ export async function validateRegistrationData(data: Partial<RegisterRequest>) {
     EmailVerificationResponseSchema,
   );
 }
+
+/**
+ * Convert file to base64 Data URL for company verification document, logo, or gallery assets.
+ * Accepts PDF, JPG, JPEG, PNG, GIF, and WEBP files up to 10MB.
+ */
+export async function uploadVerificationDocument(file: File): Promise<string> {
+  const allowedExtensions = [".pdf", ".jpg", ".jpeg", ".png", ".gif", ".webp"];
+  const allowedMimeTypes = [
+    "application/pdf",
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+  ];
+
+  const hasValidExt = allowedExtensions.some((ext) =>
+    file.name.toLowerCase().endsWith(ext),
+  );
+  const hasValidType =
+    allowedMimeTypes.includes(file.type) || file.type.startsWith("image/");
+
+  if (!hasValidExt && !hasValidType) {
+    throw new ApiError(
+      400,
+      "Invalid file type. Please upload a PDF, JPG, JPEG, PNG, GIF, or WebP file.",
+    );
+  }
+
+  const MAX_DOC_SIZE_BYTES = 10 * 1024 * 1024;
+  if (file.size > MAX_DOC_SIZE_BYTES) {
+    throw new ApiError(400, "File must be under 10 MB.");
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+      } else {
+        reject(new ApiError(400, "Failed to read file"));
+      }
+    };
+    reader.onerror = () => reject(new ApiError(400, "Failed to read file"));
+    reader.readAsDataURL(file);
+  });
+}
+
+/** Alias for uploading logos, gallery pictures, and documents */
+export const uploadCompanyAsset = uploadVerificationDocument;

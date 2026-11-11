@@ -18,6 +18,7 @@ const PUBLIC_DASHBOARD_PREFIXES = [
   "/dashboard/search",
   "/dashboard/interest-groups",
   "/dashboard/events",
+  "/dashboard/problem-statements",
 ];
 
 export function isPublicDashboardRoute(pathname: string): boolean {

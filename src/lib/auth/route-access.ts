@@ -20,7 +20,9 @@ import {
   DISCORD_MODERATION_ROLES,
   DISTRICT_ROLES,
   FELLOW_MANAGEMENT_ROLES,
+  hasIgLeadRole,
   INTERN_MANAGEMENT_ROLES,
+  isIgCampusLeadRole,
   MANAGEMENT_HUB_ROLES,
   MANAGEMENT_ROLES,
   ROLES,
@@ -58,6 +60,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   "/dashboard/settings/organization": { roles: CAMPUS_SETTINGS_ROLES },
   "/dashboard/hackathon": { roles: [] },
   "/dashboard/events": { roles: [] },
+  "/dashboard/problem-statements": { roles: [] },
   "/dashboard/connect-discord": { roles: [] },
   "/dashboard/refer": { roles: [] },
   "/dashboard/weekly-twitches": { roles: [] },
@@ -102,7 +105,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
     roles: USER_MANAGEMENT_HUB_ROLES,
   },
   "/dashboard/management/verification": {
-    roles: FELLOW_MANAGEMENT_ROLES,
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/session-verification": {
     roles: ADMIN_ROLES,
@@ -126,7 +129,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
     roles: ADMIN_ROLES,
   },
   "/dashboard/management/role-verification": {
-    roles: FELLOW_MANAGEMENT_ROLES,
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/mentor-verification": {
     roles: ADMIN_ROLES,
@@ -156,7 +159,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
     roles: ADMIN_ROLES,
   },
   "/dashboard/management/organizations/verify": {
-    roles: FELLOW_MANAGEMENT_ROLES,
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/organizations/departments": {
     roles: FELLOW_MANAGEMENT_ROLES,
@@ -254,7 +257,20 @@ export const routeAccessMap: Record<string, RouteConfig> = {
       ROLES.DISTRICT_CAMPUS_LEAD,
     ],
     dynamicCheck: (roles) =>
-      roles.some((r) => r.endsWith(" IGLead") || r.endsWith(" CampusLead")),
+      roles.some((r) => r.endsWith(" IGLead") || isIgCampusLeadRole(r)),
+  },
+
+  // ── Collaboration inbox (campus and IG leads, BE-9) ──────
+  // Mirrors the backend's _can_respond_as_target: "Campus Lead", or a
+  // "{code} IGLead" role ("{code} CampusIGLead" can't respond).
+  "/dashboard/collaborations": {
+    roles: [ROLES.CAMPUS_LEAD],
+    dynamicCheck: (roles) => hasIgLeadRole(roles),
+  },
+
+  // ── Problem Statements Management ────────────────────────
+  "/dashboard/manage-problem-statements": {
+    roles: [ROLES.ADMIN, ROLES.COMPANY],
   },
 
   // ── Jobs Dashboard ───────────────────────────────────────
@@ -274,7 +290,14 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   },
 
   // ── Company Dashboard ───────────────────────────────────
+  // Owners, accepted co-admins and company mentors all act for a company
+  // (release 1.91), but only the owner holds the Company role — so company
+  // pages are open to any signed-in user here and gated client-side by
+  // CompanyStatusGuard / useCompanyAccess. Owner-only pages stay role-gated.
   "/dashboard/company": {
+    roles: [],
+  },
+  "/dashboard/company/profile/edit": {
     roles: [ROLES.COMPANY],
   },
   "/dashboard/company/ig-requests": {

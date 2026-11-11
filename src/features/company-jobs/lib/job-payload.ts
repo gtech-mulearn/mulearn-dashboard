@@ -25,6 +25,7 @@
  *    null out hourly_rate/deliverables rather than blank them.
  */
 
+import { localInputToUtcIso } from "@/lib/datetime";
 import { getJobTypeFieldModel } from "../constants/jobs.constants";
 import type { JobFormValues } from "../schemas/jobs.schema";
 import type { CreateJobPayload, JobRule, UpdateJobPayload } from "../types";
@@ -83,6 +84,8 @@ function buildJobBody<TAbsent extends undefined | null>(
       model.certificate && values.certificate_provided === true
         ? "Yes"
         : absent,
+    // Applies to every job type; the form holds local time, the API UTC.
+    expires_at: localInputToUtcIso(values.expires_at) ?? absent,
   };
 }
 

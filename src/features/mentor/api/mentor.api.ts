@@ -232,3 +232,200 @@ export async function getMentorOverview() {
     { skipAuthRedirectOn403: true },
   );
 }
+
+// ─── Persona ─────────────────────────────────────────────────────────────────
+
+export interface PersonaScope {
+  scope_type: string;
+  scope_id: string;
+}
+
+export interface PersonaCurrent {
+  active_persona: "mentor" | "learner";
+  active_scope_type: string | null;
+  active_scope_id: string | null;
+  available_scopes: PersonaScope[];
+}
+
+export interface PersonaStatus {
+  active_persona: "mentor" | "learner";
+  active_scope_type: string | null;
+  active_scope_id: string | null;
+  active_scope_name: string | null;
+}
+
+export interface SwitchPersonaPayload {
+  persona: "mentor" | "learner";
+  scope_type?: string;
+  scope_id?: string;
+}
+
+const PersonaCurrentSchema = ApiResponseOf(z.unknown());
+const PersonaStatusSchema = ApiResponseOf(z.unknown());
+
+/** GET /mentor/persona/current/ — broad view with available_scopes list */
+export async function getPersonaCurrent(): Promise<PersonaCurrent> {
+  const res = await apiClient.get(
+    endpoints.mentor.personaCurrent,
+    PersonaCurrentSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return res.response as PersonaCurrent;
+}
+
+/** GET /mentor/persona/status/ — mentor-only display-ready status */
+export async function getPersonaStatus(): Promise<PersonaStatus> {
+  const res = await apiClient.get(
+    endpoints.mentor.personaStatus,
+    PersonaStatusSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return res.response as PersonaStatus;
+}
+
+/** POST /mentor/persona/switch/ — switch active persona */
+export async function switchPersona(
+  payload: SwitchPersonaPayload,
+): Promise<void> {
+  await apiClient.post(endpoints.mentor.personaSwitch, payload, z.unknown(), {
+    skipAuthRedirectOn403: true,
+  });
+}
+
+/** POST /mentor/change-company/ — request a company affiliation change */
+export interface ChangeCompanyPayload {
+  org_id: string;
+  reason?: string;
+}
+
+export async function changeCompany(
+  payload: ChangeCompanyPayload,
+): Promise<void> {
+  await apiClient.post(endpoints.mentor.changeCompany, payload, z.unknown(), {
+    skipAuthRedirectOn403: true,
+  });
+}
+
+/**
+ * PATCH /mentor/<application_id>/preferred-igs/ — request a change to the
+ * Interest Groups of an approved application. Creates a PENDING change
+ * request; the backend refuses when the set is unchanged or a request for the
+ * same tier is already pending.
+ */
+export async function requestPreferredIgChange(
+  applicationId: string,
+  preferredIgIds: string[],
+): Promise<void> {
+  await apiClient.patch(
+    endpoints.mentor.preferredIgs(applicationId),
+    { preferred_ig_ids: preferredIgIds },
+    z.unknown(),
+    { skipAuthRedirectOn403: true },
+  );
+}
+
+// ─── Profile Completion ───────────────────────────────────────────────────────
+
+export interface ProfileCompletionChecklist {
+  about: boolean;
+  expertise: boolean;
+  hours?: boolean;
+  linkedin: boolean;
+  /** `null` when the mentor holds no approved IG_MENTOR application. */
+  preferred_igs: boolean | null;
+}
+
+export interface ProfileCompletionData {
+  percentage: number;
+  checklist: ProfileCompletionChecklist;
+}
+
+const ProfileCompletionSchema = ApiResponseOf(
+  z.object({
+    percentage: z.number(),
+    checklist: z.object({
+      about: z.boolean(),
+      expertise: z.boolean(),
+      hours: z.boolean().optional(),
+      linkedin: z.boolean(),
+      preferred_igs: z.boolean().nullable(),
+    }),
+  }),
+);
+
+/** GET /mentor/profile/completion/ — profile fill percentage + checklist */
+export async function getProfileCompletion(): Promise<ProfileCompletionData> {
+  const { response } = await apiClient.get(
+    endpoints.mentor.profileCompletion,
+    ProfileCompletionSchema,
+  );
+  return response as ProfileCompletionData;
+}
+
+// ─── Analytics ───────────────────────────────────────────────────────────────
+
+const MentorPersonalAnalyticsSchema = z
+  .object({
+    sessions: z.object({
+      total: z
+        .number()
+        .nullable()
+        .optional()
+        .transform((v) => v ?? 0),
+      completed: z
+        .number()
+        .nullable()
+        .optional()
+        .transform((v) => v ?? 0),
+      upcoming: z
+        .number()
+        .nullable()
+        .optional()
+        .transform((v) => v ?? 0),
+      cancelled: z
+        .number()
+        .nullable()
+        .optional()
+        .transform((v) => v ?? 0),
+    }),
+    karma_earned: z
+      .number()
+      .nullable()
+      .optional()
+      .transform((v) => v ?? 0),
+    hours_contributed: z
+      .number()
+      .nullable()
+      .optional()
+      .transform((v) => v ?? 0),
+    // The mentor's chosen weekly-hours range ("2-5"); null when never set.
+    profile_hours: z.string().nullable().optional(),
+    rating: z
+      .object({
+        average: z
+          .number()
+          .nullable()
+          .optional()
+          .transform((v) => v ?? 0),
+        count: z
+          .number()
+          .nullable()
+          .optional()
+          .transform((v) => v ?? 0),
+      })
+      .optional(),
+  })
+  .passthrough();
+
+export type MentorPersonalAnalytics = z.infer<
+  typeof MentorPersonalAnalyticsSchema
+>;
+
+/** GET /mentor/analytics/personal/ — Personal metrics */
+export async function fetchMentorPersonalAnalytics(): Promise<MentorPersonalAnalytics> {
+  const res = await apiClient.get(
+    endpoints.mentor.analyticsPersonal,
+    ApiResponseOf(MentorPersonalAnalyticsSchema),
+  );
+  return res.response;
+}

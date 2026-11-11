@@ -3,7 +3,7 @@
 import {
   BriefcaseBusiness,
   Building2,
-  DollarSign,
+  IndianRupee,
   Lock,
   MapPin,
   Plus,
@@ -74,7 +74,7 @@ function JobRow({ job }: { job: Job }) {
           </span>
           {job.salary_range && (
             <span className="flex items-center gap-1">
-              <DollarSign className="size-3" />
+              <IndianRupee className="size-3" />
               {job.salary_range}
             </span>
           )}

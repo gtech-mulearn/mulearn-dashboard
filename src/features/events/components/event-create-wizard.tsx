@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { CustomDateTimePicker } from "@/components/ui/custom-datetime-picker";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,7 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { useEventTemplates } from "@/features/company-jobs/hooks/use-company-templates";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { usePermissions } from "@/hooks/use-permissions";
 import { eventsApi } from "../api";
@@ -46,6 +48,7 @@ import {
   useIGClusters,
   useOrganizerOptions,
 } from "../hooks";
+import { applyEventTemplate } from "../lib/apply-event-template";
 import { getAllowedScopes } from "../lib/events.policy";
 import { type CreateEventSchema, createEventSchema } from "../schemas";
 import type {
@@ -59,6 +62,26 @@ import { VenueSection } from "./venue-section";
 const MAX_WIZARD_UPLOAD_BYTES = 900 * 1024;
 const MAX_SINGLE_IMAGE_BYTES = 450 * 1024;
 const MAX_IMAGE_DIMENSION = 1600;
+
+/** What actually happened, per the status the publish endpoint returned.
+ *  An event whose dates have passed is recorded rather than published, and
+ *  one that needs a reviewer is submitted rather than live. */
+function describePublishOutcome(status: string | undefined): string {
+  switch (status) {
+    case "completed":
+      return "Past event recorded";
+    case "ongoing":
+      return "Event published — it's happening now";
+    case "pending_campus_approval":
+      return "Event sent to your campus lead for approval";
+    case "pending_mentor_approval":
+      return "Event sent to your mentor for approval";
+    case "pending_approval":
+      return "Event submitted for approval";
+    default:
+      return "Event published";
+  }
+}
 
 function formatReviewEnum(value: unknown): string {
   if (typeof value !== "string") return "Not set";
@@ -236,6 +259,35 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
 
   const startDatetimeValue = watch("start_datetime");
   const minEndDatetime = startDatetimeValue || undefined;
+  useEffect(() => {
+    if (!open) return;
+
+    const now = new Date();
+
+    const start = new Date(now.getTime() + 15 * 60 * 1000);
+    const startDatetime = new Date(
+      start.getTime() - start.getTimezoneOffset() * 60000,
+    )
+      .toISOString()
+      .slice(0, 16);
+
+    const end = new Date(start.getTime() + 60 * 60 * 1000);
+    const endDatetime = new Date(
+      end.getTime() - end.getTimezoneOffset() * 60000,
+    )
+      .toISOString()
+      .slice(0, 16);
+
+    setValue("start_datetime", startDatetime, {
+      shouldDirty: false,
+      shouldValidate: false,
+    });
+
+    setValue("end_datetime", endDatetime, {
+      shouldDirty: false,
+      shouldValidate: false,
+    });
+  }, [open, setValue]);
 
   // Auto-select the first available cluster when options load (replaces hardcoded "coder" default)
   useEffect(() => {
@@ -320,6 +372,26 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
 
     return list;
   }, [organizerOptionsQuery.data, can]);
+
+  // Company organisers can start from one of their saved event templates.
+  const canUseTemplates = organizerOptions.some((o) => o.type === "company");
+  const { data: eventTemplates = [] } = useEventTemplates(
+    open && canUseTemplates,
+  );
+  const [templateId, setTemplateId] = useState("");
+  const applyTemplate = (id: string) => {
+    setTemplateId(id);
+    const template = eventTemplates.find((t) => t.id === id);
+    if (!template) return;
+    const values = applyEventTemplate(template, new Date());
+    for (const [field, value] of Object.entries(values)) {
+      setValue(field as keyof CreateEventSchema, value as never, {
+        shouldDirty: true,
+        shouldValidate: false,
+      });
+    }
+    toast.success(`Started from "${template.title}". Review and adjust.`);
+  };
 
   const selectedOrganiser = organizerOptions.find(
     (item) => `${item.type}:${item.id}` === selectedOrganiserId,
@@ -567,6 +639,12 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
       return trigger(fields);
     }
 
+    if (stepIndex === 5) {
+      // Registration URL had no validation at all: a link without a scheme
+      // passed straight through to the API and saved as a dead relative link.
+      return trigger(["registration_url"]);
+    }
+
     return true;
   };
 
@@ -692,12 +770,16 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
       const created = await createEvent.mutateAsync(requestBody as never);
       createdEventId = created.id;
 
+      let publishedStatus: string | undefined;
       if (action === "publish") {
-        await eventsApi.publish(created.id);
+        const published = await eventsApi.publish(created.id);
+        publishedStatus = published?.status;
       }
 
       toast.success(
-        action === "publish" ? "Event published" : "Event saved as draft",
+        action === "draft"
+          ? "Event saved as draft"
+          : describePublishOutcome(publishedStatus),
       );
       resetWizard();
       onClose();
@@ -820,6 +902,37 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
             <div className="mx-auto w-full max-w-5xl">
               {currentStep === 1 ? (
                 <section className="space-y-6">
+                  {canUseTemplates && eventTemplates.length > 0 && (
+                    <div className="space-y-1">
+                      <label
+                        htmlFor="event-template"
+                        className="text-sm font-medium text-foreground"
+                      >
+                        Start from template{" "}
+                        <span className="font-normal text-muted-foreground">
+                          (optional)
+                        </span>
+                      </label>
+                      <select
+                        id="event-template"
+                        className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm"
+                        value={templateId}
+                        onChange={(e) => applyTemplate(e.target.value)}
+                      >
+                        <option value="">Choose a saved template</option>
+                        {eventTemplates.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.title}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-muted-foreground">
+                        Fills the title, description, type and duration. You can
+                        change anything afterwards.
+                      </p>
+                    </div>
+                  )}
+
                   <div className="space-y-1">
                     <p className="text-sm font-medium text-foreground">
                       Title <span className="text-destructive">*</span>
@@ -1261,6 +1374,24 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       />
                     )
                   ) : null}
+
+                  {/* The schema raises the missing-target issue against these
+                      paths. Without them Next silently did nothing. */}
+                  {errors.target_campus_id?.message ? (
+                    <p className="text-xs text-destructive">
+                      {errors.target_campus_id.message}
+                    </p>
+                  ) : null}
+                  {errors.target_ig_id?.message ? (
+                    <p className="text-xs text-destructive">
+                      {errors.target_ig_id.message}
+                    </p>
+                  ) : null}
+                  {errors.target_campus_ig_id?.message ? (
+                    <p className="text-xs text-destructive">
+                      {errors.target_campus_ig_id.message}
+                    </p>
+                  ) : null}
                 </section>
               ) : null}
 
@@ -1272,9 +1403,15 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                         Start datetime{" "}
                         <span className="text-destructive">*</span>
                       </p>
-                      <Input
-                        type="datetime-local"
-                        {...register("start_datetime")}
+                      <Controller
+                        control={control}
+                        name="start_datetime"
+                        render={({ field }) => (
+                          <CustomDateTimePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                          />
+                        )}
                       />
                       {errors.start_datetime?.message ? (
                         <p className="text-xs text-destructive">
@@ -1286,10 +1423,20 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       <p className="text-sm font-medium text-foreground">
                         End datetime <span className="text-destructive">*</span>
                       </p>
-                      <Input
-                        type="datetime-local"
-                        min={minEndDatetime}
-                        {...register("end_datetime")}
+                      <Controller
+                        control={control}
+                        name="end_datetime"
+                        render={({ field }) => (
+                          <CustomDateTimePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                            minDate={
+                              minEndDatetime
+                                ? new Date(minEndDatetime)
+                                : undefined
+                            }
+                          />
+                        )}
                       />
                       {errors.end_datetime?.message ? (
                         <p className="text-xs text-destructive">
@@ -1351,7 +1498,20 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       <p className="text-sm font-medium text-foreground">
                         Registration URL
                       </p>
-                      <Input {...register("registration_url")} />
+                      <Input
+                        placeholder="https://example.com/register"
+                        {...register("registration_url")}
+                      />
+                      {errors.registration_url?.message ? (
+                        <p className="text-xs text-destructive">
+                          {errors.registration_url.message}
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">
+                          Include https:// at the start, or the link will not
+                          open.
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm font-medium text-foreground">

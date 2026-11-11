@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Trash2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Trash2 } from "lucide-react";
 import { Button } from "./button";
 import {
   Dialog,
@@ -18,7 +18,7 @@ interface ConfirmDialogProps {
   description: string;
   onConfirm: () => void;
   isPending?: boolean;
-  variant?: "destructive" | "warning";
+  variant?: "destructive" | "warning" | "default" | "success";
   confirmLabel?: string;
   cancelLabel?: string;
 }
@@ -35,6 +35,20 @@ export function ConfirmDialog({
   cancelLabel,
 }: ConfirmDialogProps) {
   const isDestructive = variant === "destructive";
+  const isWarning = variant === "warning";
+
+  const getIcon = () => {
+    if (isDestructive) return <Trash2 className="h-5 w-5" />;
+    if (isWarning) return <AlertTriangle className="h-5 w-5" />;
+    return <CheckCircle2 className="h-5 w-5" />;
+  };
+
+  const getIconContainerStyles = () => {
+    if (isDestructive) return "bg-destructive/10 text-destructive";
+    if (isWarning)
+      return "bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400";
+    return "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400";
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -42,17 +56,9 @@ export function ConfirmDialog({
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div
-              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
-                isDestructive
-                  ? "bg-destructive/10 text-destructive"
-                  : "bg-warning/10 text-warning"
-              }`}
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${getIconContainerStyles()}`}
             >
-              {isDestructive ? (
-                <Trash2 className="h-5 w-5" />
-              ) : (
-                <AlertTriangle className="h-5 w-5" />
-              )}
+              {getIcon()}
             </div>
             <DialogTitle>{title}</DialogTitle>
           </div>

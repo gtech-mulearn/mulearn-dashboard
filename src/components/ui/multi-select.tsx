@@ -17,6 +17,7 @@ interface MultiSelectProps {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
+  dropUp?: boolean;
 }
 
 export function MultiSelect({
@@ -26,6 +27,7 @@ export function MultiSelect({
   placeholder = "Select options...",
   disabled = false,
   className,
+  dropUp = false,
 }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
@@ -114,7 +116,12 @@ export function MultiSelect({
       </div>
 
       {open && (
-        <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md">
+        <div
+          className={cn(
+            "absolute z-50 w-full rounded-md border bg-popover shadow-md",
+            dropUp ? "bottom-full mb-1" : "mt-1",
+          )}
+        >
           <div className="p-2 border-b">
             <input
               value={search}

@@ -1,14 +1,7 @@
-import { VerifyOrgsView } from "@/features/organizations";
-import { FELLOW_MANAGEMENT_ROLES } from "@/lib/auth/roles";
-import { requireRole } from "@/lib/auth/server";
+import { redirect } from "next/navigation";
+import { verificationTabHref } from "@/features/role-verification";
 
-export const metadata = {
-  title: "Organization Verification | Management",
-  description:
-    "Review and approve or reject unverified organization submissions.",
-};
-
-export default async function VerifyOrgsPage() {
-  await requireRole(FELLOW_MANAGEMENT_ROLES);
-  return <VerifyOrgsView />;
+// Merged into the unified Role Verification page (2026-09-25).
+export default function VerifyOrgsPage() {
+  redirect(verificationTabHref("college"));
 }

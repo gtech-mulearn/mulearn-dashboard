@@ -7,6 +7,7 @@ import { Controller, type Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CustomDateTimePicker } from "@/components/ui/custom-datetime-picker";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -495,6 +496,11 @@ export function EventInlineEditForm({
                 {errors.category.message}
               </p>
             ) : null}
+            {errors.event_type?.message ? (
+              <p className="text-xs text-destructive">
+                {errors.event_type.message}
+              </p>
+            ) : null}
           </div>
         </div>
       </section>
@@ -582,6 +588,24 @@ export function EventInlineEditForm({
             }}
           />
         ) : null}
+
+        {/* The schema raises the missing-target issue against these paths.
+            Without them the form refuses to save and says nothing. */}
+        {errors.target_campus_id?.message ? (
+          <p className="text-xs text-destructive">
+            {errors.target_campus_id.message}
+          </p>
+        ) : null}
+        {errors.target_ig_id?.message ? (
+          <p className="text-xs text-destructive">
+            {errors.target_ig_id.message}
+          </p>
+        ) : null}
+        {errors.target_campus_ig_id?.message ? (
+          <p className="text-xs text-destructive">
+            {errors.target_campus_ig_id.message}
+          </p>
+        ) : null}
       </section>
 
       <section className={eventEditSectionClassName()}>
@@ -593,32 +617,49 @@ export function EventInlineEditForm({
             <p className="text-sm font-medium text-foreground">
               Start datetime <span className="text-destructive">*</span>
             </p>
-            <Input
-              className="rounded-xl border-border bg-background text-foreground"
-              type="datetime-local"
-              {...register("start_datetime")}
+
+            <Controller
+              control={control}
+              name="start_datetime"
+              render={({ field }) => (
+                <CustomDateTimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              )}
             />
-            {errors.start_datetime?.message ? (
+
+            {errors.start_datetime?.message && (
               <p className="mt-1 text-xs text-destructive">
                 {errors.start_datetime.message}
               </p>
-            ) : null}
+            )}
           </div>
+
           <div className="space-y-1">
             <p className="text-sm font-medium text-foreground">
               End datetime <span className="text-destructive">*</span>
             </p>
-            <Input
-              className="rounded-xl border-border bg-background text-foreground"
-              type="datetime-local"
-              min={minEndDatetime}
-              {...register("end_datetime")}
+
+            <Controller
+              control={control}
+              name="end_datetime"
+              render={({ field }) => (
+                <CustomDateTimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  minDate={
+                    minEndDatetime ? new Date(minEndDatetime) : undefined
+                  }
+                />
+              )}
             />
-            {errors.end_datetime?.message ? (
+
+            {errors.end_datetime?.message && (
               <p className="mt-1 text-xs text-destructive">
                 {errors.end_datetime.message}
               </p>
-            ) : null}
+            )}
           </div>
         </div>
       </section>
@@ -667,8 +708,18 @@ export function EventInlineEditForm({
             </p>
             <Input
               className="rounded-xl border-border bg-background text-foreground"
+              placeholder="https://example.com/register"
               {...register("registration_url")}
             />
+            {errors.registration_url?.message ? (
+              <p className="text-xs text-destructive">
+                {errors.registration_url.message}
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Include https:// at the start, or the link will not open.
+              </p>
+            )}
           </div>
           <div className="space-y-1">
             <p className="text-sm font-medium text-foreground">

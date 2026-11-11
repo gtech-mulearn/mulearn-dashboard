@@ -8,6 +8,7 @@ import { CompanyCultureSection } from "./company-culture-section";
 import { CompanyJobsSection } from "./company-jobs-section";
 import { CompanyProfileHeader } from "./company-profile-header";
 import { CompanyTestimonialsSection } from "./company-testimonials-section";
+import { CompanyTrustSignals } from "./company-trust-signals";
 
 interface CompanyPublicViewProps {
   userProfile?: UserProfile;
@@ -76,6 +77,12 @@ export function CompanyPublicView({
         isOwnProfile={false}
         foundedYear={apiProfile?.founded_year ?? null}
         remotePolicy={apiProfile?.remote_policy ?? null}
+      />
+
+      <CompanyTrustSignals
+        verifiedSince={apiProfile?.verified_since}
+        collaborationSummary={apiProfile?.collaboration_summary}
+        impactSummary={apiProfile?.impact_summary}
       />
 
       <CompanyJobsSection isOwnProfile={false} publicJobs={publicJobs} />

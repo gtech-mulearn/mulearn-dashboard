@@ -5,6 +5,7 @@ import {
   CampusHomeSummaryResponseSchema,
   CampusMemberFunnelResponseSchema,
   CampusRecentActivityResponseSchema,
+  type CompanyHomeSummaryData,
   CompanyHomeSummaryResponseSchema,
   InterestGroupsListResponseSchema,
   KarmaFeedResponseSchema,
@@ -148,7 +149,10 @@ export async function getCompanyHomeSummary(params?: {
   const response = await apiClient.get(url, CompanyHomeSummaryResponseSchema, {
     skipAuthRedirectOn403: true,
   });
-  return response.response;
+  if ("response" in response && response.response) {
+    return response.response as CompanyHomeSummaryData;
+  }
+  return response as CompanyHomeSummaryData;
 }
 
 // Learner endpoints require auth — 403 intentionally triggers global redirect

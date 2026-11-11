@@ -193,10 +193,10 @@ export function ParticipantHistorySheet({
                     <TableCell className="max-w-[160px]">
                       {item.feedback ? (
                         <p
-                          className="truncate text-xs text-muted-foreground"
+                          className="truncate text-xs text-muted-foreground italic"
                           title={item.feedback}
                         >
-                          {item.feedback}
+                          "{item.feedback}"
                         </p>
                       ) : (
                         <span className="text-xs text-muted-foreground">—</span>

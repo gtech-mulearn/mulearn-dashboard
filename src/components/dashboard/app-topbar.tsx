@@ -21,7 +21,11 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserInfo } from "@/features/auth/hooks/use-session";
 import { useCompanyProfile } from "@/features/company-jobs/hooks";
+// Direct import on purpose: the topbar is on every page, and the mentor barrel
+// (admin verification and more) isn't tree-shaken in this build.
+import { PersonaSwitcher } from "@/features/mentor/components/persona-switcher";
 import { GameProgressBar } from "@/features/mujourney/components/GameProgressBar";
+import { NotificationPopover } from "@/features/notification";
 import { authStore, ROLES } from "@/lib/auth";
 import { useUIStore } from "@/stores/ui-store";
 
@@ -66,6 +70,7 @@ export function AppTopbar() {
   // not the logged-in creator's personal details. Gated so the company
   // profile is only fetched for users with the Company role.
   const isCompany = data?.roles?.includes(ROLES.COMPANY) ?? false;
+  const isMentor = data?.roles?.includes(ROLES.MENTOR) ?? false;
   const { profile: companyProfile } = useCompanyProfile({ enabled: isCompany });
 
   const displayName =
@@ -103,7 +108,11 @@ export function AppTopbar() {
         <div className="hidden md:flex">
           <GameProgressBar />
         </div>
+        {mounted && isMentor && <PersonaSwitcher />}
         <ThemeToggle />
+        {/* Signed-in users only: its queries are private, and a 401 for a
+            visitor on a public page would redirect them to /login. */}
+        {mounted && data && <NotificationPopover />}
         {!mounted || isLoading ? (
           <div className="flex items-center gap-2 pr-1">
             <Skeleton className="w-8 h-8 rounded-full" />

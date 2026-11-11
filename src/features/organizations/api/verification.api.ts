@@ -12,6 +12,7 @@ export interface FetchUnverifiedOrgsParams {
   perPage?: number;
   search?: string;
   sortBy?: string;
+  org_type?: string;
 }
 
 export async function fetchUnverifiedOrgs(
@@ -22,6 +23,7 @@ export async function fetchUnverifiedOrgs(
   if (params.perPage) query.set("perPage", String(params.perPage));
   if (params.search?.trim()) query.set("search", params.search.trim());
   if (params.sortBy?.trim()) query.set("sortBy", params.sortBy.trim());
+  if (params.org_type) query.set("org_type", params.org_type);
 
   const response = await apiClient.get(
     `${endpoints.organization.verificationList}?${query.toString()}`,
