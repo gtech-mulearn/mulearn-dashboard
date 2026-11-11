@@ -4,7 +4,6 @@ import {
   Activity,
   Briefcase,
   CheckCircle,
-  ChevronRight,
   Eye,
   GraduationCap,
   IndianRupee,
@@ -27,8 +26,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { PageHeader } from "@/components/ui/page-header";
 import {
   Select,
@@ -59,6 +60,11 @@ import {
   useTalentPoolAnalytics,
   useTasksAnalytics,
 } from "@/features/company-jobs/hooks";
+import {
+  extractInterestGroups,
+  useInterestGroupsList,
+} from "@/features/interest-groups";
+import { useCollegeSearch } from "@/features/onboarding";
 
 const STAT_GRID = "grid gap-4 sm:grid-cols-2 lg:grid-cols-4";
 
@@ -916,10 +922,13 @@ function CampusRankCard({
 }
 
 function CampusTrendView() {
-  const [campusId, setCampusId] = useState<string>("");
+  const [campus, setCampus] = useState<{ id: string; label: string } | null>(
+    null,
+  );
+  const [campusSearch, setCampusSearch] = useState("");
   const [quarters, setQuarters] = useState<number>(4);
-  const [submittedCampusId, setSubmittedCampusId] = useState<string>("");
-  const [submittedQuarters, setSubmittedQuarters] = useState<number>(4);
+  const { data: colleges = [], isFetching: isSearchingColleges } =
+    useCollegeSearch(campusSearch);
 
   const {
     data: trend,
@@ -928,16 +937,8 @@ function CampusTrendView() {
     refetch,
     isRefetching,
   } = useCampusQuarterTrend(
-    submittedCampusId
-      ? { campus_id: submittedCampusId, quarters: submittedQuarters }
-      : undefined,
+    campus ? { campus_id: campus.id, quarters } : undefined,
   );
-
-  function handleFetch() {
-    if (!campusId.trim()) return;
-    setSubmittedCampusId(campusId.trim());
-    setSubmittedQuarters(quarters);
-  }
 
   return (
     <div className="space-y-6">
@@ -945,20 +946,34 @@ function CampusTrendView() {
         <CardHeader>
           <CardTitle>Campus Quarterly Trend</CardTitle>
           <CardDescription>
-            Enter a campus ID and number of quarters to view engagement trends
+            Choose a campus and number of quarters to view engagement trends
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4 items-end">
-            <div className="flex-1 space-y-1.5">
-              <Label>Campus ID (UUID)</Label>
-              <Input
-                placeholder="e.g. 3f2a1b4c-..."
-                value={campusId}
-                onChange={(e) => setCampusId(e.target.value)}
+            <div className="w-full flex-1 space-y-1.5">
+              <Label>Campus</Label>
+              <Combobox
+                options={colleges}
+                value={campus?.id}
+                selectedLabel={campus?.label}
+                onValueChange={(id) =>
+                  setCampus({
+                    id,
+                    label:
+                      colleges.find((c) => c.id === id)?.title ??
+                      campus?.label ??
+                      "",
+                  })
+                }
+                onSearchChange={setCampusSearch}
+                loading={isSearchingColleges}
+                placeholder="Search for a campus…"
+                searchPlaceholder="Type a college name"
+                emptyText="No campuses found."
               />
             </div>
-            <div className="w-32 space-y-1.5">
+            <div className="w-full space-y-1.5 sm:w-36">
               <Label>Quarters</Label>
               <Select
                 value={String(quarters)}
@@ -976,21 +991,14 @@ function CampusTrendView() {
                 </SelectContent>
               </Select>
             </div>
-            <Button
-              onClick={handleFetch}
-              disabled={!campusId.trim() || isLoading}
-            >
-              <ChevronRight />
-              Fetch Trend
-            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {!submittedCampusId ? (
+      {!campus ? (
         <AnalyticsEmpty
-          title="Enter a campus ID"
-          description="Enter a campus ID above to view its quarterly engagement trend."
+          title="Choose a campus"
+          description="Search for a campus above to view its quarterly engagement trend."
         />
       ) : isLoading ? (
         <Card className="p-6">
@@ -1005,7 +1013,7 @@ function CampusTrendView() {
       ) : !trend ? (
         <AnalyticsEmpty
           title="No trend data returned"
-          description="Check that the campus ID is correct and the organisation type is College."
+          description="This campus has no engagement data for the selected quarters yet."
         />
       ) : (
         <div className="space-y-6">
@@ -1078,7 +1086,12 @@ function TalentPoolInsightsView() {
   const [levelMin, setLevelMin] = useState<number | undefined>(undefined);
   const [workFT, setWorkFT] = useState<boolean>(false);
   const [workGig, setWorkGig] = useState<boolean>(false);
-  const [igIds, setIgIds] = useState<string>("");
+  const [igIds, setIgIds] = useState<string[]>([]);
+  const { data: igData, isLoading: isLoadingIgs } = useInterestGroupsList();
+  const igOptions = (igData ? extractInterestGroups(igData) : []).map((ig) => ({
+    value: ig.id,
+    label: ig.name,
+  }));
 
   const {
     data: analytics,
@@ -1093,7 +1106,7 @@ function TalentPoolInsightsView() {
     level_order_min: levelMin,
     interested_in_work: workFT || undefined,
     interested_in_gig_work: workGig || undefined,
-    ig_ids: igIds || undefined,
+    ig_ids: igIds.length > 0 ? igIds.join(",") : undefined,
   });
 
   return (
@@ -1148,11 +1161,17 @@ function TalentPoolInsightsView() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Interest Group IDs</Label>
-              <Input
-                placeholder="Comma separated UUIDs"
+              <Label>Interest Groups</Label>
+              <MultiSelect
+                options={igOptions}
                 value={igIds}
-                onChange={(e) => setIgIds(e.target.value)}
+                onChange={setIgIds}
+                disabled={isLoadingIgs}
+                placeholder={
+                  isLoadingIgs
+                    ? "Loading interest groups…"
+                    : "All interest groups"
+                }
               />
             </div>
           </div>
