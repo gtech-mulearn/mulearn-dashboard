@@ -1,5 +1,69 @@
 # mulearn-dashboard
 
+## 5.5.0
+
+### Minor Changes
+
+- [#529](https://github.com/gtech-mulearn/mulearn-dashboard/pull/529) [`d83c2af`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/d83c2af697824c78e19a4339f9b79a4df7788713) Thanks [@erzer12](https://github.com/erzer12)! - **Achievement bulk issue** — redesigned as clear steps: look up achievement IDs, download and upload the template, then submit. Rows that fail are listed, and files that are too large are rejected with a message.
+
+- [#534](https://github.com/gtech-mulearn/mulearn-dashboard/pull/534) [`a80d0e6`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/a80d0e6c1c96c54335d8f624036d278d91602f9e) Thanks [@Devika123098](https://github.com/Devika123098), [@awindsr](https://github.com/awindsr)! - **Campus tools** — campus leads review the organization links their students submit and can search for, or create, a role while assigning it. Chapter cards show co-leads.
+
+- [#530](https://github.com/gtech-mulearn/mulearn-dashboard/pull/530) [`5a40b34`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/5a40b34f81fde73de9370e4c18308c92d83367d2) Thanks [@awindsr](https://github.com/awindsr)! - **Company management** — admins deactivate and reactivate companies, and open a company's verification document before approving it.
+
+- [#447](https://github.com/gtech-mulearn/mulearn-dashboard/pull/447) [`1820e7e`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/1820e7e6f38f0d5904ca1fe75bd3351e1778f7cb) Thanks [@vedhavk](https://github.com/vedhavk), [@Devika123098](https://github.com/Devika123098)! - **Company analytics** — campus engagement, engagement trends and task analytics.
+
+- [#530](https://github.com/gtech-mulearn/mulearn-dashboard/pull/530) [`5a40b34`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/5a40b34f81fde73de9370e4c18308c92d83367d2) Thanks [@awindsr](https://github.com/awindsr)! - **Company co-administrators** — owners invite teammates by their muLearn ID, up to five seats including pending invites. Invitees accept from their own company page, and co-admins and company mentors see the company pages their role allows.
+
+- [#530](https://github.com/gtech-mulearn/mulearn-dashboard/pull/530) [`5a40b34`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/5a40b34f81fde73de9370e4c18308c92d83367d2) Thanks [@awindsr](https://github.com/awindsr)! - **Collaborations** — companies post a collaboration for any campus or interest group, or invite a specific one, and follow its status. Campus and interest group leads answer invitations or claim open posts from Collaboration Invites.
+
+- [#530](https://github.com/gtech-mulearn/mulearn-dashboard/pull/530) [`5a40b34`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/5a40b34f81fde73de9370e4c18308c92d83367d2) Thanks [@awindsr](https://github.com/awindsr)! - **Impact and feedback** — companies see their reach, ratings and hiring outcomes, read learner feedback and choose whether their public profile shows the impact summary. Learners can rate a company after a job outcome or a company session.
+
+- [#530](https://github.com/gtech-mulearn/mulearn-dashboard/pull/530) [`5a40b34`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/5a40b34f81fde73de9370e4c18308c92d83367d2) Thanks [@awindsr](https://github.com/awindsr)! - **Job approvals** — jobs posted by company mentors wait for an owner or co-admin, who can approve them, request changes with a note, or reject them with a reason. Jobs can also have an application deadline.
+
+- [#530](https://github.com/gtech-mulearn/mulearn-dashboard/pull/530) [`5a40b34`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/5a40b34f81fde73de9370e4c18308c92d83367d2) Thanks [@awindsr](https://github.com/awindsr)! - **Company profile** — public profiles show when a company was verified and its partnerships, owners see how complete their profile is while it is under review, and withdrawn applications get their own tab.
+
+- [#486](https://github.com/gtech-mulearn/mulearn-dashboard/pull/486) [`04c8c6c`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/04c8c6cdbb7c779fe3a4ebe5877cad4c8229876c) Thanks [@vedhavk](https://github.com/vedhavk)! - **Talent pool** — companies keep a shortlist of learners and see talent pool insights they can export.
+
+- [#534](https://github.com/gtech-mulearn/mulearn-dashboard/pull/534) [`a80d0e6`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/a80d0e6c1c96c54335d8f624036d278d91602f9e) Thanks [@vedhavk](https://github.com/vedhavk), [@awindsr](https://github.com/awindsr)! - **Templates** — a redesigned task template editor, and event templates you can start a new event from.
+
+- [#534](https://github.com/gtech-mulearn/mulearn-dashboard/pull/534) [`a80d0e6`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/a80d0e6c1c96c54335d8f624036d278d91602f9e) Thanks [@erzer12](https://github.com/erzer12), [@awindsr](https://github.com/awindsr)! - **Events** — descriptions support formatting and links, with a Read more toggle. Events list their co-owners, organisers see engagement numbers, and events created by company mentors are approved by their company first.
+
+- [#534](https://github.com/gtech-mulearn/mulearn-dashboard/pull/534) [`a80d0e6`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/a80d0e6c1c96c54335d8f624036d278d91602f9e) Thanks [@Devika123098](https://github.com/Devika123098), [@awindsr](https://github.com/awindsr)! - **Interest group sponsorship** — companies ask to sponsor an interest group and admins review the requests. Sponsored groups show their sponsor and impact projects.
+
+- [#530](https://github.com/gtech-mulearn/mulearn-dashboard/pull/530) [`5a40b34`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/5a40b34f81fde73de9370e4c18308c92d83367d2) Thanks [@awindsr](https://github.com/awindsr)! - **Job requirements** — a job can require a skill, and learners who miss a requirement see why before they apply.
+
+- [#534](https://github.com/gtech-mulearn/mulearn-dashboard/pull/534) [`a80d0e6`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/a80d0e6c1c96c54335d8f624036d278d91602f9e) Thanks [@awindsr](https://github.com/awindsr), [@Akshayvs-Tech](https://github.com/Akshayvs-Tech)! - **Mentor applications** — apply as a Campus Mentor, choose your weekly availability, edit a pending application, and request a change of interest groups or company for review. An approved mentor stays approved while a newer request is under review.
+
+- [#481](https://github.com/gtech-mulearn/mulearn-dashboard/pull/481) [`7ad5400`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/7ad540011cf193da3e64f50801d18c6b8732da99) Thanks [@Akshayvs-Tech](https://github.com/Akshayvs-Tech), [@awindsr](https://github.com/awindsr)! - **Mentor home** — a profile completion checklist, personal analytics, hours mentored counted from logged sessions, and a switcher in the top bar to move between your learner view and each mentor role.
+
+- [#481](https://github.com/gtech-mulearn/mulearn-dashboard/pull/481) [`7ad5400`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/7ad540011cf193da3e64f50801d18c6b8732da99) Thanks [@Akshayvs-Tech](https://github.com/Akshayvs-Tech), [@awindsr](https://github.com/awindsr)! - **Mentor management** — a mentor roster for admins, and a Deactivated tab to reactivate mentors. Deactivated mentors are told their mentor account is deactivated.
+
+- [#524](https://github.com/gtech-mulearn/mulearn-dashboard/pull/524) [`ce2c4bc`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/ce2c4bc2cc9256e8e2e6580e77bced2193795a6b) Thanks [@Arya3077](https://github.com/Arya3077)! - **Opportunities** — mentors create, publish and close opportunities for learners.
+
+- [#534](https://github.com/gtech-mulearn/mulearn-dashboard/pull/534) [`a80d0e6`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/a80d0e6c1c96c54335d8f624036d278d91602f9e) Thanks [@Arya3077](https://github.com/Arya3077), [@awindsr](https://github.com/awindsr)! - **Mentor sessions** — create a session for an interest group, a campus or a company. Repeating series stop at 50 sessions. Mentees rate sessions from 1 to 5 stars, and a mentor's average shows on their profile and public card.
+
+- [#523](https://github.com/gtech-mulearn/mulearn-dashboard/pull/523) [`bb1ad35`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/bb1ad35aee3318a840eb86c856cff8e78543c0cf) Thanks [@Yadhuthhiyyakat](https://github.com/Yadhuthhiyyakat)! - **Notification center** — a rebuilt bell with an unread count. Mark one, several or all notifications as read, or delete them. Admins can send announcements to everyone from the Notifications page.
+
+- [#528](https://github.com/gtech-mulearn/mulearn-dashboard/pull/528) [`acfc24d`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/acfc24d22e835e8cc086a43047933b5ddab775cf) Thanks [@erzer12](https://github.com/erzer12)! - **Problem statements** — browse real-world challenges, open one for the details, join it and submit your solution. Open challenges are listed first.
+
+- [#527](https://github.com/gtech-mulearn/mulearn-dashboard/pull/527) [`50c7052`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/50c70520dc950f2cb76bb37aaa29d6f89ca03b6c) Thanks [@awindsr](https://github.com/awindsr)! - **Role Verification** — mentor, enabler, college and company verification in one tabbed page for admins. The old verification pages open the matching tab.
+
+- [#534](https://github.com/gtech-mulearn/mulearn-dashboard/pull/534) [`a80d0e6`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/a80d0e6c1c96c54335d8f624036d278d91602f9e) Thanks [@awindsr](https://github.com/awindsr), [@alvin-dennis](https://github.com/alvin-dennis)! - **Task review** — admins request changes on a submitted task and track those tasks in a Changes requested tab. Task lists filter by active and inactive status on the server.
+
+### Patch Changes
+
+- [#530](https://github.com/gtech-mulearn/mulearn-dashboard/pull/530) [`5a40b34`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/5a40b34f81fde73de9370e4c18308c92d83367d2) Thanks [@awindsr](https://github.com/awindsr)! - Company registration saves perks, workplace photos and the verification document correctly.
+
+- [#530](https://github.com/gtech-mulearn/mulearn-dashboard/pull/530) [`5a40b34`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/5a40b34f81fde73de9370e4c18308c92d83367d2) Thanks [@awindsr](https://github.com/awindsr)! - Labels for event history, session types and opportunity types, including Hackathon and Job, display correctly.
+
+- [#534](https://github.com/gtech-mulearn/mulearn-dashboard/pull/534) [`a80d0e6`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/a80d0e6c1c96c54335d8f624036d278d91602f9e) Thanks [@awindsr](https://github.com/awindsr), [@erzer12](https://github.com/erzer12)! - Publishing an event reports what actually happened and points out invalid links. Event descriptions no longer load images from other sites, and venue links accept web addresses only.
+
+- [#530](https://github.com/gtech-mulearn/mulearn-dashboard/pull/530) [`5a40b34`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/5a40b34f81fde73de9370e4c18308c92d83367d2) Thanks [@awindsr](https://github.com/awindsr)! - Notifications open the page where you can act on them, and links in older notifications take you to the right place.
+
+- [#538](https://github.com/gtech-mulearn/mulearn-dashboard/pull/538) [`dd15165`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/dd15165da56b616d20c4ecfd58217d04d7a95535) Thanks [@awindsr](https://github.com/awindsr)! - Visitors on public pages are no longer sent to the login page by the notification bell. The company task dialog no longer resets or crashes while task types load, a rejected learning circle request stops showing as Requested, and community partner changes report failures with a way to retry. Searchable dropdowns keep showing the name you picked, and campus search filters work from the keyboard and from shared links.
+
+- [#527](https://github.com/gtech-mulearn/mulearn-dashboard/pull/527) [`50c7052`](https://github.com/gtech-mulearn/mulearn-dashboard/commit/50c70520dc950f2cb76bb37aaa29d6f89ca03b6c) Thanks [@awindsr](https://github.com/awindsr)! - Verification pages are available to admins only.
+
 ## 5.4.1
 
 ### Patch Changes
