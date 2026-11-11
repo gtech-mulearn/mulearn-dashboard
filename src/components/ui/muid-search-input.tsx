@@ -208,7 +208,7 @@ export function MuidSearchInput({
                 </div>
               )}
               {!isLoading && query.length >= 2 && results.length === 0 && (
-                <CommandEmpty>No users found.</CommandEmpty>
+                <CommandEmpty />
               )}
               {!isLoading && results.length > 0 && (
                 <CommandGroup>

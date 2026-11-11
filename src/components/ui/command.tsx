@@ -11,6 +11,10 @@ import { Command as CommandPrimitive } from "cmdk";
 import { Search } from "lucide-react";
 import type * as React from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  DROPDOWN_EMPTY_CLASS,
+  NO_RESULTS_TEXT,
+} from "@/components/ui/dropdown-empty";
 import { cn } from "@/lib/utils";
 
 function Command({
@@ -74,10 +78,17 @@ function CommandList({
 }
 
 function CommandEmpty({
+  className,
+  children = NO_RESULTS_TEXT,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Empty>) {
   return (
-    <CommandPrimitive.Empty className="py-6 text-center text-sm" {...props} />
+    <CommandPrimitive.Empty
+      className={cn(DROPDOWN_EMPTY_CLASS, className)}
+      {...props}
+    >
+      {children}
+    </CommandPrimitive.Empty>
   );
 }
 

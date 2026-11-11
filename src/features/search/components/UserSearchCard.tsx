@@ -41,6 +41,7 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
   return (
     <Link
       href={`/profile/${user.muid}`}
+      prefetch={false}
       className="group block rounded-[2rem] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
     >
       <Card className="relative aspect-square w-full gap-0 overflow-hidden rounded-[2rem] border-0 p-0 shadow-sm ring-1 ring-black/5 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-black/25 motion-reduce:transform-none motion-reduce:transition-none">

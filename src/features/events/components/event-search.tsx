@@ -4,6 +4,7 @@ import { Loader2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DropdownEmpty } from "@/components/ui/dropdown-empty";
 import { Input } from "@/components/ui/input";
 import {
   COLLABORATOR_INVITE_TYPE_MAP,
@@ -185,15 +186,13 @@ function SelectMode(props: EventSearchSelectProps) {
 
       <div className="rounded-md border">
         {query.trim().length < 2 ? (
-          <p className="p-3 text-xs text-muted-foreground">
-            Type at least 2 characters to search
-          </p>
+          <DropdownEmpty>Type at least 2 characters to search</DropdownEmpty>
         ) : isLoading ? (
           <div className="flex items-center gap-2 p-3 text-xs text-muted-foreground">
             <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading results...
           </div>
         ) : targets.length === 0 ? (
-          <p className="p-3 text-xs text-muted-foreground">No results found</p>
+          <DropdownEmpty />
         ) : (
           <div className="max-h-64 space-y-1 overflow-y-auto p-2">
             {targets.map((target) => {
@@ -279,15 +278,13 @@ function InviteMode(props: EventSearchInviteProps) {
 
       <div className="rounded-md border">
         {query.trim().length < 2 ? (
-          <p className="p-3 text-xs text-muted-foreground">
-            Type at least 2 characters
-          </p>
+          <DropdownEmpty>Type at least 2 characters to search</DropdownEmpty>
         ) : isLoading ? (
           <div className="flex items-center gap-2 p-3 text-xs text-muted-foreground">
             <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading results...
           </div>
         ) : targets.length === 0 ? (
-          <p className="p-3 text-xs text-muted-foreground">No results found</p>
+          <DropdownEmpty />
         ) : (
           <div className="max-h-72 space-y-2 overflow-y-auto p-2">
             {targets.map((target) => {

@@ -18,7 +18,7 @@ export function InterestGroupsClient() {
   const groups = data?.response?.interestGroup || [];
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-8">
+    <div className="w-full space-y-8">
       {/* Header Section */}
       <PageHeader
         title="Discover Interest Groups"

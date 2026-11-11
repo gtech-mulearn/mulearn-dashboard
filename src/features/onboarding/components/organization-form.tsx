@@ -67,7 +67,6 @@ export function OrganizationForm({
   const [organization, setOrganization] = useState("");
   const [department, setDepartment] = useState("");
   const [graduationYear, setGraduationYear] = useState("");
-  const [departmentSearch, setDepartmentSearch] = useState("");
 
   const currentYear = new Date().getFullYear();
   const graduationYears = Array.from({ length: 6 }, (_, i) => currentYear + i);
@@ -160,7 +159,6 @@ export function OrganizationForm({
                   onSearchChange={onCollegeSearchChange}
                   loading={isLoadingColleges}
                   placeholder="Search your college"
-                  emptyText="No colleges found."
                   disabled={isLoading}
                   className="h-12 rounded-xl border-border bg-muted/50 px-4"
                 />
@@ -195,17 +193,11 @@ export function OrganizationForm({
                     options={departments}
                     value={department}
                     onValueChange={setDepartment}
-                    onSearchChange={(value) => {
-                      setDepartmentSearch(value);
-                      onDepartmentSearchChange?.(value);
-                    }}
+                    onSearchChange={(value) =>
+                      onDepartmentSearchChange?.(value)
+                    }
                     loading={isLoadingDepartments}
                     placeholder="Search your department"
-                    emptyText={
-                      departmentSearch.trim().length < 2
-                        ? "Type your department to search"
-                        : "No departments found."
-                    }
                     disabled={isLoading}
                     className="h-12 rounded-xl border-border bg-muted/50 px-4"
                   />

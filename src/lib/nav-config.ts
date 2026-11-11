@@ -329,7 +329,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   },
   companyPage({
     id: "company-analytics",
-    title: "Analytics & Performance",
+    title: "Analytics & Insights",
     href: "/dashboard/company/analytics",
     icon: LineChart,
   }),
@@ -359,7 +359,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   }),
   companyPage({
     id: "company-templates",
-    title: "Templates",
+    title: "Event Templates",
     href: "/dashboard/company/event-templates",
     icon: Layers,
   }),

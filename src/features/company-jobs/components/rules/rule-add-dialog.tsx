@@ -121,7 +121,6 @@ export function RuleValueField({
         loading={skills.isLoading}
         placeholder={skills.isLoading ? "Loading skills…" : "Search skills"}
         searchPlaceholder="Search skills"
-        emptyText="No matching skill."
       />
     );
   }

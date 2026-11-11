@@ -268,11 +268,7 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
                 <SelectItem value="loading" disabled className="text-xs">
                   Loading...
                 </SelectItem>
-              ) : interestGroups.length === 0 ? (
-                <SelectItem value="empty" disabled className="text-xs">
-                  No interest groups found
-                </SelectItem>
-              ) : (
+              ) : interestGroups.length === 0 ? null : (
                 <>
                   <SelectItem value="all" className="text-xs">
                     Any Interest Group
@@ -316,11 +312,7 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
                 <SelectItem value="loading" disabled className="text-xs">
                   Loading...
                 </SelectItem>
-              ) : achievements.length === 0 ? (
-                <SelectItem value="empty" disabled className="text-xs">
-                  No achievements found
-                </SelectItem>
-              ) : (
+              ) : achievements.length === 0 ? null : (
                 <>
                   <SelectItem value="all" className="text-xs">
                     Any Achievement

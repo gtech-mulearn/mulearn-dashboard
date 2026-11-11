@@ -39,7 +39,7 @@ export function LeaderboardCard({ entry }: LeaderboardCardProps) {
   );
 
   return entry.link ? (
-    <Link href={entry.link} className="block group">
+    <Link href={entry.link} prefetch={false} className="block group">
       {rowContent}
     </Link>
   ) : (

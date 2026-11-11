@@ -131,6 +131,7 @@ export function LearnerCard({ learner }: LearnerCardProps) {
           >
             <Link
               href={`/profile/${learner.muid}`}
+              prefetch={false}
               target="_blank"
               rel="noreferrer"
             >

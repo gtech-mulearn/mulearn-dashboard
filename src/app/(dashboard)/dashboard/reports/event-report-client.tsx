@@ -75,7 +75,7 @@ export function EventReportPageClient() {
   const pages = getPages(details);
 
   return (
-    <div className="mx-auto w-full max-w-7xl">
+    <div className="w-full">
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">
