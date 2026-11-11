@@ -28,33 +28,10 @@ const components: Components = {
     }
 
     return (
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border pb-4 mt-16 mb-8 gap-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <h2 className="text-xl sm:text-2xl font-bold text-foreground m-0">
-            v{props.children}
-          </h2>
-          <div className="hidden sm:flex items-center gap-3 text-sm text-muted-foreground">
-            <span className="text-muted-foreground/30">•</span>
-            <a
-              href="https://github.com/gtech-mulearn/mulearn-dashboard/releases"
-              target="_blank"
-              rel="noreferrer"
-              className="hover:text-foreground transition-colors"
-            >
-              GitHub Release
-            </a>
-            <span className="text-muted-foreground/30">•</span>
-            <a
-              href="https://github.com/gtech-mulearn/mulearn-dashboard/commits/master"
-              target="_blank"
-              rel="noreferrer"
-              className="hover:text-foreground transition-colors"
-            >
-              Compare changes
-            </a>
-          </div>
-        </div>
-        <div className="text-sm text-muted-foreground font-medium"></div>
+      <div className="border-b border-border pb-4 mt-16 mb-8">
+        <h2 className="text-xl sm:text-2xl font-bold text-foreground m-0">
+          v{props.children}
+        </h2>
       </div>
     );
   },
