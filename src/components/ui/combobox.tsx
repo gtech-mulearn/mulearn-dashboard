@@ -9,6 +9,7 @@
 import { Check, ChevronDown } from "lucide-react";
 import * as React from "react";
 
+import { DropdownEmpty, NO_RESULTS_TEXT } from "@/components/ui/dropdown-empty";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +40,7 @@ export function Combobox({
   onValueChange,
   placeholder = "Select an option",
   searchPlaceholder: _searchPlaceholder = "Search...",
-  emptyText = "No results found.",
+  emptyText = NO_RESULTS_TEXT,
   disabled = false,
   className,
   onCreateNew,
@@ -148,9 +149,7 @@ export function Combobox({
               </div>
             ) : filteredOptions.length === 0 ? (
               <div className="p-1">
-                <div className="py-4 text-center text-sm text-muted-foreground">
-                  {emptyText}
-                </div>
+                <DropdownEmpty>{emptyText}</DropdownEmpty>
                 {onCreateNew && search.trim() && (
                   <button
                     type="button"

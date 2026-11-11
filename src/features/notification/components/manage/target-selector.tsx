@@ -113,7 +113,7 @@ export function TargetSelector({
               <Command>
                 <CommandInput placeholder="Search..." />
                 <CommandList>
-                  <CommandEmpty>No results found.</CommandEmpty>
+                  <CommandEmpty />
                   <CommandGroup>
                     {(options ?? []).map((opt) => (
                       <CommandItem

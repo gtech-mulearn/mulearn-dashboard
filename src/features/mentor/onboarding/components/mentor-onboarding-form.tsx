@@ -294,7 +294,6 @@ export function MentorOnboardingForm({
                           loading={isSearchingColleges}
                           placeholder="Search your college..."
                           searchPlaceholder="Type your college name"
-                          emptyText="No colleges found."
                         />
                       </FormControl>
                       <FormDescription>

@@ -85,6 +85,7 @@ export function ExecomCard({ execom }: { execom?: ExecomMember[] }) {
             <div className="min-w-0">
               <Link
                 href={`/profile/${member.muid}`}
+                prefetch={false}
                 target="_blank"
                 rel="noreferrer noopener"
                 className="truncate block text-sm font-bold text-foreground hover:underline"

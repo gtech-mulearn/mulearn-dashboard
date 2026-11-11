@@ -133,7 +133,7 @@ export function LearnerJobsPageClient() {
   }, []);
 
   return (
-    <div className="space-y-6 p-1">
+    <div className="space-y-6">
       {/* Page header */}
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">

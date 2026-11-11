@@ -187,7 +187,6 @@ export function ExtraAssignmentDialog({
                   isLoadingGuilds ? "Loading guilds..." : "Select a guild..."
                 }
                 searchPlaceholder="Search guilds..."
-                emptyText="No guilds found."
                 disabled={isPending || isLoadingGuilds}
                 className="h-11 rounded-xl"
               />
@@ -249,7 +248,6 @@ export function ExtraAssignmentDialog({
                     loading={isLoadingColleges}
                     placeholder="Search college..."
                     searchPlaceholder="Search colleges..."
-                    emptyText="No colleges found."
                     disabled={isPending}
                   />
                 </div>

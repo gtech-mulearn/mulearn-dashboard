@@ -177,7 +177,6 @@ export function GysForm({ isOpen, onClose, initialData }: Props) {
                   loading={isCampusFetching}
                   placeholder="Search campus..."
                   searchPlaceholder="Search campus..."
-                  emptyText="No campus found."
                   onCreateNew={field.onChange}
                   createNewText="Use"
                 />

@@ -1,16 +1,8 @@
 "use client";
 
-import {
-  ExternalLink,
-  HeartHandshake,
-  MessageSquare,
-  RefreshCw,
-  Star,
-  Trophy,
-  Users,
-} from "lucide-react";
+import { ExternalLink, RefreshCw, Star, Trophy, Users } from "lucide-react";
 import Link from "next/link";
-import { type ReactNode, useState } from "react";
+import { useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +13,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatCard } from "@/components/ui/stat-card";
+import { StateDisplay } from "@/components/ui/state-display";
 import { Switch } from "@/components/ui/switch";
 import {
   Table,
@@ -79,40 +74,16 @@ function StarRating({ value }: { value: number }) {
   );
 }
 
-function StatCard({
-  title,
-  icon: Icon,
-  value,
-  caption,
-  rows,
-}: {
-  title: string;
-  icon: typeof Users;
-  value: ReactNode;
-  caption: string;
-  rows: { label: string; value: string }[];
-}) {
+function Breakdown({ rows }: { rows: { label: string; value: string }[] }) {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-        <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-3xl font-bold text-foreground">{value}</div>
-        <p className="mt-1 text-xs text-muted-foreground">{caption}</p>
-        <dl className="mt-4 space-y-1.5 border-t pt-3 text-sm">
-          {rows.map((row) => (
-            <div key={row.label} className="flex justify-between gap-2">
-              <dt className="text-muted-foreground">{row.label}</dt>
-              <dd className="font-medium text-foreground">{row.value}</dd>
-            </div>
-          ))}
-        </dl>
-      </CardContent>
-    </Card>
+    <dl className="space-y-1.5 text-sm">
+      {rows.map((row) => (
+        <div key={row.label} className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{row.label}</dt>
+          <dd className="font-medium text-foreground">{row.value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
@@ -122,57 +93,72 @@ function ImpactCards({ report }: { report: ImpactReport }) {
     <div className="grid gap-4 md:grid-cols-3">
       <StatCard
         title="Reach"
-        icon={Users}
+        icon={<Users className="size-5" />}
+        accent="chart-1"
         value={formatCount(reach.total_learners_touched)}
-        caption="Learners reached"
-        rows={[
-          { label: "Job applicants", value: formatCount(reach.job_applicants) },
-          {
-            label: "Task completers",
-            value: formatCount(reach.task_completers),
-          },
-          {
-            label: "Event attendees",
-            value: formatCount(reach.event_attendees),
-          },
-          {
-            label: "Session mentees",
-            value: formatCount(reach.session_mentees),
-          },
-        ]}
-      />
+        description="Learners reached"
+      >
+        <Breakdown
+          rows={[
+            {
+              label: "Job applicants",
+              value: formatCount(reach.job_applicants),
+            },
+            {
+              label: "Task completers",
+              value: formatCount(reach.task_completers),
+            },
+            {
+              label: "Event attendees",
+              value: formatCount(reach.event_attendees),
+            },
+            {
+              label: "Session mentees",
+              value: formatCount(reach.session_mentees),
+            },
+          ]}
+        />
+      </StatCard>
       <StatCard
         title="Quality"
-        icon={Star}
+        icon={<Star className="size-5" />}
+        accent="chart-2"
         value={formatRating(quality.average_rating)}
-        caption={
+        description={
           quality.total_ratings > 0
             ? `from ${formatCount(quality.total_ratings)} ratings`
             : "No ratings yet"
         }
-        rows={[
-          {
-            label: `Feedback (${formatCount(quality.feedback_count)})`,
-            value: formatRating(quality.feedback_average_rating),
-          },
-          {
-            label: `Mentorship sessions (${formatCount(quality.session_rating_count)})`,
-            value: formatRating(quality.session_average_rating),
-          },
-        ]}
-      />
+      >
+        <Breakdown
+          rows={[
+            {
+              label: `Feedback (${formatCount(quality.feedback_count)})`,
+              value: formatRating(quality.feedback_average_rating),
+            },
+            {
+              label: `Mentorship sessions (${formatCount(quality.session_rating_count)})`,
+              value: formatRating(quality.session_average_rating),
+            },
+          ]}
+        />
+      </StatCard>
       <StatCard
         title="Outcomes"
-        icon={Trophy}
+        icon={<Trophy className="size-5" />}
+        accent="chart-3"
         value={formatCount(outcome.hires)}
-        caption="Hires through muLearn"
-        rows={[
-          {
-            label: "Karma distributed",
-            value: formatCount(outcome.karma_distributed),
-          },
-        ]}
-      />
+        description="Hires through muLearn"
+      >
+        <Breakdown
+          rows={[
+            {
+              label: "Karma distributed",
+              value: formatCount(outcome.karma_distributed),
+            },
+          ]}
+        />
+      </StatCard>
     </div>
   );
 }
@@ -187,8 +173,8 @@ function RetryState({
   return (
     <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed py-10 text-center">
       <p className="text-sm text-muted-foreground">{message}</p>
-      <Button variant="outline" size="sm" className="gap-2" onClick={onRetry}>
-        <RefreshCw className="h-4 w-4" aria-hidden="true" />
+      <Button variant="outline" size="sm" onClick={onRetry}>
+        <RefreshCw aria-hidden="true" />
         Try again
       </Button>
     </div>
@@ -214,16 +200,10 @@ export function CompanyFeedbackPageClient() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight text-foreground">
-          <HeartHandshake className="h-8 w-8 text-primary" aria-hidden="true" />
-          Impact & Feedback
-        </h1>
-        <p className="mt-1 max-w-2xl text-muted-foreground">
-          Who your company has reached on muLearn, and what learners say about
-          working with you.
-        </p>
-      </div>
+      <PageHeader
+        title="Impact & Feedback"
+        description="Who your company has reached on muLearn, and what learners say about working with you."
+      />
 
       <section aria-labelledby="impact-heading" className="space-y-4">
         <h2
@@ -236,7 +216,7 @@ export function CompanyFeedbackPageClient() {
         {report.isLoading ? (
           <div className="grid gap-4 md:grid-cols-3">
             {(["a", "b", "c"] as const).map((k) => (
-              <Skeleton key={k} className="h-56 rounded-xl" />
+              <Skeleton key={k} className="h-56 rounded-2xl" />
             ))}
           </div>
         ) : report.isError || !report.data ? (
@@ -290,16 +270,7 @@ export function CompanyFeedbackPageClient() {
       <section aria-labelledby="feedback-heading">
         <Card>
           <CardHeader>
-            <CardTitle
-              id="feedback-heading"
-              className="flex items-center gap-2 text-lg"
-            >
-              <MessageSquare
-                className="h-5 w-5 text-primary"
-                aria-hidden="true"
-              />
-              Learner feedback
-            </CardTitle>
+            <CardTitle id="feedback-heading">Learner feedback</CardTitle>
             <CardDescription>
               Ratings learners left after applying to a job, completing a task,
               attending an event or a mentorship session with your company.
@@ -318,19 +289,13 @@ export function CompanyFeedbackPageClient() {
                 onRetry={() => feedback.refetch()}
               />
             ) : rows.length === 0 ? (
-              <div className="rounded-lg border border-dashed py-12 text-center">
-                <MessageSquare
-                  className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50"
-                  aria-hidden="true"
-                />
-                <h3 className="text-base font-semibold text-foreground">
-                  No feedback yet
-                </h3>
-                <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-                  Learners can rate your company after they apply to a job,
-                  complete a task, attend an event or join a mentorship session.
-                </p>
-              </div>
+              <StateDisplay
+                variant="no-results"
+                size="sm"
+                className="rounded-2xl border border-dashed"
+                title="No feedback yet"
+                description="Learners can rate your company after they apply to a job, complete a task, attend an event or join a mentorship session."
+              />
             ) : (
               <>
                 <div className="overflow-x-auto rounded-md border">

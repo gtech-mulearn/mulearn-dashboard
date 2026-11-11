@@ -1,30 +1,25 @@
 "use client";
 
 import {
+  Activity,
   AlertCircle,
-  Award,
-  BookOpen,
-  Coins,
-  Flame,
-  Send,
-  Sparkles,
+  CircleCheck,
+  HandCoins,
+  ListTodo,
   Users,
-  Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button as UIButton } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  Card,
+  CardContent,
+  CardDescription,
+  CardTitle,
+} from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Select,
   SelectContent,
@@ -33,12 +28,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatCard } from "@/components/ui/stat-card";
 import {
   useIgSponsorshipMetrics,
   useSubmitIgSponsorship,
 } from "@/features/company-jobs/hooks";
 import { useInterestGroupsList } from "@/features/interest-groups";
 import { getApiResponseError } from "@/hooks/use-get-error";
+
+const STAT_SKELETON_KEYS = ["members", "tasks", "completions", "sessions"];
 
 export function CompanySponsorshipPageClient() {
   const { data: igsData, isLoading: isLoadingIgs } = useInterestGroupsList();
@@ -63,8 +61,7 @@ export function CompanySponsorshipPageClient() {
 
   const currentIg = igList.find((g) => g.id === selectedIgId);
 
-  const handleSubmitProposal = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmitProposal = async () => {
     if (!selectedIgId) {
       toast.error("Please select an Interest Group.");
       return;
@@ -83,113 +80,77 @@ export function CompanySponsorshipPageClient() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <Zap className="h-8 w-8 text-warning" />
-            Interest Group Sponsorships
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Sponsor specialized domain interest groups to build talent pipelines
-            and support student learners.
-          </p>
-        </div>
+      <PageHeader
+        title="Interest Group Sponsorships"
+        description="Sponsor specialized domain interest groups to build talent pipelines and support student learners."
+        action={
+          <Button
+            className="shrink-0"
+            onClick={() => setIsProposalOpen(true)}
+            disabled={!selectedIgId}
+          >
+            <HandCoins />
+            Sponsor this Interest Group
+          </Button>
+        }
+      />
 
-        <Dialog open={isProposalOpen} onOpenChange={setIsProposalOpen}>
-          <DialogTrigger asChild>
-            <UIButton className="gap-2 shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground">
-              <Sparkles className="h-4 w-4" />
-              Sponsor this Interest Group
-            </UIButton>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Sponsor Interest Group</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to submit a sponsorship request for{" "}
-                <span className="font-semibold text-foreground">
-                  {currentIg?.name || "the selected interest group"}
-                </span>
-                ? This will notify platform admins for review.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleSubmitProposal} className="space-y-4 py-2">
-              <DialogFooter>
-                <UIButton
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsProposalOpen(false)}
-                >
-                  Cancel
-                </UIButton>
-                <UIButton
-                  type="submit"
-                  className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground"
-                  disabled={submitProposalMutation.isPending}
-                >
-                  <Send className="h-4 w-4" />
-                  {submitProposalMutation.isPending
-                    ? "Submitting..."
-                    : "Confirm Request"}
-                </UIButton>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
+      <ConfirmDialog
+        open={isProposalOpen}
+        onOpenChange={setIsProposalOpen}
+        variant="default"
+        title="Sponsor Interest Group"
+        description={`Submit a sponsorship request for ${
+          currentIg?.name ?? "the selected interest group"
+        }? This will notify platform admins for review.`}
+        confirmLabel="Submit request"
+        isPending={submitProposalMutation.isPending}
+        onConfirm={handleSubmitProposal}
+      />
 
-      {/* Interest Group Picker Selector Card */}
-      <Card className="border-primary/20 bg-muted/20">
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <h3 className="font-semibold text-foreground text-base flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-primary" />
-                Select Domain Interest Group
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                View real-time learner engagement and sponsorship statistics
-                across specialized µLearn learning tracks.
-              </p>
-            </div>
-
-            <div className="w-full sm:w-72">
-              <Select
-                value={selectedIgId}
-                onValueChange={setSelectedIgId}
-                disabled={isLoadingIgs}
-              >
-                <SelectTrigger className="w-full bg-background">
-                  <SelectValue placeholder="Choose Interest Group" />
-                </SelectTrigger>
-                <SelectContent>
-                  {igList.map((ig) => (
-                    <SelectItem key={ig.id} value={ig.id}>
-                      {ig.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      {/* Interest Group picker */}
+      <Card>
+        <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1.5">
+            <CardTitle>Select Domain Interest Group</CardTitle>
+            <CardDescription>
+              View real-time learner engagement and sponsorship statistics
+              across specialized µLearn learning tracks.
+            </CardDescription>
           </div>
+
+          <Select
+            value={selectedIgId}
+            onValueChange={setSelectedIgId}
+            disabled={isLoadingIgs}
+          >
+            <SelectTrigger
+              className="w-full sm:w-72"
+              aria-label="Interest group"
+            >
+              <SelectValue placeholder="Choose Interest Group" />
+            </SelectTrigger>
+            <SelectContent>
+              {igList.map((ig) => (
+                <SelectItem key={ig.id} value={ig.id}>
+                  {ig.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </CardContent>
       </Card>
 
-      {/* Metrics Section for Selected IG */}
+      {/* Metrics for the selected Interest Group */}
       {isLoadingMetrics ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
+          {STAT_SKELETON_KEYS.map((key) => (
+            <Skeleton key={key} className="h-28 rounded-2xl" />
+          ))}
         </div>
       ) : error ? (
-        <Alert
-          variant="destructive"
-          className="border-destructive/50 text-destructive"
-        >
-          <AlertCircle className="h-4 w-4" />
+        <Alert variant="destructive">
+          <AlertCircle />
           <AlertTitle>Sponsorship Required</AlertTitle>
           <AlertDescription>
             {getApiResponseError(error, {
@@ -199,76 +160,40 @@ export function CompanySponsorshipPageClient() {
         </Alert>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Members
-              </CardTitle>
-              <Users className="h-5 w-5 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-foreground">
-                {(metrics?.membership?.total_members ?? 0).toLocaleString()}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {metrics?.membership?.new_members_last_30_days ?? 0} new in the
-                last 30 days
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Active Tasks
-              </CardTitle>
-              <Award className="h-5 w-5 text-brand-blue" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-foreground">
-                {metrics?.activity_level?.active_tasks ?? 0}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Active tasks in the Interest Group
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Task Completions (30d)
-              </CardTitle>
-              <Coins className="h-5 w-5 text-warning" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-warning">
-                {(
-                  metrics?.activity_level?.task_completions_last_30_days ?? 0
-                ).toLocaleString()}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Completions in the last 30 days
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Sessions (30d)
-              </CardTitle>
-              <Flame className="h-5 w-5 text-destructive" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-destructive">
-                {metrics?.activity_level?.sessions_last_30_days ?? 0}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Learning sessions in the last 30 days
-              </p>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Total Members"
+            value={(metrics?.membership?.total_members ?? 0).toLocaleString()}
+            description={`${metrics?.membership?.new_members_last_30_days ?? 0} new in the last 30 days`}
+            icon={<Users className="size-5" />}
+            accent="chart-1"
+          />
+          <StatCard
+            title="Active Tasks"
+            value={(
+              metrics?.activity_level?.active_tasks ?? 0
+            ).toLocaleString()}
+            description="Open in this interest group"
+            icon={<ListTodo className="size-5" />}
+            accent="chart-2"
+          />
+          <StatCard
+            title="Task Completions (30d)"
+            value={(
+              metrics?.activity_level?.task_completions_last_30_days ?? 0
+            ).toLocaleString()}
+            description="Completed in the last 30 days"
+            icon={<CircleCheck className="size-5" />}
+            accent="chart-3"
+          />
+          <StatCard
+            title="Sessions (30d)"
+            value={(
+              metrics?.activity_level?.sessions_last_30_days ?? 0
+            ).toLocaleString()}
+            description="Learning sessions logged"
+            icon={<Activity className="size-5" />}
+            accent="chart-4"
+          />
         </div>
       )}
     </div>

@@ -297,7 +297,6 @@ function SingleTab({ role }: { role: Role }) {
                   isLoadingGuilds ? "Loading guilds..." : "Select a guild..."
                 }
                 searchPlaceholder="Search guilds..."
-                emptyText="No guilds found."
                 disabled={assignMutation.isPending || isLoadingGuilds}
                 className="h-11 rounded-xl"
               />
@@ -362,7 +361,6 @@ function SingleTab({ role }: { role: Role }) {
                     loading={isLoadingColleges}
                     placeholder="Search college..."
                     searchPlaceholder="Search colleges..."
-                    emptyText="No colleges found."
                     disabled={assignMutation.isPending}
                   />
                 </div>
@@ -596,7 +594,6 @@ function BulkAddTab({ role }: { role: Role }) {
                   isLoadingGuilds ? "Loading guilds..." : "Select a guild..."
                 }
                 searchPlaceholder="Search guilds..."
-                emptyText="No guilds found."
                 disabled={bulkAssign.isPending || isLoadingGuilds}
                 className="h-11 rounded-xl"
               />
@@ -661,7 +658,6 @@ function BulkAddTab({ role }: { role: Role }) {
                     loading={isLoadingColleges}
                     placeholder="Search college..."
                     searchPlaceholder="Search colleges..."
-                    emptyText="No colleges found."
                     disabled={bulkAssign.isPending}
                   />
                 </div>

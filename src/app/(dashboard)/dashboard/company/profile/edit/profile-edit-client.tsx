@@ -24,7 +24,7 @@ function ProfileEditContent() {
 
 export function EditProfilePageClient() {
   return (
-    <div className="space-y-6 px-1 py-1 sm:px-2">
+    <div className="space-y-6">
       <div className="flex items-start gap-3 sm:items-center">
         <Button
           variant="ghost"

@@ -4,9 +4,6 @@ import {
   Clock,
   LogOut,
   RefreshCw,
-  Shield,
-  ShieldAlert,
-  ShieldCheck,
   Trash2,
   UserCheck,
   UserPlus,
@@ -15,7 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -35,7 +32,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatCard } from "@/components/ui/stat-card";
+import { StateDisplay } from "@/components/ui/state-display";
 import {
   Table,
   TableBody,
@@ -46,7 +46,6 @@ import {
 } from "@/components/ui/table";
 import { useUserInfo } from "@/features/auth";
 import { formatShortDate } from "@/lib/datetime";
-import { cn } from "@/lib/utils";
 import { useCompanyAccess } from "../../hooks/use-company-access";
 import {
   useCancelCompanyAdminInvite,
@@ -61,26 +60,12 @@ import type { CompanyAdminLink, CompanyAdminLinkStatus } from "../../types";
 
 const STATUS_BADGE: Record<
   CompanyAdminLinkStatus,
-  { label: string; className: string }
+  { label: string; variant: BadgeProps["variant"] }
 > = {
-  Accepted: {
-    label: "Co-admin",
-    className:
-      "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  },
-  Pending: {
-    label: "Invite pending",
-    className:
-      "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400",
-  },
-  Declined: {
-    label: "Declined",
-    className: "border-border bg-muted text-muted-foreground",
-  },
-  Revoked: {
-    label: "Revoked",
-    className: "border-border bg-muted text-muted-foreground",
-  },
+  Accepted: { label: "Co-admin", variant: "success" },
+  Pending: { label: "Invite pending", variant: "warning" },
+  Declined: { label: "Declined", variant: "secondary" },
+  Revoked: { label: "Revoked", variant: "secondary" },
 };
 
 function statusDetail(link: CompanyAdminLink): string | null {
@@ -177,69 +162,61 @@ export function CompanyAdminsPageClient() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight text-foreground">
-            <ShieldCheck className="h-8 w-8 text-primary" aria-hidden="true" />
-            Co-Administrators
-          </h1>
-          <p className="mt-1 max-w-2xl text-muted-foreground">
-            {can.manageAdmins
-              ? `Invite up to ${seats.max} colleagues to help run your company on muLearn. Co-admins can do everything except edit the company profile, manage admins or deactivate the company.`
-              : "You're a co-admin of this company. You can leave at any time from your row below."}
-          </p>
-        </div>
-
-        {can.manageAdmins && (
-          <div className="flex shrink-0 flex-col items-start gap-1 sm:items-end">
-            <Button className="gap-2" onClick={openInvite} disabled={seatsFull}>
-              <UserPlus className="h-4 w-4" aria-hidden="true" />
-              Invite co-admin
-            </Button>
-            {seatsFull && (
-              <p className="max-w-xs text-xs text-muted-foreground sm:text-right">
-                All {seats.max} seats are taken by co-admins or pending invites.
-                A seat frees up when you remove a co-admin, cancel an invite, or
-                an invite is declined.
-              </p>
-            )}
-          </div>
-        )}
-      </div>
+      <PageHeader
+        title="Co-Administrators"
+        description={
+          can.manageAdmins
+            ? `Invite up to ${seats.max} colleagues to help run your company on muLearn. Co-admins can do everything except edit the company profile, manage admins or deactivate the company.`
+            : "You're a co-admin of this company. You can leave at any time from your row below."
+        }
+        action={
+          can.manageAdmins && (
+            <div className="flex shrink-0 flex-col items-start gap-1 sm:items-end">
+              <Button onClick={openInvite} disabled={seatsFull}>
+                <UserPlus aria-hidden="true" />
+                Invite co-admin
+              </Button>
+              {seatsFull && (
+                <p className="max-w-xs text-xs text-muted-foreground sm:text-right">
+                  All {seats.max} seats are taken by co-admins or pending
+                  invites. A seat frees up when you remove a co-admin, cancel an
+                  invite, or an invite is declined.
+                </p>
+              )}
+            </div>
+          )
+        }
+      />
 
       {/* Summary */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <SummaryCard
+        <StatCard
           title="Co-admins"
           value={acceptedCount}
-          hint="Can act for the company"
-          icon={UserCheck}
-          tone="text-emerald-600"
+          description="Can act for the company"
+          icon={<UserCheck className="size-5" />}
+          accent="chart-1"
         />
-        <SummaryCard
+        <StatCard
           title="Pending invites"
           value={pendingCount}
-          hint="Waiting for a response"
-          icon={Clock}
-          tone="text-amber-600"
+          description="Waiting for a response"
+          icon={<Clock className="size-5" />}
+          accent="chart-2"
         />
-        <SummaryCard
+        <StatCard
           title="Seats left"
           value={`${seats.left} of ${seats.max}`}
-          hint="Co-admins and pending invites count"
-          icon={Users}
-          tone="text-primary"
+          description="Co-admins and pending invites count"
+          icon={<Users className="size-5" />}
+          accent="chart-3"
         />
       </div>
 
       {/* Team */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-            <Users className="h-5 w-5 text-primary" aria-hidden="true" />
-            Team and invitations
-          </CardTitle>
+          <CardTitle>Team and invitations</CardTitle>
           <CardDescription>
             Everyone who has been invited to help manage this company, newest
             first.
@@ -257,40 +234,27 @@ export function CompanyAdminsPageClient() {
               <p className="text-sm text-muted-foreground">
                 We couldn&apos;t load your co-admins.
               </p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                onClick={() => refetch()}
-              >
-                <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                <RefreshCw aria-hidden="true" />
                 Try again
               </Button>
             </div>
           ) : adminLinks.length === 0 ? (
-            <div className="rounded-lg border border-dashed py-12 text-center">
-              <Shield
-                className="mx-auto mb-3 h-12 w-12 text-muted-foreground/50"
-                aria-hidden="true"
-              />
-              <h3 className="text-base font-semibold text-foreground">
-                No co-admins yet
-              </h3>
-              <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-                Invite a colleague by their muLearn ID to share job postings,
-                applicant reviews and company tasks.
-              </p>
-              {can.manageAdmins && (
-                <Button
-                  onClick={openInvite}
-                  className="mt-4 gap-2"
-                  variant="outline"
-                >
-                  <UserPlus className="h-4 w-4" aria-hidden="true" />
-                  Invite co-admin
-                </Button>
-              )}
-            </div>
+            <StateDisplay
+              variant="no-results"
+              size="sm"
+              className="rounded-2xl border border-dashed"
+              title="No co-admins yet"
+              description="Invite a colleague by their muLearn ID to share job postings, applicant reviews and company tasks."
+              action={
+                can.manageAdmins && (
+                  <Button variant="outline" onClick={openInvite}>
+                    <UserPlus aria-hidden="true" />
+                    Invite co-admin
+                  </Button>
+                )
+              }
+            />
           ) : (
             <div className="overflow-x-auto rounded-md border">
               <Table>
@@ -331,12 +295,7 @@ export function CompanyAdminsPageClient() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={cn("font-medium", badge.className)}
-                          >
-                            {badge.label}
-                          </Badge>
+                          <Badge variant={badge.variant}>{badge.label}</Badge>
                           {detail && (
                             <div className="mt-1 text-xs text-muted-foreground">
                               {detail}
@@ -352,22 +311,20 @@ export function CompanyAdminsPageClient() {
                         <TableCell className="text-right">
                           {actions.canRemove && (
                             <Button
-                              variant="ghost"
+                              variant="destructive"
                               size="sm"
-                              className="gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive"
                               onClick={() =>
                                 setConfirm({ kind: "remove", link })
                               }
                             >
-                              <Trash2 className="h-4 w-4" aria-hidden="true" />
+                              <Trash2 aria-hidden="true" />
                               Remove
                             </Button>
                           )}
                           {actions.canCancel && (
                             <Button
-                              variant="ghost"
+                              variant="destructive"
                               size="sm"
-                              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                               onClick={() =>
                                 setConfirm({ kind: "cancel", link })
                               }
@@ -377,14 +334,13 @@ export function CompanyAdminsPageClient() {
                           )}
                           {actions.canLeave && (
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="sm"
-                              className="gap-1.5"
                               onClick={() =>
                                 setConfirm({ kind: "leave", link })
                               }
                             >
-                              <LogOut className="h-4 w-4" aria-hidden="true" />
+                              <LogOut aria-hidden="true" />
                               Leave
                             </Button>
                           )}
@@ -401,12 +357,9 @@ export function CompanyAdminsPageClient() {
 
       {/* Danger zone — owner only on the backend */}
       {can.deactivateCompany && (
-        <Card className="border-destructive/30 bg-destructive/5">
+        <Card className="border-destructive/30">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg font-semibold text-destructive">
-              <ShieldAlert className="h-5 w-5" aria-hidden="true" />
-              Danger zone
-            </CardTitle>
+            <CardTitle>Danger zone</CardTitle>
             <CardDescription>
               Deactivating takes your company page offline, stops new jobs and
               tasks, revokes every co-admin, ends your company mentors&apos;
@@ -414,7 +367,7 @@ export function CompanyAdminsPageClient() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col gap-4 rounded-lg border border-destructive/20 bg-background p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="font-medium text-foreground">
                   Deactivate company
@@ -426,7 +379,6 @@ export function CompanyAdminsPageClient() {
               <Button
                 variant="destructive"
                 size="sm"
-                className="shrink-0"
                 onClick={() => setIsDeactivateOpen(true)}
               >
                 Deactivate company
@@ -544,34 +496,5 @@ export function CompanyAdminsPageClient() {
         }
       />
     </div>
-  );
-}
-
-function SummaryCard({
-  title,
-  value,
-  hint,
-  icon: Icon,
-  tone,
-}: {
-  title: string;
-  value: number | string;
-  hint: string;
-  icon: typeof Users;
-  tone: string;
-}) {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-        <Icon className={cn("h-4 w-4", tone)} aria-hidden="true" />
-      </CardHeader>
-      <CardContent>
-        <div className={cn("text-2xl font-bold", tone)}>{value}</div>
-        <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
-      </CardContent>
-    </Card>
   );
 }

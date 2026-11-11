@@ -97,6 +97,7 @@ export function CampusSearchCard({
   return (
     <Link
       href={`/dashboard/campus/${campus.id}`}
+      prefetch={false}
       className="group block rounded-[2rem] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
     >
       {cardContent}

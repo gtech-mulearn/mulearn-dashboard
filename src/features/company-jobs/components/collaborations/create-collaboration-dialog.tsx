@@ -70,7 +70,6 @@ function CampusPicker({
       loading={isFetching}
       placeholder="Search for a campus…"
       searchPlaceholder="Type a college name"
-      emptyText="No campuses found."
       className={cn(invalid && "border-destructive")}
     />
   );
@@ -106,7 +105,6 @@ function InterestGroupPicker({
         isLoading ? "Loading interest groups…" : "Choose an interest group"
       }
       searchPlaceholder="Search interest groups"
-      emptyText="No interest groups found."
       className={cn(invalid && "border-destructive")}
     />
   );

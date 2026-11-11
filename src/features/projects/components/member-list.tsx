@@ -40,6 +40,7 @@ export function MemberList({ members, onRemove }: Props) {
             {m.is_linked && m.muid ? (
               <Link
                 href={`/profile/${m.muid}`}
+                prefetch={false}
                 target="_blank"
                 rel="noreferrer noopener"
                 className="hover:underline"

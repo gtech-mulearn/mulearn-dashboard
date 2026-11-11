@@ -27,7 +27,7 @@ export function WeeklyReviewPageClient() {
   const yearNum = weekInfo.year;
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto w-full">
+    <div className="w-full space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h2 className="text-4xl font-black tracking-tighter text-foreground uppercase flex items-center gap-3">

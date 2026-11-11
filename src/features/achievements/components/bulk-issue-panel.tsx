@@ -172,7 +172,6 @@ export function BulkIssuePanel() {
               value={selectedAchievementId}
               onValueChange={setSelectedAchievementId}
               placeholder="Search achievements..."
-              emptyText="No achievements found."
               loading={isAchievementsLoading}
               className="h-10 rounded-xl bg-background border-border text-sm"
             />

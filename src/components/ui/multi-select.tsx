@@ -4,6 +4,7 @@ import { Check, ChevronDown, X } from "lucide-react";
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "./badge";
+import { DropdownEmpty } from "./dropdown-empty";
 
 interface Option {
   value: string;
@@ -132,9 +133,7 @@ export function MultiSelect({
           </div>
           <div className="max-h-60 overflow-y-auto p-1">
             {filtered.length === 0 ? (
-              <p className="py-4 text-center text-sm text-muted-foreground">
-                No results found.
-              </p>
+              <DropdownEmpty />
             ) : (
               filtered.map((o) => {
                 const selected = value.includes(o.value);
