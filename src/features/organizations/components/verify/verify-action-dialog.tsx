@@ -167,7 +167,6 @@ export function VerifyActionDialog({
                     : "Select destination organization"
                 }
                 searchPlaceholder="Search organizations..."
-                emptyText="No matching organizations found."
                 disabled={isLoadingOrgs || mutation.isPending}
               />
               <p className="text-xs text-muted-foreground">

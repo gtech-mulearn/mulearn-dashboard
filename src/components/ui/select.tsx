@@ -2,9 +2,20 @@
 
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
-import type * as React from "react";
+import * as React from "react";
 
+import { DropdownEmpty } from "@/components/ui/dropdown-empty";
 import { cn } from "@/lib/utils";
+
+/** True when children render at least one node, looking inside fragments. */
+function hasRenderableChildren(children: React.ReactNode): boolean {
+  return React.Children.toArray(children).some((child) =>
+    React.isValidElement<{ children?: React.ReactNode }>(child) &&
+    child.type === React.Fragment
+      ? hasRenderableChildren(child.props.children)
+      : true,
+  );
+}
 
 function Select({
   ...props
@@ -79,7 +90,7 @@ function SelectContent({
               "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1",
           )}
         >
-          {children}
+          {hasRenderableChildren(children) ? children : <DropdownEmpty />}
         </SelectPrimitive.Viewport>
         <SelectScrollDownButton />
       </SelectPrimitive.Content>

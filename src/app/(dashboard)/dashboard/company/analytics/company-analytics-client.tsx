@@ -970,7 +970,6 @@ function CampusTrendView() {
                 loading={isSearchingColleges}
                 placeholder="Search for a campus…"
                 searchPlaceholder="Type a college name"
-                emptyText="No campuses found."
               />
             </div>
             <div className="w-full space-y-1.5 sm:w-36">

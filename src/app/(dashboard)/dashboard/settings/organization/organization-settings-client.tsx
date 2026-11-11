@@ -68,7 +68,6 @@ export function ChangeOrganizationPageClient() {
                   onSearchChange={setCollegeSearch}
                   loading={collegeSearchQuery.isFetching}
                   placeholder="Search College"
-                  emptyText="No organizations found."
                 />
               )}
             />
@@ -90,7 +89,6 @@ export function ChangeOrganizationPageClient() {
                   onSearchChange={setDepartmentSearch}
                   loading={departmentSearchQuery.isFetching}
                   placeholder="Search department"
-                  emptyText="No departments found."
                 />
               )}
             />

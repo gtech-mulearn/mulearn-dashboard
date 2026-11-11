@@ -59,7 +59,7 @@ export function OrganizationCombobox({
         <Command>
           <CommandInput placeholder={searchPlaceholder} />
 
-          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandEmpty />
 
           <CommandGroup className="max-h-64 overflow-y-auto">
             {options.map((item) => (

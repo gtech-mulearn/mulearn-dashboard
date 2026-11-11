@@ -1960,7 +1960,6 @@ export function CampusManageDashboard() {
                                 onValueChange={setSelectedExecomRole}
                                 placeholder="Search roles..."
                                 searchPlaceholder="Search roles..."
-                                emptyText="No matching roles."
                                 disabled={
                                   isAssigningExecomRole || isCreatingRole
                                 }

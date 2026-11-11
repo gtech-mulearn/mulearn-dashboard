@@ -705,7 +705,6 @@ export function RegisterRoleDetails({
                             disabled={isLoading}
                             onSearchChange={onCollegeSearchChange}
                             loading={isLoadingColleges}
-                            emptyText="Type your college to search"
                             onCreateNew={(searchTerm) => {
                               field.onChange("others");
                               form.setValue("customCollege", searchTerm);
@@ -760,7 +759,6 @@ export function RegisterRoleDetails({
                             disabled={isLoading}
                             onSearchChange={onDepartmentSearchChange}
                             loading={isLoadingDepartments}
-                            emptyText="Type your department to search"
                           />
                         </FormControl>
                         <FormMessage />
@@ -887,7 +885,6 @@ export function RegisterRoleDetails({
                         disabled={isLoading}
                         onSearchChange={onCollegeSearchChange}
                         loading={isLoadingColleges}
-                        emptyText="Type your college to search"
                         onCreateNew={(searchTerm) => {
                           field.onChange("others");
                           form.setValue("customCollege", searchTerm);
