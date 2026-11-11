@@ -1,9 +1,9 @@
 "use client";
 
-import { Handshake, Plus, RefreshCw } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
-import { Badge } from "@/components/ui/badge";
+import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,7 +13,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StateDisplay } from "@/components/ui/state-display";
 import {
   Table,
   TableBody,
@@ -24,7 +26,6 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatShortDate } from "@/lib/datetime";
-import { cn } from "@/lib/utils";
 import {
   useCollaborations,
   useDiscoverCollaborations,
@@ -43,33 +44,16 @@ import { CreateCollaborationDialog } from "./create-collaboration-dialog";
 
 const PAGE_SIZE = 10;
 
-const STATUS_BADGE: Record<CollabStatus, { label: string; className: string }> =
-  {
-    OPEN: {
-      label: "Open",
-      className:
-        "border-sky-500/20 bg-sky-500/10 text-sky-700 dark:text-sky-400",
-    },
-    PENDING: {
-      label: "Awaiting response",
-      className:
-        "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400",
-    },
-    ACCEPTED: {
-      label: "Accepted",
-      className:
-        "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-    },
-    DECLINED: {
-      label: "Declined",
-      className:
-        "border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-400",
-    },
-    WITHDRAWN: {
-      label: "Withdrawn",
-      className: "border-border bg-muted text-muted-foreground",
-    },
-  };
+const STATUS_BADGE: Record<
+  CollabStatus,
+  { label: string; variant: BadgeProps["variant"] }
+> = {
+  OPEN: { label: "Open", variant: "default" },
+  PENDING: { label: "Awaiting response", variant: "warning" },
+  ACCEPTED: { label: "Accepted", variant: "success" },
+  DECLINED: { label: "Declined", variant: "destructive" },
+  WITHDRAWN: { label: "Withdrawn", variant: "secondary" },
+};
 
 const canWithdraw = (c: CompanyCollaboration) =>
   c.status === "OPEN" || c.status === "PENDING";
@@ -126,8 +110,8 @@ function ListState({
         <p className="text-sm text-muted-foreground">
           We couldn&apos;t load these collaborations.
         </p>
-        <Button variant="outline" size="sm" className="gap-2" onClick={onRetry}>
-          <RefreshCw className="h-4 w-4" aria-hidden="true" />
+        <Button variant="outline" size="sm" onClick={onRetry}>
+          <RefreshCw aria-hidden="true" />
           Try again
         </Button>
       </div>
@@ -179,28 +163,20 @@ export function CompanyCollaborationsPageClient() {
   const myPosts = mine.data?.data ?? [];
   const openPosts = discover.data?.data ?? [];
 
-  const newButton = (
-    <Button className="gap-2" onClick={() => setIsCreateOpen(true)}>
-      <Plus className="h-4 w-4" aria-hidden="true" />
-      New collaboration
-    </Button>
-  );
+  const openCreate = () => setIsCreateOpen(true);
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight text-foreground">
-            <Handshake className="h-8 w-8 text-primary" aria-hidden="true" />
-            Collaborations
-          </h1>
-          <p className="mt-1 max-w-2xl text-muted-foreground">
-            Partner with campuses and interest groups on events, sponsorships,
-            campus programmes and mentoring.
-          </p>
-        </div>
-        <div className="shrink-0">{newButton}</div>
-      </div>
+      <PageHeader
+        title="Collaborations"
+        description="Partner with campuses and interest groups on events, sponsorships, campus programmes and mentoring."
+        action={
+          <Button className="shrink-0" onClick={openCreate}>
+            <Plus aria-hidden="true" />
+            New collaboration
+          </Button>
+        }
+      />
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as "mine" | "open")}>
         <TabsList>
@@ -211,7 +187,7 @@ export function CompanyCollaborationsPageClient() {
         <TabsContent value="mine" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Your posts</CardTitle>
+              <CardTitle>Your posts</CardTitle>
               <CardDescription>
                 Open posts are visible to every campus and interest group.
                 Direct invites wait for that campus or IG to respond.
@@ -224,20 +200,19 @@ export function CompanyCollaborationsPageClient() {
                 onRetry={() => mine.refetch()}
                 isEmpty={myPosts.length === 0}
                 empty={
-                  <div className="rounded-lg border border-dashed py-12 text-center">
-                    <Handshake
-                      className="mx-auto mb-3 h-12 w-12 text-muted-foreground/50"
-                      aria-hidden="true"
-                    />
-                    <h3 className="text-base font-semibold text-foreground">
-                      No collaborations yet
-                    </h3>
-                    <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-                      Post your first collaboration to reach campuses and
-                      interest groups on muLearn.
-                    </p>
-                    <div className="mt-4">{newButton}</div>
-                  </div>
+                  <StateDisplay
+                    variant="no-results"
+                    size="sm"
+                    className="rounded-2xl border border-dashed"
+                    title="No collaborations yet"
+                    description="Post your first collaboration to reach campuses and interest groups on muLearn."
+                    action={
+                      <Button variant="outline" onClick={openCreate}>
+                        <Plus aria-hidden="true" />
+                        New collaboration
+                      </Button>
+                    }
+                  />
                 }
               >
                 <div className="overflow-x-auto rounded-md border">
@@ -271,10 +246,7 @@ export function CompanyCollaborationsPageClient() {
                               {audienceLabel(c)}
                             </TableCell>
                             <TableCell>
-                              <Badge
-                                variant="outline"
-                                className={cn("font-medium", badge.className)}
-                              >
+                              <Badge variant={badge.variant}>
                                 {badge.label}
                               </Badge>
                               {detail && (
@@ -289,9 +261,8 @@ export function CompanyCollaborationsPageClient() {
                             <TableCell className="text-right">
                               {canWithdraw(c) && (
                                 <Button
-                                  variant="ghost"
+                                  variant="destructive"
                                   size="sm"
-                                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                                   onClick={() => setWithdrawing(c)}
                                 >
                                   Withdraw
@@ -317,7 +288,7 @@ export function CompanyCollaborationsPageClient() {
         <TabsContent value="open" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Open posts</CardTitle>
+              <CardTitle>Open posts</CardTitle>
               <CardDescription>
                 Every company&apos;s open collaboration posts, as campuses and
                 interest groups see them.
@@ -330,9 +301,13 @@ export function CompanyCollaborationsPageClient() {
                 onRetry={() => discover.refetch()}
                 isEmpty={openPosts.length === 0}
                 empty={
-                  <p className="rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground">
-                    No open collaboration posts right now.
-                  </p>
+                  <StateDisplay
+                    variant="no-results"
+                    size="sm"
+                    className="rounded-2xl border border-dashed"
+                    title="No open posts right now"
+                    description="Open collaboration posts from companies will show up here."
+                  />
                 }
               >
                 <ul className="grid gap-3 md:grid-cols-2">

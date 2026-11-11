@@ -24,24 +24,25 @@ export function NotificationList({
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-2 py-10 text-muted-foreground">
-        <Inbox className="h-8 w-8" />
+        <Inbox className="size-6" />
         <p className="text-sm">{emptyLabel}</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-2 overflow-y-auto max-h-[360px] pr-1">
+    <ul className="divide-y divide-border">
       {items.map((item) => (
-        <NotificationItem
-          key={item.id}
-          item={item}
-          isDeleting={deletingId === item.id}
-          isMarkingRead={markingReadId === item.id}
-          onDelete={onDelete}
-          onMarkRead={onMarkRead}
-        />
+        <li key={item.id}>
+          <NotificationItem
+            item={item}
+            isDeleting={deletingId === item.id}
+            isMarkingRead={markingReadId === item.id}
+            onDelete={onDelete}
+            onMarkRead={onMarkRead}
+          />
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

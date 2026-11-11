@@ -93,7 +93,7 @@ export default function CompanyDashboardPage() {
       action: "View Sponsorships →",
     },
     {
-      title: "Templates Management",
+      title: "Event Templates",
       description:
         "Save and reuse standardized blueprints for coding challenges, micro-task assignments, and event schedules.",
       href: "/dashboard/company/event-templates",

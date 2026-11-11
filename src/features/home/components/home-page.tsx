@@ -109,7 +109,7 @@ export function HomePage() {
   };
 
   return (
-    <div className="space-y-5 p-1">
+    <div className="space-y-5">
       <VerificationStatusBanner roles={userInfo?.roles ?? []} />
       {isDualRole && (
         <DualRoleToggle view={dualView} onChange={setDualView} roles={roles} />

@@ -11,7 +11,7 @@ function CardWrapper({
   children: React.ReactNode;
 }) {
   return href ? (
-    <Link href={href} className="group block flex-1">
+    <Link href={href} prefetch={false} className="group block flex-1">
       {children}
     </Link>
   ) : (

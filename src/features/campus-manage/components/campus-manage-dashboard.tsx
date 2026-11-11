@@ -1264,6 +1264,7 @@ export function CampusManageDashboard() {
                         <div className="flex flex-col">
                           <Link
                             href={`/profile/${student.muid}`}
+                            prefetch={false}
                             className="inline-flex w-fit items-center gap-1"
                           >
                             <span className="text-sm font-semibold tracking-tight transition-colors group-hover:text-primary">

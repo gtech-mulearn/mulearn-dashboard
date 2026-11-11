@@ -234,6 +234,7 @@ export function UnverifiedOrgLinksTable() {
               return (
                 <Link
                   href={`/profile/${item.muid}`}
+                  prefetch={false}
                   className="group inline-flex items-center gap-1 whitespace-nowrap text-sm font-semibold tracking-tight text-foreground transition-colors hover:text-primary"
                 >
                   {item.full_name}

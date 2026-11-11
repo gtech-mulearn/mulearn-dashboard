@@ -1,9 +1,12 @@
 "use client";
 
-import { formatDistanceToNow } from "date-fns";
-import { Check, ExternalLink, Loader2, X } from "lucide-react";
+import { format, formatDistanceToNow } from "date-fns";
+import { Check, ExternalLink, X } from "lucide-react";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { resolveNotificationHref } from "../lib/notification-href";
 import type { NotificationItem as NotificationItemData } from "../schemas";
@@ -14,6 +17,8 @@ interface NotificationItemProps {
   isMarkingRead?: boolean;
   onDelete?: (id: string) => void;
   onMarkRead?: (id: string) => void;
+  /** When set, the leading gutter shows a checkbox instead of the unread dot. */
+  selection?: { checked: boolean; onToggle: () => void };
 }
 
 export function NotificationItem({
@@ -22,6 +27,7 @@ export function NotificationItem({
   isMarkingRead,
   onDelete,
   onMarkRead,
+  selection,
 }: NotificationItemProps) {
   const isPending = isDeleting || isMarkingRead;
   // Typed notifications link by entity; legacy ones by redirect_url (only
@@ -31,108 +37,120 @@ export function NotificationItem({
     typeof window === "undefined" ? "" : window.location.origin,
   );
   const isExternal = link?.external ?? false;
+  const createdAt = new Date(item.created_at);
+  const markRead = item.is_read ? undefined : onMarkRead;
 
   return (
     // Non-interactive container — avoids nested interactive elements (button > button/a).
-    // Mark-as-read is triggered by the ✓ icon button; the Link handles navigation.
     <div
       className={cn(
-        "group relative flex flex-col gap-2 overflow-hidden rounded-xl border p-3 text-sm transition-all",
-        item.is_read
-          ? "border-border/70 bg-card hover:border-brand-blue/30 hover:shadow-sm"
-          : "border-brand-blue/20 bg-brand-blue/[0.04] shadow-sm",
-        isPending && "pointer-events-none opacity-50",
+        "group flex gap-3 px-4 py-3 transition-colors hover:bg-muted/50",
+        isPending && "pointer-events-none opacity-60",
       )}
+      aria-busy={isPending || undefined}
     >
-      {!item.is_read && (
-        <span className="absolute inset-y-0 left-0 w-1 bg-linear-to-b from-brand-blue to-brand-purple" />
-      )}
-      {isPending && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-card/60">
-          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-        </div>
-      )}
-
-      {/* Title row */}
-      <div className="flex items-start justify-between gap-2">
-        {/* Left: unread dot + title */}
-        <div className="flex min-w-0 items-center gap-2">
-          {!item.is_read && (
-            <span className="h-2 w-2 shrink-0 rounded-full bg-brand-blue shadow-[0_0_0_3px_rgba(46,133,254,0.12)]" />
-          )}
-          <p className="truncate font-semibold leading-snug tracking-[-0.01em]">
-            {item.title}
-          </p>
-        </div>
-
-        {/* Right: action buttons */}
-        <div className="flex shrink-0 items-center gap-0.5">
-          {!item.is_read && onMarkRead && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 rounded-full text-muted-foreground hover:bg-brand-blue/10 hover:text-brand-blue"
-              onClick={() => onMarkRead(item.id)}
-              disabled={isPending}
-              aria-label="Mark as read"
-              title="Mark as read"
-            >
-              <Check className="h-3 w-3" />
-            </Button>
-          )}
-
-          {onDelete && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => onDelete(item.id)}
-              disabled={isPending}
-              aria-label="Delete notification"
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          )}
-        </div>
+      {/* Leading gutter: fixed width keeps every title on the same column */}
+      <div className="flex h-5 w-4 shrink-0 items-center justify-center">
+        {selection ? (
+          <Checkbox
+            id={`select-notif-${item.id}`}
+            checked={selection.checked}
+            onCheckedChange={selection.onToggle}
+            aria-label={`Select: ${item.title}`}
+          />
+        ) : (
+          !item.is_read && (
+            <span className="size-2 rounded-full bg-brand-blue">
+              <span className="sr-only">Unread</span>
+            </span>
+          )
+        )}
       </div>
 
-      {/* Body */}
-      <p className="line-clamp-2 pl-4 text-xs leading-relaxed text-muted-foreground">
-        {item.description}
-      </p>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start gap-2">
+          <p
+            className={cn(
+              "min-w-0 flex-1 break-words text-sm text-foreground line-clamp-2",
+              item.is_read ? "font-medium" : "font-semibold",
+            )}
+          >
+            {item.title}
+          </p>
 
-      {/* Footer: timestamp + link */}
-      <div className="mt-1 flex items-center justify-between gap-3 pl-4">
-        <div className="flex items-center gap-1.5">
-          <span className="text-[11px] font-medium text-muted-foreground">
-            {formatDistanceToNow(new Date(item.created_at), {
-              addSuffix: true,
-            })}
-          </span>
-          {item.source === "broadcast" && (
-            <span className="rounded-full bg-brand-purple/10 px-2 py-0.5 text-[10px] font-semibold text-brand-purple">
-              Announcement
-            </span>
+          {isPending ? (
+            <Spinner className="mt-0.5 shrink-0 text-muted-foreground" />
+          ) : (
+            (markRead || onDelete) && (
+              // Revealed on hover/focus where hover exists; always shown on touch.
+              <div className="-my-1.5 -mr-2 flex shrink-0 items-center transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+                {markRead && (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-muted-foreground hover:bg-muted hover:text-foreground"
+                    onClick={() => markRead(item.id)}
+                    aria-label="Mark as read"
+                    title="Mark as read"
+                  >
+                    <Check />
+                  </Button>
+                )}
+                {onDelete && (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-muted-foreground hover:bg-muted hover:text-foreground"
+                    onClick={() => onDelete(item.id)}
+                    aria-label="Delete notification"
+                    title="Delete"
+                  >
+                    <X />
+                  </Button>
+                )}
+              </div>
+            )
           )}
         </div>
 
-        {link && (
-          <Link
-            href={link.href}
-            className="flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold text-brand-blue transition-colors hover:bg-brand-blue/10"
-            target={isExternal ? "_blank" : undefined}
-            rel={isExternal ? "noopener noreferrer" : undefined}
-            onClick={() => {
-              // Mark as read when navigating via the link
-              if (!item.is_read && onMarkRead) {
-                onMarkRead(item.id);
-              }
-            }}
-          >
-            View
-            {isExternal && <ExternalLink className="h-3 w-3" />}
-          </Link>
+        {item.description && (
+          <p className="mt-0.5 break-words text-xs text-muted-foreground line-clamp-2">
+            {item.description}
+          </p>
         )}
+
+        <div className="mt-2 flex items-center gap-2">
+          <time
+            dateTime={item.created_at}
+            title={format(createdAt, "PPpp")}
+            className="text-xs text-muted-foreground"
+          >
+            {formatDistanceToNow(createdAt, { addSuffix: true })}
+          </time>
+          {item.source === "broadcast" && (
+            <Badge variant="purple">Announcement</Badge>
+          )}
+
+          {link && (
+            <Button
+              asChild
+              variant="link"
+              size="sm"
+              className="ml-auto h-auto gap-1 p-0 text-xs has-[>svg]:px-0"
+            >
+              <Link
+                href={link.href}
+                target={isExternal ? "_blank" : undefined}
+                rel={isExternal ? "noopener noreferrer" : undefined}
+                // Mark as read when navigating via the link
+                onClick={() => markRead?.(item.id)}
+              >
+                View
+                {isExternal && <ExternalLink className="size-3" />}
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
