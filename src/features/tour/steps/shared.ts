@@ -100,6 +100,13 @@ export const baseNavSteps: TourStep[] = [
     description:
       "Explore the broader μLearn community, updates, and resources.",
   },
+  {
+    id: "notifications",
+    elementId: "page:dashboard:notifications",
+    title: "Notifications",
+    description:
+      "Stay on top of updates, approvals, and broadcasts from the community — right from the topbar.",
+  },
 ];
 
 /**

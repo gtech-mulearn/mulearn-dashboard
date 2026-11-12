@@ -1,15 +1,18 @@
 "use client";
 
 import {
-  BarChart2,
+  Activity,
   Briefcase,
   CheckCircle,
   Eye,
+  GraduationCap,
+  IndianRupee,
+  Layers,
   Percent,
   RefreshCw,
-  TrendingDown,
   TrendingUp,
   Users,
+  Zap,
 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -23,8 +26,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Select,
   SelectContent,
@@ -33,14 +39,136 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatCard } from "@/components/ui/stat-card";
+import { StateDisplay } from "@/components/ui/state-display";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  useCampusAnalytics,
+  useCampusQuarterTrend,
   useCompanyDashboardSummary,
   useGigAnalytics,
   useJobEngagementAnalytics,
   useJobs,
   useTalentPoolAnalytics,
+  useTasksAnalytics,
 } from "@/features/company-jobs/hooks";
+import {
+  extractInterestGroups,
+  useInterestGroupsList,
+} from "@/features/interest-groups";
+import { useCollegeSearch } from "@/features/onboarding";
+
+const STAT_GRID = "grid gap-4 sm:grid-cols-2 lg:grid-cols-4";
+
+function StatGridSkeleton() {
+  return (
+    <div className={STAT_GRID}>
+      {[1, 2, 3, 4].map((i) => (
+        <Skeleton key={i} className="h-28 rounded-2xl" />
+      ))}
+    </div>
+  );
+}
+
+function AnalyticsError({
+  title,
+  error,
+  onRetry,
+}: {
+  title: string;
+  error: unknown;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed px-6 py-10 text-center">
+      <div className="space-y-1">
+        <p className="text-sm font-medium text-foreground">{title}</p>
+        <p className="text-xs text-muted-foreground">
+          {process.env.NODE_ENV === "development" && error instanceof Error
+            ? error.message
+            : "Please try again. Contact an administrator if this persists."}
+        </p>
+      </div>
+      <Button variant="outline" size="sm" onClick={onRetry}>
+        <RefreshCw />
+        Try again
+      </Button>
+    </div>
+  );
+}
+
+function AnalyticsEmpty({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
+  return (
+    <StateDisplay
+      variant="no-results"
+      size="sm"
+      className="rounded-2xl border border-dashed"
+      title={title}
+      description={description}
+    />
+  );
+}
+
+function SectionHeader({
+  title,
+  description,
+  onRefresh,
+  isRefreshing,
+}: {
+  title: string;
+  description: string;
+  onRefresh: () => void;
+  isRefreshing: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <div>
+        <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onRefresh}
+        disabled={isRefreshing}
+      >
+        <RefreshCw className={isRefreshing ? "animate-spin" : undefined} />
+        Refresh
+      </Button>
+    </div>
+  );
+}
+
+function MeterBar({
+  percent,
+  className,
+}: {
+  percent: number;
+  className?: string;
+}) {
+  return (
+    <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+      <div
+        className={`h-full rounded-full transition-all duration-500 ${className ?? "bg-primary"}`}
+        style={{ width: `${percent}%` }}
+      />
+    </div>
+  );
+}
 
 export function CompanyAnalyticsPageClient() {
   const [activeTab, setActiveTab] = useState("dashboard-summary");
@@ -48,51 +176,31 @@ export function CompanyAnalyticsPageClient() {
   return (
     <div className="space-y-6">
       <div data-tour-id="page:company-analytics:header">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-          <BarChart2 className="h-8 w-8 text-primary" />
-          Analytics & Insights
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Monitor your job listing engagement, gig performance, and browse
-          community talent pool statistics.
-        </p>
+        <PageHeader
+          title="Analytics & Insights"
+          description="Monitor your job listing engagement, gig performance, campus outreach, task outcomes, and community talent pool statistics."
+        />
       </div>
-      {/* Tab triggers omitted for brevity but remain identical */}
 
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList
-          data-tour-id="page:company-analytics:tabs"
-          className="scrollbar-none flex w-full justify-start gap-1 overflow-x-auto h-auto p-1 bg-muted rounded-xl"
-        >
-          <TabsTrigger
-            value="dashboard-summary"
-            className="shrink-0 whitespace-nowrap py-2.5 px-4 rounded-lg text-xs md:text-sm font-medium"
-          >
-            Dashboard Summary
-          </TabsTrigger>
-          <TabsTrigger
-            value="gig-analytics"
-            className="shrink-0 whitespace-nowrap py-2.5 px-4 rounded-lg text-xs md:text-sm font-medium"
-          >
-            Gig Performance
-          </TabsTrigger>
-          <TabsTrigger
-            value="job-engagement"
-            className="shrink-0 whitespace-nowrap py-2.5 px-4 rounded-lg text-xs md:text-sm font-medium"
-          >
-            Job Engagement
-          </TabsTrigger>
-          <TabsTrigger
-            value="talent-pool-stats"
-            className="shrink-0 whitespace-nowrap py-2.5 px-4 rounded-lg text-xs md:text-sm font-medium"
-          >
-            Talent Pool Insights
-          </TabsTrigger>
-        </TabsList>
+        <div className="scrollbar-none overflow-x-auto">
+          <TabsList data-tour-id="page:company-analytics:tabs">
+            <TabsTrigger value="dashboard-summary">
+              Dashboard Summary
+            </TabsTrigger>
+            <TabsTrigger value="gig-analytics">Gig Performance</TabsTrigger>
+            <TabsTrigger value="job-engagement">Job Engagement</TabsTrigger>
+            <TabsTrigger value="tasks-analytics">Task Analytics</TabsTrigger>
+            <TabsTrigger value="campus-analytics">Campus Insights</TabsTrigger>
+            <TabsTrigger value="talent-pool-stats">
+              Talent Pool Insights
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent
           value="dashboard-summary"
@@ -113,6 +221,20 @@ export function CompanyAnalyticsPageClient() {
           className="space-y-6 focus-visible:outline-none"
         >
           <JobEngagementView />
+        </TabsContent>
+
+        <TabsContent
+          value="tasks-analytics"
+          className="space-y-6 focus-visible:outline-none"
+        >
+          <TasksAnalyticsView />
+        </TabsContent>
+
+        <TabsContent
+          value="campus-analytics"
+          className="space-y-6 focus-visible:outline-none"
+        >
+          <CampusAnalyticsView />
         </TabsContent>
 
         <TabsContent
@@ -143,22 +265,17 @@ function DashboardSummaryView() {
 
   return (
     <div className="space-y-6">
-      <Card
-        data-tour-id="page:company-analytics:period-filter"
-        className="border border-border bg-card"
-      >
+      <Card data-tour-id="page:company-analytics:period-filter">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div>
-            <CardTitle className="text-lg font-semibold">
-              Dashboard Summary Filters
-            </CardTitle>
+            <CardTitle>Dashboard Summary Filters</CardTitle>
             <CardDescription>
               Adjust the period to view delta comparison statistics
             </CardDescription>
           </div>
           <div className="flex items-center gap-3">
             <Select value={period} onValueChange={setPeriod}>
-              <SelectTrigger className="w-[140px] h-9">
+              <SelectTrigger className="w-36">
                 <SelectValue placeholder="Select Period" />
               </SelectTrigger>
               <SelectContent>
@@ -172,10 +289,10 @@ function DashboardSummaryView() {
               size="icon"
               onClick={() => refetch()}
               disabled={isLoading || isRefetching}
-              className="h-9 w-9"
+              aria-label="Refresh summary"
             >
               <RefreshCw
-                className={`h-4 w-4 ${isRefetching ? "animate-spin" : ""}`}
+                className={isRefetching ? "animate-spin" : undefined}
               />
             </Button>
           </div>
@@ -183,94 +300,44 @@ function DashboardSummaryView() {
       </Card>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="p-6 space-y-3">
-              <Skeleton className="h-4 w-1/3 rounded" />
-              <Skeleton className="h-8 w-1/2 rounded" />
-              <Skeleton className="h-4 w-2/3 rounded" />
-            </Card>
-          ))}
-        </div>
+        <StatGridSkeleton />
       ) : isError ? (
-        <Card className="p-12 text-center text-muted-foreground border-destructive/20 bg-destructive/5 dark:bg-destructive/10 dark:border-destructive/20">
-          <p className="font-semibold text-destructive">
-            Failed to load summary analytics
-          </p>
-          <p className="text-xs mt-1 text-muted-foreground">
-            {process.env.NODE_ENV === "development" && error instanceof Error
-              ? error.message
-              : "Internal Server Error. Please contact administrator if this persists."}
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            className="mt-4 gap-1.5 mx-auto"
-          >
-            <RefreshCw className="h-3.5 w-3.5" /> Try Again
-          </Button>
-        </Card>
+        <AnalyticsError
+          title="Failed to load summary analytics"
+          error={error}
+          onRetry={() => refetch()}
+        />
       ) : !stats ? (
-        <Card className="p-12 text-center text-muted-foreground">
-          No summary analytics found. Ensure you are logged in with a verified
-          company profile.
-        </Card>
+        <AnalyticsEmpty
+          title="No summary analytics yet"
+          description="Ensure you are logged in with a verified company profile."
+        />
       ) : (
         <>
           {/* Quick Stats Grid */}
           <div
             data-tour-id="page:company-analytics:summary-cards"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+            className={STAT_GRID}
           >
-            {cards.map((card) => {
-              const isIncrease = card.delta_type === "increase";
-              return (
-                <Card
-                  key={card.key}
-                  className="relative overflow-hidden border border-border shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <CardContent className="p-6">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      {card.label}
-                    </p>
-                    <div className="flex items-baseline justify-between mt-2">
-                      <span className="text-3xl font-bold tracking-tight">
-                        {card.value}
-                      </span>
-                      <Badge
-                        variant={isIncrease ? "outline" : "destructive"}
-                        className={`flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                          isIncrease
-                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                            : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
-                        }`}
-                      >
-                        {isIncrease ? (
-                          <TrendingUp className="h-3 w-3" />
-                        ) : (
-                          <TrendingDown className="h-3 w-3" />
-                        )}
-                        {isIncrease ? "+" : "-"}
-                        {card.delta}
-                      </Badge>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground mt-3 flex items-center gap-1">
-                      <span>Compared to last {card.period}</span>
-                    </p>
-                  </CardContent>
-                </Card>
-              );
-            })}
+            {cards.map((card) => (
+              <StatCard
+                key={card.key}
+                title={card.label}
+                value={card.value}
+                trend={{
+                  value: `${card.delta_type === "increase" ? "+" : "-"}${card.delta}`,
+                  direction: card.delta_type === "increase" ? "up" : "down",
+                }}
+                description={`vs last ${card.period}`}
+              />
+            ))}
           </div>
 
           {/* Company details card */}
           {summary.company && (
-            <Card className="border border-border bg-card">
+            <Card>
               <CardHeader>
-                <CardTitle className="text-base font-semibold">
-                  Active Profile Information
-                </CardTitle>
+                <CardTitle>Active Profile Information</CardTitle>
               </CardHeader>
               <CardContent className="flex items-center gap-4">
                 {summary.company.logo ? (
@@ -287,12 +354,11 @@ function DashboardSummaryView() {
                   </div>
                 )}
                 <div>
-                  <h3 className="font-bold text-lg">{summary.company.name}</h3>
+                  <h3 className="text-lg font-semibold">
+                    {summary.company.name}
+                  </h3>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge
-                      variant="outline"
-                      className="capitalize text-xs font-medium"
-                    >
+                    <Badge variant="outline" className="capitalize">
                       {summary.company.status}
                     </Badge>
                   </div>
@@ -319,14 +385,7 @@ function GigAnalyticsView() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="p-6 space-y-2">
-              <Skeleton className="h-4 w-1/3 rounded" />
-              <Skeleton className="h-8 w-1/2 rounded" />
-            </Card>
-          ))}
-        </div>
+        <StatGridSkeleton />
         <Card className="p-6">
           <Skeleton className="h-48 w-full rounded" />
         </Card>
@@ -336,36 +395,20 @@ function GigAnalyticsView() {
 
   if (error) {
     return (
-      <Card className="p-12 text-center text-muted-foreground border-destructive/20 bg-destructive/5 dark:bg-destructive/10 dark:border-destructive/20">
-        <p className="font-semibold text-destructive">
-          Failed to load Gig Analytics
-        </p>
-        <p className="text-xs mt-1 text-muted-foreground">
-          {process.env.NODE_ENV === "development" && error instanceof Error
-            ? error.message
-            : "Internal Server Error. Please contact administrator if this persists."}
-        </p>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => refetch()}
-          className="mt-4 gap-1.5 mx-auto"
-        >
-          <RefreshCw className="h-3.5 w-3.5" /> Try Again
-        </Button>
-      </Card>
+      <AnalyticsError
+        title="Failed to load Gig Analytics"
+        error={error}
+        onRetry={() => refetch()}
+      />
     );
   }
 
   if (!gigs) {
     return (
-      <Card className="p-12 text-center text-muted-foreground space-y-3">
-        <p>No Gig Analytics statistics found for this company.</p>
-        <p className="text-xs">
-          (Note: This API analyzes jobs posted as "gig" or contract type. Ensure
-          you have published gig openings).
-        </p>
-      </Card>
+      <AnalyticsEmpty
+        title="No gig analytics yet"
+        description="Gig analytics cover jobs posted as gig or contract roles. Publish a gig opening to see results here."
+      />
     );
   }
 
@@ -373,102 +416,45 @@ function GigAnalyticsView() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-lg font-semibold text-foreground">
-            Gig Job metrics
-          </h2>
-          <p className="text-xs text-muted-foreground">
-            Aggregated performance across all published contract and gig roles
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => refetch()}
-          disabled={isRefetching}
-          className="gap-2 h-9 text-xs"
-        >
-          <RefreshCw
-            className={`h-3 w-3 ${isRefetching ? "animate-spin" : ""}`}
-          />
-          Refresh
-        </Button>
-      </div>
+      <SectionHeader
+        title="Gig Job metrics"
+        description="Aggregated performance across all published contract and gig roles"
+        onRefresh={() => refetch()}
+        isRefreshing={isRefetching}
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground uppercase">
-                Total Gigs Posted
-              </p>
-              <h3 className="text-2xl font-bold mt-1.5">
-                {gigs.total_gigs_posted}
-              </h3>
-            </div>
-            <div className="h-9 w-9 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
-              <Briefcase className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground uppercase">
-                Active Gigs
-              </p>
-              <h3 className="text-2xl font-bold mt-1.5 text-emerald-600 dark:text-emerald-400">
-                {gigs.active_gigs}
-              </h3>
-            </div>
-            <div className="h-9 w-9 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-600">
-              <CheckCircle className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground uppercase">
-                Closed Gigs
-              </p>
-              <h3 className="text-2xl font-bold mt-1.5 text-muted-foreground">
-                {gigs.closed_gigs}
-              </h3>
-            </div>
-            <div className="h-9 w-9 bg-muted rounded-lg flex items-center justify-center text-muted-foreground">
-              <Eye className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground uppercase">
-                Average Hourly Rate
-              </p>
-              <h3 className="text-2xl font-bold mt-1.5 text-indigo-600 dark:text-indigo-400">
-                ₹{gigs.average_hourly_rate}
-              </h3>
-            </div>
-            <div className="h-9 w-9 bg-indigo-500/10 rounded-lg flex items-center justify-center text-indigo-600">
-              <span className="font-bold text-sm">₹</span>
-            </div>
-          </CardContent>
-        </Card>
+      <div className={STAT_GRID}>
+        <StatCard
+          title="Total Gigs Posted"
+          value={gigs.total_gigs_posted}
+          icon={<Briefcase className="size-5" />}
+          accent="chart-1"
+        />
+        <StatCard
+          title="Active Gigs"
+          value={gigs.active_gigs}
+          icon={<CheckCircle className="size-5" />}
+          accent="chart-2"
+        />
+        <StatCard
+          title="Closed Gigs"
+          value={gigs.closed_gigs}
+          icon={<Eye className="size-5" />}
+          accent="chart-3"
+        />
+        <StatCard
+          title="Average Hourly Rate"
+          value={`₹${gigs.average_hourly_rate}`}
+          icon={<IndianRupee className="size-5" />}
+          accent="chart-4"
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Funnel chart list */}
-        <Card className="lg:col-span-2 border border-border bg-card">
+        <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-base font-semibold">
-              Application Funnel Breakdown
-            </CardTitle>
+            <CardTitle>Application Funnel Breakdown</CardTitle>
             <CardDescription>
               Track candidates moving across your recruitment pipelines
             </CardDescription>
@@ -485,12 +471,7 @@ function GigAnalyticsView() {
                       {count} ({percentage}%)
                     </span>
                   </div>
-                  <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-primary rounded-full transition-all duration-500"
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
+                  <MeterBar percent={percentage} />
                 </div>
               );
             })}
@@ -498,29 +479,19 @@ function GigAnalyticsView() {
         </Card>
 
         {/* Conversion rate card */}
-        <Card className="flex flex-col justify-between border border-border bg-card">
+        <Card className="flex flex-col justify-between">
           <CardHeader>
-            <CardTitle className="text-base font-semibold">
-              Overall Conversion
-            </CardTitle>
+            <CardTitle>Overall Conversion</CardTitle>
             <CardDescription>
               Rate of applicants selected for hire
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex-1 flex flex-col items-center justify-center py-6">
-            <div className="relative flex items-center justify-center">
-              <div className="h-28 w-28 rounded-full border-4 border-indigo-500/10 flex items-center justify-center">
-                <span className="text-3xl font-black text-indigo-600 dark:text-indigo-400">
-                  {gigs.conversion_rate}
-                </span>
-              </div>
-              <div className="absolute -bottom-1 bg-indigo-600 text-[10px] text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-0.5">
-                <Percent className="h-2.5 w-2.5" /> Funnel
-              </div>
-            </div>
-            <p className="text-xs text-center text-muted-foreground mt-6 max-w-[200px]">
-              Calculated dynamically as selected candidates divided by total
-              applications received.
+          <CardContent className="flex flex-1 flex-col items-center justify-center gap-2 py-6 text-center">
+            <p className="font-display text-4xl font-bold tracking-tight text-foreground">
+              {gigs.conversion_rate}
+            </p>
+            <p className="max-w-[220px] text-xs text-muted-foreground">
+              Selected candidates divided by total applications received.
             </p>
           </CardContent>
         </Card>
@@ -547,11 +518,9 @@ function JobEngagementView() {
 
   return (
     <div className="space-y-6">
-      <Card className="border border-border bg-card">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">
-            Job Performance Analytics
-          </CardTitle>
+          <CardTitle>Job Performance Analytics</CardTitle>
           <CardDescription>
             Select a job listing to view granular view engagement analytics
           </CardDescription>
@@ -559,12 +528,7 @@ function JobEngagementView() {
         <CardContent className="space-y-4">
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="flex-1 space-y-1.5">
-              <Label
-                htmlFor="job-select"
-                className="text-xs font-semibold text-muted-foreground uppercase"
-              >
-                Select Job Listing
-              </Label>
+              <Label htmlFor="job-select">Select Job Listing</Label>
               {jobsLoading ? (
                 <Skeleton className="h-10 w-full rounded-md" />
               ) : (
@@ -588,128 +552,550 @@ function JobEngagementView() {
 
       {selectedJobId ? (
         analyticsLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <Card key={i} className="p-5 space-y-2">
-                <Skeleton className="h-4 w-1/3 rounded" />
-                <Skeleton className="h-8 w-1/2 rounded" />
-              </Card>
-            ))}
-          </div>
+          <StatGridSkeleton />
         ) : isError ? (
-          <Card className="p-12 text-center text-muted-foreground border-destructive/20 bg-destructive/5 dark:bg-destructive/10 dark:border-destructive/20">
-            <p className="font-semibold text-destructive">
-              Failed to load job engagement analytics
-            </p>
-            <p className="text-xs mt-1 text-muted-foreground">
-              {process.env.NODE_ENV === "development" && error instanceof Error
-                ? error.message
-                : "Internal Server Error. Please contact administrator if this persists."}
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => refetch()}
-              className="mt-4 gap-1.5 mx-auto"
-            >
-              <RefreshCw className="h-3.5 w-3.5" /> Try Again
-            </Button>
-          </Card>
+          <AnalyticsError
+            title="Failed to load job engagement analytics"
+            error={error}
+            onRetry={() => refetch()}
+          />
         ) : !analytics ? (
-          <Card className="p-8 text-center text-muted-foreground">
-            No analytics returned for the selected job listing.
-          </Card>
+          <AnalyticsEmpty
+            title="No analytics for this listing"
+            description="This job listing hasn't collected any engagement data yet."
+          />
         ) : (
           <div className="space-y-6">
-            <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-primary" />
+            <h3 className="text-lg font-semibold text-foreground">
               Analytics for "{analytics.job_title}"
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card>
-                <CardContent className="p-5 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase">
-                      Total Views
-                    </p>
-                    <h4 className="text-2xl font-bold mt-1.5">
-                      {analytics.total_views}
-                    </h4>
-                  </div>
-                  <div className="h-8 w-8 bg-sky-500/10 text-sky-600 rounded flex items-center justify-center">
-                    <Eye className="h-4.5 w-4.5" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-5 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase">
-                      Applications Received
-                    </p>
-                    <h4 className="text-2xl font-bold mt-1.5">
-                      {analytics.total_applications}
-                    </h4>
-                  </div>
-                  <div className="h-8 w-8 bg-amber-500/10 text-amber-600 rounded flex items-center justify-center">
-                    <Briefcase className="h-4.5 w-4.5" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-5 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase">
-                      Hired Candidates
-                    </p>
-                    <h4 className="text-2xl font-bold mt-1.5 text-emerald-600 dark:text-emerald-400">
-                      {analytics.total_hired}
-                    </h4>
-                  </div>
-                  <div className="h-8 w-8 bg-emerald-500/10 text-emerald-600 rounded flex items-center justify-center">
-                    <CheckCircle className="h-4.5 w-4.5" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-5 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase">
-                      Conversion Rate
-                    </p>
-                    <h4 className="text-2xl font-bold mt-1.5 text-violet-600 dark:text-violet-400">
-                      {analytics.conversion_rate_percentage}%
-                    </h4>
-                  </div>
-                  <div className="h-8 w-8 bg-violet-500/10 text-violet-600 rounded flex items-center justify-center">
-                    <Percent className="h-4.5 w-4.5" />
-                  </div>
-                </CardContent>
-              </Card>
+            <div className={STAT_GRID}>
+              <StatCard
+                title="Total Views"
+                value={analytics.total_views}
+                icon={<Eye className="size-5" />}
+                accent="chart-1"
+              />
+              <StatCard
+                title="Applications Received"
+                value={analytics.total_applications}
+                icon={<Briefcase className="size-5" />}
+                accent="chart-2"
+              />
+              <StatCard
+                title="Hired Candidates"
+                value={analytics.total_hired}
+                icon={<CheckCircle className="size-5" />}
+                accent="chart-3"
+              />
+              <StatCard
+                title="Conversion Rate"
+                value={`${analytics.conversion_rate_percentage}%`}
+                icon={<Percent className="size-5" />}
+                accent="chart-4"
+              />
             </div>
           </div>
         )
       ) : (
-        <div className="border border-dashed border-border rounded-xl p-12 text-center text-muted-foreground">
-          Select a job listing above to render the view conversion metrics.
+        <AnalyticsEmpty
+          title="Select a job listing"
+          description="Pick a job above to see its views, applications, hires and conversion rate."
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── 4. Tasks Analytics View ─────────────────────────────────────────────────
+function TasksAnalyticsView() {
+  const {
+    data: tasks,
+    isLoading,
+    error,
+    refetch,
+    isRefetching,
+  } = useTasksAnalytics();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <StatGridSkeleton />
+        <Card className="p-6">
+          <Skeleton className="h-48 w-full rounded" />
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <AnalyticsError
+        title="Failed to load Tasks Analytics"
+        error={error}
+        onRetry={() => refetch()}
+      />
+    );
+  }
+
+  if (!tasks) {
+    return (
+      <AnalyticsEmpty
+        title="No task analytics yet"
+        description="Submit a company task to start collecting completion and approval data."
+      />
+    );
+  }
+
+  const funnel = tasks.approval_funnel ?? {};
+  const funnelOrder = [
+    "Total",
+    "approved",
+    "pending",
+    "rejected",
+    "changes_requested",
+  ];
+  const orderedFunnel = [
+    ...funnelOrder
+      .filter((k) => k in funnel)
+      .map((k) => [k, funnel[k]] as [string, number]),
+    ...Object.entries(funnel).filter(([k]) => !funnelOrder.includes(k)),
+  ];
+
+  const satisfaction = tasks.learner_satisfaction;
+  const ratingPct = satisfaction ? (satisfaction.average_rating / 5) * 100 : 0;
+
+  return (
+    <div className="space-y-6">
+      <SectionHeader
+        title="Task Analytics"
+        description="Aggregated metrics across all company-submitted learning tasks"
+        onRefresh={() => refetch()}
+        isRefreshing={isRefetching}
+      />
+
+      <div className={STAT_GRID}>
+        <StatCard
+          title="Tasks Submitted"
+          value={tasks.total_tasks_submitted}
+          icon={<Layers className="size-5" />}
+          accent="chart-1"
+        />
+        <StatCard
+          title="Total Completions"
+          value={tasks.total_completions.toLocaleString()}
+          icon={<CheckCircle className="size-5" />}
+          accent="chart-2"
+        />
+        <StatCard
+          title="Karma Distributed"
+          value={tasks.karma_distributed.toLocaleString()}
+          icon={<Zap className="size-5" />}
+          accent="chart-3"
+        />
+        <StatCard
+          title="Completion Rate"
+          value={tasks.completion_rate}
+          icon={<Activity className="size-5" />}
+          accent="chart-4"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Approval Funnel</CardTitle>
+            <CardDescription>
+              Task approval status breakdown by admin review
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {orderedFunnel.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No approval data available.
+              </p>
+            ) : (
+              orderedFunnel.map(([stage, count]) => {
+                const total = (funnel.Total as number) || 1;
+                const pct = Math.round((Number(count) / total) * 100);
+                const colorMap: Record<string, string> = {
+                  approved: "bg-success",
+                  pending: "bg-warning",
+                  rejected: "bg-destructive",
+                  changes_requested: "bg-brand-purple",
+                  Total: "bg-primary",
+                };
+                const barColor = colorMap[stage] ?? "bg-primary";
+                return (
+                  <div key={stage} className="space-y-1">
+                    <div className="flex justify-between text-xs font-medium">
+                      <span className="capitalize">
+                        {stage.replace(/_/g, " ")}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {count} ({pct}%)
+                      </span>
+                    </div>
+                    <MeterBar percent={pct} className={barColor} />
+                  </div>
+                );
+              })
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="flex flex-col">
+          <CardHeader>
+            <CardTitle>Learner Satisfaction</CardTitle>
+            <CardDescription>
+              Average rating from task participants
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-1 flex-col justify-center gap-4 py-6">
+            <p className="text-center font-display text-4xl font-bold tracking-tight text-foreground">
+              {satisfaction
+                ? Number(satisfaction.average_rating).toFixed(1)
+                : "—"}
+              <span className="text-base font-medium text-muted-foreground">
+                {" "}
+                / 5
+              </span>
+            </p>
+            <div className="space-y-1">
+              <MeterBar percent={ratingPct} className="bg-warning" />
+              {satisfaction && (
+                <p className="text-center text-xs text-muted-foreground">
+                  Based on {satisfaction.rating_count} rating
+                  {satisfaction.rating_count !== 1 ? "s" : ""}
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ─── 5. Campus Analytics View ────────────────────────────────────────────────
+function CampusAnalyticsView() {
+  const [activeSub, setActiveSub] = useState<"overview" | "trend">("overview");
+
+  return (
+    <div className="space-y-6">
+      <div className="flex gap-2">
+        <Button
+          variant={activeSub === "overview" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveSub("overview")}
+        >
+          <GraduationCap />
+          Campus Overview
+        </Button>
+        <Button
+          variant={activeSub === "trend" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveSub("trend")}
+        >
+          <TrendingUp />
+          Quarterly Trend
+        </Button>
+      </div>
+
+      {activeSub === "overview" ? <CampusOverview /> : <CampusTrendView />}
+    </div>
+  );
+}
+
+function CampusOverview() {
+  const { data, isLoading, error, refetch, isRefetching } =
+    useCampusAnalytics();
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-64 rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <AnalyticsError
+        title="Failed to load Campus Analytics"
+        error={error}
+        onRetry={() => refetch()}
+      />
+    );
+  }
+
+  if (!data) {
+    return (
+      <AnalyticsEmpty
+        title="No campus analytics available"
+        description="Campus analytics are only available to College type organisations."
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <SectionHeader
+        title="Campus Engagement Overview"
+        description="Top-10 campuses driving jobs, tasks, and event engagement"
+        onRefresh={() => refetch()}
+        isRefreshing={isRefetching}
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <CampusRankCard
+          title="Job Applicants by Campus"
+          rows={data.job_applicants_by_campus.map((r) => ({
+            name: r.campus_name,
+            value: r.applicant_count,
+            label: "applicants",
+          }))}
+        />
+
+        <CampusRankCard
+          title="Task Completers by Campus"
+          rows={data.task_completers_by_campus.map((r) => ({
+            name: r.campus_name,
+            value: r.completer_count,
+            label: "completers",
+          }))}
+        />
+
+        <CampusRankCard
+          title="Event Attendees by Campus"
+          rows={data.event_attendees_by_campus.map((r) => ({
+            name: r.campus_name,
+            value: r.attendee_count,
+            label: "attendees",
+          }))}
+        />
+      </div>
+    </div>
+  );
+}
+
+function CampusRankCard({
+  title,
+  rows,
+}: {
+  title: string;
+  rows: { name: string; value: number; label: string }[];
+}) {
+  const max = Math.max(...rows.map((r) => r.value), 1);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {rows.length === 0 ? (
+          <p className="py-4 text-center text-sm text-muted-foreground">
+            No data available
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {rows.map((row) => {
+              const pct = (row.value / max) * 100;
+              return (
+                <div key={`${row.name}-${row.value}`} className="space-y-1">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="font-medium text-foreground truncate max-w-[60%]">
+                      {row.name || "Unknown Campus"}
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      {row.value.toLocaleString()}
+                    </span>
+                  </div>
+                  <MeterBar percent={pct} />
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function CampusTrendView() {
+  const [campus, setCampus] = useState<{ id: string; label: string } | null>(
+    null,
+  );
+  const [campusSearch, setCampusSearch] = useState("");
+  const [quarters, setQuarters] = useState<number>(4);
+  const { data: colleges = [], isFetching: isSearchingColleges } =
+    useCollegeSearch(campusSearch);
+
+  const {
+    data: trend,
+    isLoading,
+    error,
+    refetch,
+    isRefetching,
+  } = useCampusQuarterTrend(
+    campus ? { campus_id: campus.id, quarters } : undefined,
+  );
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Campus Quarterly Trend</CardTitle>
+          <CardDescription>
+            Choose a campus and number of quarters to view engagement trends
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4 items-end">
+            <div className="w-full flex-1 space-y-1.5">
+              <Label>Campus</Label>
+              <Combobox
+                options={colleges}
+                value={campus?.id}
+                selectedLabel={campus?.label}
+                onValueChange={(id) =>
+                  setCampus({
+                    id,
+                    label:
+                      colleges.find((c) => c.id === id)?.title ??
+                      campus?.label ??
+                      "",
+                  })
+                }
+                onSearchChange={setCampusSearch}
+                loading={isSearchingColleges}
+                placeholder="Search for a campus…"
+                searchPlaceholder="Type a college name"
+              />
+            </div>
+            <div className="w-full space-y-1.5 sm:w-36">
+              <Label>Quarters</Label>
+              <Select
+                value={String(quarters)}
+                onValueChange={(v) => setQuarters(Number(v))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[2, 4, 6, 8].map((q) => (
+                    <SelectItem key={q} value={String(q)}>
+                      {q} Quarters
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {!campus ? (
+        <AnalyticsEmpty
+          title="Choose a campus"
+          description="Search for a campus above to view its quarterly engagement trend."
+        />
+      ) : isLoading ? (
+        <Card className="p-6">
+          <Skeleton className="h-48 w-full rounded" />
+        </Card>
+      ) : error ? (
+        <AnalyticsError
+          title="Failed to load campus trend data"
+          error={error}
+          onRetry={() => refetch()}
+        />
+      ) : !trend ? (
+        <AnalyticsEmpty
+          title="No trend data returned"
+          description="This campus has no engagement data for the selected quarters yet."
+        />
+      ) : (
+        <div className="space-y-6">
+          <SectionHeader
+            title={trend.campus_name || trend.campus_id}
+            description={`Quarterly engagement trend — last ${trend.trend.length} quarter${trend.trend.length !== 1 ? "s" : ""}`}
+            onRefresh={() => refetch()}
+            isRefreshing={isRefetching}
+          />
+
+          {trend.trend.length === 0 ? (
+            <AnalyticsEmpty
+              title="No quarterly data"
+              description="This campus has no engagement recorded for the selected quarters."
+            />
+          ) : (
+            <Card className="overflow-hidden">
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Quarter</TableHead>
+                      <TableHead className="text-right">
+                        Active Learners
+                      </TableHead>
+                      <TableHead className="text-right">
+                        Job Applicants
+                      </TableHead>
+                      <TableHead className="text-right">Karma Earned</TableHead>
+                      <TableHead className="text-right">
+                        Sessions Held
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {trend.trend.map((item) => (
+                      <TableRow key={item.quarter}>
+                        <TableCell className="font-medium">
+                          {item.quarter}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {item.active_learners.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {item.job_applicants.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {item.karma_earned.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {item.sessions_held.toLocaleString()}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-// ─── 4. Talent Pool Insights View ──────────────────────────────────────────
+// ─── 6. Talent Pool Insights View ──────────────────────────────────────────
 function TalentPoolInsightsView() {
   const [karmaMin, setKarmaMin] = useState<number | undefined>(undefined);
   const [karmaMax, setKarmaMax] = useState<number | undefined>(undefined);
   const [levelMin, setLevelMin] = useState<number | undefined>(undefined);
   const [workFT, setWorkFT] = useState<boolean>(false);
   const [workGig, setWorkGig] = useState<boolean>(false);
-  const [igIds, setIgIds] = useState<string>("");
+  const [igIds, setIgIds] = useState<string[]>([]);
+  const { data: igData, isLoading: isLoadingIgs } = useInterestGroupsList();
+  const igOptions = (igData ? extractInterestGroups(igData) : []).map((ig) => ({
+    value: ig.id,
+    label: ig.name,
+  }));
 
   const {
     data: analytics,
@@ -724,16 +1110,14 @@ function TalentPoolInsightsView() {
     level_order_min: levelMin,
     interested_in_work: workFT || undefined,
     interested_in_gig_work: workGig || undefined,
-    ig_ids: igIds || undefined,
+    ig_ids: igIds.length > 0 ? igIds.join(",") : undefined,
   });
 
   return (
     <div className="space-y-6">
-      <Card className="border border-border bg-card">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-base font-semibold">
-            Talent Pool Filters
-          </CardTitle>
+          <CardTitle>Talent Pool Filters</CardTitle>
           <CardDescription>
             Apply demographic and availability filters to compute pool
             statistics
@@ -742,9 +1126,7 @@ function TalentPoolInsightsView() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-muted-foreground uppercase">
-                Min Karma
-              </Label>
+              <Label>Min Karma</Label>
               <Input
                 type="number"
                 placeholder="e.g. 500"
@@ -754,13 +1136,10 @@ function TalentPoolInsightsView() {
                     e.target.value ? Number(e.target.value) : undefined,
                   )
                 }
-                className="h-9"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-muted-foreground uppercase">
-                Max Karma
-              </Label>
+              <Label>Max Karma</Label>
               <Input
                 type="number"
                 placeholder="e.g. 5000"
@@ -770,13 +1149,10 @@ function TalentPoolInsightsView() {
                     e.target.value ? Number(e.target.value) : undefined,
                   )
                 }
-                className="h-9"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-muted-foreground uppercase">
-                Min Level Order
-              </Label>
+              <Label>Min Level Order</Label>
               <Input
                 type="number"
                 placeholder="e.g. 2"
@@ -786,18 +1162,20 @@ function TalentPoolInsightsView() {
                     e.target.value ? Number(e.target.value) : undefined,
                   )
                 }
-                className="h-9"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-muted-foreground uppercase">
-                Interest Group IDs
-              </Label>
-              <Input
-                placeholder="Comma separated UUIDs"
+              <Label>Interest Groups</Label>
+              <MultiSelect
+                options={igOptions}
                 value={igIds}
-                onChange={(e) => setIgIds(e.target.value)}
-                className="h-9"
+                onChange={setIgIds}
+                disabled={isLoadingIgs}
+                placeholder={
+                  isLoadingIgs
+                    ? "Loading interest groups…"
+                    : "All interest groups"
+                }
               />
             </div>
           </div>
@@ -810,12 +1188,7 @@ function TalentPoolInsightsView() {
                   checked={workFT}
                   onCheckedChange={(c) => setWorkFT(!!c)}
                 />
-                <Label
-                  htmlFor="ft-work"
-                  className="text-xs font-semibold cursor-pointer"
-                >
-                  Interested in Full-Time Work
-                </Label>
+                <Label htmlFor="ft-work">Interested in Full-Time Work</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
@@ -823,12 +1196,7 @@ function TalentPoolInsightsView() {
                   checked={workGig}
                   onCheckedChange={(c) => setWorkGig(!!c)}
                 />
-                <Label
-                  htmlFor="gig-work"
-                  className="text-xs font-semibold cursor-pointer"
-                >
-                  Interested in Gig Work
-                </Label>
+                <Label htmlFor="gig-work">Interested in Gig Work</Label>
               </div>
             </div>
 
@@ -836,10 +1204,9 @@ function TalentPoolInsightsView() {
               onClick={() => refetch()}
               disabled={isLoading || isRefetching}
               size="sm"
-              className="h-9 px-4 gap-2"
             >
               <RefreshCw
-                className={`h-3.5 w-3.5 ${isRefetching ? "animate-spin" : ""}`}
+                className={isRefetching ? "animate-spin" : undefined}
               />
               Apply Filters
             </Button>
@@ -852,47 +1219,33 @@ function TalentPoolInsightsView() {
           <Skeleton className="h-48 w-full rounded" />
         </Card>
       ) : isError ? (
-        <Card className="p-12 text-center text-muted-foreground border-destructive/20 bg-destructive/5 dark:bg-destructive/10 dark:border-destructive/20">
-          <p className="font-semibold text-destructive">
-            Failed to load talent pool insights
-          </p>
-          <p className="text-xs mt-1 text-muted-foreground">
-            {process.env.NODE_ENV === "development" && error instanceof Error
-              ? error.message
-              : "Internal Server Error. Please contact administrator if this persists."}
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            className="mt-4 gap-1.5 mx-auto"
-          >
-            <RefreshCw className="h-3.5 w-3.5" /> Try Again
-          </Button>
-        </Card>
+        <AnalyticsError
+          title="Failed to load talent pool insights"
+          error={error}
+          onRetry={() => refetch()}
+        />
       ) : !analytics ? (
-        <Card className="p-12 text-center text-muted-foreground">
-          No talent pool insights found.
-        </Card>
+        <AnalyticsEmpty
+          title="No talent pool insights"
+          description="No learners match these filters. Try widening the karma or level range."
+        />
       ) : (
         <div className="space-y-6">
-          <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm max-w-max">
-            <Users className="h-4 w-4 text-primary" />
-            <span className="font-semibold text-foreground">
-              {analytics.total_learners.toLocaleString()}
-            </span>
-            <span className="text-muted-foreground">
-              total learners match the criteria
-            </span>
+          <div className={STAT_GRID}>
+            <StatCard
+              title="Matching Learners"
+              value={analytics.total_learners.toLocaleString()}
+              description="Learners that match the filters"
+              icon={<Users className="size-5" />}
+              accent="chart-1"
+            />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Level Distribution */}
-            <Card className="border border-border bg-card">
+            <Card>
               <CardHeader>
-                <CardTitle className="text-base font-semibold">
-                  Level Distribution
-                </CardTitle>
+                <CardTitle>Level Distribution</CardTitle>
                 <CardDescription>
                   Ecosystem candidate levels mapping
                 </CardDescription>
@@ -906,59 +1259,50 @@ function TalentPoolInsightsView() {
                         {ld.count} candidates ({ld.percentage}%)
                       </span>
                     </div>
-                    <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary rounded-full"
-                        style={{ width: `${ld.percentage}%` }}
-                      />
-                    </div>
+                    <MeterBar percent={ld.percentage} />
                   </div>
                 ))}
               </CardContent>
             </Card>
 
             {/* Top Interest Groups */}
-            <Card className="border border-border bg-card">
+            <Card>
               <CardHeader>
-                <CardTitle className="text-base font-semibold">
-                  Top Interest Groups
-                </CardTitle>
+                <CardTitle>Top Interest Groups</CardTitle>
                 <CardDescription>
                   Most active learning skill areas
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="rounded-md border overflow-hidden">
-                  <table className="w-full text-left border-collapse text-xs">
-                    <thead>
-                      <tr className="bg-muted/50 border-b">
-                        <th className="p-2.5 font-bold uppercase text-muted-foreground">
-                          Skill Focus
-                        </th>
-                        <th className="p-2.5 font-bold uppercase text-muted-foreground text-right">
+                <div className="overflow-x-auto rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Skill Focus</TableHead>
+                        <TableHead className="text-right">
                           Learner Count
-                        </th>
-                        <th className="p-2.5 font-bold uppercase text-muted-foreground text-right">
+                        </TableHead>
+                        <TableHead className="text-right">
                           Total Karma
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y">
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {analytics.top_interest_groups.map((ig) => (
-                        <tr key={ig.ig_id} className="hover:bg-muted/30">
-                          <td className="p-2.5 font-medium text-foreground">
+                        <TableRow key={ig.ig_id}>
+                          <TableCell className="font-medium">
                             {ig.name}
-                          </td>
-                          <td className="p-2.5 text-right font-medium">
+                          </TableCell>
+                          <TableCell className="text-right">
                             {ig.learner_count}
-                          </td>
-                          <td className="p-2.5 text-right font-medium text-emerald-600 dark:text-emerald-400">
+                          </TableCell>
+                          <TableCell className="text-right">
                             {ig.total_karma.toLocaleString()}
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       ))}
-                    </tbody>
-                  </table>
+                    </TableBody>
+                  </Table>
                 </div>
               </CardContent>
             </Card>

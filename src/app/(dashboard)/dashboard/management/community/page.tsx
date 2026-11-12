@@ -10,8 +10,15 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ROLES } from "@/lib/auth/roles";
-import { requireRole } from "@/lib/auth/server";
+import { redirect } from "next/navigation";
+import { hasAnyRole } from "@/lib/auth/permissions";
+import {
+  ADMIN_ROLES,
+  DISCORD_MODERATION_ROLES,
+  FELLOW_MANAGEMENT_ROLES,
+  MANAGEMENT_ROLES,
+} from "@/lib/auth/roles";
+import { requireAuth } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
   title: "Community Settings | Management",
@@ -25,6 +32,7 @@ interface CommunityItem {
   href: string;
   icon: LucideIcon;
   iconBg: string;
+  roles: readonly string[];
 }
 
 const COMMUNITY_ITEMS: CommunityItem[] = [
@@ -34,6 +42,7 @@ const COMMUNITY_ITEMS: CommunityItem[] = [
     href: "/dashboard/management/manage-interest-groups",
     icon: Users,
     iconBg: "bg-warning/15 text-warning",
+    roles: FELLOW_MANAGEMENT_ROLES,
   },
   {
     title: "College Levels",
@@ -41,6 +50,7 @@ const COMMUNITY_ITEMS: CommunityItem[] = [
     href: "/dashboard/management/college-levels",
     icon: GraduationCap,
     iconBg: "bg-success/15 text-success",
+    roles: FELLOW_MANAGEMENT_ROLES,
   },
   {
     title: "Locations",
@@ -48,6 +58,7 @@ const COMMUNITY_ITEMS: CommunityItem[] = [
     href: "/dashboard/management/manage-locations",
     icon: MapPin,
     iconBg: "bg-brand-blue/15 text-brand-blue",
+    roles: ADMIN_ROLES,
   },
   {
     title: "Channels",
@@ -55,6 +66,7 @@ const COMMUNITY_ITEMS: CommunityItem[] = [
     href: "/dashboard/management/channels",
     icon: Megaphone,
     iconBg: "bg-brand-purple/15 text-brand-purple",
+    roles: MANAGEMENT_ROLES,
   },
   {
     title: "Discord Moderation",
@@ -62,11 +74,20 @@ const COMMUNITY_ITEMS: CommunityItem[] = [
     href: "/dashboard/management/discord-moderation",
     icon: Wrench,
     iconBg: "bg-destructive/15 text-destructive",
+    roles: DISCORD_MODERATION_ROLES,
   },
 ];
 
 export default async function CommunitySettingsPage() {
-  await requireRole([ROLES.ADMIN]);
+  const user = await requireAuth();
+
+  const visibleItems = COMMUNITY_ITEMS.filter((item) =>
+    hasAnyRole(user.roles, item.roles),
+  );
+
+  if (visibleItems.length === 0) {
+    redirect("/dashboard/management?unauthorized=true");
+  }
 
   return (
     <div className="space-y-8 py-6">
@@ -92,7 +113,7 @@ export default async function CommunitySettingsPage() {
 
       {/* Grid of Sub-Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {COMMUNITY_ITEMS.map((card) => (
+        {visibleItems.map((card) => (
           <Link
             key={card.href}
             href={card.href}

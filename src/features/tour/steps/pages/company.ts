@@ -279,4 +279,142 @@ export const companyPageTours: readonly PageTourConfig[] = [
       },
     ],
   },
+
+  {
+    route: "/dashboard/company/admin",
+    version: 1,
+    steps: [
+      {
+        id: "company-admins-header",
+        elementId: "page:company-admins:header",
+        title: "Co-Administrators",
+        description:
+          "Invite colleagues to help run your company — they can do everything except edit the profile, manage admins, or deactivate the company.",
+      },
+      {
+        id: "company-admins-stats",
+        elementId: "page:company-admins:stats",
+        title: "Seats at a Glance",
+        description:
+          "Track accepted co-admins, pending invites, and seats left.",
+      },
+      {
+        id: "company-admins-team",
+        elementId: "page:company-admins:team",
+        title: "Team & Invitations",
+        description:
+          "Review every co-admin and invite, newest first — remove, cancel, or leave from here.",
+      },
+    ],
+  },
+
+  {
+    route: "/dashboard/company/event-templates",
+    version: 1,
+    steps: [
+      {
+        id: "company-templates-header",
+        elementId: "page:company-templates:header",
+        title: "Event Templates",
+        description:
+          "Save a standardized agenda and format for workshops, AMAs, or tech talks.",
+      },
+      {
+        id: "company-templates-create",
+        elementId: "page:company-templates:create",
+        title: "Create a Template",
+        description: "Start a new reusable event template.",
+      },
+      {
+        id: "company-templates-list",
+        elementId: "page:company-templates:list",
+        title: "Your Templates",
+        description: "Reuse or delete a saved template.",
+      },
+    ],
+  },
+
+  {
+    route: "/dashboard/company/collaborations",
+    version: 1,
+    steps: [
+      {
+        id: "company-collaborations-header",
+        elementId: "page:company-collaborations:header",
+        title: "Collaborations",
+        description:
+          "Partner with campuses and Interest Groups on events, sponsorships, campus programmes and mentoring.",
+      },
+      {
+        id: "company-collaborations-tabs",
+        elementId: "page:company-collaborations:tabs",
+        title: "Your Posts or Open Posts",
+        description:
+          "Switch between the collaborations you've posted and every open post on the platform.",
+      },
+      {
+        id: "company-collaborations-mine",
+        elementId: "page:company-collaborations:mine",
+        title: "Track Your Posts",
+        description:
+          "See who's responded to a direct invite, or withdraw an open post.",
+      },
+    ],
+  },
+
+  {
+    route: "/dashboard/company/ig-sponsorship",
+    version: 1,
+    steps: [
+      {
+        id: "company-sponsorship-header",
+        elementId: "page:company-sponsorship:header",
+        title: "Interest Group Sponsorships",
+        description:
+          "Sponsor specialized domain Interest Groups to build talent pipelines and support learners.",
+      },
+      {
+        id: "company-sponsorship-picker",
+        elementId: "page:company-sponsorship:picker",
+        title: "Choose an Interest Group",
+        description:
+          "Pick the Interest Group you want to view engagement stats for or sponsor.",
+      },
+      {
+        id: "company-sponsorship-metrics",
+        elementId: "page:company-sponsorship:metrics",
+        title: "Engagement Metrics",
+        description:
+          "Member counts, active tasks, completions, and sessions for the selected group.",
+      },
+    ],
+  },
+
+  {
+    route: "/dashboard/company/feedback",
+    version: 1,
+    steps: [
+      {
+        id: "company-feedback-header",
+        elementId: "page:company-feedback:header",
+        title: "Impact & Feedback",
+        description:
+          "Who your company has reached on muLearn, and what learners say about working with you.",
+      },
+      {
+        id: "company-feedback-impact",
+        elementId: "page:company-feedback:impact",
+        title: "Impact Report",
+        description:
+          "Reach, quality, and outcome numbers — optionally publish them to your public profile.",
+      },
+      {
+        id: "company-feedback-list",
+        elementId: "page:company-feedback:list",
+        title: "Learner Feedback",
+        description:
+          "Ratings and comments left by learners after jobs, tasks, events, or mentorship sessions.",
+      },
+    ],
+  },
 ];

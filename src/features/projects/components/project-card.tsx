@@ -261,6 +261,7 @@ export function ProjectCard({
               {creatorMuid ? (
                 <Link
                   href={`/profile/${creatorMuid}`}
+                  prefetch={false}
                   onClick={(e) => e.stopPropagation()}
                   className="hover:underline"
                 >

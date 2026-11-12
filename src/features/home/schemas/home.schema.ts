@@ -5,6 +5,7 @@
  */
 
 import { z } from "zod";
+import { upperEnum } from "@/lib/enum-casing";
 
 // ============================================
 // Django Response Wrapper (reusable)
@@ -204,9 +205,11 @@ export const MentorSessionSchema = z.object({
   id: z.string().max(36).optional(),
   entity_id: z.string().max(36).nullable().optional(),
   entity_name: z.string(),
-  session_type: z
-    .enum(["ig_session", "campus_session", "company_session"])
-    .optional(),
+  session_type: upperEnum([
+    "IG_SESSION",
+    "CAMPUS_SESSION",
+    "COMPANY_SESSION",
+  ]).optional(),
   title: z.string().max(150),
   mode: z.enum(["ONLINE", "OFFLINE", "HYBRID"]).optional(),
   starts_at: z.string(),

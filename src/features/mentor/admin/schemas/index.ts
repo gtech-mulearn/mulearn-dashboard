@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MentorHoursSchema } from "../../lib/hours";
 
 // ─── Mentor tiers (all four from doc) ─────────────────────────────────────────
 export const MENTOR_TIERS = [
@@ -10,7 +11,14 @@ export const MENTOR_TIERS = [
 export type MentorTier = (typeof MENTOR_TIERS)[number];
 
 // ─── Application statuses ─────────────────────────────────────────────────────
-export const MENTOR_STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const;
+// GRANT_REVOKED is written by mentor_views.py (tier revoke / full revoke) and
+// company/serializers.py (company-mentor removal) — MentorApplication.Status.
+export const MENTOR_STATUSES = [
+  "PENDING",
+  "APPROVED",
+  "REJECTED",
+  "GRANT_REVOKED",
+] as const;
 export type MentorAdminStatus = (typeof MENTOR_STATUSES)[number];
 
 // ─── List item schema — matches GET /list/ paginated response ─────────────────
@@ -35,7 +43,17 @@ export const MentorApplicationListItemSchema = z.object({
   verified_at: z.string().nullable().optional(),
   verification_note: z.string().nullable().optional(),
   mentor_tier: z.enum(MENTOR_TIERS).nullable().optional(),
-  hours: z.number().optional().default(0),
+  // Admin list/detail (MentorApplicationListSerializer): org is the FK id,
+  // org_name its title. preferred_ig_ids is a JSONField, stored as sent.
+  org: z.string().nullable().optional(),
+  org_name: z.string().nullable().optional(),
+  preferred_ig_ids: z
+    .array(z.union([z.string(), z.number()]))
+    .nullable()
+    .optional(),
+  // Weekly-hours range ("2-5"); null when the mentor never picked one.
+  hours: z.string().nullable().optional(),
+  is_active: z.boolean().optional(),
   created_at: z.string().nullable().optional(),
   updated_at: z.string().nullable().optional(),
 });
@@ -59,6 +77,13 @@ export const MentorListResponseSchema = z.object({
   }),
 });
 
+// GET /detail/<id>/ returns one application as `response`
+// (mentor_views.py MentorDetailAPI), not a paginated { data, pagination }.
+export const MentorDetailResponseSchema = z.object({
+  statusCode: z.number().optional(),
+  response: MentorApplicationListItemSchema,
+});
+
 // ─── Verify action payload — doc: { status: "APPROVED"|"REJECTED", verification_note?: "..." }
 export const VerifyActionSchema = z.object({
   status: z.enum(["APPROVED", "REJECTED"]),
@@ -70,6 +95,36 @@ export type VerifyActionValues = z.infer<typeof VerifyActionSchema>;
 export const GenericResponseSchema = z.object({
   statusCode: z.number().optional(),
   response: z.unknown(),
+});
+
+// ─── §17 Roster — GET /mentor/roster/ ────────────────────────────────────────
+// Fields: id, user_full_name, avg_rating, rating_count
+// Pagination uses page / per_page / total (different from /list/ which uses
+// pageIndex / perPage / count).
+export const MentorRosterItemSchema = z.object({
+  id: z.string(),
+  user_full_name: z.string().default(""),
+  avg_rating: z.number().nullable().optional(),
+  rating_count: z.number().default(0),
+  is_active: z.boolean().optional(),
+  created_at: z.string().nullable().optional(),
+});
+export type MentorRosterItem = z.infer<typeof MentorRosterItemSchema>;
+
+export const MentorRosterResponseSchema = z.object({
+  statusCode: z.number().optional(),
+  response: z.object({
+    data: z.array(MentorRosterItemSchema),
+    pagination: z
+      .object({
+        count: z.number().optional(),
+        totalPages: z.coerce.number().default(1),
+        isNext: z.boolean().optional(),
+        isPrev: z.boolean().optional(),
+        nextPage: z.number().nullable().optional(),
+      })
+      .optional(),
+  }),
 });
 
 // ─── §4 Mentor scope grants ───────────────────────────────────────────────────
@@ -108,7 +163,7 @@ export const AssignMentorsPayloadSchema = z
     ig_ids: z.array(z.string()).optional().default([]),
     about: z.string().optional(),
     expertise: z.string().optional(),
-    hours: z.number().int().min(0).optional(),
+    hours: MentorHoursSchema.optional(),
   })
   .superRefine((v, ctx) => {
     if (

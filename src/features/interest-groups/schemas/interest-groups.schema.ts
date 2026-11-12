@@ -80,7 +80,22 @@ export type InterestGroupsListResponse = z.infer<
 // Interest Group Detail Response
 // ============================================
 
-const InterestGroupDetailBaseSchema = z.object({
+/** An IG impact project (ImpactProjectSerializer, public subset). */
+export const IgImpactProjectSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().nullable().optional(),
+  image: z.string().nullable().optional(),
+  links: z
+    .array(
+      z.object({ label: z.string().nullable().optional(), url: z.string() }),
+    )
+    .optional()
+    .catch([]),
+});
+export type IgImpactProject = z.infer<typeof IgImpactProjectSchema>;
+
+export const InterestGroupDetailBaseSchema = z.object({
   id: z.string(),
   name: z.string(),
   code: z.string().optional().nullable(),
@@ -237,6 +252,12 @@ const InterestGroupDetailBaseSchema = z.object({
     .optional()
     .nullable()
     .catch(undefined),
+
+  // Release 1.91: company sponsorship and impact projects.
+  is_sponsored: z.boolean().optional().default(false),
+  sponsor_company_name: z.string().nullable().optional(),
+  sponsor_company_logo: z.string().nullable().optional(),
+  impact_projects: z.array(IgImpactProjectSchema).optional().catch([]),
 
   // Audit fields
   created_at: z.string().optional().nullable(),

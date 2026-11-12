@@ -1,80 +1,156 @@
 "use client";
 
-import { formatDistanceToNow } from "date-fns";
-import { ExternalLink, Loader2, X } from "lucide-react";
+import { format, formatDistanceToNow } from "date-fns";
+import { Check, ExternalLink, X } from "lucide-react";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
+import { resolveNotificationHref } from "../lib/notification-href";
+import type { NotificationItem as NotificationItemData } from "../schemas";
 
 interface NotificationItemProps {
-  id: string;
-  title: string;
-  description: string;
-  created_at: string;
-  url?: string | null;
-  button?: string | null;
-  type: "direct" | "broadcast";
-  onDelete?: (id: string) => void;
+  item: NotificationItemData;
   isDeleting?: boolean;
+  isMarkingRead?: boolean;
+  onDelete?: (id: string) => void;
+  onMarkRead?: (id: string) => void;
+  /** When set, the leading gutter shows a checkbox instead of the unread dot. */
+  selection?: { checked: boolean; onToggle: () => void };
 }
 
 export function NotificationItem({
-  id,
-  title,
-  description,
-  created_at,
-  url,
-  button,
-  type,
-  onDelete,
+  item,
   isDeleting,
+  isMarkingRead,
+  onDelete,
+  onMarkRead,
+  selection,
 }: NotificationItemProps) {
+  const isPending = isDeleting || isMarkingRead;
+  // Typed notifications link by entity; legacy ones by redirect_url (only
+  // relative or https, same-origin URLs kept in-app).
+  const link = resolveNotificationHref(
+    item,
+    typeof window === "undefined" ? "" : window.location.origin,
+  );
+  const isExternal = link?.external ?? false;
+  const createdAt = new Date(item.created_at);
+  const markRead = item.is_read ? undefined : onMarkRead;
+
   return (
+    // Non-interactive container — avoids nested interactive elements (button > button/a).
     <div
       className={cn(
-        "relative flex flex-col gap-1 rounded-lg border border-border bg-card p-3 text-sm transition-opacity",
-        isDeleting && "opacity-50 pointer-events-none",
+        "group flex gap-3 px-4 py-3 transition-colors hover:bg-muted/50",
+        isPending && "pointer-events-none opacity-60",
       )}
+      aria-busy={isPending || undefined}
     >
-      {isDeleting && (
-        <div className="absolute inset-0 flex items-center justify-center rounded-lg">
-          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-        </div>
-      )}
-
-      <div className="flex items-start justify-between gap-2">
-        <p className="font-medium leading-snug">{title}</p>
-        {type === "direct" && onDelete && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-5 w-5 shrink-0 text-muted-foreground hover:text-foreground"
-            onClick={() => onDelete(id)}
-            disabled={isDeleting}
-            aria-label="Delete notification"
-          >
-            <X className="h-3 w-3" />
-          </Button>
+      {/* Leading gutter: fixed width keeps every title on the same column */}
+      <div className="flex h-5 w-4 shrink-0 items-center justify-center">
+        {selection ? (
+          <Checkbox
+            id={`select-notif-${item.id}`}
+            checked={selection.checked}
+            onCheckedChange={selection.onToggle}
+            aria-label={`Select: ${item.title}`}
+          />
+        ) : (
+          !item.is_read && (
+            <span className="size-2 rounded-full bg-brand-blue">
+              <span className="sr-only">Unread</span>
+            </span>
+          )
         )}
       </div>
 
-      <p className="text-muted-foreground leading-snug">{description}</p>
-
-      <div className="flex items-center justify-between mt-1">
-        <span className="text-xs text-muted-foreground">
-          {formatDistanceToNow(new Date(created_at), { addSuffix: true })}
-        </span>
-        {url && (
-          <Link
-            href={url}
-            className="flex items-center gap-1 text-xs text-primary hover:underline"
-            target={url.startsWith("http") ? "_blank" : undefined}
-            rel={url.startsWith("http") ? "noopener noreferrer" : undefined}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start gap-2">
+          <p
+            className={cn(
+              "min-w-0 flex-1 break-words text-sm text-foreground line-clamp-2",
+              item.is_read ? "font-medium" : "font-semibold",
+            )}
           >
-            {button ?? "View"}
-            <ExternalLink className="h-3 w-3" />
-          </Link>
+            {item.title}
+          </p>
+
+          {isPending ? (
+            <Spinner className="mt-0.5 shrink-0 text-muted-foreground" />
+          ) : (
+            (markRead || onDelete) && (
+              // Revealed on hover/focus where hover exists; always shown on touch.
+              <div className="-my-1.5 -mr-2 flex shrink-0 items-center transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+                {markRead && (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-muted-foreground hover:bg-muted hover:text-foreground"
+                    onClick={() => markRead(item.id)}
+                    aria-label="Mark as read"
+                    title="Mark as read"
+                  >
+                    <Check />
+                  </Button>
+                )}
+                {onDelete && (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-muted-foreground hover:bg-muted hover:text-foreground"
+                    onClick={() => onDelete(item.id)}
+                    aria-label="Delete notification"
+                    title="Delete"
+                  >
+                    <X />
+                  </Button>
+                )}
+              </div>
+            )
+          )}
+        </div>
+
+        {item.description && (
+          <p className="mt-0.5 break-words text-xs text-muted-foreground line-clamp-2">
+            {item.description}
+          </p>
         )}
+
+        <div className="mt-2 flex items-center gap-2">
+          <time
+            dateTime={item.created_at}
+            title={format(createdAt, "PPpp")}
+            className="text-xs text-muted-foreground"
+          >
+            {formatDistanceToNow(createdAt, { addSuffix: true })}
+          </time>
+          {item.source === "broadcast" && (
+            <Badge variant="purple">Announcement</Badge>
+          )}
+
+          {link && (
+            <Button
+              asChild
+              variant="link"
+              size="sm"
+              className="ml-auto h-auto gap-1 p-0 text-xs has-[>svg]:px-0"
+            >
+              <Link
+                href={link.href}
+                target={isExternal ? "_blank" : undefined}
+                rel={isExternal ? "noopener noreferrer" : undefined}
+                // Mark as read when navigating via the link
+                onClick={() => markRead?.(item.id)}
+              >
+                View
+                {isExternal && <ExternalLink className="size-3" />}
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

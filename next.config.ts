@@ -99,6 +99,30 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Older notifications stored links to pages that moved (or never existed
+  // in this app). skipTrailingSlashRedirect is on, so each source is listed
+  // with and without the trailing slash the backend wrote.
+  async redirects() {
+    const moved: [string, string][] = [
+      ["/interest-groups/:id", "/dashboard/interest-groups/:id"],
+      ["/events/:id", "/dashboard/events/:id"],
+      ["/dashboard/mentor/list", "/dashboard/management/mentor-verification"],
+      [
+        "/dashboard/mentor/applications",
+        "/dashboard/management/mentor-verification",
+      ],
+      [
+        "/dashboard/mentor/applications/:id",
+        "/dashboard/management/mentor-verification",
+      ],
+      ["/dashboard/company/mentor/list", "/dashboard/company/mentors"],
+      ["/dashboard/mentor/status", "/dashboard"],
+    ];
+    return moved.flatMap(([source, destination]) => [
+      { source, destination, permanent: false },
+      { source: `${source}/`, destination, permanent: false },
+    ]);
+  },
 };
 
 export default nextConfig;

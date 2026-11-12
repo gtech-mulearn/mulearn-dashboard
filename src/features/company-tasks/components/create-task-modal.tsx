@@ -20,27 +20,44 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { CompanyTaskFormSchema } from "@/features/company-jobs";
+import { ProjectSkillPicker } from "@/features/projects";
 import {
   useCreateCompanyTask,
+  useTaskLevels,
   useTaskTypes,
   useUpdateCompanyTask,
 } from "../hooks/use-company-tasks";
-import type { CompanyTask } from "../types/tasks.types";
+import type { CompanyTask, TaskTemplate } from "../types/tasks.types";
+
+const NO_ITEMS: never[] = [];
 
 interface CreateTaskModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   taskToEdit?: CompanyTask | null;
+  templateToUse?: TaskTemplate | null;
 }
 
 export function CreateTaskModal({
   open,
   onOpenChange,
   taskToEdit,
+  templateToUse,
 }: CreateTaskModalProps) {
   const { data: taskTypesResponse } = useTaskTypes();
-  // biome-ignore lint/suspicious/noExplicitAny: API type
-  const taskTypes = (taskTypesResponse as any)?.data || [];
+  const { data: taskLevelsResponse } = useTaskLevels();
+
+  // Fall back to a shared empty list: a fresh `[]` per render would re-run the
+  // effects below on every render while the lists load.
+  const taskTypes: { id: string; title: string }[] =
+    // biome-ignore lint/suspicious/noExplicitAny: API type
+    (taskTypesResponse as any)?.data || NO_ITEMS;
+  const taskLevels: { id: string; name: string }[] = Array.isArray(
+    taskLevelsResponse,
+  )
+    ? taskLevelsResponse
+    : NO_ITEMS;
+
   const { mutate: createTask, isPending: isCreating } = useCreateCompanyTask();
   const { mutate: updateTask, isPending: isUpdating } = useUpdateCompanyTask();
 
@@ -52,6 +69,9 @@ export function CreateTaskModal({
   const [karmaError, setKarmaError] = useState("");
   const [type, setType] = useState("");
   const [description, setDescription] = useState("");
+  const [usageCount, setUsageCount] = useState("1");
+  const [level, setLevel] = useState("");
+  const [skills, setSkills] = useState<string[]>([]);
 
   const validateKarmaValue = (val: string): string => {
     if (!val.trim()) {
@@ -67,34 +87,59 @@ export function CreateTaskModal({
     return "";
   };
 
+  // Fill the draft when the dialog opens or its source task/template changes —
+  // never in response to the type/level lists loading, which would wipe input.
   useEffect(() => {
-    if (open) {
-      setKarmaError("");
-      if (taskToEdit) {
-        setTitle(taskToEdit.title || "");
-        setHashtag(taskToEdit.hashtag || "");
-        setKarma(taskToEdit.karma?.toString() || "");
-
-        // The API returns the type title (e.g. "Task"), but the Select needs the type ID.
-        // So we find the matching type from the taskTypes list.
-        if (taskTypes.length > 0) {
-          const matchingType = taskTypes.find(
-            (t: { id: string; title: string }) =>
-              t.title === taskToEdit.type || t.id === taskToEdit.type,
-          );
-          setType(matchingType ? matchingType.id : "");
-        }
-
-        setDescription(taskToEdit.description || "");
-      } else {
-        setTitle("");
-        setHashtag("");
-        setKarma("");
-        setType("");
-        setDescription("");
-      }
+    if (!open) return;
+    setKarmaError("");
+    if (taskToEdit) {
+      setTitle(taskToEdit.title || "");
+      setHashtag(taskToEdit.hashtag || "");
+      setKarma(taskToEdit.karma?.toString() || "");
+      setType(""); // resolved to an id below once task types load
+      setLevel(""); // resolved to an id below once task levels load
+      setUsageCount(taskToEdit.usage_count?.toString() || "1");
+      setSkills(taskToEdit.skills?.map((s) => s.id) || []);
+      setDescription(taskToEdit.description || "");
+    } else if (templateToUse) {
+      setTitle(templateToUse.title || "");
+      setHashtag(templateToUse.hashtag_prefix || "");
+      setKarma(templateToUse.karma?.toString() || "");
+      setType(templateToUse.type_id || "");
+      setDescription(templateToUse.description || "");
+      setUsageCount("1");
+      setLevel("");
+      setSkills([]);
+    } else {
+      setTitle("");
+      setHashtag("");
+      setKarma("");
+      setType("");
+      setDescription("");
+      setUsageCount("1");
+      setLevel("");
+      setSkills([]);
     }
+  }, [open, taskToEdit, templateToUse]);
+
+  // The API returns the task's type title (e.g. "Task") and level name, but the
+  // selects need ids. Resolve them when the lists are available — possibly
+  // after the dialog opened — touching only those two fields.
+  useEffect(() => {
+    if (!open || !taskToEdit || taskTypes.length === 0) return;
+    const match = taskTypes.find(
+      (t) => t.title === taskToEdit.type || t.id === taskToEdit.type,
+    );
+    setType(match ? match.id : "");
   }, [open, taskToEdit, taskTypes]);
+
+  useEffect(() => {
+    if (!open || !taskToEdit || taskLevels.length === 0) return;
+    const match = taskLevels.find(
+      (l) => l.name === taskToEdit.level || l.id === taskToEdit.level,
+    );
+    setLevel(match ? match.id : "");
+  }, [open, taskToEdit, taskLevels]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,17 +151,19 @@ export function CreateTaskModal({
     if (!title.trim() || !hashtag.trim() || !karma || !description.trim())
       return;
 
-    const payload = {
-      title: title.trim(),
-      hashtag: hashtag.trim(),
-      karma: Number(karma),
-      type: type.trim() || undefined,
-      description: description.trim(),
-    };
-
     if (taskToEdit) {
+      const updatePayload = {
+        title: title.trim(),
+        hashtag: hashtag.trim(),
+        karma: Number(karma),
+        type_id: type.trim() || undefined,
+        description: description.trim(),
+        level_id: level.trim() || undefined,
+        skill_ids: skills.length > 0 ? skills : undefined,
+      };
+
       updateTask(
-        { taskId: taskToEdit.id, payload },
+        { taskId: taskToEdit.id, payload: updatePayload },
         {
           onSuccess: () => {
             onOpenChange(false);
@@ -124,7 +171,18 @@ export function CreateTaskModal({
         },
       );
     } else {
-      createTask(payload, {
+      const createPayload = {
+        title: title.trim(),
+        hashtag: hashtag.trim(),
+        karma: Number(karma),
+        type: type.trim() || undefined,
+        description: description.trim(),
+        usage_count: usageCount ? Number(usageCount) : undefined,
+        level: level.trim() || undefined,
+        skill_ids: skills.length > 0 ? skills : undefined,
+      };
+
+      createTask(createPayload, {
         onSuccess: () => {
           onOpenChange(false);
         },
@@ -229,6 +287,50 @@ export function CreateTaskModal({
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-2">
+                <label
+                  htmlFor="task-usage-count"
+                  className="text-sm font-medium"
+                >
+                  Usage Count
+                </label>
+                <Input
+                  id="task-usage-count"
+                  type="number"
+                  min="1"
+                  placeholder="1"
+                  value={usageCount}
+                  onChange={(e) => setUsageCount(e.target.value)}
+                  disabled={isPending || !!taskToEdit}
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="task-level" className="text-sm font-medium">
+                  Level
+                </label>
+                <Select
+                  value={level}
+                  onValueChange={setLevel}
+                  disabled={isPending || !taskLevels.length}
+                >
+                  <SelectTrigger id="task-level">
+                    <SelectValue placeholder="Select level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {taskLevels.map((l: { id: string; name: string }) => (
+                      <SelectItem key={l.id} value={l.id}>
+                        {l.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="task-skills" className="text-sm font-medium">
+                  Skills
+                </label>
+                <ProjectSkillPicker value={skills} onChange={setSkills} />
               </div>
             </div>
             <div className="space-y-2">

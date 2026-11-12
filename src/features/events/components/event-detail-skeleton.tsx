@@ -4,7 +4,7 @@ export function EventDetailSkeleton() {
   return (
     <div className="space-y-5 lc-fade-in">
       {/* Banner */}
-      <Skeleton className="aspect-[16/9] md:aspect-[21/8] w-full rounded-2xl" />
+      <Skeleton className="aspect-[16/9] md:aspect-[4/1] w-full rounded-2xl" />
       {/* Identity bar */}
       <div className="flex flex-wrap gap-3 rounded-2xl border border-border bg-card px-5 py-3.5">
         <Skeleton className="h-5 w-36 rounded-full" />

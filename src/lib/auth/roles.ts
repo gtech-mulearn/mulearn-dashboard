@@ -39,22 +39,48 @@ export const ROLES = {
   LEAD_ENABLER: "Lead Enabler",
 } as const;
 
-/** Union type of all role string values */
 export type RoleValue = (typeof ROLES)[keyof typeof ROLES];
 
-/** Union type of all role keys */
 export type RoleKey = keyof typeof ROLES;
 
 // ─── Dynamic Role Helpers ──────────────────────────────────
 // Some roles are generated dynamically per-IG on the backend.
-// e.g., "WebDev CampusLead", "AI IGLead"
+// e.g., "WEBDEV CampusIGLead", "AI IGLead"
+
+/** Per-IG campus lead role suffix since release 1.91 (`{code} CampusIGLead`). */
+export const IG_CAMPUS_LEAD_SUFFIX = " CampusIGLead";
+
+/**
+ * Pre-1.91 title (`{code} CampusLead`). The 1.91 DB script renames every such
+ * role, but JWTs issued before the release still carry the old title until
+ * they expire; the backend maps it the same way (utils/permission.py).
+ * The core "Campus Lead" role has a space, so it never ends with this.
+ */
+export const LEGACY_IG_CAMPUS_LEAD_SUFFIX = " CampusLead";
 
 /**
  * Build a dynamic IG Campus Lead role string.
  * Matches: `RoleType.IG_CAMPUS_LEAD_ROLE(ig_code)` on backend.
  */
 export function igCampusLeadRole(igCode: string): string {
-  return `${igCode} CampusLead`;
+  return `${igCode}${IG_CAMPUS_LEAD_SUFFIX}`;
+}
+
+/**
+ * True for a per-IG campus lead role. Deliberately excludes the co-lead
+ * (`{code} CampusIGCoLead`): the backend does not treat co-leads as event
+ * managers (api/dashboard/events/manage_views.py).
+ */
+export function isIgCampusLeadRole(role: string): boolean {
+  return (
+    role.endsWith(IG_CAMPUS_LEAD_SUFFIX) ||
+    role.endsWith(LEGACY_IG_CAMPUS_LEAD_SUFFIX)
+  );
+}
+
+/** True if any role in the array is a per-IG campus lead role. */
+export function hasIgCampusLeadRole(roles: readonly string[]): boolean {
+  return roles.some(isIgCampusLeadRole);
 }
 
 /**
@@ -77,11 +103,61 @@ export function hasIgLeadRole(roles: readonly string[]): boolean {
 // Commonly used role combinations. Use these instead of
 // repeating arrays of roles across the codebase.
 
-/** Roles with full platform administration access */
 export const ADMIN_ROLES = [ROLES.ADMIN] as const;
 
-/** Roles that can perform management tasks (admin-level) */
-export const MANAGEMENT_ROLES = [ROLES.ADMIN, ROLES.ASSOCIATE] as const;
+export const ASSOCIATE_MANAGEMENT_ROLES = [
+  ROLES.ADMIN,
+  ROLES.ASSOCIATE,
+] as const;
+
+export const FELLOW_MANAGEMENT_ROLES = [ROLES.ADMIN, ROLES.FELLOW] as const;
+
+export const MANAGEMENT_ROLES = [
+  ROLES.ADMIN,
+  ROLES.ASSOCIATE,
+  ROLES.FELLOW,
+] as const;
+
+export const INTERN_MANAGEMENT_ROLES = [
+  ROLES.ADMIN,
+  ROLES.ASSOCIATE,
+  ROLES.INTERN_LEAD,
+] as const;
+
+export const USER_MANAGEMENT_HUB_ROLES = [
+  ROLES.ADMIN,
+  ROLES.ASSOCIATE,
+  ROLES.INTERN_LEAD,
+  ROLES.FELLOW,
+] as const;
+
+export const COMMUNITY_SETTINGS_HUB_ROLES = [
+  ROLES.ADMIN,
+  ROLES.ASSOCIATE,
+  ROLES.FELLOW,
+  ROLES.DISCORD_MODERATOR,
+] as const;
+
+export const SYSTEM_CONFIG_HUB_ROLES = [
+  ROLES.ADMIN,
+  ROLES.ASSOCIATE,
+  ROLES.FELLOW,
+  ROLES.TECH_TEAM,
+] as const;
+
+export const DISCORD_MODERATION_ROLES = [
+  ROLES.ADMIN,
+  ROLES.DISCORD_MODERATOR,
+] as const;
+
+export const MANAGEMENT_HUB_ROLES = [
+  ROLES.ADMIN,
+  ROLES.ASSOCIATE,
+  ROLES.FELLOW,
+  ROLES.INTERN_LEAD,
+  ROLES.TECH_TEAM,
+  ROLES.DISCORD_MODERATOR,
+] as const;
 
 /** Roles that can manage campus-level operations */
 export const CAMPUS_MANAGEMENT_ROLES = [

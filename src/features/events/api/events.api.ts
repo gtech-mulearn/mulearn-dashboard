@@ -1,4 +1,5 @@
-import { apiClient, endpoints } from "@/api";
+import { endpoints } from "@/api";
+import { apiClient, publicApiClient } from "@/api/client";
 import type { ApprovalTier } from "../lib/events.policy";
 import {
   categoryListResponseSchema,
@@ -9,6 +10,7 @@ import type {
   CollaboratorInviteBody,
   CollaboratorsListData,
   CoOwnersListData,
+  EventAnalyticsSummary,
   EventCollaborator,
   EventCoOwner,
   EventCoOwnerInput,
@@ -17,6 +19,7 @@ import type {
   EventDetailManageData,
   EventInterestData,
   EventListData,
+  EventListItem,
   EventListQueryParams,
   EventMutationData,
   EventPatchBody,
@@ -152,6 +155,27 @@ function mirrorEventTypeToCategoryList<T extends EventShape>(
     ...data,
     data: data.data.map((event) => mirrorEventTypeToCategory(event)),
   };
+}
+
+// Public (unauthenticated) list/featured endpoints return a bare, unpaginated
+// array. Wrap it so callers get the same PaginatedData shape as the
+// authenticated endpoints — totalPages: 1 makes EventsPagination hide itself.
+function normalizeListResponse<T>(
+  response: PaginatedData<T> | T[],
+): PaginatedData<T> {
+  if (Array.isArray(response)) {
+    return {
+      data: response,
+      pagination: {
+        count: response.length,
+        totalPages: 1,
+        isNext: false,
+        isPrev: false,
+        nextPage: null,
+      },
+    };
+  }
+  return response;
 }
 
 // ─── HELPERS ────────────────────────────────────────────────────────────────
@@ -368,27 +392,46 @@ async function fetchListWithStatusFallback(
 
 export const eventsApi = {
   // ─── PUBLIC LIST ENDPOINTS ───────────────────────────────────────────────
-  list: async (params?: EventListQueryParams): Promise<EventListData> => {
+  list: async (
+    params?: EventListQueryParams,
+    authenticated = true,
+  ): Promise<EventListData> => {
     const qs = buildQueryString(params);
-    const response = await apiClient.get<EventListData>(
-      `${endpoints.events.base}${qs}`,
+    const client = authenticated ? apiClient : publicApiClient;
+    const base = authenticated
+      ? endpoints.events.base
+      : endpoints.events.public.base;
+    const response = await client.get<EventListData | EventListItem[]>(
+      `${base}${qs}`,
     );
-    return mirrorEventTypeToCategoryList(response);
+    return mirrorEventTypeToCategoryList(normalizeListResponse(response));
   },
 
-  featured: async (params?: EventListQueryParams): Promise<EventListData> => {
+  featured: async (
+    params?: EventListQueryParams,
+    authenticated = true,
+  ): Promise<EventListData> => {
     const qs = buildQueryString(params);
-    const response = await apiClient.get<EventListData>(
-      `${endpoints.events.featured}${qs}`,
+    const client = authenticated ? apiClient : publicApiClient;
+    const base = authenticated
+      ? endpoints.events.featured
+      : endpoints.events.public.featured;
+    const response = await client.get<EventListData | EventListItem[]>(
+      `${base}${qs}`,
     );
-    return mirrorEventTypeToCategoryList(response);
+    return mirrorEventTypeToCategoryList(normalizeListResponse(response));
   },
 
   // ─── PUBLIC DETAIL & INTEREST ────────────────────────────────────────────
-  detail: async (id: string): Promise<EventDetailData> => {
-    const response = await apiClient.get<EventDetailData>(
-      `${endpoints.events.base}${id}/`,
-    );
+  detail: async (
+    id: string,
+    authenticated = true,
+  ): Promise<EventDetailData> => {
+    const client = authenticated ? apiClient : publicApiClient;
+    const base = authenticated
+      ? endpoints.events.base
+      : endpoints.events.public.base;
+    const response = await client.get<EventDetailData>(`${base}${id}/`);
     return mirrorEventTypeToCategory(response);
   },
 
@@ -421,6 +464,16 @@ export const eventsApi = {
       { isFormData },
     );
     return mirrorEventTypeToCategory(response);
+  },
+
+  /** Organiser analytics; null when the caller can't view them. */
+  analytics: async (id: string): Promise<EventAnalyticsSummary | null> => {
+    const response = await apiClient.get<{ summary?: EventAnalyticsSummary }>(
+      `${endpoints.events.manage}${id}/analytics/`,
+      undefined,
+      { skipAuthRedirectOn403: true },
+    );
+    return response?.summary ?? null;
   },
 
   manageDetail: async (id: string): Promise<EventDetailManageData> => {

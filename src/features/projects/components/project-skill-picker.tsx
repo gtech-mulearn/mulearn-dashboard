@@ -15,12 +15,10 @@ const SkillSchema = z.object({
 });
 type SkillOption = z.infer<typeof SkillSchema>;
 
-const SkillsResponseSchema = z.object({
-  response: z.union([
-    z.object({ skills: z.array(SkillSchema) }),
-    z.array(SkillSchema),
-  ]),
-});
+const SkillsResponseSchema = z.union([
+  z.object({ skills: z.array(SkillSchema) }),
+  z.array(SkillSchema),
+]);
 
 interface Props {
   value: string[];
@@ -46,9 +44,9 @@ export function ProjectSkillPicker({ value, onChange }: Props) {
         const raw = await apiClient.get("/api/v1/dashboard/skill/");
         const parsed = SkillsResponseSchema.safeParse(raw);
         if (parsed.success) {
-          const list = Array.isArray(parsed.data.response)
-            ? parsed.data.response
-            : (parsed.data.response as { skills: SkillOption[] }).skills;
+          const list = Array.isArray(parsed.data)
+            ? parsed.data
+            : parsed.data.skills;
           setAllSkills(list);
         }
       } catch {

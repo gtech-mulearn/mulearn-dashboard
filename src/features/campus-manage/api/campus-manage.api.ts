@@ -17,6 +17,9 @@ import type {
   SocialLinks,
   StudentLevelCount,
   TrendPoint,
+  UnverifiedOrgLinksFilters,
+  UnverifiedOrgLinksResponse,
+  UnverifiedOrgLinkUser,
 } from "../types";
 
 const toNumber = (value: unknown, fallback = 0): number => {
@@ -555,7 +558,7 @@ export const campusManageApi = {
     );
     return unwrapDataArray(raw)
       .map((item) => {
-        // Backend returns a flat array of role title strings like ["Campus Lead", "Enabler", ...]
+        // Backend returns a flat array of assignable role title strings like ["Enabler", ...]
         if (typeof item === "string") {
           const trimmed = item.trim();
           return { label: trimmed, value: trimmed };
@@ -571,10 +574,21 @@ export const campusManageApi = {
       .filter((r) => r.label && r.value);
   },
 
-  async createExecomRole(roleTitle: string): Promise<unknown> {
-    return apiClient.post<unknown>(endpoints.campusManage.execomRoles, {
-      role_title: roleTitle,
-    });
+  async createExecomRole(
+    roleTitle: string,
+  ): Promise<{ label: string; value: string }> {
+    const raw = await apiClient.post<unknown>(
+      endpoints.campusManage.execomRoles,
+      {
+        role_title: roleTitle,
+      },
+    );
+    const data = unwrapDataObject(raw);
+    const title = safeToString(
+      data.title ?? data.role_title ?? data.name ?? roleTitle,
+      roleTitle,
+    );
+    return { label: title, value: title };
   },
 
   async addExecomMember(data: {
@@ -705,6 +719,11 @@ export const campusManageApi = {
           row.lead_name ?? lead.full_name ?? row.lead,
           "No Lead Assigned",
         ),
+        coLeadId: row.co_lead_id ? safeToString(row.co_lead_id) : undefined,
+        coLead:
+          typeof row.co_lead_name === "string" && row.co_lead_name.trim()
+            ? row.co_lead_name
+            : null,
         membersCount: toNumber(
           row.campus_ig_member_count ?? row.member_count ?? row.members,
         ),
@@ -749,5 +768,104 @@ export const campusManageApi = {
 
   async deleteSocialLink(linkId: string) {
     return apiClient.delete(endpoints.campusManage.socialLinkDetail(linkId));
+  },
+
+  async getUnverifiedOrgLinks(
+    filters: UnverifiedOrgLinksFilters,
+  ): Promise<UnverifiedOrgLinksResponse> {
+    const params = new URLSearchParams();
+    params.set("page", String(filters.page));
+    params.set("perPage", String(filters.perPage));
+    if (filters.search?.trim()) {
+      params.set("search", filters.search.trim());
+    }
+    if (filters.sortBy?.trim()) {
+      const cleanSort = filters.sortBy.replace(/^-/, "").trim();
+      const isDesc =
+        filters.sortOrder === "desc" || filters.sortBy.startsWith("-");
+      const formattedSort = isDesc ? `-${cleanSort}` : cleanSort;
+
+      params.set("sortBy", formattedSort);
+      params.set("ordering", formattedSort);
+    }
+    if (filters.sortOrder?.trim()) {
+      params.set("sortOrder", filters.sortOrder.trim());
+    }
+
+    const endpoint = `${endpoints.campusManage.unverifiedOrgLinks}?${params.toString()}`;
+    const raw = await apiClient.get<unknown>(endpoint);
+    const record = asRecord(raw);
+    const dataList = asArray(record.data ?? unwrapDataArray(raw));
+    const paginationRecord = asRecord(record.pagination);
+
+    const data: UnverifiedOrgLinkUser[] = dataList.map((item, index) => {
+      const row = asRecord(item);
+      return {
+        id: safeToString(row.id, `link-${index}`),
+        user_id: safeToString(row.user_id),
+        full_name: safeToString(row.full_name, "Unknown"),
+        muid: safeToString(row.muid, "-"),
+        email: safeToString(row.email, "-"),
+        mobile: safeToString(row.mobile, "-"),
+        org_id: safeToString(row.org_id),
+        org_title: safeToString(row.org_title, "-"),
+        org_type: safeToString(row.org_type, "-"),
+        graduation_year: safeToString(row.graduation_year, "-"),
+        is_alumni: toBoolean(row.is_alumni),
+        verified: toBoolean(row.verified),
+        created_at: safeToString(row.created_at),
+      };
+    });
+
+    const totalCount = toNumber(
+      paginationRecord.count ??
+        paginationRecord.total ??
+        paginationRecord.total_count,
+      data.length,
+    );
+    const totalPages = toNumber(
+      paginationRecord.totalPages ?? paginationRecord.total_pages,
+      Math.max(1, Math.ceil(totalCount / filters.perPage)),
+    );
+
+    return {
+      data,
+      pagination: {
+        count: totalCount,
+        totalPages,
+        isNext: toBoolean(paginationRecord.isNext ?? paginationRecord.is_next),
+        isPrev: toBoolean(paginationRecord.isPrev ?? paginationRecord.is_prev),
+        nextPage:
+          typeof paginationRecord.nextPage === "number"
+            ? paginationRecord.nextPage
+            : null,
+      },
+    };
+  },
+
+  async updateOrgLinkVerification(
+    linkId: string,
+    verified: boolean,
+  ): Promise<UnverifiedOrgLinkUser> {
+    const raw = await apiClient.patch<unknown>(
+      endpoints.campusManage.updateOrgLinkVerification(linkId),
+      { verified },
+    );
+    const row = unwrapDataObject(raw);
+    return {
+      id: safeToString(row.id, linkId),
+      user_id: safeToString(row.user_id),
+      full_name: safeToString(row.full_name, "Unknown"),
+      muid: safeToString(row.muid, "-"),
+      email: safeToString(row.email, "-"),
+      mobile: safeToString(row.mobile, "-"),
+      org_id: safeToString(row.org_id),
+      org_title: safeToString(row.org_title, "-"),
+      org_type: safeToString(row.org_type, "-"),
+      graduation_year: safeToString(row.graduation_year, "-"),
+      is_alumni: toBoolean(row.is_alumni),
+      verified: toBoolean(row.verified),
+      created_at: safeToString(row.created_at),
+    };
   },
 };

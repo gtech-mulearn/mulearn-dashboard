@@ -56,88 +56,120 @@ export const InterestGroupsListResponseSchema = ApiResponseSchema(
 );
 
 /** Nested karma distribution from the API's karma_distribution split fields */
-export const KarmaDistributionSchema = z.object({
-  events: z.array(
-    z.object({
-      event_id: z.string(),
-      event_title: z.string(),
-      event_type: z.string(),
-      karma: z.number(),
-    }),
-  ),
-  ig: z.array(
-    z.object({
-      ig_id: z.string(),
-      ig_name: z.string(),
-      ig_code: z.string().optional(),
-      karma: z.number(),
-    }),
-  ),
-  intern: z.object({
-    karma: z.number(),
-  }),
-  general: z.array(
-    z.object({
-      category: z.string(),
-      karma: z.number(),
-    }),
-  ),
-  level: z.array(
-    z.object({
-      level_id: z.string(),
-      level_name: z.string(),
-      karma: z.number(),
-    }),
-  ),
-});
+export const KarmaDistributionSchema = z
+  .object({
+    events: z
+      .array(
+        z
+          .object({
+            event_id: z.string(),
+            event_title: z.string(),
+            event_type: z.string(),
+            karma: z.coerce.number(),
+          })
+          .passthrough(),
+      )
+      .optional()
+      .default([]),
+    ig: z
+      .array(
+        z
+          .object({
+            ig_id: z.string(),
+            ig_name: z.string(),
+            ig_code: z.string().optional(),
+            karma: z.coerce.number(),
+          })
+          .passthrough(),
+      )
+      .optional()
+      .default([]),
+    intern: z
+      .object({
+        karma: z.coerce.number(),
+      })
+      .passthrough()
+      .optional()
+      .default({ karma: 0 }),
+    general: z
+      .array(
+        z
+          .object({
+            category: z.string(),
+            karma: z.coerce.number(),
+          })
+          .passthrough(),
+      )
+      .optional()
+      .default([]),
+    level: z
+      .array(
+        z
+          .object({
+            level_id: z.string(),
+            level_name: z.string(),
+            karma: z.coerce.number(),
+          })
+          .passthrough(),
+      )
+      .optional()
+      .default([]),
+  })
+  .passthrough();
 export type KarmaDistribution = z.infer<typeof KarmaDistributionSchema>;
 
 /** Full user profile response - matches UserProfileSerializer */
-export const UserProfileSchema = z.object({
-  id: z.string(),
-  muid: z.string(),
-  full_name: z.string(),
-  email: z.string().optional(),
-  mobile: z.string().optional(),
-  profile_pic: z.string().nullable(),
-  cover_pic: z.string().nullable().optional(),
-  gender: z.string().nullable(),
-  dob: z.string().optional(),
-  college_code: z.string().nullable(),
-  college_id: z.string().nullable(),
-  department_id: z.string().nullable().optional(),
-  department_name: z.string().nullable().optional(),
-  department: z
-    .object({
-      id: z.string().nullable().optional(),
-      title: z.string().nullable().optional(),
-      name: z.string().nullable().optional(),
-    })
-    .passthrough()
-    .nullable()
-    .optional(),
-  org_district_id: z.string().nullable().optional(),
-  level: z.string().nullable(),
-  karma: z.coerce.number().nullable(),
-  rank: z.coerce.number().nullable(),
-  grit: z.coerce.number().nullable().optional(),
-  percentile: z.coerce.number().nullable(),
-  joined: z.string(),
-  is_public: z.boolean().nullable(),
-  roles: z.array(z.string()),
-  // Verification fields returned by the same user-profile endpoint. Used by the
-  // home verification banner (Enabler/role verification). Optional because not
-  // every consumer/role populates them.
-  role_verification: z
-    .array(z.object({ role: z.string(), is_verified: z.boolean() }))
-    .optional(),
-  is_verified: z.boolean().optional(),
-  lead_enabler_verified: z.boolean().optional(),
-  interest_groups: z
-    .array(InterestGroupSchema)
-    .transform((igs) => igs.filter((ig) => ig.selected !== false)),
-  karma_distribution: KarmaDistributionSchema,
-});
+export const UserProfileSchema = z
+  .object({
+    id: z.string(),
+    muid: z.string(),
+    full_name: z.string(),
+    email: z.string().optional(),
+    mobile: z.string().optional(),
+    profile_pic: z.string().nullable().optional(),
+    cover_pic: z.string().nullable().optional(),
+    gender: z.string().nullable().optional(),
+    dob: z.string().optional(),
+    college_code: z.string().nullable().optional(),
+    college_id: z.string().nullable().optional(),
+    department_id: z.string().nullable().optional(),
+    department_name: z.string().nullable().optional(),
+    department: z
+      .object({
+        id: z.string().nullable().optional(),
+        title: z.string().nullable().optional(),
+        name: z.string().nullable().optional(),
+      })
+      .passthrough()
+      .nullable()
+      .optional(),
+    org_district_id: z.string().nullable().optional(),
+    level: z.string().nullable().optional(),
+    karma: z.coerce.number().nullable().optional(),
+    rank: z.coerce.number().nullable().optional(),
+    grit: z.coerce.number().nullable().optional(),
+    percentile: z.coerce.number().nullable().optional(),
+    joined: z.string().optional(),
+    is_public: z.boolean().nullable().optional(),
+    roles: z.array(z.string()).optional().default([]),
+    // Verification fields returned by the same user-profile endpoint. Used by the
+    // home verification banner (Enabler/role verification). Optional because not
+    // every consumer/role populates them.
+    role_verification: z
+      .array(
+        z.object({ role: z.string(), is_verified: z.boolean() }).passthrough(),
+      )
+      .optional(),
+    is_verified: z.boolean().optional(),
+    lead_enabler_verified: z.boolean().optional(),
+    interest_groups: z
+      .array(InterestGroupSchema)
+      .optional()
+      .default([])
+      .transform((igs) => igs.filter((ig) => ig.selected !== false)),
+    karma_distribution: KarmaDistributionSchema.optional(),
+  })
+  .passthrough();
 export type UserProfile = z.infer<typeof UserProfileSchema>;
 
 /** Wrapped response for API validation */

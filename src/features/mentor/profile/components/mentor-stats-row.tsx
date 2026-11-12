@@ -12,9 +12,10 @@
 
 "use client";
 
-import { BookCheck, Clock, Users, Zap } from "lucide-react";
+import { BookCheck, CalendarCheck2, Clock, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useMentorPersonalAnalytics } from "@/features/mentor/hooks/use-mentor";
 import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
 import type { MentorOverview } from "@/features/mentor/types";
 
@@ -33,60 +34,45 @@ interface StatCardItem {
   suffix?: string;
 }
 
-export function MentorStatsRow({
-  mentorProfile,
-  overview,
-  isLoading,
-}: MentorStatsRowProps) {
-  const hours = mentorProfile?.hours ?? 0;
+export function MentorStatsRow({ isLoading }: MentorStatsRowProps) {
+  const { data: analytics, isLoading: analyticsLoading } =
+    useMentorPersonalAnalytics();
 
-  let sessionsCompleted = 0;
-  let activeLearners = 0;
-  let pendingReviews = 0;
-
-  if (overview?.scopes) {
-    for (const scope of overview.scopes) {
-      const m = scope.metrics || {};
-      sessionsCompleted += m.completed_sessions ?? 0;
-      activeLearners += m.active_learners ?? m.active_ig_learners ?? 0;
-      pendingReviews +=
-        m.pending_task_reviews ?? m.pending_appraisals ?? m.pending_tasks ?? 0;
-    }
-  }
+  const isDataLoading = isLoading || analyticsLoading;
 
   const stats: StatCardItem[] = [
     {
-      label: "Mentoring Hours",
-      value: hours,
+      label: "Sessions Completed",
+      value: analytics?.sessions.completed ?? 0,
+      icon: BookCheck,
+      iconColor: "text-chart-2",
+      bgColor: "bg-chart-2/14",
+    },
+    {
+      label: "Upcoming Session",
+      value: analytics?.sessions.upcoming ?? 0,
+      icon: CalendarCheck2,
+      iconColor: "text-chart-3",
+      bgColor: "bg-chart-3/14",
+    },
+    {
+      label: "Hours Mentored",
+      value: analytics?.hours_contributed ?? 0,
       icon: Clock,
       iconColor: "text-chart-1",
       bgColor: "bg-chart-1/14",
       suffix: "hrs",
     },
     {
-      label: "Sessions",
-      value: sessionsCompleted,
-      icon: BookCheck,
-      iconColor: "text-chart-2",
-      bgColor: "bg-chart-2/14",
-    },
-    {
-      label: "Active Learners",
-      value: activeLearners,
-      icon: Users,
-      iconColor: "text-chart-3",
-      bgColor: "bg-chart-3/14",
-    },
-    {
-      label: "Pending Reviews",
-      value: pendingReviews,
+      label: "Karma",
+      value: analytics?.karma_earned ?? 0,
       icon: Zap,
       iconColor: "text-chart-4",
       bgColor: "bg-chart-4/14",
     },
   ];
 
-  if (isLoading) {
+  if (isDataLoading) {
     return (
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (

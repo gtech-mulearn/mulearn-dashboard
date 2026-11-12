@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { useTaskDetail, useUpdateTask } from "../hooks";
+import { useTaskDetail, useTaskReferences, useUpdateTask } from "../hooks";
 import type { TaskFormValues } from "../schemas";
 import TaskForm from "./task-form";
 
@@ -43,6 +43,7 @@ export function TaskFormDialog({
   const { data: task, isLoading } = useTaskDetail(taskId || "", {
     enabled: !!taskId && isOpen,
   });
+  useTaskReferences({ enabled: isOpen });
   const updateMutation = useUpdateTask();
 
   const handleSubmit = (values: TaskFormValues) => {
@@ -84,7 +85,7 @@ export function TaskFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="flex flex-col gap-0 p-0 max-w-4xl">
+      <DialogContent className="flex flex-col gap-0 p-0 max-w-4xl sm:max-w-6xl">
         <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
           <DialogTitle>Edit Task</DialogTitle>
           <DialogDescription>
@@ -107,7 +108,7 @@ export function TaskFormDialog({
                 active: task.active,
                 variable_karma: task.variable_karma,
                 description: task.description || "",
-                channel_id: task.channel || "",
+                channel_id: task.channel || null,
                 type_id: task.type || "",
                 level_id: task.level || null,
                 ig_id: task.ig || null,

@@ -5,6 +5,7 @@ export const TASK_APPROVAL_STATUSES = [
   "pending",
   "approved",
   "rejected",
+  "changes_requested",
 ] as const;
 export type TaskApprovalStatus = (typeof TASK_APPROVAL_STATUSES)[number];
 
@@ -56,9 +57,30 @@ export const TaskVerificationListResponseSchema = ApiResponseSchema(
   }),
 );
 
-export const ReviewActionSchema = z.object({
-  action: z.enum(["approve", "reject"]),
-  reason: z.string().optional(),
-});
+export const TASK_REVIEW_ACTIONS = [
+  "approve",
+  "reject",
+  "request_changes",
+] as const;
+export type TaskReviewAction = (typeof TASK_REVIEW_ACTIONS)[number];
+
+/** Rejecting or requesting changes needs a reason (backend 400 otherwise). */
+export const ReviewActionSchema = z
+  .object({
+    action: z.enum(TASK_REVIEW_ACTIONS),
+    reason: z.string().optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.action !== "approve" && !value.reason?.trim()) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["reason"],
+        message:
+          value.action === "reject"
+            ? "A rejection reason is required."
+            : "A reason describing the requested changes is required.",
+      });
+    }
+  });
 
 export type ReviewActionValues = z.infer<typeof ReviewActionSchema>;

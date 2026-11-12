@@ -15,7 +15,7 @@ import {
   getMeetTimeErrorMessage,
   isMeetTimeValid,
 } from "../utils/meet-time-validation";
-import { ApiResponseSchema } from "./circle.schema";
+import { ApiResponseSchema, PaginationSchema } from "./circle.schema";
 
 // ============================================
 // Meeting Schemas
@@ -31,6 +31,7 @@ export const MeetingAttendeeSchema = z.object({
   is_report_submitted: z.boolean(),
   profile_pic: z.string().nullable(),
   is_same_org: z.boolean().optional(),
+  is_creator: z.boolean().optional(),
 });
 
 export type MeetingAttendee = z.infer<typeof MeetingAttendeeSchema>;
@@ -138,7 +139,7 @@ export const CreateMeetingRequestSchema = z
       .enum(["Zoom", "Google Meet", "Microsoft Teams", "Discord"])
       .optional()
       .nullable(),
-    meet_place: z.string().min(1).max(100),
+    meet_place: z.string().min(1).max(200),
     meet_link: z.string().url().optional().nullable(),
     /**
      * UTC ISO-8601 string.  Must be at least MIN_BUFFER_MINUTES in the future
@@ -226,24 +227,22 @@ export type MeetingReportRequest = z.infer<typeof MeetingReportRequestSchema>;
 // ============================================
 
 export const MeetingListResponseSchema = ApiResponseSchema(
-  z.array(MeetingSchema),
+  z.object({
+    data: z.array(MeetingSchema),
+    pagination: PaginationSchema,
+  }),
 );
 
 export const MeetingDetailResponseSchema =
   ApiResponseSchema(MeetingDetailSchema);
 
 /** Public meetings with pagination - matches paginated_response format */
-export const PublicMeetingListResponseSchema = z.object({
-  hasError: z.boolean().optional(),
-  statusCode: z.number(),
-  data: z.array(PublicMeetingSchema),
-  pagination: z.object({
-    currentPage: z.number(),
-    perPage: z.number(),
-    totalPages: z.number(),
-    totalItems: z.number(),
+export const PublicMeetingListResponseSchema = ApiResponseSchema(
+  z.object({
+    data: z.array(PublicMeetingSchema),
+    pagination: PaginationSchema,
   }),
-});
+);
 
 export type PublicMeetingListResponse = z.infer<
   typeof PublicMeetingListResponseSchema

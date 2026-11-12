@@ -6,7 +6,7 @@
  */
 
 import { DynamicTypePage } from "@/features/dynamic-type";
-import { ROLES } from "@/lib/auth/roles";
+import { ADMIN_ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 
 export const metadata = {
@@ -16,6 +16,6 @@ export const metadata = {
 };
 
 export default async function DynamicTypeAdminPage() {
-  await requireRole([ROLES.ADMIN]);
+  await requireRole(ADMIN_ROLES);
   return <DynamicTypePage />;
 }

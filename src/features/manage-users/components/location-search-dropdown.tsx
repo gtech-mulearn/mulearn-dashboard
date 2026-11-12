@@ -3,6 +3,7 @@
 import { Check } from "lucide-react";
 import { useEffect, useRef } from "react";
 import type { Control } from "react-hook-form";
+import { DropdownEmpty } from "@/components/ui/dropdown-empty";
 import {
   FormControl,
   FormField,
@@ -91,9 +92,7 @@ export function LocationSearchDropdown({
                       </div>
                     )}
                     {!isLocationFetching && locationOptions.length === 0 && (
-                      <div className="px-3 py-2 text-sm text-muted-foreground">
-                        No location found
-                      </div>
+                      <DropdownEmpty />
                     )}
                     {!isLocationFetching &&
                       locationOptions.map((option) => {

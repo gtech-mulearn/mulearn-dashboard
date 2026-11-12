@@ -9,12 +9,11 @@ export { fetchPendingTasks, reviewTask } from "./task-verification.api";
 export {
   createTask,
   deleteTask,
-  downloadTasksCsv,
-  downloadTasksTemplate,
+  fetchActiveTasks,
+  fetchInactiveTasks,
   fetchPublicTasks,
   fetchTaskDetail,
   fetchTaskReferences,
-  fetchTasks,
   importTasks,
   updateTask,
 } from "./tasks.api";

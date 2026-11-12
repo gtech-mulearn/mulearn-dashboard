@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   fetchIgSponsorshipMetrics,
+  fetchPendingIgSponsorships,
   reviewIgSponsorship,
   submitIgSponsorship,
 } from "../api";
@@ -13,7 +14,19 @@ export const IG_SPONSORSHIP_KEYS = {
   all: ["ig-sponsorships"] as const,
   metrics: (igId: string) =>
     [...IG_SPONSORSHIP_KEYS.all, "metrics", igId] as const,
+  pending: () => [...IG_SPONSORSHIP_KEYS.all, "pending"] as const,
 };
+
+/** Platform admin: sponsorship requests awaiting review (BE-3). */
+export function usePendingIgSponsorships(enabled = true) {
+  return useQuery({
+    queryKey: IG_SPONSORSHIP_KEYS.pending(),
+    queryFn: fetchPendingIgSponsorships,
+    enabled,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+}
 
 export function useIgSponsorshipMetrics(igId: string) {
   return useQuery({
@@ -27,13 +40,7 @@ export function useIgSponsorshipMetrics(igId: string) {
 export function useSubmitIgSponsorship() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      igId,
-      payload,
-    }: {
-      igId: string;
-      payload: { proposal: string; budget?: number; duration_months?: number };
-    }) => submitIgSponsorship(igId, payload),
+    mutationFn: ({ igId }: { igId: string }) => submitIgSponsorship(igId),
     onSuccess: (_, variables) => {
       toast.success("Sponsorship proposal submitted");
       queryClient.invalidateQueries({
@@ -58,16 +65,19 @@ export function useReviewIgSponsorship() {
       payload,
     }: {
       igId: string;
-      payload: { action: "APPROVE" | "REJECT"; comments?: string };
+      payload: { approve: boolean };
     }) => reviewIgSponsorship(igId, payload),
     onSuccess: (_, variables) => {
       toast.success(
-        variables.payload.action === "APPROVE"
+        variables.payload.approve
           ? "Sponsorship approved"
           : "Sponsorship rejected",
       );
       queryClient.invalidateQueries({
         queryKey: IG_SPONSORSHIP_KEYS.metrics(variables.igId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: IG_SPONSORSHIP_KEYS.pending(),
       });
     },
     onError: (error) => {

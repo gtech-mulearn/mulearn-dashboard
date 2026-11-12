@@ -21,7 +21,11 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserInfo } from "@/features/auth/hooks/use-session";
 import { useCompanyProfile } from "@/features/company-jobs/hooks";
+// Direct import on purpose: the topbar is on every page, and the mentor barrel
+// (admin verification and more) isn't tree-shaken in this build.
+import { PersonaSwitcher } from "@/features/mentor/components/persona-switcher";
 import { GameProgressBar } from "@/features/mujourney/components/GameProgressBar";
+import { NotificationPopover } from "@/features/notification";
 import { ReplayPageTourButton } from "@/features/tour/components/replay-page-tour-button";
 import { authStore, ROLES } from "@/lib/auth";
 import { useUIStore } from "@/stores/ui-store";
@@ -46,21 +50,28 @@ export function AppTopbar() {
   }, []);
 
   const handleLogout = useCallback(async () => {
-    // Clear cookies server-side first: the HttpOnly refreshToken can't be removed
-    // by client js-cookie, and if it lingers the proxy refreshes a new accessToken
-    // and bounces /login back to /dashboard.
-    await fetch("/api/auth/logout", { method: "POST" });
-    await authStore.clearTokens();
-    useUIStore.getState().resetUI();
-    toast.success("Logged out successfully");
-    // Hard redirect so the proxy re-evaluates with the cookies actually gone.
-    window.location.href = "/login";
+    try {
+      // Clear cookies server-side first: the HttpOnly refreshToken can't be removed
+      // by client js-cookie, and if it lingers the proxy refreshes a new accessToken
+      // and bounces /login back to /dashboard.
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      toast.error("Couldn't reach the server, logging out locally");
+    } finally {
+      await authStore.clearTokens();
+      useUIStore.getState().resetUI();
+      setIsLogoutDialogOpen(false);
+      toast.success("Logged out successfully");
+      // Hard redirect so the proxy re-evaluates with the cookies actually gone.
+      window.location.href = "/login";
+    }
   }, []);
 
   // Company accounts: show the company profile (name + logo) in the topbar,
   // not the logged-in creator's personal details. Gated so the company
   // profile is only fetched for users with the Company role.
   const isCompany = data?.roles?.includes(ROLES.COMPANY) ?? false;
+  const isMentor = data?.roles?.includes(ROLES.MENTOR) ?? false;
   const { profile: companyProfile } = useCompanyProfile({ enabled: isCompany });
 
   const displayName =
@@ -98,7 +109,11 @@ export function AppTopbar() {
         <div className="hidden md:flex">
           <GameProgressBar />
         </div>
+        {mounted && isMentor && <PersonaSwitcher />}
         <ThemeToggle />
+        {/* Signed-in users only: its queries are private, and a 401 for a
+            visitor on a public page would redirect them to /login. */}
+        {mounted && data && <NotificationPopover />}
         {!mounted || isLoading ? (
           <div className="flex items-center gap-2 pr-1">
             <Skeleton className="w-8 h-8 rounded-full" />

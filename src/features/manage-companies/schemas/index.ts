@@ -54,6 +54,8 @@ export const CompanyStatusSchema = z.enum([
   "rejected",
   "inactive",
   "verified",
+  // Release 1.91: owner self-service or platform-admin deactivation.
+  "deactivated",
 ]);
 
 // ─── Company Verification Item ────────────────────────────────────────────────
@@ -127,7 +129,9 @@ export const CompanyDetailsSchema = z
     tech_stack: z.array(z.string()).nullable().optional(),
     perks: z.array(z.string()).nullable().optional(),
     testimonials: z.array(z.unknown()).nullable().optional(),
-    gallery: z.array(z.string()).nullable().optional(),
+    // Backend stores gallery items as objects (validate_gallery); the sheet
+    // never reads them, so their shape is left open.
+    gallery: z.array(z.unknown()).nullable().optional(),
     status: z.string(),
     rejection_reason: z.string().nullable().optional(),
     company_user_id: z.string().nullable().optional(),
@@ -135,6 +139,8 @@ export const CompanyDetailsSchema = z
     company_user_email: z.string().nullable().optional(),
     district_name: z.string().nullable().optional(),
     verification_requested_at: z.string().nullable().optional(),
+    // Release 1.91: required before a company can be verified.
+    verification_document_url: z.string().nullable().optional(),
     verified_at: z.string().nullable().optional(),
     verified_by: z.string().nullable().optional(),
     created_at: z.string().nullable().optional(),

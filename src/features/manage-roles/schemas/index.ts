@@ -19,6 +19,7 @@ export const PaginationSchema = z.object({
   totalPages: z.number().optional(),
   isNext: z.boolean().optional(),
   isPrev: z.boolean().optional(),
+  nextPage: z.number().nullable().optional(),
 });
 
 // ─── Role ────────────────────────────────────────────────────────────────────
@@ -47,6 +48,7 @@ export const RoleUserSchema = z.object({
   id: z.string(),
   muid: z.string().nullable().optional().default(""),
   full_name: z.string().nullable().optional().default(""),
+  profile_pic: z.string().nullable().optional(),
 });
 
 // ─── Bulk Import Result ──────────────────────────────────────────────────────
@@ -94,6 +96,7 @@ export const RoleFormSchema = z.object({
 
 // ─── Inferred types ──────────────────────────────────────────────────────────
 
+export type Pagination = z.infer<typeof PaginationSchema>;
 export type Role = z.infer<typeof RoleSchema>;
 export type RoleListData = z.infer<typeof RoleListDataSchema>;
 export type RoleUser = z.infer<typeof RoleUserSchema>;

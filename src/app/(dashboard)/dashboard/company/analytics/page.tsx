@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { CompanyAnalyticsPageClient } from "./company-analytics-client";
 
 export const metadata: Metadata = {
-  title: "Company Analytics",
+  title: "Analytics & Insights | μLearn",
   description: "View company hiring analytics and insights.",
 };
 

@@ -133,10 +133,10 @@ export const endpoints = {
       `/api/v1/dashboard/company/profile/public/${slug}/jobs/`,
     /** POST - Invite a platform user as co-admin */
     adminLink: "/api/v1/dashboard/company/admin-link/",
-    /** POST - Accept or reject co-admin invitation */
+    /** POST - Invitee accepts or declines a co-admin invitation */
     adminLinkRespond: (linkId: string) =>
       `/api/v1/dashboard/company/admin-link/${linkId}/respond/`,
-    /** DELETE - Owner removes an invited/accepted co-admin */
+    /** DELETE - Owner revokes an accepted co-admin (pending invites can't be cancelled) */
     adminLinkRemove: (linkId: string) =>
       `/api/v1/dashboard/company/admin-link/${linkId}/`,
     /** DELETE - Co-admin voluntarily leaves the company */
@@ -144,8 +144,8 @@ export const endpoints = {
       `/api/v1/dashboard/company/admin-link/${linkId}/leave/`,
     /** GET - List all co-admins and invitations */
     adminLinkList: "/api/v1/dashboard/company/admin-link/list/",
-    /** GET - User's company status & pending invitations */
-    userStatus: "/api/v1/dashboard/company/user-status/",
+    /** GET - The caller's pending co-admin invitations (BE-1) */
+    adminLinkInvitations: "/api/v1/dashboard/company/admin-link/invitations/",
     /** POST - Company owner self-deactivation */
     deactivateSelf: "/api/v1/dashboard/company/deactivate/",
     /** POST - Platform admin deactivates a company */
@@ -264,9 +264,12 @@ export const endpoints = {
     collaborationsDiscover:
       "/api/v1/dashboard/company/collaborations/discover/",
     /** POST - Respond to collaboration invitation */
+    /** GET - Collaboration invites for the caller's campus/IGs (BE-9) */
+    collaborationsIncoming:
+      "/api/v1/dashboard/company/collaborations/incoming/",
     collaborationRespond: (id: string) =>
       `/api/v1/dashboard/company/collaborations/${id}/respond/`,
-    /** DELETE - Cancel or close collaboration */
+    /** DELETE - Withdraw an open or pending collaboration */
     collaborationDetail: (id: string) =>
       `/api/v1/dashboard/company/collaborations/${id}/`,
 
@@ -275,6 +278,8 @@ export const endpoints = {
     igSponsorship: (igId: string) =>
       `/api/v1/dashboard/company/ig-sponsorship/${igId}/`,
     /** PATCH - Admin review IG sponsorship proposal */
+    /** GET - Admin queue of pending IG sponsorship requests (BE-3) */
+    igSponsorshipPending: "/api/v1/dashboard/company/ig-sponsorship/pending/",
     igSponsorshipReview: (igId: string) =>
       `/api/v1/dashboard/company/ig-sponsorship/${igId}/review/`,
     /** GET - Sponsor performance metrics for sponsored IG */
@@ -357,6 +362,8 @@ export const endpoints = {
     /** POST - Deactivate a mentor by user_mentor_id (Admin) */
     adminDeactivate: (userMentorId: string) =>
       `/api/v1/dashboard/mentor/admin/deactivate/${userMentorId}/`,
+    /** GET - Deactivated mentors, UserMentor rows (Admin, BE-5) */
+    adminDeactivated: "/api/v1/dashboard/mentor/admin/deactivated/",
     /** POST - Reactivate a mentor by user_mentor_id (Admin) */
     adminReactivate: (userMentorId: string) =>
       `/api/v1/dashboard/mentor/admin/reactivate/${userMentorId}/`,
@@ -378,6 +385,13 @@ export const endpoints = {
     // ── §21 Company Affiliation Change ───────────────────────────────────────
     /** POST - Request a company affiliation change (pending admin approval) */
     changeCompany: "/api/v1/dashboard/mentor/change-company/",
+    /**
+     * GET/PATCH - Preferred IGs of one of the caller's APPROVED applications.
+     * PATCH creates a PENDING change request for the tier's verifier; the
+     * current IGs stay active until it is approved.
+     */
+    preferredIgs: (applicationId: string) =>
+      `/api/v1/dashboard/mentor/${applicationId}/preferred-igs/`,
 
     // ── §22 Sessions ─────────────────────────────────────────────────────────
     /** POST - Create a mentorship session */
@@ -390,9 +404,12 @@ export const endpoints = {
     /** PATCH/DELETE - Update or soft-delete a session */
     sessionUpdate: (sessionId: string) =>
       `/api/v1/dashboard/mentor/session/update/${sessionId}/`,
-    /** POST - Mark a session as complete (Mentor owner) */
+
+    /** POST - Mark a session as complete */
     sessionComplete: (sessionId: string) =>
       `/api/v1/dashboard/mentor/session/complete/${sessionId}/`,
+
+    // ── #15 GET  session/available/ ──────────────────────────────────────────
     /** GET - Learner: list SCHEDULED sessions for the user's IGs */
     sessionAvailable: "/api/v1/dashboard/mentor/session/available/",
     /** GET - Admin: list all non-deleted sessions */
@@ -585,6 +602,10 @@ export const endpoints = {
   events: {
     base: "/api/v1/dashboard/events/",
     featured: "/api/v1/dashboard/events/featured/",
+    public: {
+      base: "/api/v1/public/events/",
+      featured: "/api/v1/public/events/featured/",
+    },
     manage: "/api/v1/dashboard/events/manage/",
     myInvites: "/api/v1/dashboard/events/my-invites/",
     admin: "/api/v1/dashboard/events/admin/",
@@ -690,6 +711,13 @@ export const endpoints = {
     /** DELETE - Delete a specific social link record (requires bearer token) */
     socialLinkDetail: (linkId: string) =>
       `/api/v1/dashboard/campus/social-links/${linkId}/`,
+
+    // --- Organization Link Verification ---
+    /** GET - Paginated list of unverified organization link users (Admin / Campus Lead) */
+    unverifiedOrgLinks: "/api/v1/dashboard/user/unverified-org-links/",
+    /** PATCH - Update verification status of a specific organization link */
+    updateOrgLinkVerification: (linkId: string) =>
+      `/api/v1/dashboard/user/unverified-org-links/${linkId}/`,
   },
 
   // ============================================
@@ -871,6 +899,12 @@ export const endpoints = {
       `/api/v1/dashboard/learningcircle/transfer-lead/${id}/`,
     /** POST - Request to join a circle */
     join: (id: string) => `/api/v1/dashboard/learningcircle/join/${id}/`,
+    /** DELETE - Leave a circle (member only, not creator/lead) */
+    leaveCircle: (id: string) =>
+      `/api/v1/dashboard/learningcircle/leave/${id}/`,
+    /** DELETE - Remove (kick) a member from a circle (lead/creator only) */
+    removeMember: (id: string) =>
+      `/api/v1/dashboard/learningcircle/members/remove/${id}/`,
     /** GET - User's own circles */
     userCircles: "/api/v1/dashboard/learningcircle/user-circles/",
 
@@ -1056,6 +1090,10 @@ export const endpoints = {
     karmaVoucher: {
       /** GET - List karma vouchers (paginated, sortable, searchable) */
       list: "/api/v1/dashboard/karma-voucher/",
+      /** POST - Create a single karma voucher */
+      create: "/api/v1/dashboard/karma-voucher/create/",
+      /** PATCH - Update a karma voucher's task/karma */
+      update: (id: string) => `/api/v1/dashboard/karma-voucher/update/${id}/`,
       /** DELETE - Delete a karma voucher */
       delete: (id: string) => `/api/v1/dashboard/karma-voucher/delete/${id}/`,
       /** GET - Export voucher log as CSV */
@@ -1081,6 +1119,10 @@ export const endpoints = {
     tasks: {
       /** GET/POST - List tasks or Create task */
       base: "/api/v1/dashboard/task/",
+      /** GET - List tasks pre-filtered to active: true (server-side, paginated correctly) */
+      active: "/api/v1/dashboard/task/active/",
+      /** GET - List tasks pre-filtered to active: false (server-side, paginated correctly) */
+      inactive: "/api/v1/dashboard/task/inactive/",
       /** GET - Retrieve Task Public List */
       publicList: "/api/v1/dashboard/task/list/",
       /** GET/PUT/DELETE - Single task operations */
@@ -1552,12 +1594,28 @@ export const endpoints = {
   // Notifications
   // ============================================
   notifications: {
-    /** GET - List direct + broadcast notifications for authenticated user */
-    list: "/api/v1/notification/list/",
-    /** DELETE - Delete a single direct notification */
-    deleteOne: (id: string) => `/api/v1/notification/delete/id/${id}/`,
-    /** DELETE - Delete all direct notifications for authenticated user */
+    /** DELETE - Delete all personal notifications for the authenticated user */
     deleteAll: "/api/v1/notification/delete/all/",
+
+    // ── New unified feed API ─────────────────────────────────────────────────
+    /** GET - Unified notification feed (personal + broadcast) */
+    feed: "/api/v1/notification/",
+    /** GET - Unread count for authenticated user */
+    unreadCount: "/api/v1/notification/unread-count/",
+    /** PATCH - Mark a single notification as read */
+    markOneRead: (id: string) => `/api/v1/notification/${id}/read/`,
+    /** PATCH - Mark specific notifications as read */
+    markManyRead: "/api/v1/notification/read/",
+    /** PATCH - Mark all notifications as read */
+    markAllRead: "/api/v1/notification/read-all/",
+    /** DELETE - Soft-delete one notification (new unified path) */
+    deleteNotification: (id: string) => `/api/v1/notification/${id}/`,
+
+    // ── Admin dispatch (new API) ─────────────────────────────────────────────
+    /** POST - Admin: dispatch a free-text announcement to every active user */
+    adminBroadcast: "/api/v1/notification/admin/broadcast/",
+
+    // ── Admin broadcast management ───────────────────────────────────────────
     broadcast: {
       /** GET - Admin: list all broadcasts */
       listAll: "/api/v1/notification/broadcast/list/all/",
@@ -1604,6 +1662,91 @@ export const endpoints = {
     /** POST - Approve or reject an unverified org */
     verification: (uorgId: string) =>
       `/api/v1/dashboard/organisation/verify/${uorgId}/`,
+  },
+
+  // ============================================
+  // Problem Statements
+  // Base: /api/v1/dashboard/problem-statements/
+  // All paths relative to /api/v1/dashboard/problem-statements/
+  // Roles: Learner (no prefix) | Company (company/) | Admin (admin/)
+  // ============================================
+  problemStatements: {
+    // ── §1 Learner / Public ──────────────────────────────────────
+    /** GET - Paginated feed of Published statements (🌐 Public, optional auth for my_interaction) */
+    feed: "/api/v1/dashboard/problem-statements/",
+    /** GET - Single statement by UUID (🌐 Public; Draft/Unpublished returns 404 to learners) */
+    detail: (id: string) => `/api/v1/dashboard/problem-statements/${id}/`,
+    /** GET - Learner's current interaction ({ status, created_at, updated_at }); null if none */
+    interaction: (id: string) =>
+      `/api/v1/dashboard/problem-statements/${id}/interaction/`,
+    /** PUT - Add / change interaction ({ status: "Trying" }) */
+    interactionPut: (id: string) =>
+      `/api/v1/dashboard/problem-statements/${id}/interaction/`,
+    /** DELETE - Remove own interaction (still allowed after deadline) */
+    interactionDelete: (id: string) =>
+      `/api/v1/dashboard/problem-statements/${id}/interaction/`,
+    /** GET - Interaction counts object ({ "Trying": N, "Submitted": M }) */
+    interactionCounts: (id: string) =>
+      `/api/v1/dashboard/problem-statements/${id}/interaction/counts/`,
+    /** PUT - Submit or replace solution link ({ submission_url: "https://..." }) */
+    submissionPut: (id: string) =>
+      `/api/v1/dashboard/problem-statements/${id}/submission/`,
+    /** DELETE - Withdraw submission (clears link and reverts status to Trying) */
+    submissionDelete: (id: string) =>
+      `/api/v1/dashboard/problem-statements/${id}/submission/`,
+
+    // ── §2 Company Endpoints (company/) ─────────────────────────
+    // Requires Company role + verified company. Only own company's statements.
+    /** GET - Paginated list of company's own statements */
+    companyList: "/api/v1/dashboard/problem-statements/company/",
+    /** POST - Create a new problem statement (always created as Draft) */
+    companyCreate: "/api/v1/dashboard/problem-statements/company/",
+    /** GET - Single statement detail (own company only; another company's returns 404) */
+    companyDetail: (id: string) =>
+      `/api/v1/dashboard/problem-statements/company/${id}/`,
+    /** PATCH - Partial update (same fields as create; works in any status) */
+    companyUpdate: (id: string) =>
+      `/api/v1/dashboard/problem-statements/company/${id}/`,
+    /** DELETE - Permanently delete statement and all its interactions (confirm first) */
+    companyDelete: (id: string) =>
+      `/api/v1/dashboard/problem-statements/company/${id}/`,
+    /** POST - Transition to Published; 409 if already published or deadline passed */
+    companyPublish: (id: string) =>
+      `/api/v1/dashboard/problem-statements/company/${id}/publish/`,
+    /** POST - Transition to Unpublished; 409 if not currently Published */
+    companyUnpublish: (id: string) =>
+      `/api/v1/dashboard/problem-statements/company/${id}/unpublish/`,
+    /** GET - Counts + paginated list of learners trying this statement */
+    companyInteractions: (id: string) =>
+      `/api/v1/dashboard/problem-statements/company/${id}/interactions/`,
+
+    // ── §3 Admin Endpoints (admin/) ──────────────────────────────
+    // Requires Admins role. Can act on any statement in any status.
+    /** GET - All statements across all companies (extra filter: company_id) */
+    adminList: "/api/v1/dashboard/problem-statements/admin/",
+    /** POST - Create statement for any company (body must include company_id) */
+    adminCreate: "/api/v1/dashboard/problem-statements/admin/",
+    /** GET - Any single statement detail */
+    adminDetail: (id: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/`,
+    /** PATCH - Update any statement (company cannot be changed) */
+    adminUpdate: (id: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/`,
+    /** DELETE - Delete any statement (with its interactions) */
+    adminDelete: (id: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/`,
+    /** POST - Publish any statement */
+    adminPublish: (id: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/publish/`,
+    /** POST - Unpublish any statement */
+    adminUnpublish: (id: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/unpublish/`,
+    /** GET - Counts + list of learners trying a statement */
+    adminInteractions: (id: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/interactions/`,
+    /** DELETE - Remove a specific user's interaction (404 if it does not exist) */
+    adminDeleteInteraction: (id: string, userId: string) =>
+      `/api/v1/dashboard/problem-statements/admin/${id}/interactions/${userId}/`,
   },
 } as const;
 

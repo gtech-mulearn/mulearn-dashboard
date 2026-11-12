@@ -13,7 +13,24 @@
  * - More specific routes take precedence over general ones
  */
 
-import { CAMPUS_SETTINGS_ROLES, ROLES } from "./roles";
+import {
+  ADMIN_ROLES,
+  CAMPUS_SETTINGS_ROLES,
+  COMMUNITY_SETTINGS_HUB_ROLES,
+  DISCORD_MODERATION_ROLES,
+  DISTRICT_ROLES,
+  FELLOW_MANAGEMENT_ROLES,
+  hasIgLeadRole,
+  INTERN_MANAGEMENT_ROLES,
+  isIgCampusLeadRole,
+  MANAGEMENT_HUB_ROLES,
+  MANAGEMENT_ROLES,
+  ROLES,
+  SYSTEM_CONFIG_HUB_ROLES,
+  TECH_ROLES,
+  USER_MANAGEMENT_HUB_ROLES,
+  ZONAL_ROLES,
+} from "./roles";
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -35,7 +52,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   "/dashboard": { roles: [] },
   "/dashboard/profile": { roles: [] },
   "/dashboard/leaderboard": { roles: [] },
-  "/dashboard/learning-circles": { roles: [] },
+  "/dashboard/learning-circle": { roles: [] },
   "/dashboard/interest-groups": { roles: [] },
   "/dashboard/campus": { roles: [] },
   "/dashboard/search": { roles: [] },
@@ -43,6 +60,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   "/dashboard/settings/organization": { roles: CAMPUS_SETTINGS_ROLES },
   "/dashboard/hackathon": { roles: [] },
   "/dashboard/events": { roles: [] },
+  "/dashboard/problem-statements": { roles: [] },
   "/dashboard/connect-discord": { roles: [] },
   "/dashboard/refer": { roles: [] },
   "/dashboard/weekly-twitches": { roles: [] },
@@ -54,12 +72,12 @@ export const routeAccessMap: Record<string, RouteConfig> = {
 
   // ── Zonal Dashboard ──────────────────────────────────────
   "/dashboard/zonal": {
-    roles: [ROLES.ADMIN, ROLES.ZONAL_CAMPUS_LEAD],
+    roles: ZONAL_ROLES,
   },
 
   // ── District Dashboard ───────────────────────────────────
   "/dashboard/district": {
-    roles: [ROLES.ADMIN, ROLES.DISTRICT_CAMPUS_LEAD],
+    roles: DISTRICT_ROLES,
   },
 
   // ── Intern Dashboard ─────────────────────────────
@@ -79,120 +97,135 @@ export const routeAccessMap: Record<string, RouteConfig> = {
     dynamicCheck: (roles) => roles.some((r) => r.endsWith(" IGLead")),
   },
 
-  // ── Management Routes (Admin only) ───────────────────────
+  // ── Management Routes ─────────────────────────────────────
   "/dashboard/management": {
-    roles: [ROLES.ADMIN],
+    roles: MANAGEMENT_HUB_ROLES,
   },
   "/dashboard/management/user-management": {
-    roles: [ROLES.ADMIN],
+    roles: USER_MANAGEMENT_HUB_ROLES,
   },
   "/dashboard/management/verification": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/session-verification": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/community": {
-    roles: [ROLES.ADMIN],
+    roles: COMMUNITY_SETTINGS_HUB_ROLES,
   },
   "/dashboard/management/system": {
-    roles: [ROLES.ADMIN],
+    roles: SYSTEM_CONFIG_HUB_ROLES,
+  },
+  "/dashboard/management/system/features": {
+    roles: MANAGEMENT_ROLES,
   },
   "/dashboard/management/notifications": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/homepage": {
-    roles: [ROLES.ADMIN, ROLES.ASSOCIATE],
+    roles: MANAGEMENT_ROLES,
   },
   "/dashboard/management/manage-users": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/role-verification": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/mentor-verification": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/manage-achievements": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/manage-interns": {
-    roles: [ROLES.ADMIN, ROLES.ASSOCIATE],
+    roles: INTERN_MANAGEMENT_ROLES,
   },
   "/dashboard/management/manage-interns/minutes": {
     roles: [ROLES.ADMIN, ROLES.ASSOCIATE, ROLES.INTERN, ROLES.INTERN_LEAD],
   },
   "/dashboard/management/manage-interest-groups": {
-    roles: [ROLES.ADMIN],
+    roles: FELLOW_MANAGEMENT_ROLES,
   },
   "/dashboard/management/manage-roles": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/organizations": {
-    roles: [ROLES.ADMIN],
+    roles: MANAGEMENT_ROLES,
+  },
+  "/dashboard/management/organizations/list": {
+    roles: ADMIN_ROLES,
+  },
+  "/dashboard/management/organizations/transfer": {
+    roles: ADMIN_ROLES,
+  },
+  "/dashboard/management/organizations/verify": {
+    roles: ADMIN_ROLES,
+  },
+  "/dashboard/management/organizations/departments": {
+    roles: FELLOW_MANAGEMENT_ROLES,
+  },
+  "/dashboard/management/organizations/affiliation": {
+    roles: MANAGEMENT_ROLES,
   },
   "/dashboard/management/verify-organizations": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/karma-voucher": {
-    roles: [ROLES.ADMIN],
+    roles: FELLOW_MANAGEMENT_ROLES,
   },
   "/dashboard/management/lc-meetup-verification": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/college-levels": {
-    roles: [ROLES.ADMIN],
+    roles: FELLOW_MANAGEMENT_ROLES,
   },
   "/dashboard/management/tasks": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/tasks/bulk-import": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/tasks/create": {
-    roles: [ROLES.ADMIN],
-  },
-  "/dashboard/management/tasks/edit": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/tasks/task-type": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/tasks/task-verification": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/manage-locations": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/channels": {
-    roles: [ROLES.ADMIN],
+    roles: MANAGEMENT_ROLES,
   },
   "/dashboard/management/discord-moderation": {
-    roles: [ROLES.ADMIN, ROLES.DISCORD_MODERATOR],
+    roles: DISCORD_MODERATION_ROLES,
   },
   "/dashboard/management/error-log": {
-    roles: [ROLES.ADMIN, ROLES.TECH_TEAM],
+    roles: TECH_ROLES,
   },
   "/dashboard/management/dynamic-type": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/manage-skills": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/manage-launchpad": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/manage-companies": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/manage-departments": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/affiliation": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
   "/dashboard/management/organization-transfer": {
-    roles: [ROLES.ADMIN],
+    roles: ADMIN_ROLES,
   },
 
   // ── Weekly Twitches (Admin + Associate + IG Leads) ───────
@@ -208,7 +241,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
 
   // ── URL Shortener (broader access) ───────────────────────
   "/dashboard/url-shortener": {
-    roles: [ROLES.ADMIN, ROLES.ASSOCIATE],
+    roles: MANAGEMENT_ROLES,
   },
 
   // ── Events Management ────────────────────────────────────
@@ -224,7 +257,20 @@ export const routeAccessMap: Record<string, RouteConfig> = {
       ROLES.DISTRICT_CAMPUS_LEAD,
     ],
     dynamicCheck: (roles) =>
-      roles.some((r) => r.endsWith(" IGLead") || r.endsWith(" CampusLead")),
+      roles.some((r) => r.endsWith(" IGLead") || isIgCampusLeadRole(r)),
+  },
+
+  // ── Collaboration inbox (campus and IG leads, BE-9) ──────
+  // Mirrors the backend's _can_respond_as_target: "Campus Lead", or a
+  // "{code} IGLead" role ("{code} CampusIGLead" can't respond).
+  "/dashboard/collaborations": {
+    roles: [ROLES.CAMPUS_LEAD],
+    dynamicCheck: (roles) => hasIgLeadRole(roles),
+  },
+
+  // ── Problem Statements Management ────────────────────────
+  "/dashboard/manage-problem-statements": {
+    roles: [ROLES.ADMIN, ROLES.COMPANY],
   },
 
   // ── Jobs Dashboard ───────────────────────────────────────
@@ -244,7 +290,14 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   },
 
   // ── Company Dashboard ───────────────────────────────────
+  // Owners, accepted co-admins and company mentors all act for a company
+  // (release 1.91), but only the owner holds the Company role — so company
+  // pages are open to any signed-in user here and gated client-side by
+  // CompanyStatusGuard / useCompanyAccess. Owner-only pages stay role-gated.
   "/dashboard/company": {
+    roles: [],
+  },
+  "/dashboard/company/profile/edit": {
     roles: [ROLES.COMPANY],
   },
   "/dashboard/company/ig-requests": {

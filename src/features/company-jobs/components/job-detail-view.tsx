@@ -33,6 +33,7 @@ import type { RuleFormValues } from "../schemas";
 import type { Job } from "../types";
 import { ApplicantsSection } from "./applicants-section";
 import { JobDeleteDialog } from "./job-delete-dialog";
+import { isJobEditable, JobReviewPanel } from "./job-review-panel";
 import { RuleAddDialog, RuleList } from "./rules";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -161,15 +162,17 @@ export function JobDetailView({
                     : "Close Job"}
               </Button>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onEdit(job.id)}
-              className="gap-1.5"
-            >
-              <Edit className="h-3.5 w-3.5" />
-              Edit
-            </Button>
+            {isJobEditable(job.status) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onEdit(job.id)}
+                className="gap-1.5"
+              >
+                <Edit className="h-3.5 w-3.5" />
+                Edit
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -255,6 +258,9 @@ export function JobDetailView({
           </div>
         </div>
       </div>
+
+      {/* Approval state: revision note, rejection, review actions */}
+      <JobReviewPanel job={job} />
 
       {/* Description */}
       {job.job_description && (

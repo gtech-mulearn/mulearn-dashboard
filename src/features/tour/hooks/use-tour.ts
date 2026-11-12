@@ -187,7 +187,14 @@ export function useTour({ initialState, blocked = false }: UseTourOptions) {
     if (seen && seen.version >= TOUR_VERSIONS[tourKey]) return;
 
     const resolvedSteps = buildSteps(TOUR_STEP_REGISTRY[tourKey], ctx).filter(
-      (s) => s.centered || (!!s.navId && visibleNavIds.has(s.navId)),
+      (s) => {
+        if (s.centered) return true;
+        if (s.navId) return visibleNavIds.has(s.navId);
+        if (s.elementId) {
+          return !!document.querySelector(`[data-tour-id="${s.elementId}"]`);
+        }
+        return false;
+      },
     );
     if (resolvedSteps.length === 0) return;
 
@@ -228,7 +235,14 @@ export function useReplayTour() {
   const replay = useCallback(() => {
     if (!tourKey) return;
     const resolvedSteps = buildSteps(TOUR_STEP_REGISTRY[tourKey], ctx).filter(
-      (s) => s.centered || (!!s.navId && visibleNavIds.has(s.navId)),
+      (s) => {
+        if (s.centered) return true;
+        if (s.navId) return visibleNavIds.has(s.navId);
+        if (s.elementId) {
+          return !!document.querySelector(`[data-tour-id="${s.elementId}"]`);
+        }
+        return false;
+      },
     );
     if (resolvedSteps.length === 0) return;
 

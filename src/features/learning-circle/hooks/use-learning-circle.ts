@@ -10,11 +10,13 @@
 
 import {
   keepPreviousData,
+  type QueryClient,
   useMutation,
+  useMutationState,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
@@ -43,7 +45,9 @@ import {
   getUserMeetings,
   joinCircle,
   joinMeeting,
+  leaveCircle,
   leaveMeeting,
+  removeMember,
   removeRsvpMeeting,
   respondToInvite,
   respondToInviteByLink,
@@ -65,6 +69,7 @@ import type {
   JoinMeetingRequest,
   Meeting,
   MeetingReportRequest,
+  RemoveMemberRequest,
   RespondJoinRequest,
   SendInviteRequest,
   TransferLeadRequest,
@@ -79,14 +84,20 @@ const STALE_TIME = 5 * 60 * 1000; // 5 minutes
 
 const CIRCLES_PER_PAGE = 12;
 
-export function useCircles(search = "", page = 1) {
+export function useCircles(
+  search = "",
+  page = 1,
+  filters?: { status?: "joined" | "pending" | "not_joined"; ig?: string },
+) {
   return useQuery({
-    queryKey: learningCircleKeys.circleList({ search, page }),
+    queryKey: learningCircleKeys.circleList({ search, page, ...filters }),
     queryFn: () =>
       getCircles({
         search: search || undefined,
         page,
         perPage: CIRCLES_PER_PAGE,
+        status: filters?.status,
+        ig: filters?.ig,
       }),
     placeholderData: keepPreviousData,
     staleTime: STALE_TIME,
@@ -96,7 +107,7 @@ export function useCircles(search = "", page = 1) {
 export function useUserCircles() {
   return useQuery({
     queryKey: learningCircleKeys.userCircles(),
-    queryFn: getUserCircles,
+    queryFn: () => getUserCircles(),
     staleTime: STALE_TIME,
   });
 }
@@ -369,35 +380,120 @@ export function useTransferLead(circleId: string) {
   });
 }
 
+/** Lead/creator: remove (kick) a member from the circle. */
+export function useRemoveMember(circleId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: RemoveMemberRequest) => removeMember(circleId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.circleMembers(circleId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.circleDetail(circleId),
+      });
+      toast.success("Member removed from circle");
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to remove member" }),
+      );
+    },
+  });
+}
+
+/** Member: leave a circle (creator/lead cannot use this — must transfer/delete). */
+export function useLeaveCircle() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (circleId: string) => leaveCircle(circleId),
+    onSuccess: (_, circleId) => {
+      updatePendingJoin(queryClient, circleId, false);
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.circleDetail(circleId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.circleMembers(circleId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.userCircles(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...learningCircleKeys.circles(), "list"],
+        exact: false,
+      });
+      toast.success("You have left the circle");
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to leave circle" }),
+      );
+    },
+  });
+}
+
 // ============================================
 // Join & Invite
 // ============================================
 
-// Local session cache/store for tracking pending join requests
-const pendingJoinCircleIds = new Set<string>();
-const pendingJoinListeners = new Set<() => void>();
+// Circles where the signed-in user has an unaccepted link: their own join
+// requests and invitations from a lead (list?status=pending returns both;
+// useIsCirclePendingJoin tells them apart). Kept in the query cache and read
+// from the server, so a fresh response replaces it — e.g. after a lead rejects
+// the request. The circle detail endpoint has no per-user status, so this is
+// its only source.
+const PENDING_JOIN_PAGE_SIZE = 100;
 
-export function markCircleAsRequested(circleId: string) {
-  pendingJoinCircleIds.add(circleId);
-  pendingJoinListeners.forEach((listener) => {
-    listener();
+function usePendingJoinCircleIds() {
+  return useQuery({
+    queryKey: learningCircleKeys.pendingJoins(),
+    queryFn: async () => {
+      const { circles } = await getCircles({
+        status: "pending",
+        perPage: PENDING_JOIN_PAGE_SIZE,
+      });
+      return circles.map((circle) => circle.id);
+    },
+    staleTime: 30_000,
   });
 }
 
 export function useIsCirclePendingJoin(circleId: string) {
-  const [isPending, setIsPending] = useState(() =>
-    pendingJoinCircleIds.has(circleId),
+  const { data: pendingIds } = usePendingJoinCircleIds();
+  // list?status=pending also returns circles a lead invited the user to. Those
+  // aren't the user's request, and joining accepts them, so they must not read
+  // as "Requested" (which hides Join). Until invitations are known, a pending
+  // link could be one, so don't claim "Requested" on a guess.
+  const { data: invites } = useMyPendingInvites();
+  if (!pendingIds || !invites) return false;
+  return (
+    pendingIds.includes(circleId) &&
+    !invites.some((invite) => invite.circle_id === circleId)
   );
+}
 
-  useEffect(() => {
-    const update = () => setIsPending(pendingJoinCircleIds.has(circleId));
-    pendingJoinListeners.add(update);
-    return () => {
-      pendingJoinListeners.delete(update);
-    };
-  }, [circleId]);
-
-  return isPending;
+/**
+ * Optimistically record (or clear) a pending join request, then refetch so
+ * the server's answer wins — joining a circle the user was invited to makes
+ * them a member straight away rather than leaving a pending request.
+ */
+function updatePendingJoin(
+  queryClient: QueryClient,
+  circleId: string,
+  pending: boolean,
+) {
+  queryClient.setQueryData<string[]>(
+    learningCircleKeys.pendingJoins(),
+    (ids = []) => {
+      const others = ids.filter((id) => id !== circleId);
+      return pending ? [...others, circleId] : others;
+    },
+  );
+  queryClient.invalidateQueries({
+    queryKey: learningCircleKeys.pendingJoins(),
+  });
 }
 
 export function useJoinCircle() {
@@ -406,7 +502,11 @@ export function useJoinCircle() {
   return useMutation({
     mutationFn: (circleId: string) => joinCircle(circleId),
     onSuccess: (_, circleId) => {
-      markCircleAsRequested(circleId);
+      updatePendingJoin(queryClient, circleId, true);
+      // Joining a circle the user was invited to accepts that invitation.
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.myPendingInvites(),
+      });
       queryClient.invalidateQueries({
         queryKey: learningCircleKeys.circleDetail(circleId),
       });
@@ -425,7 +525,7 @@ export function useJoinCircle() {
         lowerMsg.includes("already sent") ||
         lowerMsg.includes("waiting for lead approval")
       ) {
-        markCircleAsRequested(circleId);
+        updatePendingJoin(queryClient, circleId, true);
         toast.warning(errMsg);
       } else {
         toast.error(errMsg);
@@ -673,8 +773,14 @@ export function useRsvpMeeting() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: learningCircleKeys.rsvpMutation(),
     mutationFn: (meetingId: string) => rsvpMeeting(meetingId),
     onMutate: async (meetingId) => {
+      // Cancel any outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({
+        queryKey: learningCircleKeys.meetings(),
+      });
+
       // Optimistically update every cached meeting list to flip is_rsvp immediately.
       // This ensures the UI reflects the change without waiting for the API refetch.
       const caches = queryClient.getQueriesData<Meeting[]>({
@@ -757,8 +863,14 @@ export function useRemoveRsvpMeeting() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: learningCircleKeys.removeRsvpMutation(),
     mutationFn: (meetingId: string) => removeRsvpMeeting(meetingId),
     onMutate: async (meetingId) => {
+      // Cancel any outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({
+        queryKey: learningCircleKeys.meetings(),
+      });
+
       // Optimistically update every cached meeting list to clear is_rsvp immediately.
       const caches = queryClient.getQueriesData<Meeting[]>({
         queryKey: learningCircleKeys.meetings(),
@@ -781,9 +893,6 @@ export function useRemoveRsvpMeeting() {
       });
       queryClient.invalidateQueries({
         queryKey: learningCircleKeys.meetingsUser(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: [...learningCircleKeys.all, "meetings"],
       });
       toast.success("RSVP removed successfully!");
     },
@@ -808,6 +917,36 @@ export function useRemoveRsvpMeeting() {
       );
     },
   });
+}
+
+/**
+ * Hook returning a Set of meeting IDs currently undergoing RSVP or Remove-RSVP mutations.
+ * Powered by TanStack Query's mutation cache so concurrent mutations across multiple
+ * cards are accurately tracked independently without losing loading states.
+ */
+export function usePendingRsvpMeetingIds(): Set<string> {
+  const rsvpMeetingIds = useMutationState<string>({
+    filters: {
+      mutationKey: learningCircleKeys.rsvpMutation(),
+      status: "pending",
+    },
+    select: (mutation) => mutation.state.variables as string,
+  });
+
+  const removeRsvpMeetingIds = useMutationState<string>({
+    filters: {
+      mutationKey: learningCircleKeys.removeRsvpMutation(),
+      status: "pending",
+    },
+    select: (mutation) => mutation.state.variables as string,
+  });
+
+  return useMemo(() => {
+    return new Set<string>([
+      ...rsvpMeetingIds.filter(Boolean),
+      ...removeRsvpMeetingIds.filter(Boolean),
+    ]);
+  }, [rsvpMeetingIds, removeRsvpMeetingIds]);
 }
 
 export function useJoinMeeting() {

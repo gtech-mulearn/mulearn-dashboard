@@ -101,6 +101,7 @@ export function PersonCard({
       {muid ? (
         <Link
           href={`/profile/${muid}`}
+          prefetch={false}
           className="flex items-center gap-4 hover:opacity-80 transition-opacity"
         >
           {avatar}

@@ -6,8 +6,8 @@
  * In-page tours for `/dashboard/mentor/*` pages (mentees, opportunities,
  * sessions, task requests).
  *
- * `mentor/page.tsx` and `mentor/opportunities/page.tsx` are skipped — both
- * are pure redirects with no page content to point a tour at.
+ * `mentor/page.tsx` is skipped — a pure redirect with no page content to
+ * point a tour at.
  */
 
 import type { PageTourConfig } from "../../types";
@@ -110,6 +110,40 @@ export const mentorPageTours: readonly PageTourConfig[] = [
         title: "Task Requests",
         description:
           "Click a task to view details, or edit/delete it while it's still pending.",
+      },
+    ],
+  },
+  {
+    route: "/dashboard/mentor/opportunities",
+    version: 1,
+    steps: [
+      {
+        id: "mentor-opportunities-intro",
+        title: "Opportunities",
+        description:
+          "Create and manage mentoring opportunities for learners to apply to.",
+        centered: true,
+      },
+      {
+        id: "mentor-opportunities-header",
+        elementId: "page:mentor-opportunities:header",
+        title: "Search & Create",
+        description:
+          "Find an existing opportunity, or post a new one for learners to apply to.",
+      },
+      {
+        id: "mentor-opportunities-tabs",
+        elementId: "page:mentor-opportunities:tabs",
+        title: "Filter by Status",
+        description:
+          "Switch between published, closed, archived, and all opportunities.",
+      },
+      {
+        id: "mentor-opportunities-list",
+        elementId: "page:mentor-opportunities:list",
+        title: "Your Opportunities",
+        description:
+          "Publish a draft, close a published opportunity, or edit and archive any entry.",
       },
     ],
   },

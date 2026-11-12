@@ -14,7 +14,7 @@ export function InternDashboardPageClient() {
   const [isLeaveOpen, setIsLeaveOpen] = useState(false);
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto w-full">
+    <div className="w-full space-y-8">
       {/* Header Section */}
       <div data-tour-id="page:intern-dashboard:header">
         <ErrorBoundary FallbackComponent={SectionErrorFallback}>

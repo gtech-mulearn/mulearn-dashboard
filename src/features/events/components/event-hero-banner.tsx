@@ -25,7 +25,7 @@ export function EventHeroBanner({
   const isLive = !isUpcoming && !isEnded;
 
   return (
-    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-foreground md:aspect-[21/8]">
+    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-foreground md:aspect-[4/1]">
       {event.banner_image || event.cover_image ? (
         <Image
           src={
@@ -33,6 +33,9 @@ export function EventHeroBanner({
           }
           alt={event.title}
           fill
+          sizes="(min-width: 1280px) 1200px, 100vw"
+          quality={90}
+          priority
           className="object-cover"
         />
       ) : null}
@@ -44,7 +47,7 @@ export function EventHeroBanner({
         variant="default"
         size="icon"
         onClick={() => router.back()}
-        className="absolute left-4 top-4 z-20"
+        className="absolute left-4 top-4 z-30"
         aria-label="Go back"
       >
         <ChevronLeft className="size-4" />

@@ -190,7 +190,7 @@ export function MentorProfilePage({
         open={showShare}
         onOpenChange={setShowShare}
         muid={userProfile.muid}
-        isPublic={userProfile.is_public}
+        isPublic={userProfile.is_public ?? null}
       />
     </div>
   );

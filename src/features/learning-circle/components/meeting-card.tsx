@@ -10,7 +10,7 @@
 "use client";
 
 import { format, isFuture } from "date-fns";
-import { Check, CheckCircle2, X } from "lucide-react";
+import { Check, CheckCircle2, Loader2, X } from "lucide-react";
 import Link from "next/link";
 import type { Meeting } from "../schemas";
 
@@ -93,11 +93,17 @@ export function MeetingCard({
                       : onRsvp?.(meeting.id)
                 }
                 disabled={isRsvpLoading}
-                className="relative z-10 text-[11px] font-bold text-success bg-success/15 border border-success/30 hover:bg-destructive/15 hover:text-destructive hover:border-destructive/30 transition-all uppercase tracking-wide px-2.5 py-1 rounded flex items-center gap-1 group/rsvp cursor-pointer"
+                className="relative z-10 text-[11px] font-bold text-success bg-success/15 border border-success/30 hover:bg-destructive/15 hover:text-destructive hover:border-destructive/30 transition-all uppercase tracking-wide px-2.5 py-1 rounded flex items-center gap-1 group/rsvp cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Click to remove RSVP"
               >
-                <Check className="h-3 w-3 group-hover/rsvp:hidden text-success" />
-                <X className="h-3 w-3 hidden group-hover/rsvp:inline text-destructive" />
+                {isRsvpLoading ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <>
+                    <Check className="h-3 w-3 group-hover/rsvp:hidden text-success" />
+                    <X className="h-3 w-3 hidden group-hover/rsvp:inline text-destructive" />
+                  </>
+                )}
                 <span className="group-hover/rsvp:hidden">RSVP'd</span>
                 <span className="hidden group-hover/rsvp:inline">
                   Remove RSVP
@@ -114,9 +120,11 @@ export function MeetingCard({
               type="button"
               onClick={() => onRsvp(meeting.id)}
               disabled={isRsvpLoading}
-              className="relative z-10 text-[11px] font-bold text-muted-foreground bg-secondary hover:bg-secondary/80 hover:text-foreground border border-border transition-all uppercase tracking-wide px-2.5 py-1 rounded cursor-pointer"
+              className="relative z-10 text-[11px] font-bold text-foreground bg-muted hover:bg-primary hover:text-primary-foreground border border-border hover:border-primary transition-all uppercase tracking-wide px-2.5 py-1 rounded flex items-center gap-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              title="RSVP to meeting"
             >
-              RSVP
+              {isRsvpLoading && <Loader2 className="h-3 w-3 animate-spin" />}
+              <span>RSVP</span>
             </button>
           ) : null)}
       </div>

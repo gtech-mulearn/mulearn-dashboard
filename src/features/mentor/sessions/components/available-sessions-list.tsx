@@ -9,6 +9,7 @@ import {
   Video,
 } from "lucide-react";
 import { useState } from "react";
+import Pagination from "@/components/dashboard/table/pagination";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -62,14 +63,14 @@ function SessionCard({
         <div className="space-y-1.5">
           <div className="flex flex-col items-start gap-2">
             <p className="font-semibold text-foreground">{session.title}</p>
-            {session.entity_name && (
+            {(session.ig_name || session.entity_name) && (
               <span
                 className={cn(
                   "rounded-full px-2 py-0.5 text-[11px] font-medium",
-                  chipColor(session.entity_name),
+                  chipColor(session.ig_name ?? session.entity_name ?? ""),
                 )}
               >
-                {session.entity_name}
+                {session.ig_name ?? session.entity_name}
               </span>
             )}
           </div>
@@ -131,6 +132,7 @@ function SessionCard({
             mode={session.mode}
             meetingLink={session.meeting_link}
             venue={session.venue}
+            status={session.status}
           />
         </div>
       </CardContent>
@@ -139,12 +141,18 @@ function SessionCard({
 }
 
 export function AvailableSessionsList() {
-  const { data, isLoading } = useAvailableSessions();
-  const { data: history } = useParticipantHistory();
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useAvailableSessions({
+    pageIndex: page,
+    perPage: 10,
+  });
+  const { data: history } = useParticipantHistory({ perPage: 100 });
   const sessions = data?.data ?? [];
+  const totalPages = data?.totalPages ?? 1;
+  const totalCount = data?.totalCount;
 
-  // Sessions the student is already a participant of (joined or invited) so the
-  // card reflects "Joined" across reloads, not just within this render.
+  // Sessions the student is already a participant of so the card reflects "Joined"
+  // persistently across reloads.
   const joinedIds = new Set(
     (history?.data ?? [])
       .map((p) => p.session_id)
@@ -174,14 +182,26 @@ export function AvailableSessionsList() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {sessions.map((session) => (
-        <SessionCard
-          key={session.id}
-          session={session}
-          alreadyJoined={joinedIds.has(session.id)}
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {sessions.map((session) => (
+          <SessionCard
+            key={session.id}
+            session={session}
+            alreadyJoined={joinedIds.has(session.id)}
+          />
+        ))}
+      </div>
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          handleNextClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+          handlePreviousClick={() => setPage((p) => Math.max(p - 1, 1))}
+          perPage={10}
+          totalCount={totalCount}
         />
-      ))}
+      )}
     </div>
   );
 }

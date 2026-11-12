@@ -19,6 +19,10 @@ interface ImageUploadProps {
   cropShape?: "rect" | "round";
   /** Optional secondary preview ratio shown in the crop dialog (e.g. mobile). */
   previewAspect?: number;
+  /** Longest edge kept by the crop step. Raise it to preserve poster detail. */
+  outputMaxDimension?: number;
+  /** Extra line under the dropzone, e.g. the recommended source dimensions. */
+  hint?: string;
 }
 
 export function ImageUpload({
@@ -30,6 +34,8 @@ export function ImageUpload({
   aspectRatio,
   cropShape,
   previewAspect,
+  outputMaxDimension,
+  hint,
 }: ImageUploadProps) {
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(
     currentUrl ?? null,
@@ -37,6 +43,7 @@ export function ImageUpload({
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = React.useState(false);
   const [cropSourceUrl, setCropSourceUrl] = React.useState<string | null>(null);
+  const [cropSourceFile, setCropSourceFile] = React.useState<File | null>(null);
 
   React.useEffect(() => {
     if (value) {
@@ -55,11 +62,14 @@ export function ImageUpload({
       );
       return;
     }
-    if (file.size > maxSizeMB * 1024 * 1024) {
+    // With a crop step the size limit is enforced on its *output*, which is
+    // re-encoded down to fit — so a heavy PNG poster still gets a chance.
+    if (!aspectRatio && file.size > maxSizeMB * 1024 * 1024) {
       toast.error(`File is too large. Maximum size is ${maxSizeMB}MB.`);
       return;
     }
     if (aspectRatio) {
+      setCropSourceFile(file);
       setCropSourceUrl(URL.createObjectURL(file));
       return;
     }
@@ -69,6 +79,7 @@ export function ImageUpload({
   const closeCropDialog = () => {
     if (cropSourceUrl) URL.revokeObjectURL(cropSourceUrl);
     setCropSourceUrl(null);
+    setCropSourceFile(null);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,8 +114,21 @@ export function ImageUpload({
       />
 
       {previewUrl ? (
-        <div className="group relative h-32 w-32 overflow-hidden rounded-lg border bg-muted">
-          <Image src={previewUrl} alt="Preview" fill className="object-cover" />
+        <div
+          className={`group relative overflow-hidden rounded-lg border bg-muted ${
+            aspectRatio ? "w-full max-w-[280px]" : "h-32 w-32"
+          }`}
+          // Preview at the target ratio so what you see is what gets stored.
+          style={aspectRatio ? { aspectRatio } : undefined}
+        >
+          <Image
+            src={previewUrl}
+            alt="Preview"
+            fill
+            sizes="280px"
+            quality={90}
+            className="object-cover"
+          />
           {!disabled && (
             <div className="absolute inset-0 flex items-center justify-center gap-2 bg-foreground/50 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
               <Button
@@ -156,6 +180,9 @@ export function ImageUpload({
             <p className="text-xs text-muted-foreground/70">
               Max {maxSizeMB}MB · PNG, JPG, GIF, WebP
             </p>
+            {hint ? (
+              <p className="text-xs text-muted-foreground/70">{hint}</p>
+            ) : null}
           </div>
         </button>
       )}
@@ -164,9 +191,11 @@ export function ImageUpload({
         <ImageCropDialog
           open
           imageSrc={cropSourceUrl}
+          originalFile={cropSourceFile}
           aspect={aspectRatio}
           cropShape={cropShape}
           previewAspect={previewAspect}
+          outputMaxDimension={outputMaxDimension}
           outputMaxSizeMB={maxSizeMB}
           onCropComplete={(file) => {
             closeCropDialog();

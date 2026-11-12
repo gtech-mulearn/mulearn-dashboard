@@ -2,19 +2,17 @@ import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import type {
   AdminBroadcast,
+  AdminBroadcastDispatchPayload,
   BroadcastCreatePayload,
-  NotificationListResponse,
+  NotificationFeed,
   TargetOption,
 } from "../schemas";
+import {
+  NotificationFeedApiResponseSchema,
+  UnreadCountApiResponseSchema,
+} from "../schemas";
 
-export async function getUserNotifications(): Promise<NotificationListResponse> {
-  return apiClient.get<NotificationListResponse>(endpoints.notifications.list);
-}
-
-export async function deleteDirectNotification(id: string): Promise<void> {
-  await apiClient.delete(endpoints.notifications.deleteOne(id));
-}
-
+/** Clears every personal notification server-side (all pages). */
 export async function deleteAllDirectNotifications(): Promise<void> {
   await apiClient.delete(endpoints.notifications.deleteAll);
 }
@@ -51,6 +49,72 @@ export async function deleteBroadcast(id: string): Promise<void> {
 export async function deleteAllBroadcasts(): Promise<void> {
   await apiClient.delete(endpoints.notifications.broadcast.deleteAll);
 }
+
+// ─── New unified feed API ──────────────────────────────────────────────────────────
+
+/** GET /api/v1/notification/ — paginated unified feed (personal + broadcast). */
+export async function getNotificationFeed(
+  params?: Record<string, string | number | boolean>,
+): Promise<NotificationFeed> {
+  const query = params
+    ? `?${new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)])).toString()}`
+    : "";
+  const res = await apiClient.get(
+    `${endpoints.notifications.feed}${query}`,
+    NotificationFeedApiResponseSchema,
+  );
+  return res.response;
+}
+
+/** GET /api/v1/notification/unread-count/ */
+export async function getUnreadCount(): Promise<number> {
+  const res = await apiClient.get(
+    endpoints.notifications.unreadCount,
+    UnreadCountApiResponseSchema,
+  );
+  return res.response.unread_count;
+}
+
+/** PATCH /api/v1/notification/<id>/read/ — mark one notification as read. */
+export async function markNotificationRead(id: string): Promise<void> {
+  await apiClient.patch(endpoints.notifications.markOneRead(id), {});
+}
+
+/** PATCH /api/v1/notification/read-all/ — mark all notifications as read. */
+export async function markAllNotificationsRead(): Promise<void> {
+  await apiClient.patch(endpoints.notifications.markAllRead, {});
+}
+
+/** PATCH /api/v1/notification/read/ — mark a list of notifications as read. */
+export async function markManyNotificationsRead(ids: string[]): Promise<void> {
+  await apiClient.patch(endpoints.notifications.markManyRead, { ids });
+}
+
+/** DELETE /api/v1/notification/<id>/ — soft-delete one notification. */
+export async function deleteNotification(id: string): Promise<void> {
+  await apiClient.delete(endpoints.notifications.deleteNotification(id));
+}
+
+// ─── Admin broadcast dispatch (POST /api/v1/notification/admin/broadcast/) ─────
+
+/**
+ * Dispatches a free-text announcement to every active user on the platform.
+ * Internally stored as notification type ADMIN_BROADCAST (category ADMIN).
+ */
+export async function dispatchAdminBroadcast(
+  payload: AdminBroadcastDispatchPayload,
+): Promise<void> {
+  const body: Record<string, unknown> = {
+    title: payload.title,
+    description: payload.description,
+  };
+  if (payload.redirect_url) body.redirect_url = payload.redirect_url;
+  if (payload.expires_in_days !== undefined)
+    body.expires_in_days = payload.expires_in_days;
+  await apiClient.post<unknown>(endpoints.notifications.adminBroadcast, body);
+}
+
+// ─── Legacy API ────────────────────────────────────────────────────────────────────
 
 // ─── Target option fetchers ──────────────────────────────────────────────────
 

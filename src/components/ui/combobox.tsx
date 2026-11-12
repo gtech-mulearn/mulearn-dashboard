@@ -9,6 +9,7 @@
 import { Check, ChevronDown } from "lucide-react";
 import * as React from "react";
 
+import { DropdownEmpty, NO_RESULTS_TEXT } from "@/components/ui/dropdown-empty";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +40,7 @@ export function Combobox({
   onValueChange,
   placeholder = "Select an option",
   searchPlaceholder: _searchPlaceholder = "Search...",
-  emptyText = "No results found.",
+  emptyText = NO_RESULTS_TEXT,
   disabled = false,
   className,
   onCreateNew,
@@ -52,10 +53,18 @@ export function Combobox({
   const [search, setSearch] = React.useState("");
   const containerRef = React.useRef<HTMLDivElement>(null);
 
+  // The option the user last picked. Server-search callers reset their search
+  // after a pick, so the picked option can drop out of `options`; its label is
+  // kept here so the input doesn't fall back to showing the raw id.
+  const [picked, setPicked] = React.useState<Option | null>(null);
+
   const isServerSearch = Boolean(onSearchChange);
   const selectedOption =
     options.find((opt) => opt.id === value) ??
-    (value && selectedLabel ? { id: value, title: selectedLabel } : undefined);
+    (value && selectedLabel
+      ? { id: value, title: selectedLabel }
+      : undefined) ??
+    (value && picked?.id === value ? picked : undefined);
 
   // Filter options based on search (skipped when server-side search is used)
   const filteredOptions = React.useMemo(() => {
@@ -70,9 +79,11 @@ export function Combobox({
   const displayValue = search || selectedOption?.title || value || "";
 
   const handleSelect = (option: Option) => {
+    setPicked(option);
     onValueChange(option.id);
     setSearch("");
     setOpen(false);
+    onSearchChange?.("");
   };
 
   // Close dropdown when clicking outside
@@ -138,9 +149,7 @@ export function Combobox({
               </div>
             ) : filteredOptions.length === 0 ? (
               <div className="p-1">
-                <div className="py-4 text-center text-sm text-muted-foreground">
-                  {emptyText}
-                </div>
+                <DropdownEmpty>{emptyText}</DropdownEmpty>
                 {onCreateNew && search.trim() && (
                   <button
                     type="button"

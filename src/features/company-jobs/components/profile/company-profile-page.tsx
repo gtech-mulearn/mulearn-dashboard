@@ -25,6 +25,7 @@ import { CompanyCultureSection } from "./company-culture-section";
 import { CompanyJobsSection } from "./company-jobs-section";
 import { CompanyProfileHeader } from "./company-profile-header";
 import { CompanyTestimonialsSection } from "./company-testimonials-section";
+import { CompanyProfileCompleteness } from "./company-trust-signals";
 
 // ─── Sidebar ─────────────────────────────────────────────────
 
@@ -251,6 +252,11 @@ export function CompanyProfilePage() {
         isOwnProfile
         foundedYear={profile.founded_year ?? null}
         remotePolicy={profile.remote_policy ?? null}
+      />
+
+      <CompanyProfileCompleteness
+        completeness={profile.profile_completeness}
+        slaMessage={profile.verification_sla_message}
       />
 
       {/* Two-column layout */}

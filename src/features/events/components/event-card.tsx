@@ -17,6 +17,7 @@ import {
   MessagesSquare,
   Mic,
   Presentation,
+  Radio,
   Sparkles,
   Trophy,
   Users,
@@ -57,6 +58,18 @@ const EVENT_TYPE_ICONS: Record<string, LucideIcon> = {
   tech_talk: Mic,
   others: Compass,
 };
+
+function VenueIcon({
+  venueType,
+  className,
+}: {
+  venueType?: string;
+  className?: string;
+}) {
+  if (venueType === "online") return <Globe className={className} />;
+  if (venueType === "hybrid") return <Radio className={className} />;
+  return <MapPin className={className} />;
+}
 
 interface EventCardProps {
   event: EventListItem;
@@ -109,12 +122,13 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
     },
   );
 
+  const venueType = event.venue.type;
   const venueDisplay =
-    event.venue_type === "online"
+    venueType === "online"
       ? "Online Event"
-      : event.venue_city
-        ? event.venue_city
-        : "Venue TBA";
+      : venueType === "hybrid"
+        ? "Hybrid Event"
+        : "Physical Event";
 
   const isEnded = new Date(event.end_datetime).getTime() < Date.now();
 
@@ -156,11 +170,13 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
         />
       ) : null}
 
-      <div className="relative aspect-[3/4] w-full overflow-hidden">
+      <div className="relative aspect-[4/5] w-full overflow-hidden">
         <Image
           src={event.cover_image ?? "/images/fallback.webp"}
           alt={event.title}
           fill
+          sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+          quality={90}
           className="object-cover"
         />
 
@@ -170,7 +186,9 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
         {/* Top-left stickers: event type + cluster */}
         <div className="absolute left-3 top-3 z-30 flex flex-col gap-1.5 pointer-events-none">
           {EventTypeIcon && eventTypeLabel && (
-            <Badge className="bg-brand-blue/10 dark:bg-brand-blue/20 text-brand-blue border border-brand-blue/20 dark:border-brand-blue/30 hover:bg-brand-blue/20 font-semibold gap-1 text-[11px] px-2.5 py-0.5 rounded-full shadow-sm w-fit">
+            <Badge
+              className={`ig-cat-${eventTypeSlug ?? "others"} font-medium gap-1 text-[11px] px-2.5 py-0.5 rounded-full shadow-sm w-fit`}
+            >
               <EventTypeIcon className="h-3 w-3 shrink-0" />
               {eventTypeLabel}
             </Badge>
@@ -200,7 +218,7 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
             By {getOrganizerName(event.organizer)}
           </p>
           <p className="mt-1 flex items-center gap-1 text-xs opacity-85">
-            <MapPin className="h-3.5 w-3.5" />
+            <VenueIcon venueType={venueType} className="h-3.5 w-3.5" />
             <span>{venueDisplay}</span>
           </p>
 

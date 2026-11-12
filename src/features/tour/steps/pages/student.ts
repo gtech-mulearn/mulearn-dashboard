@@ -345,6 +345,68 @@ export const studentPageTours: readonly PageTourConfig[] = [
   },
 
   {
+    route: "/dashboard/problem-statements",
+    version: 1,
+    steps: [
+      {
+        id: "problem-statements-intro",
+        title: "Problem Statements",
+        description:
+          "Real-world problems from industry partners. Pick one, build a solution, and submit it.",
+        centered: true,
+      },
+      {
+        id: "problem-statements-header",
+        elementId: "page:problem-statements:header",
+        title: "Problem Statements",
+        description:
+          "Browse what's on offer, or check manage statements if your role allows it.",
+      },
+      {
+        id: "problem-statements-tabs",
+        elementId: "page:problem-statements:tabs",
+        title: "Browse or Track",
+        description:
+          "Switch between browsing all statements and the ones you're participating in.",
+      },
+      {
+        id: "problem-statements-filters",
+        elementId: "page:problem-statements:filters",
+        title: "Search & Filter",
+        description:
+          "Narrow statements by category or status, sort them, or switch between board and table view.",
+      },
+      {
+        id: "problem-statements-results",
+        elementId: "page:problem-statements:results",
+        title: "Statement Cards",
+        description:
+          "Open a statement to read the brief, see who else is working on it, and submit your solution.",
+      },
+    ],
+  },
+
+  {
+    route: "/dashboard/reports",
+    version: 1,
+    steps: [
+      {
+        id: "reports-header",
+        elementId: "page:reports:header",
+        title: "Event Report Generator",
+        description: "Create and download event reports as a PDF.",
+      },
+      {
+        id: "reports-form",
+        elementId: "page:reports:form",
+        title: "Fill in the Report",
+        description:
+          "Add a title and content — the preview on the right updates as you type, paginated for printing.",
+      },
+    ],
+  },
+
+  {
     route: "/dashboard/settings",
     version: 1,
     steps: [

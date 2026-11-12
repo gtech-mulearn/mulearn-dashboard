@@ -2,6 +2,7 @@
 
 import {
   keepPreviousData,
+  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
@@ -38,10 +39,13 @@ export function useUsersByRole(roleId: string, search: string) {
   });
 }
 
-export function useBulkRoleUsers(roleId: string) {
-  return useQuery({
+export function useBulkRoleUsers(roleId: string, perPage = 20) {
+  return useInfiniteQuery({
     queryKey: manageRolesKeys.bulkUsers(roleId),
-    queryFn: () => fetchBulkRoleUsers(roleId),
+    queryFn: ({ pageParam }) =>
+      fetchBulkRoleUsers(roleId, { pageIndex: pageParam, perPage }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => lastPage.pagination?.nextPage ?? undefined,
     enabled: Boolean(roleId),
     staleTime: 60 * 1000,
     refetchOnWindowFocus: false,

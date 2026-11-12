@@ -35,6 +35,7 @@ import {
   useIsCirclePendingJoin,
   useJoinCircle,
   useLeaveMeeting,
+  usePendingRsvpMeetingIds,
   useRemoveRsvpMeeting,
   useRsvpMeeting,
   useUserMeetings,
@@ -43,6 +44,7 @@ import { CreateMeetingModal } from "./create-meeting-modal";
 import { DeleteCircleButton } from "./delete-circle-button";
 import { EditCircleModal } from "./edit-circle-modal";
 import { InviteManagerCard } from "./invite-section";
+import { LeaveCircleButton } from "./leave-circle-button";
 import { MeetingCard } from "./meeting-card";
 import { MemberList } from "./member-list";
 import { TransferLeadModal } from "./transfer-lead-modal";
@@ -77,6 +79,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
   const { data: userSavedMeetings } = useUserMeetings({ saved: true });
   const rsvpMeeting = useRsvpMeeting();
   const removeRsvpMeeting = useRemoveRsvpMeeting();
+  const pendingRsvpMeetingIds = usePendingRsvpMeetingIds();
   const _leaveMeeting = useLeaveMeeting();
   const joinCircle = useJoinCircle();
   const isPendingJoinHook = useIsCirclePendingJoin(circleId);
@@ -88,15 +91,25 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
   const isPendingJoin = statusStr === "pending" || isPendingJoinHook;
 
   const rsvpdMeetingIds = useMemo(() => {
-    return new Set(userSavedMeetings?.map((m) => m.id) ?? []);
+    return new Set(
+      userSavedMeetings?.filter((m) => m.is_rsvp !== false).map((m) => m.id) ??
+        [],
+    );
   }, [userSavedMeetings]);
 
   const handleJoin = () => joinCircle.mutate(circleId);
-  const handleRsvp = (meetingId: string) => rsvpMeeting.mutate(meetingId);
-  const handleRemoveRsvp = (meetingId: string) =>
+  const handleRsvp = (meetingId: string) => {
+    if (pendingRsvpMeetingIds.has(meetingId)) return;
+    rsvpMeeting.mutate(meetingId);
+  };
+  const handleRemoveRsvp = (meetingId: string) => {
+    if (pendingRsvpMeetingIds.has(meetingId)) return;
     removeRsvpMeeting.mutate(meetingId);
-  const handleCancelRsvp = (meetingId: string) =>
+  };
+  const handleCancelRsvp = (meetingId: string) => {
+    if (pendingRsvpMeetingIds.has(meetingId)) return;
     removeRsvpMeeting.mutate(meetingId);
+  };
 
   if (isLoading || !circle) {
     return (
@@ -329,9 +342,10 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
               {meetings && meetings.length > 0 ? (
                 <div className="space-y-4">
                   {meetings.map((meeting) => {
-                    const isRsvpd = Boolean(
-                      meeting.is_rsvp || rsvpdMeetingIds.has(meeting.id),
-                    );
+                    const isRsvpd =
+                      meeting.is_rsvp !== undefined
+                        ? Boolean(meeting.is_rsvp)
+                        : rsvpdMeetingIds.has(meeting.id);
                     const meetingWithRsvp = { ...meeting, is_rsvp: isRsvpd };
 
                     return (
@@ -341,9 +355,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
                         onRsvp={handleRsvp}
                         onRemoveRsvp={handleRemoveRsvp}
                         onCancelRsvp={handleCancelRsvp}
-                        isRsvpLoading={
-                          rsvpMeeting.isPending || removeRsvpMeeting.isPending
-                        }
+                        isRsvpLoading={pendingRsvpMeetingIds.has(meeting.id)}
                       />
                     );
                   })}
@@ -426,6 +438,25 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
               </div>
               <div className="shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
                 <DeleteCircleButton
+                  circleId={circleId}
+                  circleName={circle.title}
+                />
+              </div>
+            </div>
+          )}
+
+          {permissions.role === "member" && (
+            <div className="w-full rounded-2xl bg-card p-4 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col items-center justify-between sm:flex-row gap-4">
+              <div className="flex min-w-0 flex-1 flex-col text-center sm:text-left">
+                <span className="text-[14px] font-semibold text-foreground">
+                  Leave Circle
+                </span>
+                <p className="text-[12px] text-muted-foreground">
+                  You will need to request to join again to rejoin.
+                </p>
+              </div>
+              <div className="shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
+                <LeaveCircleButton
                   circleId={circleId}
                   circleName={circle.title}
                 />

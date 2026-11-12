@@ -6,17 +6,18 @@ import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   deactivateCompanySelf,
   fetchCompanyAdminLinks,
-  fetchUserCompanyStatus,
+  fetchMyCompanyInvitations,
   inviteCompanyAdmin,
   leaveCompanyAdmin,
   removeCompanyAdmin,
   respondCompanyAdminInvitation,
 } from "../api";
+import { COMPANY_KEYS } from "./use-company-profile";
 
 export const COMPANY_ADMIN_LINK_KEYS = {
   all: ["company-admin-links"] as const,
   list: () => [...COMPANY_ADMIN_LINK_KEYS.all, "list"] as const,
-  status: () => [...COMPANY_ADMIN_LINK_KEYS.all, "status"] as const,
+  invitations: () => [...COMPANY_ADMIN_LINK_KEYS.all, "invitations"] as const,
 };
 
 export function useCompanyAdminLinks() {
@@ -27,20 +28,42 @@ export function useCompanyAdminLinks() {
   });
 }
 
-export function useUserCompanyStatus() {
+/** Pending invitations addressed to the signed-in user (BE-1). */
+export function useMyCompanyInvitations(enabled = true) {
   return useQuery({
-    queryKey: COMPANY_ADMIN_LINK_KEYS.status(),
-    queryFn: fetchUserCompanyStatus,
+    queryKey: COMPANY_ADMIN_LINK_KEYS.invitations(),
+    queryFn: fetchMyCompanyInvitations,
+    enabled,
+    retry: false,
     refetchOnWindowFocus: false,
+  });
+}
+
+/** Owner withdraws a pending invite (BE-2: the revoke endpoint). */
+export function useCancelCompanyAdminInvite() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (linkId: string) => removeCompanyAdmin(linkId),
+    onSuccess: () => {
+      toast.success("Invitation cancelled");
+      queryClient.invalidateQueries({
+        queryKey: COMPANY_ADMIN_LINK_KEYS.list(),
+      });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to cancel invitation" }),
+      );
+    },
   });
 }
 
 export function useInviteCompanyAdmin() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (email: string) => inviteCompanyAdmin(email),
+    mutationFn: (muid: string) => inviteCompanyAdmin(muid),
     onSuccess: () => {
-      toast.success("Co-admin invitation sent successfully");
+      toast.success("Invitation sent. They'll get access once they accept.");
       queryClient.invalidateQueries({
         queryKey: COMPANY_ADMIN_LINK_KEYS.list(),
       });
@@ -60,9 +83,11 @@ export function useRespondCompanyAdminInvitation() {
       respondCompanyAdminInvitation(linkId, accept),
     onSuccess: (_, variables) => {
       toast.success(
-        variables.accept ? "Invitation accepted" : "Invitation rejected",
+        variables.accept ? "Invitation accepted" : "Invitation declined",
       );
       queryClient.invalidateQueries({ queryKey: COMPANY_ADMIN_LINK_KEYS.all });
+      // Accepting makes the user a co-admin: refresh company access.
+      queryClient.invalidateQueries({ queryKey: COMPANY_KEYS.all });
     },
     onError: (error) => {
       toast.error(
@@ -79,7 +104,7 @@ export function useRemoveCompanyAdmin() {
   return useMutation({
     mutationFn: (linkId: string) => removeCompanyAdmin(linkId),
     onSuccess: () => {
-      toast.success("Co-admin removed successfully");
+      toast.success("Co-admin removed");
       queryClient.invalidateQueries({
         queryKey: COMPANY_ADMIN_LINK_KEYS.list(),
       });
@@ -97,8 +122,10 @@ export function useLeaveCompanyAdmin() {
   return useMutation({
     mutationFn: (linkId: string) => leaveCompanyAdmin(linkId),
     onSuccess: () => {
-      toast.success("Left company admin role");
+      toast.success("You've left the company");
       queryClient.invalidateQueries({ queryKey: COMPANY_ADMIN_LINK_KEYS.all });
+      // The user is no longer a co-admin: refresh company access.
+      queryClient.invalidateQueries({ queryKey: COMPANY_KEYS.all });
     },
     onError: (error) => {
       toast.error(

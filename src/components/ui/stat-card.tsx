@@ -19,6 +19,8 @@ export interface StatCardProps {
   description?: string;
   gradient?: boolean;
   className?: string;
+  /** Optional breakdown rendered under the headline, separated by a rule. */
+  children?: ReactNode;
 }
 
 const ACCENT_VAR: Record<StatAccent, string> = {
@@ -46,6 +48,7 @@ export function StatCard({
   description,
   gradient = false,
   className,
+  children,
 }: StatCardProps) {
   const accentColor = ACCENT_VAR[accent];
   return (
@@ -56,51 +59,56 @@ export function StatCard({
         className,
       )}
     >
-      <CardContent className="flex items-start justify-between gap-4 p-5">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            {title}
-          </p>
-          <p className="mt-2 font-display text-2xl font-bold tracking-tight text-foreground">
-            {value}
-          </p>
-          {(description || trend) && (
-            <div className="mt-2 flex items-center gap-2">
-              {trend && (
-                <span
-                  className={cn(
-                    "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-bold",
-                    trend.direction === "up"
-                      ? "bg-success/12 text-success"
-                      : "bg-destructive/12 text-destructive",
-                  )}
-                >
-                  {trend.direction === "up" ? (
-                    <ArrowUpRight className="size-3" />
-                  ) : (
-                    <ArrowDownRight className="size-3" />
-                  )}
-                  {trend.value}
-                </span>
-              )}
-              {description && (
-                <span className="truncate text-xs text-muted-foreground">
-                  {description}
-                </span>
-              )}
+      <CardContent className="p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              {title}
+            </p>
+            <p className="mt-2 font-display text-2xl font-bold tracking-tight text-foreground">
+              {value}
+            </p>
+            {(description || trend) && (
+              <div className="mt-2 flex items-center gap-2">
+                {trend && (
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-bold",
+                      trend.direction === "up"
+                        ? "bg-success/12 text-success"
+                        : "bg-destructive/12 text-destructive",
+                    )}
+                  >
+                    {trend.direction === "up" ? (
+                      <ArrowUpRight className="size-3" />
+                    ) : (
+                      <ArrowDownRight className="size-3" />
+                    )}
+                    {trend.value}
+                  </span>
+                )}
+                {description && (
+                  <span className="truncate text-xs text-muted-foreground">
+                    {description}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+          {icon && (
+            <div
+              className="flex size-10 shrink-0 items-center justify-center rounded-xl"
+              style={{
+                backgroundColor: `color-mix(in srgb, ${accentColor} 14%, var(--background))`,
+                color: accentColor,
+              }}
+            >
+              {icon}
             </div>
           )}
         </div>
-        {icon && (
-          <div
-            className="flex size-10 shrink-0 items-center justify-center rounded-xl"
-            style={{
-              backgroundColor: `color-mix(in srgb, ${accentColor} 14%, var(--background))`,
-              color: accentColor,
-            }}
-          >
-            {icon}
-          </div>
+        {children && (
+          <div className="mt-4 border-t border-border/60 pt-3">{children}</div>
         )}
       </CardContent>
     </Card>

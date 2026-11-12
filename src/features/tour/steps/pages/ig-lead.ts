@@ -4,7 +4,8 @@
  * 📍 src/features/tour/steps/pages/ig-lead.ts
  *
  * In-page tours for pages reachable via `events:manage`/IG-Lead-gated nav
- * items: talent pool, manage events.
+ * items: talent pool, manage events, incoming collaborations (shared by
+ * campus and IG leads).
  */
 
 import type { PageTourConfig } from "../../types";
@@ -12,7 +13,7 @@ import type { PageTourConfig } from "../../types";
 export const igLeadPageTours: readonly PageTourConfig[] = [
   {
     route: "/dashboard/talent-pool",
-    version: 1,
+    version: 2,
     steps: [
       {
         id: "talent-pool-welcome",
@@ -20,6 +21,13 @@ export const igLeadPageTours: readonly PageTourConfig[] = [
         description:
           "Browse verified learners to mentor, hire, or bring onto your team. Here's how to find the right ones.",
         centered: true,
+      },
+      {
+        id: "talent-pool-tabs",
+        elementId: "page:talent-pool:tabs",
+        title: "Discover, Shortlist & Insights",
+        description:
+          "Switch between discovering learners, your shortlist, and talent pool insights.",
       },
       {
         id: "talent-pool-search",
@@ -92,6 +100,32 @@ export const igLeadPageTours: readonly PageTourConfig[] = [
         title: "Your events",
         description:
           "Manage each event's details, registrations, and approvals from here.",
+      },
+    ],
+  },
+  {
+    route: "/dashboard/collaborations/incoming",
+    version: 1,
+    steps: [
+      {
+        id: "collaborations-incoming-header",
+        elementId: "page:collaborations-incoming:header",
+        title: "Collaboration Invites",
+        description:
+          "Companies invite your campus or Interest Group to co-host events, sponsor activities, and share mentors.",
+      },
+      {
+        id: "collaborations-incoming-invites",
+        elementId: "page:collaborations-incoming:invites",
+        title: "Your Invitations",
+        description: "Accept or decline invitations sent directly to you.",
+      },
+      {
+        id: "collaborations-incoming-open-posts",
+        elementId: "page:collaborations-incoming:open-posts",
+        title: "Open Posts",
+        description:
+          "Claim open collaboration posts for a campus or Interest Group you lead.",
       },
     ],
   },

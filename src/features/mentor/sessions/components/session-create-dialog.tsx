@@ -1,11 +1,13 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { type Resolver, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { CustomDateTimePicker } from "@/components/ui/custom-datetime-picker";
 import {
   Dialog,
@@ -30,8 +32,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { usePersonaCurrent } from "@/features/mentor/hooks/use-persona";
+import { useMentorProfile } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import { useCreateSession } from "../hooks/use-sessions";
+import {
+  GLOBAL_MENTOR_SCOPE,
+  scopeLabel,
+  scopeOptions,
+  sessionTypeForScope,
+} from "../lib/session-scope";
 import { SessionFormSchema, type SessionFormValues } from "../schemas";
 
 const CreateSessionFormSchema = SessionFormSchema.superRefine((v, ctx) => {
@@ -53,15 +63,36 @@ export function SessionCreateDialog({
   open,
   onOpenChange,
 }: SessionCreateDialogProps) {
-  // Every session is scoped to one of the mentor's Interest Groups.
   const { data: myIgs = [] } = useTaskIgDropdown();
+  // A session belongs to one of the mentor's grants: an IG, campus or
+  // company (persona/current), or any IG for a global mentor.
+  const { data: persona } = usePersonaCurrent(open);
+  const { data: mentorProfile } = useMentorProfile(open);
+  const options = useMemo(
+    () => scopeOptions(persona?.available_scopes ?? []),
+    [persona],
+  );
+  const scopeChoices = options.map((option) => ({
+    ...option,
+    label: scopeLabel(option, {
+      igs: myIgs,
+      applications: mentorProfile?.applications ?? [],
+    }),
+  }));
+  const [scopeValue, setScopeValue] = useState("");
+  const selectedScope = options.find((o) => o.value === scopeValue);
+  // No listed grant (legacy) or a global grant: pick the IG directly.
+  const needsIgPicker =
+    options.length === 0 || selectedScope?.scopeType === GLOBAL_MENTOR_SCOPE;
 
   const { mutate: create, isPending } = useCreateSession();
 
-  const form = useForm<SessionFormValues>({
-    resolver: zodResolver(
-      CreateSessionFormSchema,
-    ) as Resolver<SessionFormValues>,
+  const form = useForm<
+    z.input<typeof CreateSessionFormSchema>,
+    any,
+    SessionFormValues
+  >({
+    resolver: zodResolver(CreateSessionFormSchema),
     defaultValues: {
       title: "",
       description: "",
@@ -78,8 +109,43 @@ export function SessionCreateDialog({
     },
   });
 
+  const chooseScope = useCallback(
+    (value: string) => {
+      setScopeValue(value);
+      const option = options.find((o) => o.value === value);
+      if (!option) return;
+      const validate = { shouldValidate: form.formState.isSubmitted };
+      if (option.scopeType === GLOBAL_MENTOR_SCOPE) {
+        form.setValue("session_type", "IG_SESSION", validate);
+        form.setValue("entity_id", "", validate);
+      } else {
+        form.setValue(
+          "session_type",
+          sessionTypeForScope(option.scopeType) ?? undefined,
+          validate,
+        );
+        form.setValue("entity_id", option.entityId, validate);
+        form.setValue("ig_id", "", validate);
+      }
+    },
+    [options, form],
+  );
+
+  // Preselect the active persona's scope, or the only scope there is.
+  useEffect(() => {
+    if (!open || scopeValue || options.length === 0) return;
+    const active = options.find(
+      (o) =>
+        o.scopeType === persona?.active_scope_type &&
+        o.entityId === (persona?.active_scope_id ?? ""),
+    );
+    const pick = active ?? (options.length === 1 ? options[0] : undefined);
+    if (pick) chooseScope(pick.value);
+  }, [open, options, persona, scopeValue, chooseScope]);
+
   const mode = form.watch("mode");
   const startsAt = form.watch("starts_at");
+  const isRecurring = form.watch("is_recurring");
 
   useEffect(() => {
     if (open) {
@@ -108,6 +174,7 @@ export function SessionCreateDialog({
       onSuccess: () => {
         onOpenChange(false);
         form.reset();
+        setScopeValue("");
       },
     });
   }
@@ -156,7 +223,34 @@ export function SessionCreateDialog({
                 )}
               />
 
-              {myIgs.length > 0 ? (
+              {scopeChoices.length > 0 && (
+                <FormField
+                  control={form.control}
+                  name="entity_id"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>Session for</FormLabel>
+                      <Select value={scopeValue} onValueChange={chooseScope}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choose an interest group, campus or company" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {scopeChoices.map((choice) => (
+                            <SelectItem key={choice.value} value={choice.value}>
+                              {choice.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {needsIgPicker && myIgs.length > 0 ? (
                 <FormField
                   control={form.control}
                   name="ig_id"
@@ -184,12 +278,12 @@ export function SessionCreateDialog({
                     </FormItem>
                   )}
                 />
-              ) : (
+              ) : needsIgPicker && scopeChoices.length === 0 ? (
                 <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
-                  You need to mentor an Interest Group to create a session. Add
-                  one in your profile first.
+                  You need an active mentor grant for an interest group, campus
+                  or company to create a session.
                 </div>
-              )}
+              ) : null}
 
               <FormField
                 control={form.control}
@@ -295,9 +389,99 @@ export function SessionCreateDialog({
                 />
               )}
 
-              {/* Recurring sessions are temporarily disabled — the recurrence
-                  flow has open bugs. Sessions are created as one-off; the
-                  is_recurring default (false) is still sent in the payload. */}
+              <FormField
+                control={form.control}
+                name="is_recurring"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-3">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="cursor-pointer">
+                        Repeat session
+                      </FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {isRecurring && (
+                <div className="space-y-4 rounded-md border p-3 bg-muted/30">
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField
+                      control={form.control}
+                      name="recurrence_type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Frequency</FormLabel>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select frequency" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="DAILY">Daily</SelectItem>
+                              <SelectItem value="WEEKLY">Weekly</SelectItem>
+                              <SelectItem value="MONTHLY">Monthly</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="recurrence_interval"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Interval</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min={1}
+                              value={field.value ?? 1}
+                              onChange={(e) =>
+                                field.onChange(
+                                  Number.parseInt(e.target.value, 10) || 1,
+                                )
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="recurrence_end_date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>End Date</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="date"
+                            value={field.value ?? ""}
+                            onChange={field.onChange}
+                            min={startsAt ? startsAt.split("T")[0] : undefined}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="shrink-0 flex justify-end gap-2 px-6 py-4 border-t border-border">

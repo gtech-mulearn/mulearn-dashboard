@@ -16,12 +16,15 @@ import {
   ChevronRight,
   Clock,
   Shield,
+  Star,
   Users,
 } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { MentorSession } from "@/features/home/schemas";
+import { formatMentorHours } from "@/features/mentor/lib/hours";
+import { formatMentorRating } from "@/features/mentor/lib/rating";
 import type {
   MentorApplication,
   MentorStatusData,
@@ -139,11 +142,33 @@ export function MentorProfileSidebar({
           </div>
 
           {/* Hours */}
-          {typeof mentorProfile.hours === "number" && (
+          {formatMentorHours(mentorProfile.hours) && (
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <span className="text-muted-foreground">Total hours</span>
-              <span className="ml-auto font-medium">{mentorProfile.hours}</span>
+              <span className="text-muted-foreground">Availability</span>
+              <span className="ml-auto font-medium">
+                {formatMentorHours(mentorProfile.hours)} / week
+              </span>
+            </div>
+          )}
+
+          {/* Session rating */}
+          {formatMentorRating(
+            mentorProfile.avg_rating,
+            mentorProfile.rating_count,
+          ) && (
+            <div className="flex items-center gap-2">
+              <Star
+                className="h-4 w-4 shrink-0 fill-amber-400 text-amber-400"
+                aria-hidden="true"
+              />
+              <span className="text-muted-foreground">Session rating</span>
+              <span className="ml-auto font-medium">
+                {formatMentorRating(
+                  mentorProfile.avg_rating,
+                  mentorProfile.rating_count,
+                )}
+              </span>
             </div>
           )}
         </CardContent>

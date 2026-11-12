@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +15,7 @@ import { Combobox } from "@/components/ui/combobox";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -32,14 +33,19 @@ import {
 import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
 import { useInterestGroupsList } from "@/features/home/hooks";
-import { useCompanies } from "@/features/onboarding/hooks";
+import { useCollegeSearch, useCompanies } from "@/features/onboarding";
+import { MENTOR_HOURS_OPTIONS, toMentorHours } from "../../lib/hours";
 import { useOnboardingDraftStore } from "../hooks/use-draft-store";
 import {
   useSubmitMentorApplication,
   useUpdateMentorApplication,
 } from "../hooks/use-onboarding";
-import type { MentorApplication, MentorProfileWrite } from "../schemas";
+import { buildMentorApplicationPayload } from "../lib/build-payload";
+import type { MentorApplication } from "../schemas";
 import { OnboardingFormSchema, type OnboardingFormValues } from "../schemas";
+
+/** Select sentinel for "no hours picked" (Radix items can't use an empty value). */
+const HOURS_UNSET = "__unset__";
 
 interface MentorOnboardingFormProps {
   existing?: MentorApplication;
@@ -66,6 +72,10 @@ export function MentorOnboardingForm({
 }: MentorOnboardingFormProps) {
   const { data: igList = [] } = useInterestGroupsList();
   const { data: companies = [] } = useCompanies();
+  // Campus Mentor: colleges are searched server-side as the user types.
+  const [collegeSearch, setCollegeSearch] = useState("");
+  const { data: colleges = [], isFetching: isSearchingColleges } =
+    useCollegeSearch(collegeSearch);
   const { mutate: submit, isPending: isSubmitting } =
     useSubmitMentorApplication();
   const { mutate: update, isPending: isUpdating } =
@@ -96,7 +106,9 @@ export function MentorOnboardingForm({
       ? "IG_MENTOR"
       : rawDraftTier === "Company Mentor"
         ? "COMPANY_MENTOR"
-        : rawDraftTier;
+        : rawDraftTier === "Campus Mentor"
+          ? "CAMPUS_MENTOR"
+          : rawDraftTier;
 
   // When reapplying or editing pending, the backend profile endpoint (/mentor/profile/) returns
   // 403 for rejected/pending users, so `existing` will be undefined. We fall back to
@@ -141,6 +153,8 @@ export function MentorOnboardingForm({
       fallbackSource?.linkedin_url ??
       "",
     reason: existing?.reason ?? fallbackSource?.reason ?? "",
+    hours:
+      toMentorHours(existing?.hours) ?? toMentorHours(fallbackSource?.hours),
     preferred_ig_ids:
       existing?.preferred_ig_ids ?? fallbackSource?.preferred_ig_ids ?? [],
   };
@@ -174,49 +188,14 @@ export function MentorOnboardingForm({
   };
 
   function onSubmit(values: OnboardingFormValues) {
-    // Join expertise chips into the comma string the backend stores.
-    // Strip `company` (display-only name) — the API only accepts `org` (UUID).
-    // Map `linkedin_url` to `linkedin` to match the API expectation.
-    // Always send `hours` (even as 0) — the backend DB column is NOT NULL with
-    // no default, so omitting it causes a 500 IntegrityError.
-    const { company: _company, linkedin_url, ...rest } = values;
-    let sanitizedOrg = rest.org;
-    if (isReapply && sanitizedOrg) {
-      const isUUID =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-          sanitizedOrg,
-        );
-      if (!isUUID) {
-        const matchedCompany = companies.find(
-          (c) => c.title.toLowerCase() === sanitizedOrg?.toLowerCase(),
-        );
-        if (matchedCompany) {
-          sanitizedOrg = matchedCompany.id;
-        } else {
-          sanitizedOrg = undefined;
-        }
-      }
-    }
-
-    const payload = {
-      ...rest,
-      org: sanitizedOrg,
-      // Only include the existing ID if it's a pure edit.
-      // If it's a reapply, we want a fresh application row created.
-      ...(existing?.id && !isReapply ? { id: existing.id } : {}),
-      hours: values.hours ?? 0,
-      linkedin: linkedin_url,
-      expertise: (values.expertise ?? []).join(", "),
-    } as MentorProfileWrite & { id?: string };
-
-    if (!payload.org) {
-      delete payload.org;
-    }
-
-    if (isPendingEdit) {
-      delete payload.org;
-      delete payload.mentor_tier;
-    }
+    const payload = buildMentorApplicationPayload(values, {
+      existingId: existing?.id,
+      isEdit,
+      isReapply,
+      isPendingEdit,
+      companies,
+      colleges,
+    });
 
     // If it's purely an edit of an existing profile, use PATCH (update).
     // If it's a new application OR a reapplication, use POST (submit) as requested.
@@ -261,11 +240,13 @@ export function MentorOnboardingForm({
                     <FormLabel>Mentor Tier</FormLabel>
                     <Select
                       onValueChange={(val) => {
-                        field.onChange(val);
-                        if (val === "IG_MENTOR") {
+                        // Company and campus tiers take different kinds of
+                        // organisation, so a tier change clears the pick.
+                        if (val !== field.value) {
                           form.setValue("org", "");
                           form.setValue("company", "");
                         }
+                        field.onChange(val);
                       }}
                       defaultValue={field.value}
                       value={field.value}
@@ -280,6 +261,9 @@ export function MentorOnboardingForm({
                         <SelectItem value="COMPANY_MENTOR">
                           Company Mentor
                         </SelectItem>
+                        <SelectItem value="CAMPUS_MENTOR">
+                          Campus Mentor
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -289,38 +273,71 @@ export function MentorOnboardingForm({
 
               {/* Company field — visible if the user selected a company during registration 
                   OR if the mentor tier is explicitly set to COMPANY_MENTOR. */}
-              {(!!form.watch("company") ||
-                !!form.watch("org") ||
-                form.watch("mentor_tier") === "COMPANY_MENTOR") && (
+              {form.watch("mentor_tier") === "CAMPUS_MENTOR" && (
                 <FormField
                   control={form.control}
                   name="org"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Company</FormLabel>
+                      <FormLabel>College</FormLabel>
                       <FormControl>
                         <Combobox
-                          options={companyOptions}
+                          options={colleges}
                           value={field.value ?? ""}
+                          selectedLabel={form.watch("company") || undefined}
                           onValueChange={(val: string) => {
                             field.onChange(val);
-                            const selected = companies.find(
-                              (c) => c.id === val,
-                            );
-                            if (selected) {
-                              form.setValue("company", selected.title);
-                            } else {
-                              form.setValue("company", "");
-                            }
+                            const selected = colleges.find((c) => c.id === val);
+                            form.setValue("company", selected?.title ?? "");
                           }}
-                          placeholder="Select your company..."
+                          onSearchChange={setCollegeSearch}
+                          loading={isSearchingColleges}
+                          placeholder="Search your college..."
+                          searchPlaceholder="Type your college name"
                         />
                       </FormControl>
+                      <FormDescription>
+                        Campus mentors support learners at one college.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               )}
+
+              {form.watch("mentor_tier") !== "CAMPUS_MENTOR" &&
+                (!!form.watch("company") ||
+                  !!form.watch("org") ||
+                  form.watch("mentor_tier") === "COMPANY_MENTOR") && (
+                  <FormField
+                    control={form.control}
+                    name="org"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Company</FormLabel>
+                        <FormControl>
+                          <Combobox
+                            options={companyOptions}
+                            value={field.value ?? ""}
+                            onValueChange={(val: string) => {
+                              field.onChange(val);
+                              const selected = companies.find(
+                                (c) => c.id === val,
+                              );
+                              if (selected) {
+                                form.setValue("company", selected.title);
+                              } else {
+                                form.setValue("company", "");
+                              }
+                            }}
+                            placeholder="Select your company..."
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
             </div>
 
             <FormField
@@ -377,6 +394,46 @@ export function MentorOnboardingForm({
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="hours"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Weekly availability{" "}
+                    <span className="font-normal text-muted-foreground">
+                      (optional)
+                    </span>
+                  </FormLabel>
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={(value) =>
+                      field.onChange(value === HOURS_UNSET ? undefined : value)
+                    }
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="How much time can you give each week?" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value={HOURS_UNSET}>Not sure yet</SelectItem>
+                      {MENTOR_HOURS_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label} per week
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Helps learners and reviewers know what to expect. You can
+                    change it later from your profile.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

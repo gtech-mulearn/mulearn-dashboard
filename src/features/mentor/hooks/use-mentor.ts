@@ -6,6 +6,7 @@ import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   createAvailabilitySlots,
   fetchAvailabilityCalendar,
+  fetchMentorPersonalAnalytics,
   getAvailabilitySlots,
 } from "../api";
 import type { WeeklySchedule } from "../types";
@@ -64,5 +65,15 @@ export function useCreateAvailabilitySlots() {
         }),
       );
     },
+  });
+}
+
+// ─── Analytics ───────────────────────────────────────────────────────────────
+
+export function useMentorPersonalAnalytics(enabled = true) {
+  return useQuery({
+    queryKey: mentorKeys.analytics(),
+    queryFn: fetchMentorPersonalAnalytics,
+    enabled,
   });
 }

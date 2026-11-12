@@ -18,7 +18,7 @@ export function LeaderboardView({ category, timeframe }: LeaderboardViewProps) {
   const { data, isLoading, isError } = useLeaderboard(category, timeframe);
 
   return (
-    <div className="max-w-7xl mx-auto min-h-screen px-4 pb-12">
+    <div className="space-y-6">
       {/* Controls */}
       <LeaderboardControls category={category} timeframe={timeframe} />
 

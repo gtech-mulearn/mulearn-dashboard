@@ -26,24 +26,10 @@ export default function TaskBulkImportView() {
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
 
   const importMutation = useImportTasks();
-  const downloadTemplateMutation = useDownloadTasksTemplate();
-
-  const handleTemplateDownload = async () => {
-    try {
-      const blob = await downloadTemplateMutation.mutateAsync();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "tasks_template.xlsx";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-      toast.success("Downloaded template successfully");
-    } catch {
-      // Error toast is handled by useDownloadTasksTemplate.
-    }
-  };
+  const {
+    downloadCsv: handleTemplateDownload,
+    isDownloading: isTemplateDownloading,
+  } = useDownloadTasksTemplate();
 
   const handleUpload = () => {
     if (!file) return;
@@ -52,6 +38,9 @@ export default function TaskBulkImportView() {
       onSuccess: (res) => {
         setImportResult(res as ImportResult);
         toast.success("Bulk import process completed");
+      },
+      onError: () => {
+        setImportResult(null);
       },
     });
   };
@@ -71,11 +60,11 @@ export default function TaskBulkImportView() {
           <Button
             variant="outline"
             onClick={handleTemplateDownload}
-            disabled={downloadTemplateMutation.isPending}
+            disabled={isTemplateDownloading}
             className="w-full sm:w-auto"
           >
             <Download className="mr-2 size-4" />
-            Download Excel Template
+            Download Template
           </Button>
         </CardHeader>
 

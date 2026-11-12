@@ -1,59 +1,48 @@
 "use client";
 
 import { Inbox } from "lucide-react";
-import type { BroadcastNotification, DirectNotification } from "../schemas";
+import type { NotificationItem as NotificationItemType } from "../schemas";
 import { NotificationItem } from "./notification-item";
 
-interface DirectListProps {
-  type: "direct";
-  items: DirectNotification[];
-  onDelete: (id: string) => void;
+interface NotificationListProps {
+  items: NotificationItemType[];
   deletingId?: string;
+  markingReadId?: string;
+  onDelete?: (id: string) => void;
+  onMarkRead?: (id: string) => void;
   emptyLabel?: string;
 }
-
-interface BroadcastListProps {
-  type: "broadcast";
-  items: BroadcastNotification[];
-  onDelete?: never;
-  deletingId?: never;
-  emptyLabel?: string;
-}
-
-type NotificationListProps = DirectListProps | BroadcastListProps;
 
 export function NotificationList({
-  type,
   items,
-  onDelete,
   deletingId,
+  markingReadId,
+  onDelete,
+  onMarkRead,
   emptyLabel = "No notifications",
 }: NotificationListProps) {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-2 py-10 text-muted-foreground">
-        <Inbox className="h-8 w-8" />
+        <Inbox className="size-6" />
         <p className="text-sm">{emptyLabel}</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-2 overflow-y-auto max-h-[360px] pr-1">
+    <ul className="divide-y divide-border">
       {items.map((item) => (
-        <NotificationItem
-          key={item.id}
-          id={item.id}
-          title={item.title}
-          description={item.description}
-          created_at={item.created_at}
-          url={item.url}
-          button={"button" in item ? item.button : undefined}
-          type={type}
-          onDelete={type === "direct" ? onDelete : undefined}
-          isDeleting={deletingId === item.id}
-        />
+        <li key={item.id}>
+          <NotificationItem
+            item={item}
+            isDeleting={deletingId === item.id}
+            isMarkingRead={markingReadId === item.id}
+            onDelete={onDelete}
+            onMarkRead={onMarkRead}
+          />
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

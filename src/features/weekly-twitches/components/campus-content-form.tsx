@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useIsMutations, useSmtMutations } from "../hooks";
+import { normalizeZone, ZONE_OPTIONS } from "../lib/zones";
 import {
   type CampusContentItem,
   type CampusContentType,
@@ -85,7 +86,7 @@ export function CampusContentForm({
         campus: initialData.campus,
         date: initialData.date,
         time: toTimeInput(initialData.time),
-        zone: initialData.zone ?? undefined,
+        zone: normalizeZone(initialData.zone),
         description: initialData.description ?? "",
         link: initialData.link ?? "",
       });
@@ -167,9 +168,11 @@ export function CampusContentForm({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">No zone</SelectItem>
-                      <SelectItem value="north">North</SelectItem>
-                      <SelectItem value="central">Central</SelectItem>
-                      <SelectItem value="south">South</SelectItem>
+                      {ZONE_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 )}

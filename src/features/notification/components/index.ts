@@ -1,3 +1,4 @@
+export { AdminBroadcastDialog } from "./manage/admin-broadcast-dialog";
 export { BroadcastFormDialog } from "./manage/broadcast-form-dialog";
 export { BroadcastTable } from "./manage/broadcast-table";
 export { NotificationManageCard } from "./manage/notification-manage-card";

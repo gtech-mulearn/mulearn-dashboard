@@ -22,6 +22,7 @@ import {
   useSmtMutations,
 } from "../hooks";
 import { formatTime } from "../lib/format-time";
+import { ZONE_OPTIONS, zoneLabel } from "../lib/zones";
 import type { CampusContentItem, CampusContentType } from "../schemas";
 import { CampusContentDetailDialog } from "./campus-content-detail-dialog";
 import { CampusContentForm } from "./campus-content-form";
@@ -36,8 +37,8 @@ const COLUMNS = [
   { column: "topic", Label: "Topic", isSortable: false, width: "w-52" },
   { column: "campus", Label: "Campus", isSortable: false, width: "w-40" },
   { column: "zone", Label: "Zone", isSortable: false, width: "w-24" },
-  { column: "date", Label: "Date", isSortable: false, width: "w-28" },
-  { column: "time", Label: "Time", isSortable: false, width: "w-20" },
+  { column: "date", Label: "Date", isSortable: true, width: "w-28" },
+  { column: "time", Label: "Time", isSortable: true, width: "w-20" },
   { column: "status", Label: "Status", isSortable: false, width: "w-28" },
 ];
 
@@ -56,6 +57,7 @@ export function CampusContentTab({ contentType }: Props) {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [zone, setZone] = useState("");
+  const [sort, setSort] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [viewTarget, setViewTarget] = useState<CampusContentItem | null>(null);
   const [editTarget, setEditTarget] = useState<CampusContentItem | null>(null);
@@ -69,6 +71,7 @@ export function CampusContentTab({ contentType }: Props) {
     search,
     status: status || undefined,
     zone: zone || undefined,
+    sortBy: sort || undefined,
   };
 
   const smtQuery = useSmtList(params, contentType === "smt");
@@ -104,6 +107,10 @@ export function CampusContentTab({ contentType }: Props) {
   const handleZoneChange = (val: string) => {
     setPage(1);
     setZone(val === "all" ? "" : val);
+  };
+  const handleSortChange = (column: string) => {
+    setPage(1);
+    setSort((prev) => (prev === column ? `-${column}` : column));
   };
 
   const openCreate = () => {
@@ -164,9 +171,11 @@ export function CampusContentTab({ contentType }: Props) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All zones</SelectItem>
-              <SelectItem value="north">North</SelectItem>
-              <SelectItem value="central">Central</SelectItem>
-              <SelectItem value="south">South</SelectItem>
+              {ZONE_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Button onClick={openCreate} className="w-full gap-2 sm:w-auto">
@@ -203,9 +212,9 @@ export function CampusContentTab({ contentType }: Props) {
             );
           }
           if (column === "zone") {
-            const z = String(row.zone ?? "");
+            const z = zoneLabel(row.zone);
             return z ? (
-              <span className="capitalize">{z}</span>
+              <span>{z}</span>
             ) : (
               <span className="text-muted-foreground">—</span>
             );
@@ -247,7 +256,11 @@ export function CampusContentTab({ contentType }: Props) {
           </div>
         )}
       >
-        <THead columnOrder={COLUMNS} onIconClick={() => {}} action={true} />
+        <THead
+          columnOrder={COLUMNS}
+          onIconClick={handleSortChange}
+          action={true}
+        />
         <Pagination
           currentPage={page}
           totalPages={totalPages}
