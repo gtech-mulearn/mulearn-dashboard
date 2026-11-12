@@ -30,14 +30,24 @@ describe("resolveTourKey", () => {
     expect(resolveTourKey([ROLES.INTERN_LEAD])).toBe("intern");
   });
 
-  it("falls through Student, Pre Member, Fellow, Mentor, Company, IG Lead, Enabler to dashboard", () => {
+  it("falls through Student, Pre Member, Fellow, IG Lead, Enabler to dashboard", () => {
     expect(resolveTourKey([ROLES.STUDENT])).toBe("dashboard");
     expect(resolveTourKey([ROLES.PRE_MEMBER])).toBe("dashboard");
     expect(resolveTourKey([ROLES.FELLOW])).toBe("dashboard");
-    expect(resolveTourKey([ROLES.MENTOR])).toBe("dashboard");
-    expect(resolveTourKey([ROLES.COMPANY])).toBe("dashboard");
     expect(resolveTourKey([ROLES.IG_LEAD])).toBe("dashboard");
     expect(resolveTourKey([ROLES.ENABLER])).toBe("dashboard");
+  });
+
+  it("maps Mentor to mentor", () => {
+    expect(resolveTourKey([ROLES.MENTOR])).toBe("mentor");
+  });
+
+  it("maps Company to company", () => {
+    expect(resolveTourKey([ROLES.COMPANY])).toBe("company");
+  });
+
+  it("prioritizes Mentor over Company when a user holds both", () => {
+    expect(resolveTourKey([ROLES.MENTOR, ROLES.COMPANY])).toBe("mentor");
   });
 
   it("returns null for permission-scoped roles with no dashboard shell", () => {

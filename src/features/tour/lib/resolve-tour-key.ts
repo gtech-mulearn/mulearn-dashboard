@@ -75,6 +75,15 @@ export function resolveTourKey(roles: readonly string[]): TourKey | null {
     return "intern";
   }
 
+  // Mentor takes priority over Company for a user holding both roles.
+  if (roles.includes(ROLES.MENTOR)) {
+    return "mentor";
+  }
+
+  if (roles.includes(ROLES.COMPANY)) {
+    return "company";
+  }
+
   return "dashboard";
 }
 
@@ -85,4 +94,6 @@ export const TOUR_HOME_ROUTE: Record<TourKey, string> = {
   campus: "/dashboard",
   zonal: "/dashboard",
   district: "/dashboard",
+  mentor: "/dashboard",
+  company: "/dashboard",
 };

@@ -16,6 +16,8 @@ export const TOUR_VERSIONS: Record<TourKey, number> = {
   campus: 1,
   zonal: 1,
   district: 1,
+  mentor: 1,
+  company: 1,
 };
 
 export const TOUR_COOKIE_NAME = "mulearn-tour";

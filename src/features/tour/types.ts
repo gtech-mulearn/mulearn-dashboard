@@ -6,7 +6,14 @@
 
 import type { Permission } from "@/lib/auth/permissions";
 
-export type TourKey = "dashboard" | "intern" | "campus" | "zonal" | "district";
+export type TourKey =
+  | "dashboard"
+  | "intern"
+  | "campus"
+  | "zonal"
+  | "district"
+  | "mentor"
+  | "company";
 
 /**
  * Key for an in-page tour, keyed by the exact pathname it runs on (e.g.
