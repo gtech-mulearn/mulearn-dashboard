@@ -10,6 +10,7 @@
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
 import type { TourStep } from "../types";
+import { waitForElementSettle } from "./wait-for-sheet";
 
 export interface LaunchDriverHandlers {
   onSkip: () => void;
@@ -46,6 +47,24 @@ export function launchDriver(
       await handlers.prepareStep?.(target);
       if (direction === "next") d.moveNext();
       else d.movePrevious();
+
+      // On mobile, `prepareStep` only waits for the sheet panel itself to
+      // stop moving — if the sheet was already open (consecutive nav-item
+      // steps), its rect is stable instantly, before the target link has
+      // scrolled into view inside the sheet's own `overflow:auto` nav list.
+      // That inner scroll never fires a `window` scroll event, so driver.js
+      // never re-syncs its overlay on its own: it freezes on whatever rect
+      // it sampled mid-scroll. Re-measure the real target and force a
+      // refresh once it's actually settled.
+      if (!target.centered) {
+        const selector = `[data-tour-id="${target.navId ?? target.elementId}"]`;
+        const el = document.querySelector(selector);
+        if (el) {
+          el.scrollIntoView({ block: "nearest" });
+          await waitForElementSettle(el);
+          d.refresh();
+        }
+      }
     })();
   };
 

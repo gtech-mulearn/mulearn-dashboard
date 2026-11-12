@@ -1015,6 +1015,10 @@ html body .driver-active-element {
   border-radius: var(--radius-md) !important;
 }
 
-html body .driver-overlay {
-  background: rgba(0, 0, 0, 0.65) !important;
+html body .driver-overlay path {
+  fill: rgba(0, 0, 0, 0.65) !important;
+}
+
+html.dark body .driver-overlay path {
+  fill: rgba(255, 255, 255, 0.65) !important;
 }
