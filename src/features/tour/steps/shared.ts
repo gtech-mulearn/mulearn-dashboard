@@ -63,7 +63,7 @@ export const baseNavSteps: TourStep[] = [
     navId: "search",
     title: "Search",
     description:
-      "Quickly find people, groups, projects, or events from anywhere in the dashboard.",
+      "Quickly find people and campuses from anywhere in the dashboard.",
   },
   {
     id: "projects",
