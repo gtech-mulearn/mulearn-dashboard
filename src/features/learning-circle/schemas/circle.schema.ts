@@ -33,6 +33,14 @@ export type UserBasic = z.infer<typeof UserBasicSchema>;
  * Circle list item - matches actual API response from /learningcircle/
  * Fields: id, ig, title, org, attendees
  */
+const MemberInfoSchema = z.object({
+  id: z.string(),
+  full_name: z.string(),
+  profile_pic: z.string().nullable().optional(),
+});
+
+export type MemberInfo = z.infer<typeof MemberInfoSchema>;
+
 export const LearningCircleSchema = z
   .preprocess(
     (val) => {
@@ -59,6 +67,7 @@ export const LearningCircleSchema = z
       org: z.string().nullable().optional(),
       total_members: z.number().nullable().optional(),
       attendees: z.array(z.unknown()).nullable().optional(),
+      member_info: z.array(MemberInfoSchema).nullable().optional(),
       is_joined: z.boolean().nullable().optional(),
       is_creator: z.boolean().nullable().optional(),
       status: z.string().nullable().optional(),
@@ -75,6 +84,7 @@ export const LearningCircleSchema = z
       org: val.org ?? null,
       total_members: val.total_members ?? null,
       attendees: val.attendees ?? null,
+      member_info: val.member_info ?? [],
       is_joined: val.is_joined ?? val.status === "joined",
       is_creator:
         val.is_creator ?? (val.status === "lead" || val.status === "owner"),

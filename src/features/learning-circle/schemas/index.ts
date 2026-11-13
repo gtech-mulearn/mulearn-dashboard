@@ -15,6 +15,7 @@ export type {
   JoinRequest,
   LearningCircle,
   LearningCircleDetail,
+  MemberInfo,
   NextMeetup,
   Pagination,
   RemoveMemberRequest,

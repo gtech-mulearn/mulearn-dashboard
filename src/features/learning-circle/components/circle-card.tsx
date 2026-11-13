@@ -25,9 +25,10 @@ import {
   Smartphone,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useIsCirclePendingJoin, useJoinCircle } from "../hooks";
-import type { LearningCircle } from "../schemas";
+import type { LearningCircle, MemberInfo } from "../schemas";
 
 /* ─── Category theme system — bold, visible backgrounds ─── */
 // TODO: no semantic token — per-category hex values in CATEGORY_THEMES need design decision
@@ -165,7 +166,13 @@ const AVATAR_COLORS = [
   "bg-chart-4/30",
 ];
 
-function StackedAvatars({ count }: { count: number }) {
+function StackedAvatars({
+  count,
+  members,
+}: {
+  count: number;
+  members: MemberInfo[];
+}) {
   if (count === 0) {
     return (
       <span className="flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground">
@@ -177,17 +184,28 @@ function StackedAvatars({ count }: { count: number }) {
 
   const shown = Math.min(count, 4);
   const overflow = count - shown;
+  const shownMembers = members.slice(0, shown);
 
   return (
     <div className="flex items-center gap-2">
       <div className="flex items-center">
-        {Array.from({ length: shown }).map((_, i) => (
+        {shownMembers.map((member, i) => (
           <div
-            key={`avatar-placeholder-${String.fromCharCode(65 + i)}`}
-            className={`relative flex h-7 w-7 items-center justify-center rounded-full border-[2px] border-card text-[10px] font-bold text-foreground shadow-sm ${AVATAR_COLORS[i % AVATAR_COLORS.length]}`}
+            key={member.id}
+            className={`relative flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border-[2px] border-card text-[10px] font-bold text-foreground shadow-sm ${AVATAR_COLORS[i % AVATAR_COLORS.length]}`}
             style={{ marginLeft: i > 0 ? "-6px" : "0", zIndex: shown - i }}
+            title={member.full_name}
           >
-            {String.fromCharCode(65 + i)}
+            {member.profile_pic ? (
+              <Image
+                src={member.profile_pic}
+                alt={member.full_name}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              member.full_name.charAt(0).toUpperCase()
+            )}
           </div>
         ))}
         {overflow > 0 && (
@@ -236,6 +254,7 @@ export function CircleCard({ circle, hideJoin = false }: CircleCardProps) {
   const canJoin = !hideJoin && !isJoined && !isPendingJoin;
 
   const memberCount = circle.total_members || circle.attendees?.length || 0;
+  const members = circle.member_info ?? [];
 
   const handleJoin = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -340,7 +359,7 @@ export function CircleCard({ circle, hideJoin = false }: CircleCardProps) {
               </span>
             </div>
             <div className="shrink-0">
-              <StackedAvatars count={memberCount} />
+              <StackedAvatars count={memberCount} members={members} />
             </div>
           </div>
         </div>
