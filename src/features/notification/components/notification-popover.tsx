@@ -156,6 +156,7 @@ export function NotificationPopover() {
       <PopoverTrigger asChild>
         <Button
           id="notification-bell-button"
+          data-tour-id="page:dashboard:notifications"
           className="relative shrink-0 rounded-full"
           size="icon"
           variant="ghost"

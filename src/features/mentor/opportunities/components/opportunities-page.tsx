@@ -304,7 +304,10 @@ export function OpportunitiesPage() {
   return (
     <TooltipProvider delayDuration={200}>
       <div className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div
+          className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+          data-tour-id="page:mentor-opportunities:header"
+        >
           <h1 className="text-2xl font-bold">Opportunities</h1>
           <div className="flex items-center gap-3">
             <div className="relative flex-1 sm:w-64">
@@ -331,7 +334,7 @@ export function OpportunitiesPage() {
         </div>
 
         <Tabs defaultValue="all">
-          <TabsList>
+          <TabsList data-tour-id="page:mentor-opportunities:tabs">
             <TabsTrigger value="published">
               Published
               {published?.data && published.data.length > 0 && (
@@ -399,7 +402,11 @@ export function OpportunitiesPage() {
             />
           </TabsContent>
 
-          <TabsContent value="all" className="mt-4">
+          <TabsContent
+            value="all"
+            className="mt-4"
+            data-tour-id="page:mentor-opportunities:list"
+          >
             <OpportunityTable
               items={all?.data}
               isLoading={allLoading}

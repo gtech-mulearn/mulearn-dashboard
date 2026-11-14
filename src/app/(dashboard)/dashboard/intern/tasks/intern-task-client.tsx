@@ -107,7 +107,10 @@ export function InternTasksPageClient() {
 
   return (
     <div className="w-full space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div
+        className="flex flex-col md:flex-row md:items-center justify-between gap-6"
+        data-tour-id="page:intern-tasks:header"
+      >
         <div>
           <h2 className="text-4xl font-black tracking-tighter text-foreground uppercase">
             Task Tracker
@@ -118,7 +121,10 @@ export function InternTasksPageClient() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center gap-4 bg-card/40 backdrop-blur-md border border-border/40 p-4 rounded-2xl shadow-md">
+      <div
+        className="flex flex-col sm:flex-row items-center gap-4 bg-card/40 backdrop-blur-md border border-border/40 p-4 rounded-2xl shadow-md"
+        data-tour-id="page:intern-tasks:filters"
+      >
         <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
           <Input
@@ -168,7 +174,10 @@ export function InternTasksPageClient() {
           <Spinner className="w-8 h-8 text-primary" />
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          data-tour-id="page:intern-tasks:board"
+        >
           {filteredTasks.map((task) => (
             <Card
               key={task.id}

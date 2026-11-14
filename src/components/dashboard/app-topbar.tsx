@@ -26,6 +26,7 @@ import { useCompanyProfile } from "@/features/company-jobs/hooks";
 import { PersonaSwitcher } from "@/features/mentor/components/persona-switcher";
 import { GameProgressBar } from "@/features/mujourney/components/GameProgressBar";
 import { NotificationPopover } from "@/features/notification";
+import { ReplayPageTourButton } from "@/features/tour/components/replay-page-tour-button";
 import { authStore, ROLES } from "@/lib/auth";
 import { useUIStore } from "@/stores/ui-store";
 

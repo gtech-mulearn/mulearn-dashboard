@@ -35,7 +35,10 @@ export function JourneyTabs({
   };
 
   return (
-    <div className="flex gap-1 sm:gap-2 p-1.5 bg-card rounded-full w-fit max-w-full overflow-x-auto shadow-lg no-scrollbar">
+    <div
+      data-tour-id="page:mujourney:tabs"
+      className="flex gap-1 sm:gap-2 p-1.5 bg-card rounded-full w-fit max-w-full overflow-x-auto shadow-lg no-scrollbar"
+    >
       {tabs.map((tab) => (
         <button
           key={tab.id}

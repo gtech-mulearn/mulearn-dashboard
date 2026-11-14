@@ -179,7 +179,10 @@ export default function InternMinutesPage() {
   return (
     <div className="space-y-8 max-w-5xl mx-auto w-full">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div
+        className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+        data-tour-id="page:intern-minutes:header"
+      >
         <div>
           <h2 className="text-3xl md:text-4xl font-black tracking-tighter text-foreground uppercase flex items-center gap-3">
             <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20">
@@ -230,7 +233,10 @@ export default function InternMinutesPage() {
           <TabsContent value="upload">
             {/* Upload Form */}
             <ErrorBoundary FallbackComponent={SectionErrorFallback}>
-              <Card className="bg-card/60 backdrop-blur-xl border-border/60 shadow-lg">
+              <Card
+                className="bg-card/60 backdrop-blur-xl border-border/60 shadow-lg"
+                data-tour-id="page:intern-minutes:upload"
+              >
                 <CardHeader className="pb-4">
                   <CardTitle className="text-base font-black uppercase tracking-widest flex items-center gap-2">
                     <Upload className="w-4 h-4 text-amber-500" />
@@ -351,9 +357,15 @@ export default function InternMinutesPage() {
         <TabsContent value="history">
           {/* Previous Minutes Log */}
           <ErrorBoundary FallbackComponent={SectionErrorFallback}>
-            <div className="space-y-4">
+            <div
+              className="space-y-4"
+              data-tour-id="page:intern-minutes:history"
+            >
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-                <div className="relative flex-1 max-w-xs">
+                <div
+                  className="relative flex-1 max-w-xs"
+                  data-tour-id="page:intern-minutes:search"
+                >
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
                   <Input
                     type="text"

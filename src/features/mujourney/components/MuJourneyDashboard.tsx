@@ -88,6 +88,7 @@ export function MuJourneyDashboard() {
               Filter by:
             </span>
             <select
+              data-tour-id="page:mujourney:filter"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
               className="px-5 py-2.5 border border-border rounded-lg bg-card text-base font-medium text-card-foreground cursor-pointer hover:border-ring transition-colors [&>option]:cursor-pointer outline-none focus:ring-2 focus:ring-ring"
@@ -101,7 +102,10 @@ export function MuJourneyDashboard() {
       </div>
 
       {/* Tab Content */}
-      <div className="mt-8 relative min-h-[400px]">
+      <div
+        data-tour-id="page:mujourney:content"
+        className="mt-8 relative min-h-[400px]"
+      >
         {activeTab === "start-learning" && (
           <StartLearningTab
             filter={filter}

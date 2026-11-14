@@ -162,34 +162,39 @@ export function CompanyAdminsPageClient() {
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        title="Co-Administrators"
-        description={
-          can.manageAdmins
-            ? `Invite up to ${seats.max} colleagues to help run your company on muLearn. Co-admins can do everything except edit the company profile, manage admins or deactivate the company.`
-            : "You're a co-admin of this company. You can leave at any time from your row below."
-        }
-        action={
-          can.manageAdmins && (
-            <div className="flex shrink-0 flex-col items-start gap-1 sm:items-end">
-              <Button onClick={openInvite} disabled={seatsFull}>
-                <UserPlus aria-hidden="true" />
-                Invite co-admin
-              </Button>
-              {seatsFull && (
-                <p className="max-w-xs text-xs text-muted-foreground sm:text-right">
-                  All {seats.max} seats are taken by co-admins or pending
-                  invites. A seat frees up when you remove a co-admin, cancel an
-                  invite, or an invite is declined.
-                </p>
-              )}
-            </div>
-          )
-        }
-      />
+      <div data-tour-id="page:company-admins:header">
+        <PageHeader
+          title="Co-Administrators"
+          description={
+            can.manageAdmins
+              ? `Invite up to ${seats.max} colleagues to help run your company on muLearn. Co-admins can do everything except edit the company profile, manage admins or deactivate the company.`
+              : "You're a co-admin of this company. You can leave at any time from your row below."
+          }
+          action={
+            can.manageAdmins && (
+              <div className="flex shrink-0 flex-col items-start gap-1 sm:items-end">
+                <Button onClick={openInvite} disabled={seatsFull}>
+                  <UserPlus aria-hidden="true" />
+                  Invite co-admin
+                </Button>
+                {seatsFull && (
+                  <p className="max-w-xs text-xs text-muted-foreground sm:text-right">
+                    All {seats.max} seats are taken by co-admins or pending
+                    invites. A seat frees up when you remove a co-admin, cancel
+                    an invite, or an invite is declined.
+                  </p>
+                )}
+              </div>
+            )
+          }
+        />
+      </div>
 
       {/* Summary */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div
+        className="grid gap-4 sm:grid-cols-3"
+        data-tour-id="page:company-admins:stats"
+      >
         <StatCard
           title="Co-admins"
           value={acceptedCount}
@@ -214,7 +219,7 @@ export function CompanyAdminsPageClient() {
       </div>
 
       {/* Team */}
-      <Card>
+      <Card data-tour-id="page:company-admins:team">
         <CardHeader>
           <CardTitle>Team and invitations</CardTitle>
           <CardDescription>

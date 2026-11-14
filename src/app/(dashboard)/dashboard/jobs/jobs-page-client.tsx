@@ -147,7 +147,7 @@ export function LearnerJobsPageClient() {
       {/* Tabs */}
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <TabsList className="h-9 w-fit">
+          <TabsList data-tour-id="page:jobs:tabs" className="h-9 w-fit">
             <TabsTrigger value="browse" className="gap-2 text-xs">
               <Briefcase className="h-3.5 w-3.5" />
               Browse Jobs
@@ -246,7 +246,10 @@ export function LearnerJobsPageClient() {
             )}
 
             {/* Search bar */}
-            <div className="relative w-full max-w-xs">
+            <div
+              className="relative w-full max-w-xs"
+              data-tour-id="page:jobs:search"
+            >
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
               <Input
                 id="jobs-search"

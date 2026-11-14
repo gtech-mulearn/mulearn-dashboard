@@ -469,14 +469,17 @@ export function SessionsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Sessions</h1>
-          <Button onClick={() => setCreateOpen(true)}>
+          <Button
+            onClick={() => setCreateOpen(true)}
+            data-tour-id="page:mentor-sessions:new-session"
+          >
             <Plus className="w-4 h-4 mr-2" />
             New Session
           </Button>
         </div>
 
         <Tabs defaultValue={defaultTab}>
-          <TabsList>
+          <TabsList data-tour-id="page:mentor-sessions:tabs">
             <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
             <TabsTrigger value="all">All Sessions</TabsTrigger>
             <TabsTrigger value="requests">Student Requests</TabsTrigger>
@@ -495,7 +498,11 @@ export function SessionsPage() {
             )}
           </TabsList>
 
-          <TabsContent value="upcoming" className="mt-4">
+          <TabsContent
+            value="upcoming"
+            className="mt-4"
+            data-tour-id="page:mentor-sessions:upcoming"
+          >
             <SessionTable
               sessions={upcomingResult?.data}
               isLoading={upcomingLoading}
@@ -532,7 +539,11 @@ export function SessionsPage() {
             </TabsContent>
           )}
 
-          <TabsContent value="requests" className="mt-4">
+          <TabsContent
+            value="requests"
+            className="mt-4"
+            data-tour-id="page:mentor-sessions:requests"
+          >
             <IncomingRequestsList />
           </TabsContent>
         </Tabs>

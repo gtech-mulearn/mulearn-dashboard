@@ -95,19 +95,22 @@ export function CompanyTemplatesPageClient() {
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        title="Event Templates"
-        description="Standardize your organization's recurrent technical event workshops."
-        action={
-          <Button
-            className="shrink-0"
-            onClick={() => setIsCreateEventOpen(true)}
-          >
-            <Plus />
-            Create Event Template
-          </Button>
-        }
-      />
+      <div data-tour-id="page:company-templates:header">
+        <PageHeader
+          title="Event Templates"
+          description="Standardize your organization's recurrent technical event workshops."
+          action={
+            <Button
+              className="shrink-0"
+              data-tour-id="page:company-templates:create"
+              onClick={() => setIsCreateEventOpen(true)}
+            >
+              <Plus />
+              Create Event Template
+            </Button>
+          }
+        />
+      </div>
 
       <Dialog open={isCreateEventOpen} onOpenChange={setIsCreateEventOpen}>
         <DialogContent className="max-w-lg">
@@ -230,7 +233,10 @@ export function CompanyTemplatesPageClient() {
           }
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div
+          className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+          data-tour-id="page:company-templates:list"
+        >
           {eventTemplates.map((template) => (
             <Card key={template.id} className="flex flex-col justify-between">
               <CardHeader className="space-y-2 pb-3">

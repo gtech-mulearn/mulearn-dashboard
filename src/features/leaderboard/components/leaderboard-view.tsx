@@ -54,10 +54,15 @@ export function LeaderboardView({ category, timeframe }: LeaderboardViewProps) {
       ) : data && data.length > 0 ? (
         <div className="space-y-8">
           {/* Podium (top 3 cards) */}
-          <Podium entries={data} />
+          <div data-tour-id="page:leaderboard:podium">
+            <Podium entries={data} />
+          </div>
 
           {/* All contributors section */}
-          <div className="rounded-2xl border border-border overflow-hidden shadow-sm">
+          <div
+            data-tour-id="page:leaderboard:list"
+            className="rounded-2xl border border-border overflow-hidden shadow-sm"
+          >
             {/* Table column headers */}
             <div className="flex items-center py-2.5 px-4 md:px-8 bg-muted/50 border-b border-border">
               <div className="w-10 md:w-14 flex-shrink-0">

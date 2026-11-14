@@ -377,7 +377,10 @@ export function LeaderboardPageClient() {
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto w-full">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        data-tour-id="page:intern-leaderboard:header"
+      >
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <Trophy className="w-8 h-8 text-warning" />
@@ -390,7 +393,10 @@ export function LeaderboardPageClient() {
       </div>
 
       {/* Podium Section */}
-      <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-muted/30 via-card to-background p-6 md:p-10 shadow-sm flex flex-col items-center">
+      <div
+        className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-muted/30 via-card to-background p-6 md:p-10 shadow-sm flex flex-col items-center"
+        data-tour-id="page:intern-leaderboard:podium"
+      >
         {/* Background Topo Lines */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl opacity-10 dark:opacity-20">
           <svg
@@ -451,13 +457,19 @@ export function LeaderboardPageClient() {
       </div>
 
       {/* User Status Banner */}
-      <div className="bg-brand-blue/10 border border-brand-blue/20 rounded-full py-3 px-8 text-center text-sm font-medium text-brand-blue max-w-2xl mx-auto flex items-center justify-center gap-2 mb-12 animate-pulse">
+      <div
+        className="bg-brand-blue/10 border border-brand-blue/20 rounded-full py-3 px-8 text-center text-sm font-medium text-brand-blue max-w-2xl mx-auto flex items-center justify-center gap-2 mb-12 animate-pulse"
+        data-tour-id="page:intern-leaderboard:your-rank"
+      >
         You are ranked <span className="font-black">#{userRank}</span> with{" "}
         <span className="font-black">{userScore.toLocaleString()}</span> points
       </div>
 
       {/* Rankings Table */}
-      <div className="space-y-4 leaderboard-table">
+      <div
+        className="space-y-4 leaderboard-table"
+        data-tour-id="page:intern-leaderboard:rankings"
+      >
         <style>{`
           .leaderboard-table [class*="md:hidden"] div.mb-3 > div > p:first-child {
             display: none;
@@ -465,23 +477,25 @@ export function LeaderboardPageClient() {
         `}</style>
         <h3 className="text-xl font-bold">Rankings</h3>
 
-        <TableTop
-          onSearchText={(val) => {
-            setSearchText(val);
-            setPage(1);
-          }}
-          onPerPageNumber={(val) => {
-            setPerPage(val);
-            setPage(1);
-          }}
-          CSV=""
-          perPage={perPage}
-          perPageOptions={[10, 20, 50]}
-          searchPlaceholder="Search users..."
-          searchSize="md"
-          searchPosition="left"
-          searchWrapperClassName="bg-card/40 border-border/40"
-        />
+        <div data-tour-id="page:intern-leaderboard:search">
+          <TableTop
+            onSearchText={(val) => {
+              setSearchText(val);
+              setPage(1);
+            }}
+            onPerPageNumber={(val) => {
+              setPerPage(val);
+              setPage(1);
+            }}
+            CSV=""
+            perPage={perPage}
+            perPageOptions={[10, 20, 50]}
+            searchPlaceholder="Search users..."
+            searchSize="md"
+            searchPosition="left"
+            searchWrapperClassName="bg-card/40 border-border/40"
+          />
+        </div>
 
         <Table
           rows={others}

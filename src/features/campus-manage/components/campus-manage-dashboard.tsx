@@ -923,7 +923,10 @@ export function CampusManageDashboard() {
             ) : (
               <>
                 {/* ── Hero Header ── */}
-                <div className="relative mb-6 overflow-hidden rounded-2xl border border-border/40">
+                <div
+                  className="relative mb-6 overflow-hidden rounded-2xl border border-border/40"
+                  data-tour-id="page:campus-manage:overview"
+                >
                   <div className="absolute inset-0 bg-gradient-to-br from-teal-500/20 via-sky-500/10 to-violet-500/20" />
                   <div className="absolute inset-0 backdrop-blur-[2px]" />
                   <div
@@ -1139,7 +1142,10 @@ export function CampusManageDashboard() {
             />
 
             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="relative w-full lg:max-w-sm">
+              <div
+                className="relative w-full lg:max-w-sm"
+                data-tour-id="page:campus-manage:student-search"
+              >
                 <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
                 <Input
                   value={leaderboardFilters.search}
@@ -1180,6 +1186,7 @@ export function CampusManageDashboard() {
                   variant="outline"
                   size="sm"
                   className="h-9 gap-2 rounded-full"
+                  data-tour-id="page:campus-manage:export-csv"
                   disabled={isDownloadingCsv}
                   onClick={() =>
                     downloadCsv(
@@ -1217,142 +1224,145 @@ export function CampusManageDashboard() {
                 </CardContent>
               </Card>
             ) : (
-              <Table
-                rows={leaderboard as unknown as Data[]}
-                isLoading={isLeaderboardLoading}
-                page={leaderboardPage}
-                perPage={PAGE_SIZE}
-                columnOrder={LEADERBOARD_COLUMNS}
-                id={["id"]}
-                customActionRender={(row) => {
-                  const student = row as unknown as CampusLeaderboardItem;
-                  if (student.alumni) return null;
-                  return (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                      title="Nominate as Campus Mentor"
-                      aria-label={`Nominate ${student.name} as Campus Mentor`}
-                      onClick={() => setNominateStudent(student)}
-                    >
-                      <ShieldPlus className="h-4 w-4" />
-                    </Button>
-                  );
-                }}
-                customCellRender={(column, row) => {
-                  const student = row as unknown as CampusLeaderboardItem;
-                  switch (column) {
-                    case "rank":
-                      return (
-                        <div
-                          className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-xs font-black shadow-sm transition-all duration-300 ${
-                            student.rank === 1
-                              ? "bg-chart-4/15 text-chart-4 ring-2 ring-chart-4/25"
-                              : student.rank === 2
-                                ? "bg-muted text-muted-foreground ring-2 ring-border"
-                                : student.rank === 3
-                                  ? "bg-warning/15 text-warning ring-2 ring-warning/25"
-                                  : "bg-background text-muted-foreground border border-border/50"
-                          }`}
-                        >
-                          #{student.rank}
-                        </div>
-                      );
-                    case "name":
-                      return (
-                        <div className="flex flex-col">
-                          <Link
-                            href={`/profile/${student.muid}`}
-                            prefetch={false}
-                            className="inline-flex w-fit items-center gap-1"
-                          >
-                            <span className="text-sm font-semibold tracking-tight transition-colors group-hover:text-primary">
-                              {student.name}
-                            </span>
-                            <ExternalLink className="h-3 w-3" />
-                          </Link>
-                        </div>
-                      );
-                    case "karma":
-                      return (
-                        <span className="text-lg font-black tracking-tighter text-success">
-                          {student.karma.toLocaleString()}
-                        </span>
-                      );
-                    case "level":
-                      return (
-                        <Badge
-                          className={`h-6 px-2.5 font-bold uppercase tracking-wider text-[10px] shadow-sm border-transparent ${
-                            student.level?.includes("7")
-                              ? "bg-brand-purple text-white hover:bg-brand-purple/90"
-                              : student.level?.includes("6")
-                                ? "bg-brand-blue text-white hover:bg-brand-blue/90"
-                                : student.level?.includes("5")
-                                  ? "bg-primary text-primary-foreground hover:bg-primary/90 font-black"
-                                  : student.level?.includes("4")
-                                    ? "bg-chart-3 text-white hover:bg-chart-3/90 font-black"
-                                    : "bg-muted text-muted-foreground hover:bg-muted/90 font-black"
-                          }`}
-                        >
-                          {student.level}
-                        </Badge>
-                      );
-                    case "cluster":
-                      return (
-                        <span className="max-w-[200px] truncate text-xs text-muted-foreground block">
-                          {student.cluster}
-                        </span>
-                      );
-                    case "alumni":
-                      return (
-                        <Switch
-                          checked={student.alumni}
-                          disabled={isChangingType}
-                          onCheckedChange={() => setPendingStudent(student)}
-                          aria-label={`Toggle alumni status for ${student.name}`}
-                        />
-                      );
-                    case "graduationYear":
-                      return (
-                        <span className="text-xs text-muted-foreground">
-                          {student.alumni ? student.graduationYear || "-" : "-"}
-                        </span>
-                      );
-                    default:
-                      return null;
-                  }
-                }}
-              >
-                <THead
+              <div data-tour-id="page:campus-manage:leaderboard">
+                <Table
+                  rows={leaderboard as unknown as Data[]}
+                  isLoading={isLeaderboardLoading}
+                  page={leaderboardPage}
+                  perPage={PAGE_SIZE}
                   columnOrder={LEADERBOARD_COLUMNS}
-                  onIconClick={() => {}}
-                  action={true}
-                />
-                <div>
-                  <Pagination
-                    currentPage={leaderboardPage}
-                    totalPages={totalPages}
-                    handleNextClick={() => {
-                      const next = Math.min(leaderboardPage + 1, totalPages);
-                      setLeaderboardPage(next);
-                      setLeaderboardFilters((prev) => ({
-                        ...prev,
-                        page: next,
-                      }));
-                    }}
-                    handlePreviousClick={() => {
-                      const prev = Math.max(leaderboardPage - 1, 1);
-                      setLeaderboardPage(prev);
-                      setLeaderboardFilters((p) => ({ ...p, page: prev }));
-                    }}
-                    perPage={PAGE_SIZE}
-                    totalCount={
-                      leaderboardPagination?.count ?? leaderboard.length
+                  id={["id"]}
+                  customActionRender={(row) => {
+                    const student = row as unknown as CampusLeaderboardItem;
+                    if (student.alumni) return null;
+                    return (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        title="Nominate as Campus Mentor"
+                        aria-label={`Nominate ${student.name} as Campus Mentor`}
+                        onClick={() => setNominateStudent(student)}
+                      >
+                        <ShieldPlus className="h-4 w-4" />
+                      </Button>
+                    );
+                  }}
+                  customCellRender={(column, row) => {
+                    const student = row as unknown as CampusLeaderboardItem;
+                    switch (column) {
+                      case "rank":
+                        return (
+                          <div
+                            className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-xs font-black shadow-sm transition-all duration-300 ${
+                              student.rank === 1
+                                ? "bg-chart-4/15 text-chart-4 ring-2 ring-chart-4/25"
+                                : student.rank === 2
+                                  ? "bg-muted text-muted-foreground ring-2 ring-border"
+                                  : student.rank === 3
+                                    ? "bg-warning/15 text-warning ring-2 ring-warning/25"
+                                    : "bg-background text-muted-foreground border border-border/50"
+                            }`}
+                          >
+                            #{student.rank}
+                          </div>
+                        );
+                      case "name":
+                        return (
+                          <div className="flex flex-col">
+                            <Link
+                              href={`/profile/${student.muid}`}
+                              className="inline-flex w-fit items-center gap-1"
+                            >
+                              <span className="text-sm font-semibold tracking-tight transition-colors group-hover:text-primary">
+                                {student.name}
+                              </span>
+                              <ExternalLink className="h-3 w-3" />
+                            </Link>
+                          </div>
+                        );
+                      case "karma":
+                        return (
+                          <span className="text-lg font-black tracking-tighter text-success">
+                            {student.karma.toLocaleString()}
+                          </span>
+                        );
+                      case "level":
+                        return (
+                          <Badge
+                            className={`h-6 px-2.5 font-bold uppercase tracking-wider text-[10px] shadow-sm border-transparent ${
+                              student.level?.includes("7")
+                                ? "bg-brand-purple text-white hover:bg-brand-purple/90"
+                                : student.level?.includes("6")
+                                  ? "bg-brand-blue text-white hover:bg-brand-blue/90"
+                                  : student.level?.includes("5")
+                                    ? "bg-primary text-primary-foreground hover:bg-primary/90 font-black"
+                                    : student.level?.includes("4")
+                                      ? "bg-chart-3 text-white hover:bg-chart-3/90 font-black"
+                                      : "bg-muted text-muted-foreground hover:bg-muted/90 font-black"
+                            }`}
+                          >
+                            {student.level}
+                          </Badge>
+                        );
+                      case "cluster":
+                        return (
+                          <span className="max-w-[200px] truncate text-xs text-muted-foreground block">
+                            {student.cluster}
+                          </span>
+                        );
+                      case "alumni":
+                        return (
+                          <Switch
+                            checked={student.alumni}
+                            disabled={isChangingType}
+                            onCheckedChange={() => setPendingStudent(student)}
+                            aria-label={`Toggle alumni status for ${student.name}`}
+                          />
+                        );
+                      case "graduationYear":
+                        return (
+                          <span className="text-xs text-muted-foreground">
+                            {student.alumni
+                              ? student.graduationYear || "-"
+                              : "-"}
+                          </span>
+                        );
+                      default:
+                        return null;
                     }
+                  }}
+                >
+                  <THead
+                    columnOrder={LEADERBOARD_COLUMNS}
+                    onIconClick={() => {}}
+                    action={true}
                   />
-                </div>
-              </Table>
+                  <div>
+                    <Pagination
+                      currentPage={leaderboardPage}
+                      totalPages={totalPages}
+                      handleNextClick={() => {
+                        const next = Math.min(leaderboardPage + 1, totalPages);
+                        setLeaderboardPage(next);
+                        setLeaderboardFilters((prev) => ({
+                          ...prev,
+                          page: next,
+                        }));
+                      }}
+                      handlePreviousClick={() => {
+                        const prev = Math.max(leaderboardPage - 1, 1);
+                        setLeaderboardPage(prev);
+                        setLeaderboardFilters((p) => ({ ...p, page: prev }));
+                      }}
+                      perPage={PAGE_SIZE}
+                      totalCount={
+                        leaderboardPagination?.count ?? leaderboard.length
+                      }
+                    />
+                  </div>
+                </Table>
+              </div>
             )}
           </section>
 
@@ -1362,7 +1372,10 @@ export function CampusManageDashboard() {
               {/* Main Column */}
               <div className="min-w-0 flex-1">
                 <Tabs defaultValue="analytics" className="w-full">
-                  <TabsList className="scrollbar-none mb-6 flex h-auto w-full justify-start gap-1 overflow-x-auto rounded-xl bg-muted p-1">
+                  <TabsList
+                    className="scrollbar-none mb-6 flex h-auto w-full justify-start gap-1 overflow-x-auto rounded-xl bg-muted p-1"
+                    data-tour-id="page:campus-manage:tabs"
+                  >
                     {[
                       { value: "analytics", label: "Analytics" },
                       { value: "events", label: "Events" },

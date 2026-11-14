@@ -228,7 +228,10 @@ export function TimesheetPageClient() {
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto w-full">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div
+        className="flex flex-col md:flex-row md:items-center justify-between gap-6"
+        data-tour-id="page:intern-timesheet:header"
+      >
         <div>
           <h2 className="text-4xl font-black tracking-tighter text-foreground uppercase">
             Daily Timesheet
@@ -243,7 +246,10 @@ export function TimesheetPageClient() {
         {/* Today's Form */}
         <div className="md:col-span-2">
           {hasSubmittedToday ? (
-            <Card className="border-border/40 bg-card/40 backdrop-blur-md shadow-2xl relative overflow-hidden">
+            <Card
+              className="border-border/40 bg-card/40 backdrop-blur-md shadow-2xl relative overflow-hidden"
+              data-tour-id="page:intern-timesheet:submit-form"
+            >
               <CardContent className="p-6">
                 <Alert className="bg-success/10 text-success border-success/20 py-6 px-6 rounded-xl flex items-start gap-4">
                   <CheckCircle2 className="h-8 w-8 text-success mt-1" />
@@ -262,7 +268,10 @@ export function TimesheetPageClient() {
             </Card>
           ) : (
             <form onSubmit={handleSubmit}>
-              <Card className="border-border/40 bg-card/40 backdrop-blur-md shadow-2xl relative overflow-hidden group">
+              <Card
+                className="border-border/40 bg-card/40 backdrop-blur-md shadow-2xl relative overflow-hidden group"
+                data-tour-id="page:intern-timesheet:submit-form"
+              >
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
                   <Zap className="w-32 h-32 text-primary" />
                 </div>
@@ -447,7 +456,10 @@ export function TimesheetPageClient() {
 
         {/* Calendar View */}
         <div className="md:col-span-1 space-y-4">
-          <Card className="border-border/40 bg-card/30 backdrop-blur-md shadow-xl overflow-hidden gap-1.5 py-4">
+          <Card
+            className="border-border/40 bg-card/30 backdrop-blur-md shadow-xl overflow-hidden gap-1.5 py-4"
+            data-tour-id="page:intern-timesheet:calendar"
+          >
             <CardHeader className="pb-2 border-b border-border/20">
               <div className="flex items-center justify-between">
                 <div>
@@ -607,7 +619,10 @@ export function TimesheetPageClient() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/40 bg-card/30 backdrop-blur-md shadow-xl overflow-hidden gap-1.5 py-4">
+          <Card
+            className="border-border/40 bg-card/30 backdrop-blur-md shadow-xl overflow-hidden gap-1.5 py-4"
+            data-tour-id="page:intern-timesheet:streak"
+          >
             <CardHeader className="pb-0">
               <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-brand-blue" />

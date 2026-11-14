@@ -94,7 +94,10 @@ export function ProjectsListingPage() {
           }
           action={
             <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-              <div className="w-full sm:max-w-xs">
+              <div
+                className="w-full sm:max-w-xs"
+                data-tour-id="page:projects:search"
+              >
                 <Input
                   aria-label="Search projects"
                   placeholder="Search projects…"
@@ -143,7 +146,10 @@ export function ProjectsListingPage() {
             }
           />
         ) : (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            data-tour-id="page:projects:grid"
+            className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+          >
             {projects.map((p) => (
               <ProjectCard
                 key={p.id}

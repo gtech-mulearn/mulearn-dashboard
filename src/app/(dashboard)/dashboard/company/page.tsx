@@ -35,6 +35,7 @@ export default function CompanyDashboardPage() {
       href: "/dashboard/company/jobs",
       icon: Briefcase,
       action: "View Jobs →",
+      tourId: "page:company-home:jobs-card",
     },
     {
       title: "Task Management",
@@ -43,6 +44,7 @@ export default function CompanyDashboardPage() {
       href: "/dashboard/company/tasks",
       icon: ClipboardList,
       action: "View Tasks →",
+      tourId: "page:company-home:tasks-card",
     },
     {
       title: "Mentor Management",
@@ -51,6 +53,7 @@ export default function CompanyDashboardPage() {
       href: "/dashboard/company/mentors",
       icon: Users,
       action: "View Mentors →",
+      tourId: "page:company-home:mentors-card",
     },
     {
       title: "Analytics & Insights",
@@ -59,6 +62,7 @@ export default function CompanyDashboardPage() {
       href: "/dashboard/company/analytics",
       icon: BarChart2,
       action: "View Analytics →",
+      tourId: "page:company-home:analytics-card",
     },
     {
       title: "Co-Admin Management",
@@ -126,7 +130,12 @@ export default function CompanyDashboardPage() {
         {companyFeatures.map((feat) => {
           const Icon = feat.icon;
           return (
-            <Link key={feat.href} href={feat.href} className="block group">
+            <Link
+              key={feat.href}
+              href={feat.href}
+              className="block group"
+              data-tour-id={feat.tourId}
+            >
               <Card className="h-full transition-colors hover:bg-muted/50 flex flex-col justify-between">
                 <CardHeader>
                   <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">

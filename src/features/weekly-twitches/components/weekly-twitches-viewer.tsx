@@ -63,7 +63,10 @@ export function WeeklyTwitchesViewer() {
         value={activeTab}
         onValueChange={(v) => setActiveTab(v as TabValue)}
       >
-        <TabsList className="hidden w-auto justify-start gap-1 rounded-xl border border-border bg-muted/40 p-1 sm:flex">
+        <TabsList
+          data-tour-id="page:weekly-twitches:tabs"
+          className="hidden w-auto justify-start gap-1 rounded-xl border border-border bg-muted/40 p-1 sm:flex"
+        >
           {TAB_OPTIONS.map((o) => (
             <TabsTrigger
               key={o.value}
@@ -75,7 +78,11 @@ export function WeeklyTwitchesViewer() {
           ))}
         </TabsList>
 
-        <TabsContent value="office-hours" className="mt-4">
+        <TabsContent
+          value="office-hours"
+          className="mt-4"
+          data-tour-id="page:weekly-twitches:content"
+        >
           <OfficeHoursCards />
         </TabsContent>
         <TabsContent value="salt-mango-tree" className="mt-4">

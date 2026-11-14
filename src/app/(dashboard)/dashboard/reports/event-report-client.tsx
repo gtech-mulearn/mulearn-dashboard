@@ -76,7 +76,10 @@ export function EventReportPageClient() {
 
   return (
     <div className="w-full">
-      <div className="mb-8 flex items-center justify-between">
+      <div
+        className="mb-8 flex items-center justify-between"
+        data-tour-id="page:reports:header"
+      >
         <div>
           <h1 className="text-2xl font-bold text-foreground">
             Event Report Generator
@@ -97,7 +100,10 @@ export function EventReportPageClient() {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
         {/* Left Column - Form */}
-        <div className="space-y-6 lg:col-span-4 print:hidden">
+        <div
+          className="space-y-6 lg:col-span-4 print:hidden"
+          data-tour-id="page:reports:form"
+        >
           <div className="rounded-xl border border-border bg-card p-6 shadow-sm sticky top-8">
             <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-card-foreground">
               <FileText size={20} className="text-primary" />

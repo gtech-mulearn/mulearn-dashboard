@@ -743,7 +743,10 @@ export function TaskRequestsPage() {
               Submit and track tasks you've requested for admin approval.
             </p>
           </div>
-          <Button onClick={() => setCreateOpen(true)}>
+          <Button
+            onClick={() => setCreateOpen(true)}
+            data-tour-id="page:mentor-task-requests:submit"
+          >
             <Plus className="mr-2 h-4 w-4" />
             Submit Task
           </Button>
@@ -751,7 +754,7 @@ export function TaskRequestsPage() {
 
         {/* Tabs */}
         <Tabs defaultValue="all">
-          <TabsList>
+          <TabsList data-tour-id="page:mentor-task-requests:tabs">
             <TabsTrigger value="all">All Tasks</TabsTrigger>
             <TabsTrigger value="pending">
               Pending
@@ -765,7 +768,11 @@ export function TaskRequestsPage() {
             <TabsTrigger value="rejected">Rejected</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="all" className="mt-4">
+          <TabsContent
+            value="all"
+            className="mt-4"
+            data-tour-id="page:mentor-task-requests:all-tasks"
+          >
             <TasksTable
               tasks={allResult?.data}
               isLoading={allLoading}

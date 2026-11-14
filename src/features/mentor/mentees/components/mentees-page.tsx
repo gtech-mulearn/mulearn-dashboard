@@ -91,7 +91,10 @@ export function MenteesPage({ title = "Mentees" }: { title?: string } = {}) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div
+          className="flex items-center gap-2"
+          data-tour-id="page:mentor-mentees:search"
+        >
           <div className="relative w-full md:w-56">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -118,7 +121,7 @@ export function MenteesPage({ title = "Mentees" }: { title?: string } = {}) {
           </p>
         </div>
       ) : (
-        <Table>
+        <Table data-tour-id="page:mentor-mentees:table">
           <TableHeader>
             <TableRow>
               <TableHead>Mentee</TableHead>

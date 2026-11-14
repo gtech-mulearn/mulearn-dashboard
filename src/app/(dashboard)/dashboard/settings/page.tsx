@@ -22,7 +22,7 @@ export default function SettingsPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Card className="rounded-2xl">
+        <Card className="rounded-2xl" data-tour-id="page:settings:account">
           <CardContent className="flex items-center justify-between p-6">
             <div className="flex items-center gap-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
@@ -46,7 +46,7 @@ export default function SettingsPage() {
         </Card>
 
         <RoleGate allowedRoles={CAMPUS_SETTINGS_ROLES}>
-          <Card className="rounded-2xl">
+          <Card className="rounded-2xl" data-tour-id="page:settings:campus">
             <CardContent className="flex items-center justify-between p-6">
               <div className="flex items-center gap-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">

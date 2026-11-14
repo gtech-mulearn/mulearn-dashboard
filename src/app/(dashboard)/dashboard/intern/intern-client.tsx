@@ -16,31 +16,42 @@ export function InternDashboardPageClient() {
   return (
     <div className="w-full space-y-8">
       {/* Header Section */}
-      <ErrorBoundary FallbackComponent={SectionErrorFallback}>
-        <InternHeader />
-      </ErrorBoundary>
+      <div data-tour-id="page:intern-dashboard:header">
+        <ErrorBoundary FallbackComponent={SectionErrorFallback}>
+          <InternHeader />
+        </ErrorBoundary>
+      </div>
 
       {/* KPI Overview Cards */}
-      <ErrorBoundary FallbackComponent={SectionErrorFallback}>
-        <InternStatsCards />
-      </ErrorBoundary>
+      <div data-tour-id="page:intern-dashboard:stats">
+        <ErrorBoundary FallbackComponent={SectionErrorFallback}>
+          <InternStatsCards />
+        </ErrorBoundary>
+      </div>
 
       <div className="grid gap-6 md:grid-cols-7">
         {/* Main Content Column (2/3 width) */}
         <div className="md:col-span-4 lg:col-span-5 space-y-8">
           {/* Active Quests (Quick Actions) */}
-          <ErrorBoundary FallbackComponent={SectionErrorFallback}>
-            <ActiveQuests />
-          </ErrorBoundary>
+          <div data-tour-id="page:intern-dashboard:active-quests">
+            <ErrorBoundary FallbackComponent={SectionErrorFallback}>
+              <ActiveQuests />
+            </ErrorBoundary>
+          </div>
 
           {/* Elite Leaders (Table Integration) */}
-          <ErrorBoundary FallbackComponent={SectionErrorFallback}>
-            <EliteLeaders />
-          </ErrorBoundary>
+          <div data-tour-id="page:intern-dashboard:leaderboard-preview">
+            <ErrorBoundary FallbackComponent={SectionErrorFallback}>
+              <EliteLeaders />
+            </ErrorBoundary>
+          </div>
         </div>
 
         {/* Sidebar Column (1/3 width) */}
-        <div className="md:col-span-3 lg:col-span-2">
+        <div
+          className="md:col-span-3 lg:col-span-2"
+          data-tour-id="page:intern-dashboard:quest-log"
+        >
           <ErrorBoundary FallbackComponent={SectionErrorFallback}>
             <QuestLog />
           </ErrorBoundary>

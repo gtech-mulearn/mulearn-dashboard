@@ -16,14 +16,17 @@ export function StudentSessionsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">My Sessions</h1>
-        <Button onClick={() => setRequestOpen(true)}>
+        <Button
+          onClick={() => setRequestOpen(true)}
+          data-tour-id="page:sessions:request-btn"
+        >
           <Plus className="w-4 h-4 mr-2" />
           Request Session
         </Button>
       </div>
 
       <Tabs defaultValue="available">
-        <TabsList>
+        <TabsList data-tour-id="page:sessions:tabs">
           <TabsTrigger value="available">Available</TabsTrigger>
           <TabsTrigger value="requests">My Requests</TabsTrigger>
           <TabsTrigger value="history">History &amp; Invites</TabsTrigger>

@@ -23,7 +23,10 @@ export function JobsList({
   return (
     <div className="space-y-6">
       {/* Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        data-tour-id="page:company-jobs:list"
+      >
         {jobs.map((job) => (
           <JobCard key={job.id} job={job} onView={onViewJob} />
         ))}

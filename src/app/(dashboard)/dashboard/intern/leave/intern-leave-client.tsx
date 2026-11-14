@@ -145,7 +145,10 @@ export function LeaveManagementPageClient() {
   return (
     <div className="space-y-8 max-w-7xl mx-auto w-full">
       {/* Header section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div
+        className="flex flex-col md:flex-row md:items-center justify-between gap-6"
+        data-tour-id="page:intern-leave:header"
+      >
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Badge
@@ -170,7 +173,10 @@ export function LeaveManagementPageClient() {
         onValueChange={setActiveTab}
         className="w-full space-y-6"
       >
-        <TabsList className="bg-muted/30 border border-border/40 p-1 rounded-xl">
+        <TabsList
+          className="bg-muted/30 border border-border/40 p-1 rounded-xl"
+          data-tour-id="page:intern-leave:tabs"
+        >
           <TabsTrigger
             value="balance"
             className="font-black uppercase text-xs tracking-wider px-6 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
@@ -187,7 +193,10 @@ export function LeaveManagementPageClient() {
 
         <TabsContent value="balance" className="space-y-6 outline-none">
           {/* Leave balance cards grid */}
-          <div className="grid gap-6 sm:grid-cols-3">
+          <div
+            className="grid gap-6 sm:grid-cols-3"
+            data-tour-id="page:intern-leave:balance"
+          >
             {balanceCategories.map((cat) => {
               const Icon = cat.icon;
               const used = cat.balance?.used ?? 0;
@@ -226,7 +235,10 @@ export function LeaveManagementPageClient() {
 
         <TabsContent value="history" className="outline-none">
           {/* Leave request history table */}
-          <Card className="border-border/40 bg-card/40 backdrop-blur-md overflow-hidden shadow-xl">
+          <Card
+            className="border-border/40 bg-card/40 backdrop-blur-md overflow-hidden shadow-xl"
+            data-tour-id="page:intern-leave:history"
+          >
             <CardHeader className="pb-4 border-b border-border/20">
               <CardTitle className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
                 <FileText className="w-5 h-5 text-muted-foreground" />
@@ -398,7 +410,10 @@ export function LeaveManagementPageClient() {
 
       {/* ── Inline Leave Application Form ───────────────────────────── */}
       {activeTab === "balance" && (
-        <div className="pt-4 border-t border-border/30">
+        <div
+          className="pt-4 border-t border-border/30"
+          data-tour-id="page:intern-leave:apply-form"
+        >
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-brand-purple/10 rounded-xl">
               <CalendarDays className="w-5 h-5 text-brand-purple" />

@@ -81,7 +81,7 @@ export function IncomingCollaborationsClient() {
 
   return (
     <div className="space-y-8">
-      <div>
+      <div data-tour-id="page:collaborations-incoming:header">
         <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight text-foreground">
           <Handshake className="h-8 w-8 text-primary" aria-hidden="true" />
           Collaboration invites
@@ -92,7 +92,11 @@ export function IncomingCollaborationsClient() {
         </p>
       </div>
 
-      <section aria-labelledby="invites-heading" className="space-y-3">
+      <section
+        aria-labelledby="invites-heading"
+        className="space-y-3"
+        data-tour-id="page:collaborations-incoming:invites"
+      >
         <h2 id="invites-heading" className="text-lg font-semibold">
           Invitations
         </h2>
@@ -145,7 +149,11 @@ export function IncomingCollaborationsClient() {
       </section>
 
       {targets.length > 0 && (
-        <section aria-labelledby="open-heading" className="space-y-3">
+        <section
+          aria-labelledby="open-heading"
+          className="space-y-3"
+          data-tour-id="page:collaborations-incoming:open-posts"
+        >
           <h2 id="open-heading" className="text-lg font-semibold">
             Open posts
           </h2>

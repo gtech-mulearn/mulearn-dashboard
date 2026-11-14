@@ -167,24 +167,30 @@ export function CompanyCollaborationsPageClient() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Collaborations"
-        description="Partner with campuses and interest groups on events, sponsorships, campus programmes and mentoring."
-        action={
-          <Button className="shrink-0" onClick={openCreate}>
-            <Plus aria-hidden="true" />
-            New collaboration
-          </Button>
-        }
-      />
+      <div data-tour-id="page:company-collaborations:header">
+        <PageHeader
+          title="Collaborations"
+          description="Partner with campuses and interest groups on events, sponsorships, campus programmes and mentoring."
+          action={
+            <Button className="shrink-0" onClick={openCreate}>
+              <Plus aria-hidden="true" />
+              New collaboration
+            </Button>
+          }
+        />
+      </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as "mine" | "open")}>
-        <TabsList>
+        <TabsList data-tour-id="page:company-collaborations:tabs">
           <TabsTrigger value="mine">Your posts</TabsTrigger>
           <TabsTrigger value="open">Open posts</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="mine" className="mt-4">
+        <TabsContent
+          value="mine"
+          className="mt-4"
+          data-tour-id="page:company-collaborations:mine"
+        >
           <Card>
             <CardHeader>
               <CardTitle>Your posts</CardTitle>

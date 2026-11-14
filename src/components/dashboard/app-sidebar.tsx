@@ -28,6 +28,7 @@ import { VersionBadge } from "@/components/ui/version-badge";
 // importing @/features/company-jobs here would add ~800 KB of JS to most routes.
 import { useCompanyAccess } from "@/features/company-jobs/hooks/use-company-access";
 import { useCompanyProfile } from "@/features/company-jobs/hooks/use-company-profile";
+import { ReplayTourButton } from "@/features/tour";
 import { useFilteredNav } from "@/hooks/use-filtered-nav";
 import { authStore } from "@/lib/auth";
 import { isCompanyFeatureItem, type NavItem } from "@/lib/nav-config";
@@ -114,6 +115,7 @@ export function AppSidebar() {
           <Link
             href={item.linkHref ?? item.href}
             prefetch={false}
+            data-tour-id={item.id}
             onClick={handleNavClick}
           >
             <Icon
@@ -192,6 +194,7 @@ export function AppSidebar() {
         >
           <SidebarMenu className="gap-1">
             {bottomItems.map(renderNavItem)}
+            <ReplayTourButton />
           </SidebarMenu>
 
           <Button

@@ -188,20 +188,22 @@ export function ProblemStatementsClient() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Problem Statements"
-        description="Real-world problems from industry partners. Pick one, build a solution, and submit it."
-        action={
-          canManage ? (
-            <Button variant="outline" asChild>
-              <Link href="/dashboard/manage-problem-statements">
-                <Settings2 />
-                Manage statements
-              </Link>
-            </Button>
-          ) : null
-        }
-      />
+      <div data-tour-id="page:problem-statements:header">
+        <PageHeader
+          title="Problem Statements"
+          description="Real-world problems from industry partners. Pick one, build a solution, and submit it."
+          action={
+            canManage ? (
+              <Button variant="outline" asChild>
+                <Link href="/dashboard/manage-problem-statements">
+                  <Settings2 />
+                  Manage statements
+                </Link>
+              </Button>
+            ) : null
+          }
+        />
+      </div>
 
       {isAuthenticated && (
         <Tabs
@@ -211,7 +213,7 @@ export function ProblemStatementsClient() {
             resetPage();
           }}
         >
-          <TabsList>
+          <TabsList data-tour-id="page:problem-statements:tabs">
             {FEED_TABS.map((t) => (
               <TabsTrigger key={t.value} value={t.value}>
                 {t.label}
@@ -221,60 +223,64 @@ export function ProblemStatementsClient() {
         </Tabs>
       )}
 
-      <ProblemStatementsFilters
-        tab={isParticipating ? "participating" : "browse"}
-        onSearch={handleSearch}
-        category={category}
-        onCategoryChange={(v) => {
-          setCategory(v);
-          resetPage();
-        }}
-        status={isParticipating ? participationStatus : browseStatus}
-        onStatusChange={(v) => {
-          if (isParticipating) {
-            setParticipationStatus(v as ParticipationStatusFilter);
-          } else {
-            setBrowseStatus(v as BrowseStatusFilter);
-          }
-          resetPage();
-        }}
-        sortBy={sortBy}
-        onSortChange={(v) => {
-          setSortBy(v);
-          resetPage();
-        }}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-      />
+      <div data-tour-id="page:problem-statements:filters">
+        <ProblemStatementsFilters
+          tab={isParticipating ? "participating" : "browse"}
+          onSearch={handleSearch}
+          category={category}
+          onCategoryChange={(v) => {
+            setCategory(v);
+            resetPage();
+          }}
+          status={isParticipating ? participationStatus : browseStatus}
+          onStatusChange={(v) => {
+            if (isParticipating) {
+              setParticipationStatus(v as ParticipationStatusFilter);
+            } else {
+              setBrowseStatus(v as BrowseStatusFilter);
+            }
+            resetPage();
+          }}
+          sortBy={sortBy}
+          onSortChange={(v) => {
+            setSortBy(v);
+            resetPage();
+          }}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+        />
+      </div>
 
-      {activeQuery.isError ? (
-        <StateDisplay
-          variant="no-results"
-          title="Couldn't load problem statements"
-          description="Check your connection and try again."
-          action={
-            <Button variant="outline" onClick={() => activeQuery.refetch()}>
-              Try again
-            </Button>
-          }
-        />
-      ) : activeQuery.isLoading ? (
-        <ProblemStatementsListSkeleton viewMode={viewMode} />
-      ) : viewMode === "board" ? (
-        <ProblemStatementsGrid
-          statements={statements}
-          onView={handleView}
-          emptyTitle={empty.title}
-          emptyDescription={empty.description}
-        />
-      ) : (
-        <ProblemStatementsTable
-          statements={statements}
-          onView={handleView}
-          emptyTitle={empty.title}
-          emptyDescription={empty.description}
-        />
-      )}
+      <div data-tour-id="page:problem-statements:results">
+        {activeQuery.isError ? (
+          <StateDisplay
+            variant="no-results"
+            title="Couldn't load problem statements"
+            description="Check your connection and try again."
+            action={
+              <Button variant="outline" onClick={() => activeQuery.refetch()}>
+                Try again
+              </Button>
+            }
+          />
+        ) : activeQuery.isLoading ? (
+          <ProblemStatementsListSkeleton viewMode={viewMode} />
+        ) : viewMode === "board" ? (
+          <ProblemStatementsGrid
+            statements={statements}
+            onView={handleView}
+            emptyTitle={empty.title}
+            emptyDescription={empty.description}
+          />
+        ) : (
+          <ProblemStatementsTable
+            statements={statements}
+            onView={handleView}
+            emptyTitle={empty.title}
+            emptyDescription={empty.description}
+          />
+        )}
+      </div>
 
       {!activeQuery.isLoading && !activeQuery.isError && (
         <ProblemStatementsPagination

@@ -197,6 +197,7 @@ export default function ManageEventsDashboard() {
             onClick={() => {
               setShowWizard(true);
             }}
+            data-tour-id="page:manage-events:create"
           >
             <Plus className="mr-2 h-4 w-4" />
             Create Event
@@ -204,7 +205,10 @@ export default function ManageEventsDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <div
+        className="grid grid-cols-2 gap-3 xl:grid-cols-4"
+        data-tour-id="page:manage-events:stats"
+      >
         {statsLoading ? (
           <>
             <Skeleton className="h-20" />
@@ -286,7 +290,10 @@ export default function ManageEventsDashboard() {
             setPage(1);
           }}
         >
-          <SelectTrigger className="w-full md:w-56 rounded-full">
+          <SelectTrigger
+            className="w-full md:w-56 rounded-full"
+            data-tour-id="page:manage-events:status-filter"
+          >
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
@@ -320,16 +327,21 @@ export default function ManageEventsDashboard() {
           </SelectContent>
         </Select>
 
-        <SearchBar
-          onSearch={(val) => {
-            setSearch(val);
-            setPage(1);
-          }}
-          placeholder="Search events"
-          size="md"
-          showButton={false}
+        <div
           className="w-full md:max-w-md md:ml-auto"
-        />
+          data-tour-id="page:manage-events:search"
+        >
+          <SearchBar
+            onSearch={(val) => {
+              setSearch(val);
+              setPage(1);
+            }}
+            placeholder="Search events"
+            size="md"
+            showButton={false}
+            className="w-full"
+          />
+        </div>
       </div>
 
       {isLoading ? (
@@ -348,7 +360,7 @@ export default function ManageEventsDashboard() {
               : "Failed to load events"}
         </p>
       ) : (
-        <>
+        <div data-tour-id="page:manage-events:events">
           <EventsGrid
             events={events}
             isManageView
@@ -372,7 +384,7 @@ export default function ManageEventsDashboard() {
             onPageChange={setPage}
             currentCount={events.length}
           />
-        </>
+        </div>
       )}
 
       <EventCreateWizard

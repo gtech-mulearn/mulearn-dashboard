@@ -18,6 +18,8 @@ interface WhatsNewPopupProps {
   isOpen: boolean;
   onSeen: (hash: string) => Promise<void>;
   onDismiss: (hash: string) => Promise<void>;
+  /** Fires whenever the popup's actual shown/hidden state changes. */
+  onVisibilityChange?: (visible: boolean) => void;
 }
 
 export function WhatsNewPopup({
@@ -25,6 +27,7 @@ export function WhatsNewPopup({
   isOpen,
   onSeen,
   onDismiss,
+  onVisibilityChange,
 }: WhatsNewPopupProps) {
   const router = useRouter();
   const [dismissedHash, setDismissedHash] = useState<string | null>(null);
@@ -34,6 +37,7 @@ export function WhatsNewPopup({
 
   const content = entry?.body ?? "";
   const isDismissed = entry?.hash ? dismissedHash === entry.hash : false;
+  const isShowing = Boolean(entry) && isVisible && !isDismissed;
 
   useEffect(() => {
     if (!entry?.hash) {
@@ -56,7 +60,14 @@ export function WhatsNewPopup({
     void onSeen(entry.hash);
   }, [entry?.hash, isVisible, onSeen]);
 
-  if (!entry || !isVisible || isDismissed) {
+  // Tour launch is gated on this popup being fully closed (§ dashboard
+  // layout) — the tour and What's New popup would otherwise fight for the
+  // screen when both are due on the same visit.
+  useEffect(() => {
+    onVisibilityChange?.(isShowing);
+  }, [isShowing, onVisibilityChange]);
+
+  if (!entry || !isShowing) {
     return null;
   }
 

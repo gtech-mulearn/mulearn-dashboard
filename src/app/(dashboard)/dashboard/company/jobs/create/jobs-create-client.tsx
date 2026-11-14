@@ -49,7 +49,10 @@ export function CreateJobPageClient() {
     <CompanyStatusGuard>
       <div className="space-y-6 px-1 py-1 sm:px-2">
         {/* Page title */}
-        <div className="flex items-start gap-3 sm:items-center">
+        <div
+          className="flex items-start gap-3 sm:items-center"
+          data-tour-id="page:company-jobs-create:header"
+        >
           <Button
             variant="ghost"
             size="sm"

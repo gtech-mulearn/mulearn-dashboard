@@ -68,15 +68,18 @@ export function LearningCircleHeader() {
         variant="outline"
         className="rounded-xl px-5 text-sm font-semibold border-border bg-card hover:bg-muted"
         asChild
+        data-tour-id="page:learning-circle:invites-btn"
       >
         <Link href="/dashboard/learning-circle/invites">
           Invites ({activeInvitesCount})
         </Link>
       </Button>
-      <CreateCircleModal
-        interestGroups={interestGroups}
-        organizations={userOrganization}
-      />
+      <div data-tour-id="page:learning-circle:create-btn">
+        <CreateCircleModal
+          interestGroups={interestGroups}
+          organizations={userOrganization}
+        />
+      </div>
     </div>
   );
 }

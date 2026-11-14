@@ -200,12 +200,18 @@ export function CompanyFeedbackPageClient() {
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        title="Impact & Feedback"
-        description="Who your company has reached on muLearn, and what learners say about working with you."
-      />
+      <div data-tour-id="page:company-feedback:header">
+        <PageHeader
+          title="Impact & Feedback"
+          description="Who your company has reached on muLearn, and what learners say about working with you."
+        />
+      </div>
 
-      <section aria-labelledby="impact-heading" className="space-y-4">
+      <section
+        aria-labelledby="impact-heading"
+        className="space-y-4"
+        data-tour-id="page:company-feedback:impact"
+      >
         <h2
           id="impact-heading"
           className="text-xl font-semibold text-foreground"
@@ -267,7 +273,10 @@ export function CompanyFeedbackPageClient() {
         </Card>
       </section>
 
-      <section aria-labelledby="feedback-heading">
+      <section
+        aria-labelledby="feedback-heading"
+        data-tour-id="page:company-feedback:list"
+      >
         <Card>
           <CardHeader>
             <CardTitle id="feedback-heading">Learner feedback</CardTitle>

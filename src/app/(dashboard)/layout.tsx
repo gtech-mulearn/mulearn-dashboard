@@ -11,9 +11,10 @@ import { type ReactNode, Suspense } from "react";
 import { UnauthorizedHandler } from "@/components/auth";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { AppTopbar } from "@/components/dashboard/app-topbar";
+import { DashboardOverlays } from "@/components/dashboard/dashboard-overlays";
 import { DashboardSidebarProvider } from "@/components/dashboard/sidebar-provider";
-import { WhatsNewPopup } from "@/components/dashboard/whats-new-popup";
 import { DashboardContent } from "@/components/layout/dashboard-content";
+import { getTourState } from "@/features/tour";
 import { getLatestChangelogEntry, shouldShowWhatsNew } from "@/lib/whats-new";
 import { OnboardingGuard } from "./onboarding-guard";
 import {
@@ -29,9 +30,10 @@ interface DashboardLayoutProps {
 export default async function DashboardLayout({
   children,
 }: DashboardLayoutProps) {
-  const [entry, state] = await Promise.all([
+  const [entry, state, tourState] = await Promise.all([
     getLatestChangelogEntry(),
     getWhatsNewState(),
+    getTourState(),
   ]);
   const shouldShow = shouldShowWhatsNew(entry, state);
 
@@ -46,11 +48,12 @@ export default async function DashboardLayout({
           <AppTopbar />
           <AppSidebar />
           <DashboardContent>{children}</DashboardContent>
-          <WhatsNewPopup
+          <DashboardOverlays
             entry={entry}
-            isOpen={shouldShow}
-            onSeen={markWhatsNewSeen}
-            onDismiss={dismissWhatsNew}
+            whatsNewOpen={shouldShow}
+            onWhatsNewSeen={markWhatsNewSeen}
+            onWhatsNewDismiss={dismissWhatsNew}
+            tourInitialState={tourState}
           />
         </main>
       </DashboardSidebarProvider>

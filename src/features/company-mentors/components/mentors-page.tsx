@@ -87,7 +87,7 @@ export function MentorsPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        <div data-tour-id="page:company-mentors:header">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Company Mentors
           </h1>
@@ -98,6 +98,7 @@ export function MentorsPage() {
         <Button
           className="shrink-0 gap-2"
           onClick={() => setIsNominateModalOpen(true)}
+          data-tour-id="page:company-mentors:nominate"
         >
           <Plus className="h-4 w-4" />
           Nominate Mentor
@@ -112,7 +113,10 @@ export function MentorsPage() {
           description='Click "Nominate Mentor" to suggest a user from your organization.'
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div
+          className="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+          data-tour-id="page:company-mentors:list"
+        >
           {mentorsList.map((mentor) => (
             <Card key={mentor.id} className="flex flex-col h-full">
               <CardHeader className="pb-3">

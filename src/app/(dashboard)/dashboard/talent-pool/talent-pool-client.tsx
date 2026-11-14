@@ -121,7 +121,12 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2 h-9 text-sm">
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2 h-9 text-sm"
+          data-tour-id="page:talent-pool:filters"
+        >
           <Filter className="h-3.5 w-3.5" />
           Filters
           {activeCount > 0 && (
@@ -675,7 +680,7 @@ export function TalentPoolPageClient() {
       </div>
 
       <Tabs defaultValue="discover" className="w-full">
-        <TabsList className="mb-4">
+        <TabsList className="mb-4" data-tour-id="page:talent-pool:tabs">
           <TabsTrigger value="discover">Discover</TabsTrigger>
           <TabsTrigger value="shortlisted" className="gap-1.5">
             Shortlisted
@@ -694,7 +699,10 @@ export function TalentPoolPageClient() {
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full">
             {/* Summary badge */}
             {!isLoading && !isError && (
-              <div className="flex h-9 shrink-0 items-center gap-2 rounded-xl border border-border bg-card px-4 text-sm">
+              <div
+                className="flex h-9 shrink-0 items-center gap-2 rounded-xl border border-border bg-card px-4 text-sm"
+                data-tour-id="page:talent-pool:count"
+              >
                 <Users className="h-4 w-4 text-primary" />
                 <span className="font-semibold text-foreground">
                   {total.toLocaleString()}
@@ -704,7 +712,10 @@ export function TalentPoolPageClient() {
             )}
 
             {/* Search */}
-            <div className="relative w-full sm:w-[300px]">
+            <div
+              className="relative w-full sm:w-[300px]"
+              data-tour-id="page:talent-pool:search"
+            >
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
               <Input
                 id="talent-search"
@@ -794,7 +805,10 @@ export function TalentPoolPageClient() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            <div
+              className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+              data-tour-id="page:talent-pool:results"
+            >
               {learners.map((learner) => (
                 <LearnerCard key={learner.id} learner={learner} />
               ))}
@@ -833,12 +847,20 @@ export function TalentPoolPageClient() {
         </TabsContent>
 
         {/* ── Shortlisted tab ── */}
-        <TabsContent value="shortlisted" className="mt-0">
+        <TabsContent
+          value="shortlisted"
+          className="mt-0"
+          data-tour-id="page:talent-pool:shortlisted"
+        >
           <ShortlistedTab />
         </TabsContent>
 
         {/* ── Insights tab ── */}
-        <TabsContent value="insights" className="mt-0">
+        <TabsContent
+          value="insights"
+          className="mt-0"
+          data-tour-id="page:talent-pool:insights"
+        >
           <InsightsTab />
         </TabsContent>
       </Tabs>

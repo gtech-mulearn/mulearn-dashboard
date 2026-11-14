@@ -242,7 +242,10 @@ export function ZonalDashboardView() {
             ))}
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-4">
+          <div
+            className="grid gap-4 md:grid-cols-4"
+            data-tour-id="page:zonal:overview"
+          >
             <StatCard
               title="Zone"
               value={details?.zone ?? "-"}
@@ -347,7 +350,10 @@ export function ZonalDashboardView() {
       </section>
 
       {/* Charts */}
-      <section className="grid gap-6 lg:grid-cols-2">
+      <section
+        className="grid gap-6 lg:grid-cols-2"
+        data-tour-id="page:zonal:charts"
+      >
         <Card className="border-border/60">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-semibold">
@@ -468,7 +474,7 @@ export function ZonalDashboardView() {
           subtitle="Search and export students or colleges for your zone."
         />
         <Tabs defaultValue="students" className="mt-4">
-          <TabsList className="bg-muted/50">
+          <TabsList className="bg-muted/50" data-tour-id="page:zonal:list-tabs">
             <TabsTrigger value="students">Students</TabsTrigger>
             <TabsTrigger value="colleges">Colleges</TabsTrigger>
           </TabsList>
@@ -495,48 +501,53 @@ export function ZonalDashboardView() {
               isCsvDownloading={downloadStudentsCsv.isLoading}
             />
 
-            <Table
-              rows={studentRows}
-              isLoading={isStudentDetailsLoading || isStudentDetailsFetching}
-              page={studentPage}
-              perPage={studentPerPage}
-              columnOrder={studentColumns}
-              customCellRender={(column, row) => {
-                if (column === "level") {
-                  return (
-                    <Badge variant="outline" className="text-xs font-semibold">
-                      {String(row.level ?? "-")}
-                    </Badge>
-                  );
-                }
-                return null;
-              }}
-            >
-              <THead
+            <div data-tour-id="page:zonal:student-table">
+              <Table
+                rows={studentRows}
+                isLoading={isStudentDetailsLoading || isStudentDetailsFetching}
+                page={studentPage}
+                perPage={studentPerPage}
                 columnOrder={studentColumns}
-                onIconClick={handleStudentSort}
-                action={false}
-              />
-
-              {!isStudentDetailsLoading && (
-                <Pagination
-                  currentPage={studentPage}
-                  totalPages={studentTotalPages}
-                  handleNextClick={() =>
-                    setStudentPage((p) =>
-                      Math.min(p + 1, studentTotalPages || 1),
-                    )
+                customCellRender={(column, row) => {
+                  if (column === "level") {
+                    return (
+                      <Badge
+                        variant="outline"
+                        className="text-xs font-semibold"
+                      >
+                        {String(row.level ?? "-")}
+                      </Badge>
+                    );
                   }
-                  handlePreviousClick={() =>
-                    setStudentPage((p) => Math.max(p - 1, 1))
-                  }
-                  perPage={studentPerPage}
-                  totalCount={studentTotalCount}
+                  return null;
+                }}
+              >
+                <THead
+                  columnOrder={studentColumns}
+                  onIconClick={handleStudentSort}
+                  action={false}
                 />
-              )}
 
-              <Blank />
-            </Table>
+                {!isStudentDetailsLoading && (
+                  <Pagination
+                    currentPage={studentPage}
+                    totalPages={studentTotalPages}
+                    handleNextClick={() =>
+                      setStudentPage((p) =>
+                        Math.min(p + 1, studentTotalPages || 1),
+                      )
+                    }
+                    handlePreviousClick={() =>
+                      setStudentPage((p) => Math.max(p - 1, 1))
+                    }
+                    perPage={studentPerPage}
+                    totalCount={studentTotalCount}
+                  />
+                )}
+
+                <Blank />
+              </Table>
+            </div>
           </TabsContent>
 
           <TabsContent value="colleges" className="mt-6 space-y-4">

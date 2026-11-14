@@ -67,7 +67,10 @@ export function ProfileStepper({ profile }: ProfileStepperProps) {
         className="flex flex-col"
       >
         {/* ── Step indicator ── */}
-        <div className="pb-6">
+        <div
+          className="pb-6"
+          data-tour-id="page:company-profile-edit:stepper-header"
+        >
           <StepperHeader
             steps={PROFILE_STEPPER_STEPS}
             currentStepIndex={currentStepIndex}
@@ -77,7 +80,10 @@ export function ProfileStepper({ profile }: ProfileStepperProps) {
         </div>
 
         {/* ── Step content ── */}
-        <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
+        <div
+          className="rounded-2xl border border-border bg-card p-4 sm:p-6"
+          data-tour-id="page:company-profile-edit:step-form"
+        >
           <section className="space-y-6">{renderStep()}</section>
         </div>
 
@@ -107,7 +113,12 @@ export function ProfileStepper({ profile }: ProfileStepperProps) {
             ) : null}
 
             {!isLastStep ? (
-              <Button type="button" className="rounded-xl" onClick={goNext}>
+              <Button
+                type="button"
+                className="rounded-xl"
+                onClick={goNext}
+                data-tour-id="page:company-profile-edit:next"
+              >
                 Next
               </Button>
             ) : (

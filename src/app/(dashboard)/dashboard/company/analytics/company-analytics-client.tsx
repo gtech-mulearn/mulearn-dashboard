@@ -175,10 +175,12 @@ export function CompanyAnalyticsPageClient() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Analytics & Insights"
-        description="Monitor your job listing engagement, gig performance, campus outreach, task outcomes, and community talent pool statistics."
-      />
+      <div data-tour-id="page:company-analytics:header">
+        <PageHeader
+          title="Analytics & Insights"
+          description="Monitor your job listing engagement, gig performance, campus outreach, task outcomes, and community talent pool statistics."
+        />
+      </div>
 
       <Tabs
         value={activeTab}
@@ -186,7 +188,7 @@ export function CompanyAnalyticsPageClient() {
         className="space-y-6"
       >
         <div className="scrollbar-none overflow-x-auto">
-          <TabsList>
+          <TabsList data-tour-id="page:company-analytics:tabs">
             <TabsTrigger value="dashboard-summary">
               Dashboard Summary
             </TabsTrigger>
@@ -263,7 +265,7 @@ function DashboardSummaryView() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card data-tour-id="page:company-analytics:period-filter">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div>
             <CardTitle>Dashboard Summary Filters</CardTitle>
@@ -313,7 +315,10 @@ function DashboardSummaryView() {
       ) : (
         <>
           {/* Quick Stats Grid */}
-          <div className={STAT_GRID}>
+          <div
+            data-tour-id="page:company-analytics:summary-cards"
+            className={STAT_GRID}
+          >
             {cards.map((card) => (
               <StatCard
                 key={card.key}

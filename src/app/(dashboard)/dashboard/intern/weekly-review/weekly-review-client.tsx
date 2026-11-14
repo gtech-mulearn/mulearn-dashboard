@@ -28,7 +28,10 @@ export function WeeklyReviewPageClient() {
 
   return (
     <div className="w-full space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div
+        className="flex flex-col md:flex-row md:items-center justify-between gap-6"
+        data-tour-id="page:intern-weekly-review:header"
+      >
         <div>
           <h2 className="text-4xl font-black tracking-tighter text-foreground uppercase flex items-center gap-3">
             Weekly Timesheet
@@ -39,7 +42,10 @@ export function WeeklyReviewPageClient() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 bg-card/40 backdrop-blur-md border border-border/40 p-4 rounded-2xl shadow-xl">
+        <div
+          className="flex items-center gap-3 bg-card/40 backdrop-blur-md border border-border/40 p-4 rounded-2xl shadow-xl"
+          data-tour-id="page:intern-weekly-review:status"
+        >
           <div className="p-2 bg-brand-blue/10 rounded-xl">
             <Trophy className="w-6 h-6 text-brand-blue" />
           </div>
@@ -63,7 +69,10 @@ export function WeeklyReviewPageClient() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto">
+      <div
+        className="max-w-4xl mx-auto"
+        data-tour-id="page:intern-weekly-review:form"
+      >
         <WeeklyReviewForm />
       </div>
     </div>

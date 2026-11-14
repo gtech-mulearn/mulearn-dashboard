@@ -144,7 +144,10 @@ export function CircleList() {
       )}
 
       {/* Search & Filter */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div
+        data-tour-id="page:learning-circle:search-filter"
+        className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+      >
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -187,7 +190,10 @@ export function CircleList() {
 
       {/* Circle Grid — CSS columns for masonry effect */}
       {filteredCircles.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 [&>a]:mb-4 [&>a]:break-inside-avoid [&>a]:block">
+        <div
+          data-tour-id="page:learning-circle:grid"
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 [&>a]:mb-4 [&>a]:break-inside-avoid [&>a]:block"
+        >
           {filteredCircles.map((circle, index) => (
             <div
               key={circle.id}

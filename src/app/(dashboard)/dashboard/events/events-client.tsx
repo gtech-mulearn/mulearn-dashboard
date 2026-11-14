@@ -196,9 +196,11 @@ export function EventsPageClient() {
       </div>
 
       <div className="space-y-6 py-6">
-        <FeaturedEventsCarousel />
+        <div data-tour-id="page:events:featured">
+          <FeaturedEventsCarousel />
+        </div>
 
-        <div className="px-4 md:px-0">
+        <div className="px-4 md:px-0" data-tour-id="page:events:filters">
           <EventsFilters
             onSearch={handleSearch}
             selectedCluster={selectedCluster}
@@ -222,12 +224,14 @@ export function EventsPageClient() {
             <Skeleton className="h-72 rounded-xl" />
           </div>
         ) : (
-          <EventsGrid
-            events={filteredAndSortedEvents}
-            onEventView={(event) =>
-              router.push(`/dashboard/events/${event.id}`)
-            }
-          />
+          <div data-tour-id="page:events:grid">
+            <EventsGrid
+              events={filteredAndSortedEvents}
+              onEventView={(event) =>
+                router.push(`/dashboard/events/${event.id}`)
+              }
+            />
+          </div>
         )}
 
         {pagination && (

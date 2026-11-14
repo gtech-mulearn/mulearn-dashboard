@@ -36,11 +36,13 @@ export function InterestGroupsGrid({
 
   return (
     <div className="space-y-8">
-      <SearchInput
-        value={searchQuery}
-        onChange={setSearchQuery}
-        placeholder="Search interest groups..."
-      />
+      <div data-tour-id="page:interest-groups:search">
+        <SearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search interest groups..."
+        />
+      </div>
 
       {isLoading && (
         <div className="flex flex-col items-center justify-center py-12 sm:py-20">
@@ -66,7 +68,10 @@ export function InterestGroupsGrid({
       )}
 
       {!isLoading && filteredGroups.length > 0 && (
-        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div
+          data-tour-id="page:interest-groups:grid"
+          className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        >
           {filteredGroups.map((group) => (
             <InterestGroupCard
               key={group.id}

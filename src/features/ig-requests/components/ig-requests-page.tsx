@@ -78,12 +78,18 @@ export function IGRequestsPage() {
             Propose and track new interest groups for your organization.
           </p>
         </div>
-        <div className="shrink-0">
+        <div
+          className="shrink-0"
+          data-tour-id="page:company-ig-requests:new-request"
+        >
           <IGRequestFormDialog />
         </div>
       </div>
 
-      <div className="scrollbar-none -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+      <div
+        data-tour-id="page:company-ig-requests:status-tabs"
+        className="scrollbar-none -mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
+      >
         {STATUS_TABS.map((tab) => (
           <Button
             key={tab.label}
@@ -100,18 +106,23 @@ export function IGRequestsPage() {
         ))}
       </div>
 
-      <TableTop
-        onSearchText={setSearch}
-        onPerPageNumber={setPerPage}
-        CSV={""}
-        perPage={perPage}
-        perPageOptions={[10, 20, 50, 100]}
-        searchPlaceholder="Search requests..."
-        searchSize="md"
-        searchPosition="left"
-      />
+      <div data-tour-id="page:company-ig-requests:search">
+        <TableTop
+          onSearchText={setSearch}
+          onPerPageNumber={setPerPage}
+          CSV={""}
+          perPage={perPage}
+          perPageOptions={[10, 20, 50, 100]}
+          searchPlaceholder="Search requests..."
+          searchSize="md"
+          searchPosition="left"
+        />
+      </div>
 
-      <div className="rounded-md bg-background">
+      <div
+        className="rounded-md bg-background"
+        data-tour-id="page:company-ig-requests:table"
+      >
         <Table
           isLoading={isLoading}
           rows={rows}

@@ -47,14 +47,18 @@ export function LeaderboardControls({
 
       {/* Controls row */}
       <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
-        <CategorySelector
-          selected={category}
-          onChange={(val) => updateParam("category", val)}
-        />
-        <TimeFrameToggle
-          selected={timeframe}
-          onChange={(val) => updateParam("timeframe", val)}
-        />
+        <div data-tour-id="page:leaderboard:category">
+          <CategorySelector
+            selected={category}
+            onChange={(val) => updateParam("category", val)}
+          />
+        </div>
+        <div data-tour-id="page:leaderboard:timeframe">
+          <TimeFrameToggle
+            selected={timeframe}
+            onChange={(val) => updateParam("timeframe", val)}
+          />
+        </div>
       </div>
     </div>
   );

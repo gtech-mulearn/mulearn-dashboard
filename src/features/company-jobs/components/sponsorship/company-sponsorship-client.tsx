@@ -80,20 +80,22 @@ export function CompanySponsorshipPageClient() {
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        title="Interest Group Sponsorships"
-        description="Sponsor specialized domain interest groups to build talent pipelines and support student learners."
-        action={
-          <Button
-            className="shrink-0"
-            onClick={() => setIsProposalOpen(true)}
-            disabled={!selectedIgId}
-          >
-            <HandCoins />
-            Sponsor this Interest Group
-          </Button>
-        }
-      />
+      <div data-tour-id="page:company-sponsorship:header">
+        <PageHeader
+          title="Interest Group Sponsorships"
+          description="Sponsor specialized domain interest groups to build talent pipelines and support student learners."
+          action={
+            <Button
+              className="shrink-0"
+              onClick={() => setIsProposalOpen(true)}
+              disabled={!selectedIgId}
+            >
+              <HandCoins />
+              Sponsor this Interest Group
+            </Button>
+          }
+        />
+      </div>
 
       <ConfirmDialog
         open={isProposalOpen}
@@ -109,7 +111,7 @@ export function CompanySponsorshipPageClient() {
       />
 
       {/* Interest Group picker */}
-      <Card>
+      <Card data-tour-id="page:company-sponsorship:picker">
         <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1.5">
             <CardTitle>Select Domain Interest Group</CardTitle>
@@ -159,7 +161,10 @@ export function CompanySponsorshipPageClient() {
           </AlertDescription>
         </Alert>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div
+          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          data-tour-id="page:company-sponsorship:metrics"
+        >
           <StatCard
             title="Total Members"
             value={(metrics?.membership?.total_members ?? 0).toLocaleString()}
