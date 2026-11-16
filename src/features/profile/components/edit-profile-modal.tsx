@@ -54,6 +54,7 @@ import {
   type LocationOption,
   type UserProfile,
 } from "../schemas";
+import { profileCollegeId } from "../utils/college.utils";
 
 interface EditProfileModalProps {
   open: boolean;
@@ -112,6 +113,7 @@ export function EditProfileModal({
   fallbackDepartmentId,
   onSave,
 }: EditProfileModalProps) {
+  const collegeId = profileCollegeId(profile);
   const form = useForm<EditProfileFormValues>({
     resolver: zodResolver(EditProfileFormSchema),
     defaultValues: {
@@ -124,7 +126,7 @@ export function EditProfileModal({
       country_id: "",
       state_id: "",
       district_id: "",
-      org_id: profile.college_id ?? "",
+      org_id: collegeId,
       department_id: "",
       has_college_changes: false,
     },
@@ -151,7 +153,7 @@ export function EditProfileModal({
   const { data: districts = [] } = useDistricts(stateId);
   const { data: organizationData } = useOrganizationData(districtId);
 
-  const currentOrgRaw = profile.college_id || "";
+  const currentOrgRaw = collegeId;
   const collegeOrgDisplayName = profile.college_code || currentOrgRaw;
   const currentOrgOption: LocationOption | null = currentOrgRaw
     ? {
@@ -232,11 +234,11 @@ export function EditProfileModal({
       state_id: editableProfile?.district?.state?.id || "",
       district_id:
         editableProfile?.district?.id || profile.org_district_id || "",
-      org_id: profile.college_id || "",
+      org_id: collegeId,
       department_id: currentDepartmentRaw,
       has_college_changes: false,
     });
-  }, [currentDepartmentRaw, editableProfile, form, open, profile]);
+  }, [collegeId, currentDepartmentRaw, editableProfile, form, open, profile]);
 
   useEffect(() => {
     if (!open) return;
@@ -253,13 +255,12 @@ export function EditProfileModal({
 
   useEffect(() => {
     if (!open) return;
-    const orgRaw = profile.college_id;
-    if (!orgRaw) return;
-    const resolvedOrg = resolveOptionValue(orgRaw, organizations);
+    if (!collegeId) return;
+    const resolvedOrg = resolveOptionValue(collegeId, organizations);
     if (resolvedOrg && form.getValues("org_id") !== resolvedOrg) {
       form.setValue("org_id", resolvedOrg, { shouldDirty: false });
     }
-  }, [form, open, organizations, profile.college_id]);
+  }, [form, open, organizations, collegeId]);
 
   useEffect(() => {
     if (!open) return;

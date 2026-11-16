@@ -132,6 +132,9 @@ export const UserProfileSchema = z
     dob: z.string().optional(),
     college_code: z.string().nullable().optional(),
     college_id: z.string().nullable().optional(),
+    /** A mentor's company (college_* is always the college). */
+    company_id: z.string().nullable().optional(),
+    company_name: z.string().nullable().optional(),
     department_id: z.string().nullable().optional(),
     department_name: z.string().nullable().optional(),
     department: z
