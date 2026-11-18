@@ -10,7 +10,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { usePushStats } from "../hooks";
-import { groupPushStats } from "../stats";
+import { RULE_NAMES } from "../rule-names";
+import { groupPushStats, groupVariantStats } from "../stats";
 
 const SKIP_LABELS: Record<string, string> = {
   skipped_pref: "turned off",
@@ -31,6 +32,7 @@ export function PushStatsView() {
     );
   }
   const lines = groupPushStats(data.rows);
+  const versions = groupVariantStats(data.variants ?? []);
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
@@ -77,6 +79,41 @@ export function PushStatsView() {
               ))}
             </TableBody>
           </Table>
+        </div>
+      )}
+      {versions.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="font-semibold">Versions</h3>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Group</TableHead>
+                  <TableHead>Version</TableHead>
+                  <TableHead className="text-right">Sent</TableHead>
+                  <TableHead className="text-right">Opened</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {versions.map((v) => (
+                  <TableRow key={`${v.group}:${v.key}`}>
+                    <TableCell className="font-medium">
+                      {RULE_NAMES[v.group]?.name ?? v.group}
+                    </TableCell>
+                    <TableCell className="font-mono text-sm">{v.key}</TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {v.sent.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {v.sent
+                        ? `${v.opened.toLocaleString()} opened · ${Math.round(v.rate * 100)}%`
+                        : "–"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       )}
     </div>

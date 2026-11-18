@@ -33,6 +33,9 @@ export const BroadcastNotificationSchema = z.object({
 export const AdminBroadcastSchema = BroadcastNotificationSchema.extend({
   target_details: z.object({ type: z.string(), name: z.string() }),
   created_by_name: z.string(),
+  source: z
+    .enum(["team", "learning_circle", "event", "project", "system"])
+    .optional(),
 });
 
 export const NotificationListResponseSchema = z.object({
@@ -59,6 +62,14 @@ export const TARGET_TYPE_LABELS: Record<TargetType, string> = {
   campus_ig: "Campus IG Chapter",
   event_interest: "Event Interest",
 };
+
+export const BROADCAST_SOURCE_LABELS = {
+  team: "Team",
+  learning_circle: "Learning circle",
+  event: "Event",
+  project: "Project",
+  system: "System",
+} as const;
 
 /**
  * Restricts URLs to relative paths (e.g. /dashboard) and HTTPS URLs.

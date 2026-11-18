@@ -1,4 +1,10 @@
 export type {
+  ActivityLogEntry,
+  ActivityLogPage,
+  ActivityLogQuery,
+} from "./activity-log.schema";
+export { ACTIVITY_ACTIONS } from "./activity-log.schema";
+export type {
   AdminBroadcast,
   AdminBroadcastDispatchPayload,
   BroadcastCreatePayload,
@@ -15,6 +21,7 @@ export {
   AdminBroadcastDispatchSchema,
   AdminBroadcastListResponseSchema,
   AdminBroadcastSchema,
+  BROADCAST_SOURCE_LABELS,
   BroadcastCreateSchema,
   BroadcastNotificationSchema,
   DirectNotificationSchema,

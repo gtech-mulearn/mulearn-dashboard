@@ -1,4 +1,28 @@
-import type { PushStatsRow } from "./types";
+import type { PushStatsRow, PushVariantStat } from "./types";
+
+export type PushVariantLine = {
+  group: string;
+  key: string;
+  sent: number;
+  opened: number;
+  rate: number;
+};
+
+/** Split "GROUP:key" rows; sort by group, then open rate (best first). */
+export function groupVariantStats(rows: PushVariantStat[]): PushVariantLine[] {
+  return rows
+    .map((r) => {
+      const i = r.variant.indexOf(":");
+      return {
+        group: i < 0 ? r.variant : r.variant.slice(0, i),
+        key: i < 0 ? "" : r.variant.slice(i + 1),
+        sent: r.sent,
+        opened: r.opened,
+        rate: r.sent ? r.opened / r.sent : 0,
+      };
+    })
+    .sort((a, b) => a.group.localeCompare(b.group) || b.rate - a.rate);
+}
 
 export type PushStatsLine = {
   source: string;

@@ -126,10 +126,10 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
     icon: Bell,
     title: "Notifications",
     description:
-      "Dispatch platform-wide admin broadcasts and manage broadcast notifications sent to users.",
+      "Send announcements and mobile pushes, and see who changed what.",
     path: "/dashboard/management/notifications",
     color: "bg-chart-5/10 text-chart-5",
-    roles: ADMIN_ROLES,
+    roles: MANAGEMENT_ROLES,
   },
 ];
 

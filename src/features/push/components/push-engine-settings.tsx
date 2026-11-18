@@ -1,15 +1,25 @@
 "use client";
 
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { usePermissions } from "@/hooks/use-permissions";
+import { ADMIN_ROLES } from "@/lib/auth/roles";
 import { usePushConfig, useUpdatePushConfig } from "../hooks";
-import type { PushConfig, PushGlobalConfig, PushRuleConfig } from "../types";
+import { RULE_NAMES } from "../rule-names";
+import type {
+  PushConfig,
+  PushGlobalConfig,
+  PushRuleConfig,
+  PushVariant,
+} from "../types";
 
 const GLOBAL_FIELDS: {
   key: keyof PushGlobalConfig;
@@ -69,28 +79,31 @@ const GLOBAL_FIELDS: {
   },
 ];
 
-const RULE_NAMES: Record<string, { name: string; about: string }> = {
-  MEETING_SOON: {
-    name: "Circle meeting soon",
-    about: "1–2 hours before a meeting of the person's circle.",
-  },
-  EVENT_SOON: {
-    name: "Event coming up",
-    about: "Within a day of an event they marked interested.",
-  },
-  STREAK_RESCUE: {
-    name: "Keep the streak",
-    about: "Evening, when a 2+ day karma streak would break today.",
-  },
-  COMEBACK: {
-    name: "Come back",
-    about:
-      "After 3, 7, 14 and 30 days away, with the new tasks in their groups.",
-  },
-};
+const SAVE_FIRST_HINT = "Save or discard your changes first";
 
-/** Rule fields an admin may edit (others, like weight, stay in code). */
-const EDITABLE_TEXT = ["title", "body", "body_with_tasks", "body_default"];
+/** Same limits the backend enforces. */
+const MAX_VARIANTS = 10;
+const MAX_TITLE = 40;
+const MAX_BODY = 100;
+
+/** Only these fields may be sent; the backend rejects anything else. */
+function cleanVariants(variants: PushVariant[]): PushVariant[] {
+  return variants.map((v) => {
+    const out: PushVariant = { key: v.key, title: v.title, body: v.body };
+    if (v.body_no_tasks !== undefined) out.body_no_tasks = v.body_no_tasks;
+    if (v.voice !== undefined) out.voice = v.voice;
+    return out;
+  });
+}
+
+function nextVariantKey(variants: PushVariant[]) {
+  const used = new Set(variants.map((v) => v.key));
+  let n = variants.length + 1;
+  while (used.has(`v${n}`)) n += 1;
+  return `v${n}`;
+}
+
+/** Numeric rule fields an admin may edit (others, like weight, stay in code). */
 const EDITABLE_NUMBERS = [
   "lead_minutes_min",
   "lead_minutes_max",
@@ -101,12 +114,24 @@ const EDITABLE_NUMBERS = [
   "cooldown_hours",
 ];
 
+/** Copy keys an admin may have saved before versions existed. */
+const LEGACY_COPY_KEYS = ["title", "body", "body_with_tasks", "body_default"];
+
 function humanize(key: string) {
   return key.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
 }
 
 export function PushEngineSettings() {
-  const { data: config, isLoading } = usePushConfig();
+  const { data: config, isLoading, isError, error, refetch } = usePushConfig();
+  if (isError && !config) {
+    return (
+      <QueryErrorState
+        title="Couldn't load push settings."
+        error={error}
+        onRetry={() => refetch()}
+      />
+    );
+  }
   if (isLoading || !config) {
     return (
       <div className="flex justify-center py-8">
@@ -119,6 +144,8 @@ export function PushEngineSettings() {
 
 function SettingsForm({ config }: { config: PushConfig }) {
   const update = useUpdatePushConfig();
+  const { hasRole } = usePermissions();
+  const canEdit = hasRole(ADMIN_ROLES);
   const [global, setGlobal] = useState(config.global);
   const [rules, setRules] = useState(config.rules);
 
@@ -139,6 +166,16 @@ function SettingsForm({ config }: { config: PushConfig }) {
       const before = config.rules[key];
       const changed: Record<string, unknown> = {};
       for (const [field, value] of Object.entries(rule)) {
+        if (field === "variants") {
+          const next = cleanVariants(rule.variants ?? []);
+          if (
+            JSON.stringify(next) !==
+            JSON.stringify(cleanVariants(before?.variants ?? []))
+          ) {
+            changed.variants = next;
+          }
+          continue;
+        }
         if (JSON.stringify(value) !== JSON.stringify(before?.[field])) {
           changed[field] = value;
         }
@@ -161,8 +198,30 @@ function SettingsForm({ config }: { config: PushConfig }) {
     setRules((prev) => ({ ...prev, [key]: { ...prev[key], [field]: value } }));
   }
 
+  function setVariant(
+    key: string,
+    index: number,
+    change: Partial<PushVariant>,
+  ) {
+    setRules((prev) => ({
+      ...prev,
+      [key]: {
+        ...prev[key],
+        variants: (prev[key].variants ?? []).map((v, i) =>
+          i === index ? { ...v, ...change } : v,
+        ),
+      },
+    }));
+  }
+
   return (
     <div className="space-y-6">
+      {!canEdit && (
+        <p className="text-sm text-muted-foreground">
+          Only admins can change these.
+        </p>
+      )}
+
       {!config.configured && (
         <Alert>
           <AlertTriangle className="h-4 w-4" />
@@ -183,11 +242,14 @@ function SettingsForm({ config }: { config: PushConfig }) {
             Stops every push at once (activity, reminders and campaigns). In-app
             notifications keep working.
           </p>
+          {dirty && canEdit && (
+            <p className="text-xs text-muted-foreground">{SAVE_FIRST_HINT}</p>
+          )}
         </div>
         <Switch
           id="push-kill"
           checked={config.global.kill_switch}
-          disabled={update.isPending}
+          disabled={!canEdit || update.isPending || dirty}
           onCheckedChange={(on) =>
             update.mutate({ global: { kill_switch: on } })
           }
@@ -206,6 +268,7 @@ function SettingsForm({ config }: { config: PushConfig }) {
                 min={f.min}
                 max={f.max}
                 value={String(global[f.key])}
+                disabled={!canEdit}
                 onChange={(e) =>
                   setGlobal((g) => ({ ...g, [f.key]: Number(e.target.value) }))
                 }
@@ -232,6 +295,7 @@ function SettingsForm({ config }: { config: PushConfig }) {
               <Switch
                 aria-label={`${RULE_NAMES[key]?.name ?? key} on`}
                 checked={rule.enabled}
+                disabled={!canEdit}
                 onCheckedChange={(on) => setRule(key, "enabled", on)}
               />
             </div>
@@ -244,23 +308,120 @@ function SettingsForm({ config }: { config: PushConfig }) {
                       id={`push-${key}-${f}`}
                       type="number"
                       value={String(rule[f])}
+                      disabled={!canEdit}
                       onChange={(e) => setRule(key, f, Number(e.target.value))}
                     />
                   </div>
                 ),
               )}
             </div>
-            {EDITABLE_TEXT.filter((f) => typeof rule[f] === "string").map(
-              (f) => (
-                <div key={f} className="space-y-1">
-                  <Label htmlFor={`push-${key}-${f}`}>{humanize(f)}</Label>
-                  <Input
-                    id={`push-${key}-${f}`}
-                    value={String(rule[f])}
-                    onChange={(e) => setRule(key, f, e.target.value)}
-                  />
-                </div>
-              ),
+            {LEGACY_COPY_KEYS.some((k) => typeof rule[k] === "string") && (
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Custom copy saved before versions existed is in use. Saving
+                  versions replaces it.
+                </AlertDescription>
+              </Alert>
+            )}
+            {rule.variants && (
+              <div className="space-y-3">
+                {rule.variants.map((v, i) => (
+                  <div key={v.key} className="space-y-2 rounded-md border p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono text-sm">{v.key}</span>
+                      {canEdit && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          aria-label={`Remove version ${v.key}`}
+                          disabled={(rule.variants?.length ?? 0) <= 1}
+                          onClick={() =>
+                            setRule(
+                              key,
+                              "variants",
+                              (rule.variants ?? []).filter((_, j) => j !== i),
+                            )
+                          }
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor={`push-${key}-${v.key}-title`}>
+                        {`Title for ${v.key}`}
+                      </Label>
+                      <Input
+                        id={`push-${key}-${v.key}-title`}
+                        value={v.title}
+                        maxLength={MAX_TITLE}
+                        disabled={!canEdit}
+                        onChange={(e) =>
+                          setVariant(key, i, { title: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor={`push-${key}-${v.key}-body`}>
+                        {`Body for ${v.key}`}
+                      </Label>
+                      <Textarea
+                        id={`push-${key}-${v.key}-body`}
+                        value={v.body}
+                        maxLength={MAX_BODY}
+                        rows={2}
+                        disabled={!canEdit}
+                        onChange={(e) =>
+                          setVariant(key, i, { body: e.target.value })
+                        }
+                      />
+                    </div>
+                    {key === "COMEBACK" && (
+                      <div className="space-y-1">
+                        <Label htmlFor={`push-${key}-${v.key}-notasks`}>
+                          {`Body with no new tasks for ${v.key}`}
+                        </Label>
+                        <Textarea
+                          id={`push-${key}-${v.key}-notasks`}
+                          value={v.body_no_tasks ?? ""}
+                          maxLength={MAX_BODY}
+                          rows={2}
+                          disabled={!canEdit}
+                          onChange={(e) =>
+                            setVariant(key, i, {
+                              body_no_tasks: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {canEdit && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={rule.variants.length >= MAX_VARIANTS}
+                    onClick={() =>
+                      setRule(key, "variants", [
+                        ...(rule.variants ?? []),
+                        {
+                          key: nextVariantKey(rule.variants ?? []),
+                          title: "",
+                          body: "",
+                          ...(key === "COMEBACK" ? { body_no_tasks: "" } : {}),
+                        },
+                      ])
+                    }
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span className="ml-1.5">Add version</span>
+                  </Button>
+                )}
+              </div>
             )}
           </div>
         ))}
@@ -270,27 +431,29 @@ function SettingsForm({ config }: { config: PushConfig }) {
         </p>
       </section>
 
-      <div className="flex justify-end gap-2">
-        <Button
-          variant="outline"
-          disabled={!dirty || update.isPending}
-          onClick={() => {
-            setGlobal(config.global);
-            setRules(config.rules);
-          }}
-        >
-          Discard
-        </Button>
-        <Button
-          disabled={!dirty || update.isPending}
-          onClick={() => update.mutate(patch)}
-        >
-          {update.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-          <span className={update.isPending ? "ml-1.5" : undefined}>
-            Save changes
-          </span>
-        </Button>
-      </div>
+      {canEdit && (
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="outline"
+            disabled={!dirty || update.isPending}
+            onClick={() => {
+              setGlobal(config.global);
+              setRules(config.rules);
+            }}
+          >
+            Discard
+          </Button>
+          <Button
+            disabled={!dirty || update.isPending}
+            onClick={() => update.mutate(patch)}
+          >
+            {update.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            <span className={update.isPending ? "ml-1.5" : undefined}>
+              Save changes
+            </span>
+          </Button>
+        </div>
+      )}
 
       <Separator />
 
@@ -300,6 +463,9 @@ function SettingsForm({ config }: { config: PushConfig }) {
           <p className="text-sm text-muted-foreground">
             Which in-app notifications also go to phones. Changes save at once.
           </p>
+          {dirty && canEdit && (
+            <p className="text-xs text-muted-foreground">{SAVE_FIRST_HINT}</p>
+          )}
         </div>
         <div className="grid gap-2 sm:grid-cols-2">
           {types.map(([type, on]) => (
@@ -311,7 +477,7 @@ function SettingsForm({ config }: { config: PushConfig }) {
               <Switch
                 aria-label={`Push for ${type}`}
                 checked={on}
-                disabled={update.isPending}
+                disabled={!canEdit || update.isPending || dirty}
                 onCheckedChange={(next) =>
                   update.mutate({ types: { [type]: next } })
                 }
