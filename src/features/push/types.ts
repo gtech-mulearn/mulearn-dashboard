@@ -20,9 +20,21 @@ export type PushRuleConfig = {
   enabled: boolean;
   weight: number;
   urgent: boolean;
-  title: string;
+  /** Only present when an admin saved custom copy before versions existed. */
+  title?: string;
+  variants?: PushVariant[];
   [key: string]: unknown;
 };
+
+export type PushVariant = {
+  key: string;
+  title: string;
+  body: string;
+  body_no_tasks?: string | null;
+  voice?: string;
+};
+
+export type PushVariantStat = { variant: string; sent: number; opened: number };
 
 export type PushConfig = {
   /** False when the server has no Firebase credentials: nothing is sent. */
@@ -90,4 +102,5 @@ export type PushStats = {
   days: number;
   devices: { devices: number; users: number };
   rows: PushStatsRow[];
+  variants?: PushVariantStat[];
 };

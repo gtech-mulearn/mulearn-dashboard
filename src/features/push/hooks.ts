@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { notificationKeys } from "@/features/notification/hooks/query-keys";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   createPushCampaign,
@@ -35,6 +36,7 @@ export function useUpdatePushConfig() {
     mutationFn: (patch: PushConfigPatch) => updatePushConfig(patch),
     onSuccess: (config) => {
       qc.setQueryData(pushKeys.config(), config);
+      qc.invalidateQueries({ queryKey: notificationKeys.activityLogAll() });
       toast.success("Push settings saved");
     },
     onError: (e) => toast.error(errorText(e, "Couldn't save push settings")),
@@ -57,6 +59,7 @@ export function useCreatePushCampaign() {
     mutationFn: (input: PushCampaignInput) => createPushCampaign(input),
     onSuccess: (campaign) => {
       qc.invalidateQueries({ queryKey: pushKeys.campaigns() });
+      qc.invalidateQueries({ queryKey: notificationKeys.activityLogAll() });
       toast.success(
         campaign.status === "scheduled" ? "Campaign scheduled" : "Draft saved",
       );
@@ -72,6 +75,7 @@ export function usePushCampaignAction() {
       pushCampaignAction(id, action),
     onSuccess: (_, { action }) => {
       qc.invalidateQueries({ queryKey: pushKeys.campaigns() });
+      qc.invalidateQueries({ queryKey: notificationKeys.activityLogAll() });
       toast.success(
         action === "send" ? "Sending started" : "Campaign cancelled",
       );
@@ -81,9 +85,16 @@ export function usePushCampaignAction() {
 }
 
 export function useSendTestPush() {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: sendTestPush,
-    onSuccess: () => toast.success("Test push sent to your devices"),
+    // The backend logs failed attempts too, so refresh either way.
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: notificationKeys.activityLogAll() });
+    },
+    onSuccess: () => {
+      toast.success("Test push sent to your devices");
+    },
     onError: (e) => toast.error(errorText(e, "No test push was sent")),
   });
 }

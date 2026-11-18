@@ -1,8 +1,11 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import {
   Table,
   TableBody,
@@ -50,8 +53,28 @@ function when(c: PushCampaign) {
 }
 
 export function PushCampaignsTable() {
-  const { data: campaigns, isLoading } = usePushCampaigns();
+  const {
+    data: campaigns,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = usePushCampaigns();
   const action = usePushCampaignAction();
+  const [pending, setPending] = useState<{
+    campaign: PushCampaign;
+    action: "send" | "cancel";
+  } | null>(null);
+
+  if (isError && !campaigns) {
+    return (
+      <QueryErrorState
+        title="Couldn't load push campaigns."
+        error={error}
+        onRetry={() => refetch()}
+      />
+    );
+  }
 
   if (isLoading) {
     return (
@@ -79,6 +102,7 @@ export function PushCampaignsTable() {
             <TableHead className="text-right">Sent</TableHead>
             <TableHead className="text-right">Skipped</TableHead>
             <TableHead>When</TableHead>
+            <TableHead>Created by</TableHead>
             <TableHead />
           </TableRow>
         </TableHeader>
@@ -118,13 +142,16 @@ export function PushCampaignsTable() {
                 <TableCell className="whitespace-nowrap text-sm">
                   {when(c)}
                 </TableCell>
+                <TableCell className="whitespace-nowrap text-sm">
+                  {c.created_by ?? "—"}
+                </TableCell>
                 <TableCell className="whitespace-nowrap text-right">
                   {(c.status === "draft" || c.status === "scheduled") && (
                     <Button
                       size="sm"
                       disabled={busy}
                       onClick={() =>
-                        action.mutate({ id: c.id, action: "send" })
+                        setPending({ campaign: c, action: "send" })
                       }
                     >
                       Send now
@@ -139,7 +166,7 @@ export function PushCampaignsTable() {
                       className="ml-1"
                       disabled={busy}
                       onClick={() =>
-                        action.mutate({ id: c.id, action: "cancel" })
+                        setPending({ campaign: c, action: "cancel" })
                       }
                     >
                       Cancel
@@ -151,6 +178,29 @@ export function PushCampaignsTable() {
           })}
         </TableBody>
       </Table>
+      <ConfirmDialog
+        open={pending !== null}
+        onOpenChange={(open) => {
+          if (!open) setPending(null);
+        }}
+        title={
+          pending?.action === "send" ? "Send now?" : "Cancel this campaign?"
+        }
+        description={
+          pending?.action === "send"
+            ? `This goes to ${pending.campaign.target_count.toLocaleString()} phones.`
+            : "Pushes not yet sent will not go out."
+        }
+        variant={pending?.action === "send" ? "default" : "destructive"}
+        confirmLabel={pending?.action === "send" ? "Send" : "Cancel campaign"}
+        cancelLabel={pending?.action === "send" ? undefined : "Keep campaign"}
+        onConfirm={() => {
+          if (pending) {
+            action.mutate({ id: pending.campaign.id, action: pending.action });
+          }
+          setPending(null);
+        }}
+      />
     </div>
   );
 }

@@ -5,6 +5,7 @@ export {
   deleteBroadcast,
   deleteNotification,
   dispatchAdminBroadcast,
+  getActivityLog,
   getAllBroadcasts,
   getNotificationFeed,
   getTargetCampusIGChapters,
