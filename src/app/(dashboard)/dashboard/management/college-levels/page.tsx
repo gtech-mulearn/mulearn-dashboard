@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import CollegeLevelsPage from "@/features/college-levels/components/CollegeLevelsPage";
+import { CollegeLevelsPage } from "@/features/college-levels";
 import { FELLOW_MANAGEMENT_ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 
