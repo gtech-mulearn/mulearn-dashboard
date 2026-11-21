@@ -1,0 +1,30 @@
+# Files with inline query keys (queryKey arrays starting with a string) on dev today, and how many.
+# This list only shrinks: use the feature's key factory (hooks/query-keys.ts) instead of adding keys.
+# A new inline key fails CI, and so does a count that went down without updating this list.
+# Format: <file> | <count>, sorted. After replacing keys, update it with: bun scripts/check-query-keys.ts --update
+src/app/(dashboard)/dashboard/talent-pool/talent-pool-client.tsx | 2
+src/features/campus-manage/hooks/use-campus-manage.ts | 1
+src/features/channels/hooks/use-channels.ts | 7
+src/features/company-jobs/hooks/use-job-mutations.ts | 6
+src/features/company-jobs/hooks/use-lead-targets.ts | 1
+src/features/events/components/manage-event-detail-view.tsx | 1
+src/features/events/hooks/events.hooks.ts | 1
+src/features/intern/hooks/use-intern.ts | 6
+src/features/manage-ig/components/ig-form-dialog.tsx | 2
+src/features/manage-ig/hooks/use-edit-interest-group.ts | 1
+src/features/manage-ig/hooks/use-ig-requests.ts | 3
+src/features/manage-ig/hooks/use-manage-ig.ts | 11
+src/features/manage-locations/hooks/use-countries.ts | 8
+src/features/manage-locations/hooks/use-district.ts | 4
+src/features/manage-locations/hooks/use-states.ts | 8
+src/features/manage-locations/hooks/use-zone.ts | 8
+src/features/manage-users/hooks/use-manage-users.ts | 3
+src/features/mentor/admin/components/assign-mentors-dialog.tsx | 1
+src/features/mentor/admin/hooks/use-mentor-verify.ts | 1
+src/features/mentor/public/hooks/use-public-mentor.ts | 1
+src/features/organizations/hooks/use-transfer.ts | 1
+src/features/profile/hooks/use-profile-mutations.ts | 2
+src/features/profile/hooks/use-profile.ts | 1
+src/features/tasks/hooks/use-task-types.ts | 4
+src/features/tasks/hooks/use-tasks.ts | 8
+src/features/url-shortener/hooks/use-short-urls.ts | 1
