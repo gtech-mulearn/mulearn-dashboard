@@ -1,0 +1,24 @@
+# Import cycles that exist on dev today (madge, paths relative to src/). This list only shrinks:
+# break a cycle, never add one. A new cycle fails CI, and so does a listed cycle that no longer exists.
+# Format: one cycle per line, starting at its alphabetically first file, joined with ' > ', sorted.
+# After breaking a cycle, remove its line with: bun scripts/check-import-cycles.ts --update
+features/campus/components/campus-view.tsx > features/campus/components/index.ts
+features/channels/hooks/index.ts > features/channels/hooks/use-channel-logic.ts
+features/connect/components/connect-qseverse.tsx > features/connect/index.ts > features/connect/components/index.ts
+features/interest-groups/components/index.ts > features/interest-groups/components/interest-group-detail-client.tsx > features/interest-groups/index.ts
+features/intern/components/index.ts > features/intern/components/weekly-review-form.tsx > features/intern/index.ts
+features/karma-voucher/hooks/index.ts > features/karma-voucher/hooks/use-karma-voucher-logic.ts
+features/leaderboard/api/index.ts > features/leaderboard/api/leaderboard.api.ts > features/leaderboard/index.ts
+features/leaderboard/components/category-selector.tsx > features/leaderboard/index.ts > features/leaderboard/components/index.ts
+features/leaderboard/components/index.ts > features/leaderboard/components/leaderboard-card.tsx > features/leaderboard/index.ts
+features/leaderboard/components/index.ts > features/leaderboard/components/leaderboard-controls.tsx > features/leaderboard/index.ts
+features/leaderboard/components/index.ts > features/leaderboard/components/leaderboard-view.tsx > features/leaderboard/components/podium.tsx > features/leaderboard/index.ts
+features/leaderboard/components/index.ts > features/leaderboard/components/timeframe-toggle.tsx > features/leaderboard/index.ts
+features/organizations/components/affiliation/affiliation-form-dialog.tsx > features/organizations/index.ts > features/organizations/components/index.ts
+features/organizations/components/affiliation/affiliation-view.tsx > features/organizations/index.ts > features/organizations/components/index.ts
+features/settings/api/index.ts > features/settings/api/settings.api.ts > features/settings/index.ts
+features/settings/hooks/index.ts > features/settings/hooks/use-change-organization.ts > features/settings/index.ts
+features/settings/hooks/index.ts > features/settings/hooks/use-change-password.ts > features/settings/index.ts
+features/settings/hooks/index.ts > features/settings/hooks/use-college-search.ts > features/settings/index.ts
+features/settings/hooks/index.ts > features/settings/hooks/use-department-search.ts > features/settings/index.ts
+features/url-shortener/components/analytics-view.tsx > features/url-shortener/index.ts > features/url-shortener/components/index.ts

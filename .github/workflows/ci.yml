@@ -29,6 +29,10 @@ jobs:
       - name: Run lint
         run: bun run lint
 
+      # Fails on a new import cycle, or a listed one that no longer exists (scripts/allowlists/import-cycles.txt).
+      - name: Check import cycles
+        run: bun scripts/check-import-cycles.ts
+
   typecheck:
     name: Typecheck
     runs-on: ubuntu-latest
