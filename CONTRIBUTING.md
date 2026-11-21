@@ -1,5 +1,7 @@
 # Contributing to MuLearn Dashboard
 
+> **Security problems are never reported in a public issue or pull request.** See [SECURITY.md](SECURITY.md).
+
 ## Getting Started
 
 ```bash

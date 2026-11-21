@@ -116,6 +116,10 @@ Design detail: `docs/superpowers/specs/2026-07-19-netlify-cicd-design.md`.
 
 ---
 
+## 🔒 Security
+
+Found a security problem? Don't open a public issue: report it privately, as [SECURITY.md](SECURITY.md) explains.
+
 ## 📄 License
 
 This project is licensed under the MIT License.
