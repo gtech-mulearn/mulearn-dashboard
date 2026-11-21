@@ -36,7 +36,7 @@ Everything a fresh clone needs before its first pull request.
    |---|---|---|
    | `NEXT_PUBLIC_DJANGO_API_URL` | Required. The backend API the browser calls. It is built into the client bundle. | `http://localhost:8000` for a backend running locally, or a development API you're allowed to use |
    | `NEXT_PUBLIC_DISCORD_AUTH_URL` | Required. The Discord sign-in URL that the Connect Discord page sends users to. | any valid URL, for example `http://localhost:3000`, unless you're working on Discord linking |
-   | `BACKEND_URL` | Optional, server only. The backend address that server-side code uses, when it differs from the one the browser uses. If unset, the server uses `NEXT_PUBLIC_DJANGO_API_URL`. | leave it unset |
+   | `BACKEND_URL` | Optional, server only. The backend address that server-side code uses, when it differs from the one the browser uses. If unset, the server uses `NEXT_PUBLIC_DJANGO_API_URL`. | leave it commented out, as in `.env.example`: an empty value fails validation |
 
 5. **Run the app:**
 
