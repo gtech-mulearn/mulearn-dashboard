@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { MentorsPage } from "@/features/company-mentors/components/mentors-page";
+import { MentorsPage } from "@/features/company-mentors";
 
 export const metadata: Metadata = {
   title: "Company Mentors | μLearn",
