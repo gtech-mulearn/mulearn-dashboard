@@ -10,7 +10,54 @@ bun install
 bun dev
 ```
 
-Ensure you have [Bun](https://bun.sh) installed. Node/npm are not supported.
+Ensure you have [Bun](https://bun.sh) installed. Use Bun, not npm or yarn. Full setup: [Development setup](#development-setup).
+
+## Development setup
+
+Everything a fresh clone needs before its first pull request.
+
+1. **Install Node 22 or later and Bun 1.3**, the versions the builds use (`netlify.toml`). Use Bun to install and run scripts; npm and yarn aren't supported. Node is still needed: Next.js and the typecheck script run on it.
+2. **Clone the repository.** Line endings are LF everywhere, set by `.gitattributes`. On Windows, a clone made before `.gitattributes` existed needs a fresh checkout: with nothing uncommitted, run `git rm -r --cached . && git reset --hard`.
+3. **Install dependencies:**
+
+   ```bash
+   bun install
+   ```
+
+4. **Create `.env.local`** from `.env.example`:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   `config/env.ts` validates these variables. The two `NEXT_PUBLIC_` ones are required: without them the app won't start or build. Never use production credentials.
+
+   | Variable | What it is | A value that works locally |
+   |---|---|---|
+   | `NEXT_PUBLIC_DJANGO_API_URL` | Required. The backend API the browser calls. It is built into the client bundle. | `http://localhost:8000` for a backend running locally, or a development API you're allowed to use |
+   | `NEXT_PUBLIC_DISCORD_AUTH_URL` | Required. The Discord sign-in URL that the Connect Discord page sends users to. | any valid URL, for example `http://localhost:3000`, unless you're working on Discord linking |
+   | `BACKEND_URL` | Optional, server only. The backend address that server-side code uses, when it differs from the one the browser uses. If unset, the server uses `NEXT_PUBLIC_DJANGO_API_URL`. | leave it unset |
+
+5. **Run the app:**
+
+   ```bash
+   bun dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000).
+
+6. **Before opening a pull request,** run the checks CI runs:
+
+   ```bash
+   bun run lint
+   bun run typecheck
+   bun run test            # the whole suite; or: bun run test <paths>
+   ```
+
+   Some tests fail on `dev` today. They are listed in `scripts/allowlists/test-baseline.txt`, and CI fails only on a new failure or on a listed test that now passes (see that file's header).
+7. **Add a changeset to every pull request** (see [Changesets](#changesets-versioning--changelog)).
+
+The architecture these pull requests follow, with issues anyone can pick up, is in [docs/architecture/README.md](docs/architecture/README.md).
 
 ## Branching
 
@@ -83,17 +130,14 @@ production build) — all three checks must pass before merge.
 
 ## Changesets (Versioning & Changelog)
 
-This project uses [Changesets](https://github.com/changesets/changesets) to manage versioning and generate the changelog. **Every PR that changes user-facing behavior must include a changeset.**
+This project uses [Changesets](https://github.com/changesets/changesets) to manage versioning and generate the changelog. **Every pull request to `dev` or `staging` needs a changeset**: CI checks for one with `changeset status`.
 
-### When to add a changeset
+### Which changeset to add
 
-Add a changeset if your PR includes:
-- A new feature (`feat`)
-- A bug fix (`fix`)
-- A performance improvement (`perf`)
-- A breaking change
+- **A change to the shipped product** (`feat`, `fix`, `perf`, or a breaking change): run `bunx changeset` and choose the bump.
+- **Anything else** (`chore`, `refactor`, `docs`, `ci`, `style`, `test`): add an empty one with `bunx changeset --empty`. It bumps nothing and adds nothing to the changelog, but satisfies the check.
 
-Skip it for: `chore`, `refactor`, `docs`, `ci`, `style`, `test` — changes that don't affect the shipped product.
+Existing changesets add an `author: @<your GitHub handle>` line under the front matter; do the same.
 
 ### How to add a changeset
 
@@ -134,7 +178,7 @@ Before opening a PR:
 
 - [ ] Branch is off `dev`, targets `dev`
 - [ ] Pre-commit hooks pass locally
-- [ ] A changeset is included (if applicable)
+- [ ] A changeset is included (an empty one, `bunx changeset --empty`, for chores and docs)
 - [ ] No `console.log`, hardcoded tokens, or secrets
 - [ ] UI changes tested in browser (not just type-checked)
 
