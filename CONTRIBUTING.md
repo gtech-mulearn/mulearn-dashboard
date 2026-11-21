@@ -141,6 +141,7 @@ Before opening a PR:
 ## Code Style
 
 - Formatter and linter: [Biome](https://biomejs.dev) — runs automatically on commit
+- Line endings are LF everywhere, set by `.gitattributes`, so lint behaves the same on Windows
 - No comments unless the *why* is non-obvious
 - No unused imports (Biome will flag them)
 - Prefer `const` and explicit types; avoid `any`
