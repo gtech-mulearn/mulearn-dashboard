@@ -84,7 +84,7 @@ export function findings(root: string): string[] {
     );
     for (const { fileName: spec } of importedFiles) {
       const t = target(file, spec);
-      if (!t || !t.startsWith("src/features/")) continue;
+      if (!t?.startsWith("src/features/")) continue;
       const [, , feature, ...rest] = t.split("/");
       if (!feature || feature === importerFeature) continue;
       const publicSurface =
