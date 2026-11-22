@@ -47,7 +47,7 @@ import {
 } from "@/components/ui/select";
 import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
-import { useInterestGroupsList } from "@/features/home";
+import { useDashboardInterestGroups } from "@/features/interest-groups";
 import {
   MENTOR_HOURS_OPTIONS,
   MentorHoursSchema,
@@ -165,7 +165,7 @@ export function MentorEditProfileModal({
     changeCompanyMutation.isPending ||
     igChangeMutation.isPending;
 
-  const { data: igList = [] } = useInterestGroupsList();
+  const { data: igList = [] } = useDashboardInterestGroups();
   const igOptions = igList.map((ig) => ({ value: ig.id, label: ig.name }));
   const { data: companies = [] } = useCompanies();
   const companyOptions = companies.map((c) => ({ id: c.id, title: c.title }));

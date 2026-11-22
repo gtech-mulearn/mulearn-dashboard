@@ -22,13 +22,13 @@ import {
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { MentorSession } from "@/features/home";
 import { formatMentorHours } from "@/features/mentor/lib/hours";
 import { formatMentorRating } from "@/features/mentor/lib/rating";
 import type {
   MentorApplication,
   MentorStatusData,
 } from "@/features/mentor/onboarding/schemas";
+import type { MentorSession } from "../../api";
 
 interface MentorProfileSidebarProps {
   mentorProfile: MentorApplication;

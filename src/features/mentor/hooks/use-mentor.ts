@@ -8,6 +8,7 @@ import {
   fetchAvailabilityCalendar,
   fetchMentorPersonalAnalytics,
   getAvailabilitySlots,
+  getMentorSessions,
 } from "../api";
 import type { WeeklySchedule } from "../types";
 import { mentorKeys } from "./query-keys";
@@ -22,6 +23,15 @@ const no403Retry = (failureCount: number, error: unknown) => {
   }
   return failureCount < 2;
 };
+
+export function useMentorSessions(status = "SCHEDULED") {
+  return useQuery({
+    queryKey: mentorKeys.homeSessions(status),
+    queryFn: () => getMentorSessions(status),
+    staleTime: 2 * 60 * 1000,
+    retry: no403Retry,
+  });
+}
 
 export function useAvailabilitySlots() {
   return useQuery({

@@ -34,9 +34,6 @@ company-jobs | src/hooks/use-filtered-nav.ts | @/features/company-jobs/hooks/use
 company-tasks | src/app/(dashboard)/dashboard/company/tasks/page.tsx | @/features/company-tasks/components/tasks-page
 events | src/features/home/components/events-slider-card.tsx | @/features/events/hooks
 grit-meter | src/app/(dashboard)/dashboard/management/system/features/page.tsx | @/features/grit-meter/components/grit-meter-item
-home | src/features/mentor/hooks/use-session-actions.ts | @/features/home/api/home.api
-home | src/features/mentor/hooks/use-session-actions.ts | @/features/home/hooks
-home | src/features/mentor/onboarding/components/mentor-onboarding-form.tsx | @/features/home/hooks
 intern | src/app/(dashboard)/dashboard/intern/intern-client.tsx | ../../../../features/intern/components/active-quests
 intern | src/app/(dashboard)/dashboard/intern/intern-client.tsx | ../../../../features/intern/components/activity-log
 intern | src/app/(dashboard)/dashboard/intern/intern-client.tsx | ../../../../features/intern/components/intern-header
@@ -74,7 +71,6 @@ mentor | src/features/home/components/mentor-home.tsx | @/features/mentor/onboar
 mentor | src/features/home/components/mentor-home.tsx | @/features/mentor/onboarding/schemas
 mentor | src/features/home/components/mentor-home.tsx | @/features/mentor/types
 mentor | src/features/home/components/mentor/my-igs-card.tsx | @/features/mentor/tasks/hooks/use-mentor-tasks
-mentor | src/features/home/components/mentor/session-requests-card.tsx | @/features/mentor/hooks/use-session-actions
 mentor | src/features/home/components/verification-status-banner.tsx | @/features/mentor/onboarding/hooks/use-onboarding
 mentor | src/features/tour/hooks/use-tour.test.tsx | @/features/mentor/onboarding/hooks/use-onboarding
 mentor | src/features/tour/hooks/use-tour.ts | @/features/mentor/onboarding/hooks/use-onboarding

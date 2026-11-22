@@ -27,6 +27,7 @@ import {
   useCreateAvailabilitySlots,
   useMentorOverview,
   useMentorPersonalAnalytics,
+  useMentorSessions,
 } from "@/features/mentor/hooks";
 import { isMentorDeactivatedError } from "@/features/mentor/lib/mentor-deactivated";
 import { MentorOnboardingForm } from "@/features/mentor/onboarding/components/mentor-onboarding-form";
@@ -38,7 +39,7 @@ import {
 import { mentorTierLabel } from "@/features/mentor/onboarding/lib/mentor-status";
 import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
 import type { WeeklySchedule } from "@/features/mentor/types";
-import { useDashboardCalendar, useMentorSessions } from "../hooks";
+import { useDashboardCalendar } from "../hooks";
 import { flattenDashboardCalendar } from "../utils";
 import { EventCalendarCard } from "./event-calendar-card";
 import { MentorHeroCard } from "./mentor/mentor-hero-card";

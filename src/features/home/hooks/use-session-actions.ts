@@ -1,15 +1,13 @@
 "use client";
 
+// Accept or decline a session request from the mentor home. These live in home, not mentor:
+// only home's SessionRequestsCard uses them, and they refresh home's mentor overview (issue 0010).
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-// Imports home's internals directly, not "@/features/home": home's SessionRequestsCard uses these
-// hooks, so importing home's index here would make an import cycle (dashboard issue 0013).
-import {
-  acceptSessionRequest,
-  declineSessionRequest,
-} from "@/features/home/api/home.api";
-import { homeKeys } from "@/features/home/hooks";
+import { acceptSessionRequest, declineSessionRequest } from "@/features/mentor";
 import { getApiResponseError } from "@/hooks/use-get-error";
+import { homeKeys } from "./query-keys";
 
 export function useAcceptSession() {
   const queryClient = useQueryClient();
