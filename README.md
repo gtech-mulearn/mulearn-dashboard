@@ -24,7 +24,7 @@ A modern, comprehensive dashboard and community management platform for the **μ
    ```
 
 3. Setup environment variables:
-   Copy `.env.example` to `.env.local` and fill in the required values.
+   Copy `.env.example` to `.env.local` and fill in the required values. [Development setup](CONTRIBUTING.md#development-setup) explains each variable, the checks to run before a pull request, and the line-ending and changeset rules.
 
 4. Run the development server:
 
