@@ -14,7 +14,7 @@
 import { AlertCircle, Clock, XCircle } from "lucide-react";
 import { useCompanyOnboardingStatus } from "@/features/auth/hooks";
 import { useUserProfile } from "@/features/auth/hooks/use-session";
-import { useMentorApplication } from "@/features/mentor/onboarding/hooks/use-onboarding";
+import { useMentorApplication } from "@/features/mentor";
 import { ROLES } from "@/lib/auth/roles";
 import { useMentorOverview } from "../hooks";
 import {

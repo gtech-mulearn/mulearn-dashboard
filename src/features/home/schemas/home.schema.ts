@@ -6,7 +6,6 @@
 
 import { z } from "zod";
 import { MentorSessionSchema } from "@/features/mentor";
-import { upperEnum } from "@/lib/enum-casing";
 
 // ============================================
 // Django Response Wrapper (reusable)

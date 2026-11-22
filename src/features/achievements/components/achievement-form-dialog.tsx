@@ -31,7 +31,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
-import { useTaskLevels } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
+import { useTaskLevels } from "@/features/tasks";
 import {
   useCreateAchievement,
   useUpdateAchievement,

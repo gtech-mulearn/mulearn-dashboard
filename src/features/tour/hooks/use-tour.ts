@@ -17,7 +17,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useUserInfo } from "@/features/auth";
 import { useCompanyProfile } from "@/features/company-jobs";
-import { useMentorApplicationStatus } from "@/features/mentor/onboarding/hooks/use-onboarding";
+import { useMentorApplicationStatus } from "@/features/mentor";
 import { useFilteredNav } from "@/hooks/use-filtered-nav";
 import { usePermissions } from "@/hooks/use-permissions";
 import { ROLES } from "@/lib/auth/roles";

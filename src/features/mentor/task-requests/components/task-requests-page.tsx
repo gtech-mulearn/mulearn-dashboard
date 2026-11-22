@@ -64,7 +64,6 @@ import {
   useDeleteMentorTask,
   useMentorTasks,
   useTaskIgDropdown,
-  useTaskLevels,
   useTaskTypes,
   useUpdateMentorTask,
 } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
@@ -73,6 +72,7 @@ import type {
   MentorTaskFormValues,
 } from "@/features/mentor/tasks/schemas";
 import { MentorTaskFormSchema } from "@/features/mentor/tasks/schemas";
+import { useTaskLevels } from "@/features/tasks";
 
 // ─── Status Config ─────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<

@@ -12,15 +12,13 @@ import { useState } from "react";
 import Loader from "@/app/loading";
 import { CompanyProfilePage } from "@/features/company-jobs";
 import {
+  MentorProfilePage,
+  useMentorApplication,
   useMentorOverview,
+  useMentorProfile,
   usePersonaCurrent,
   useSwitchPersona,
-} from "@/features/mentor/hooks";
-import {
-  useMentorApplication,
-  useMentorProfile,
-} from "@/features/mentor/onboarding/hooks/use-onboarding";
-import { MentorProfilePage } from "@/features/mentor/profile";
+} from "@/features/mentor";
 import { mujourneyKeys } from "@/features/mujourney/hooks/query-keys";
 import {
   AccountSettingsModal,

@@ -22,11 +22,9 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { StateDisplay } from "@/components/ui/state-display";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  useCompanyMentorNominations,
-  useVerifyCompanyMentor,
-} from "@/features/company-jobs";
-import { MentorGrantsSheet } from "@/features/mentor/admin/components/mentor-grants-sheet";
+import { useCompanyMentorNominations } from "@/features/company-jobs";
+import { MentorGrantsSheet } from "@/features/mentor";
+import { useVerifyCompanyMentor } from "../hooks/use-verify-company-mentor";
 import { NominateMentorModal } from "./nominate-mentor-modal";
 
 interface NominationLike {

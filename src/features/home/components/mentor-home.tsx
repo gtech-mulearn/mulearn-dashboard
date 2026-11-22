@@ -18,27 +18,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
+import type { MentorApplication, WeeklySchedule } from "@/features/mentor";
 import {
   AvailabilitySlotPicker,
+  deriveOnboardingState,
+  isMentorDeactivatedError,
+  MentorOnboardingForm,
+  mentorTierLabel,
   scheduleHasOverlap,
-} from "@/features/mentor/components/availability-slot-picker";
-import {
   useAvailabilitySlots,
   useCreateAvailabilitySlots,
+  useMentorApplication,
   useMentorOverview,
   useMentorPersonalAnalytics,
-  useMentorSessions,
-} from "@/features/mentor/hooks";
-import { isMentorDeactivatedError } from "@/features/mentor/lib/mentor-deactivated";
-import { MentorOnboardingForm } from "@/features/mentor/onboarding/components/mentor-onboarding-form";
-import {
-  deriveOnboardingState,
-  useMentorApplication,
   useMentorProfile,
-} from "@/features/mentor/onboarding/hooks/use-onboarding";
-import { mentorTierLabel } from "@/features/mentor/onboarding/lib/mentor-status";
-import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
-import type { WeeklySchedule } from "@/features/mentor/types";
+  useMentorSessions,
+} from "@/features/mentor";
 import { useDashboardCalendar } from "../hooks";
 import { flattenDashboardCalendar } from "../utils";
 import { EventCalendarCard } from "./event-calendar-card";
