@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useNominateCompanyMentor } from "@/features/company-jobs/hooks/use-mentor-nominate";
+import { useNominateCompanyMentor } from "@/features/company-jobs";
 
 const nominateSchema = z.object({
   muid: z.string().min(1, "MUID is required"),

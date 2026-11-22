@@ -9,8 +9,10 @@
 import { ShieldX } from "lucide-react";
 import { useState } from "react";
 import Loader from "@/app/loading";
-import { usePublicCompanyProfile } from "@/features/company-jobs";
-import { CompanyPublicView } from "@/features/company-jobs/components";
+import {
+  CompanyPublicView,
+  usePublicCompanyProfile,
+} from "@/features/company-jobs";
 import {
   Achievements,
   Badges,

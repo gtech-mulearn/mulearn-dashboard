@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAdminSummary } from "@/features/company-jobs/hooks/use-company-analytics";
+import { useAdminSummary } from "@/features/company-jobs";
 import { formatShortDate } from "@/lib/datetime";
 import {
   useCompanyVerificationList,

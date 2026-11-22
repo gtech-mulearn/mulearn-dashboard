@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CompanyAccessGate } from "@/features/company-jobs/components/company-access-gate";
+import { CompanyAccessGate } from "@/features/company-jobs";
 
 interface CompanyLayoutProps {
   children: ReactNode;

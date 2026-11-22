@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { type Resolver, useForm } from "react-hook-form";
-import type { CompanyProfile } from "@/features/company-jobs/types";
+import type { CompanyProfile } from "@/features/company-jobs";
 import {
   PROFILE_STEPPER_STEPS,
   ProfileEditFormSchema,

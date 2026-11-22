@@ -3,7 +3,7 @@
 import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useCompanyProfile } from "@/features/company-jobs/hooks/use-company-profile";
+import { useCompanyProfile } from "@/features/company-jobs";
 import type { ProfileEditFormValues } from "../../schemas";
 
 const COMPANY_SIZE_OPTIONS = [

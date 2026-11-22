@@ -25,7 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   useCompanyMentorNominations,
   useVerifyCompanyMentor,
-} from "@/features/company-jobs/hooks/use-mentor-nominate";
+} from "@/features/company-jobs";
 import { MentorGrantsSheet } from "@/features/mentor/admin/components/mentor-grants-sheet";
 import { NominateMentorModal } from "./nominate-mentor-modal";
 

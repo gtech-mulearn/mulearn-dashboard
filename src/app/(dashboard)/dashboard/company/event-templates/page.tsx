@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CompanyTemplatesPageClient } from "@/features/company-jobs/components/templates/company-templates-client";
+import { CompanyTemplatesPageClient } from "@/features/company-jobs";
 
 export const metadata: Metadata = {
   title: "Event Templates | μLearn",

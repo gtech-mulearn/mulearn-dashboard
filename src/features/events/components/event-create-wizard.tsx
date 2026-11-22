@@ -25,7 +25,7 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { useEventTemplates } from "@/features/company-jobs/hooks/use-company-templates";
+import { useEventTemplates } from "@/features/company-jobs";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { usePermissions } from "@/hooks/use-permissions";
 import { eventsApi } from "../api";

@@ -10,7 +10,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Clock } from "lucide-react";
 import { useState } from "react";
 import Loader from "@/app/loading";
-import { CompanyProfilePage } from "@/features/company-jobs/components";
+import { CompanyProfilePage } from "@/features/company-jobs";
 import {
   useMentorOverview,
   usePersonaCurrent,

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CompanyFeedbackPageClient } from "@/features/company-jobs/components/feedback/company-feedback-client";
+import { CompanyFeedbackPageClient } from "@/features/company-jobs";
 
 export const metadata: Metadata = {
   title: "Impact & Feedback | μLearn",

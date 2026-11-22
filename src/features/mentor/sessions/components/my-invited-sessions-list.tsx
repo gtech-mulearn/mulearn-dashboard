@@ -12,7 +12,7 @@ import Pagination from "@/components/dashboard/table/pagination";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RateCompanyDialog } from "@/features/company-jobs/components/feedback/rate-company-dialog";
+import { RateCompanyDialog } from "@/features/company-jobs";
 import { SessionFeedbackDialog } from "@/features/mentor/mentees/components/session-feedback-dialog";
 import { chipColor } from "@/lib/chip-colors";
 import { cn } from "@/lib/utils";

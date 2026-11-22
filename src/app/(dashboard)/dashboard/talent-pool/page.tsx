@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CompanyAccessGate } from "@/features/company-jobs/components/company-access-gate";
+import { CompanyAccessGate } from "@/features/company-jobs";
 import { TalentPoolPageClient } from "./talent-pool-client";
 
 export const metadata: Metadata = {

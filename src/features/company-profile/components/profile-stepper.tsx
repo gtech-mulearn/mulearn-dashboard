@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormProvider } from "react-hook-form";
 import { StepperHeader } from "@/components/stepper-header";
 import { Button } from "@/components/ui/button";
-import type { CompanyProfile } from "@/features/company-jobs/types";
+import type { CompanyProfile } from "@/features/company-jobs";
 import { useUpdateCompanyProfile } from "../hooks/use-profile-edit";
 import { useProfileStepper } from "../hooks/use-profile-stepper";
 import { PROFILE_STEPPER_STEPS } from "../schemas";

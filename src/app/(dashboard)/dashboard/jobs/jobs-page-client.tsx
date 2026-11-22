@@ -22,16 +22,14 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StateDisplay } from "@/components/ui/state-display";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { JobSortValue, PublicJob } from "@/features/company-jobs";
 import {
   ApplicationRow,
   JobDetailModal,
   PublicJobCard,
-} from "@/features/company-jobs/components";
-import {
   useLearnerApplications,
   usePublicJobs,
-} from "@/features/company-jobs/hooks";
-import type { JobSortValue, PublicJob } from "@/features/company-jobs/types";
+} from "@/features/company-jobs";
 import { useDebounce } from "@/hooks/use-debounce";
 
 // ─── Skeleton helpers ─────────────────────────────────────────────────────────

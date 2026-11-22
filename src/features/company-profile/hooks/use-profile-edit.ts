@@ -2,10 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  COMPANY_KEYS,
-  useCompanyProfile,
-} from "@/features/company-jobs/hooks/use-company-profile";
+import { COMPANY_KEYS, useCompanyProfile } from "@/features/company-jobs";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { updateCompanyProfile } from "../api/company-profile.api";
 import type { ProfileEditFormValues } from "../schemas";

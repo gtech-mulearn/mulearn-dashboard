@@ -11,15 +11,13 @@ import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { Button } from "@/components/ui/button";
-
+import type { JobFormValues, JobRule } from "@/features/company-jobs";
 import {
+  buildCreateJobPayload,
   CompanyStatusGuard,
   JobStepper,
-} from "@/features/company-jobs/components";
-import { useCreateJob } from "@/features/company-jobs/hooks";
-import { buildCreateJobPayload } from "@/features/company-jobs/lib";
-import type { JobFormValues } from "@/features/company-jobs/schemas";
-import type { JobRule } from "@/features/company-jobs/types";
+  useCreateJob,
+} from "@/features/company-jobs";
 
 export function CreateJobPageClient() {
   const router = useRouter();
