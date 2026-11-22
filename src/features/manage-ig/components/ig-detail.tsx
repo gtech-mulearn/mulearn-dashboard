@@ -33,8 +33,11 @@ import Loader from "@/app/loading";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
-import { IGIcon, useInterestGroupDetail } from "@/features/interest-groups";
-import { PersonCard } from "@/features/interest-groups/components/person-card";
+import {
+  IGIcon,
+  PersonCard,
+  useInterestGroupDetail,
+} from "@/features/interest-groups";
 import { useOfficeHoursList } from "@/features/weekly-twitches";
 import type { InterestGroup } from "../schemas";
 import { InterestGroupFormDialog } from "./ig-form-dialog";

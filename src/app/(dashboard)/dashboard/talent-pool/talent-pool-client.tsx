@@ -52,7 +52,7 @@ import {
   useShortlistedLearners,
   useTalentPoolInsights,
 } from "@/features/company-jobs";
-import { getInterestGroupsList } from "@/features/interest-groups/api/interest-groups.api";
+import { getInterestGroupsList } from "@/features/interest-groups";
 import { useDebounce } from "@/hooks/use-debounce";
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
