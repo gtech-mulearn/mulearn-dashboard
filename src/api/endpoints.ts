@@ -3,8 +3,9 @@
  *
  * 📍 src/api/endpoints.ts
  *
- * All Django URLs live here.
- * NO hardcoded URLs anywhere else in the app.
+ * Django URLs shared across the app live here. A feature may keep the paths only it
+ * uses in its own api/paths.ts (for example src/features/events/api/paths.ts).
+ * No hardcoded URLs anywhere else.
  */
 
 export const endpoints = {
@@ -599,28 +600,9 @@ export const endpoints = {
   // Events Endpoints
   // ============================================
 
+  // The other events paths live in src/features/events/api/paths.ts.
   events: {
-    base: "/api/v1/dashboard/events/",
-    featured: "/api/v1/dashboard/events/featured/",
-    public: {
-      base: "/api/v1/public/events/",
-      featured: "/api/v1/public/events/featured/",
-    },
-    manage: "/api/v1/dashboard/events/manage/",
-    myInvites: "/api/v1/dashboard/events/my-invites/",
     admin: "/api/v1/dashboard/events/admin/",
-    mentor: "/api/v1/dashboard/events/mentor/",
-    ig: "/api/v1/dashboard/events/ig/",
-    campus: "/api/v1/dashboard/events/campus/",
-    campusIg: "/api/v1/dashboard/events/campus-ig/",
-    company: "/api/v1/dashboard/events/company/",
-    eventTypeScope: "/api/v1/dashboard/events/meta/event-type-scope/",
-    meta: {
-      organizerOptions: "/api/v1/dashboard/events/meta/organizer-options/",
-      collaborationTargets:
-        "/api/v1/dashboard/events/meta/collaboration-targets/",
-      categories: "/api/v1/dashboard/events/meta/categories/",
-    },
   },
   // ============================================
   // Campus Endpoints

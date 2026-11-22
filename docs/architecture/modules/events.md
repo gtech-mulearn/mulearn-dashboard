@@ -20,9 +20,10 @@ Decided today by the page-access layers in `src/lib/auth`, from every role a use
 
 ## Backend endpoints called today
 
-Endpoint groups from `src/api/endpoints.ts`, most used first:
+The feature's own paths are `eventPaths` in `src/features/events/api/paths.ts` (for example `/api/v1/dashboard/events/manage/`). Only `endpoints.events.admin` stays in `src/api/endpoints.ts`, because the notification feature uses it too.
 
-- `endpoints.events` (for example `/api/v1/dashboard/events/manage/`)
+Other endpoint groups from `src/api/endpoints.ts`, most used first:
+
 - `endpoints.search` (for example `/api/v1/dashboard/user/search/`)
 - `endpoints.dashboard` (for example `/api/v1/dashboard/ig/list/`)
 - `endpoints.user` (for example `/api/v1/dashboard/user/info/`)
