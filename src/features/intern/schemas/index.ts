@@ -7,7 +7,12 @@
  */
 
 export type {
+  MonthlyReviewFormValues,
   TeamFormValues,
-  WeeklyReviewFormValues,
 } from "./intern-form-schema";
-export { teamSchema, weeklyReviewSchema } from "./intern-form-schema";
+export {
+  MONTHLY_REVIEW_FIELD_MAX,
+  MONTHLY_REVIEW_TEXT_MAX,
+  monthlyReviewSchema,
+  teamSchema,
+} from "./intern-form-schema";

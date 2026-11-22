@@ -68,6 +68,12 @@ function fromType({
   if (type === "COMPANY_MENTOR_APPLICATION_SUBMITTED") {
     return "/dashboard/company/mentors";
   }
+  if (
+    type === "INTERN_MONTHLY_REVIEW_OPEN" ||
+    type === "INTERN_MONTHLY_REVIEW_LAST_DAY"
+  ) {
+    return "/dashboard/intern/monthly-review";
+  }
 
   switch (entity_type) {
     case "learning_circle":

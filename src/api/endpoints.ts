@@ -1475,11 +1475,12 @@ export const endpoints = {
       `/api/v1/dashboard/intern/timesheets/${id}/`,
     timesheetToday: "/api/v1/dashboard/intern/timesheets/today/",
     timesheetHistory: "/api/v1/dashboard/intern/timesheets/history/",
-    reviews: "/api/v1/dashboard/intern/reviews/",
-    reviewsPrefill: "/api/v1/dashboard/intern/reviews/prefill/",
-    reviewDetail: (id: string) => `/api/v1/dashboard/intern/reviews/${id}/`,
-    reviewCurrent: "/api/v1/dashboard/intern/reviews/current/",
-    reviewHistory: "/api/v1/dashboard/intern/reviews/history/",
+    monthlyReviews: "/api/v1/dashboard/intern/monthly-reviews/",
+    monthlyReviewsPrefill: "/api/v1/dashboard/intern/monthly-reviews/prefill/",
+    monthlyReviewDetail: (id: string) =>
+      `/api/v1/dashboard/intern/monthly-reviews/${id}/`,
+    monthlyReviewCurrent: "/api/v1/dashboard/intern/monthly-reviews/current/",
+    monthlyReviewHistory: "/api/v1/dashboard/intern/monthly-reviews/history/",
     tasksCategories: "/api/v1/dashboard/intern/tasks/categories/",
     tasksMine: "/api/v1/dashboard/intern/tasks/mine/",
     taskDetail: (id: string) => `/api/v1/dashboard/intern/tasks/${id}/detail/`,
@@ -1512,9 +1513,9 @@ export const endpoints = {
     timesheetsReview: "/api/v1/dashboard/manage-interns/reviews/timesheets/",
     timesheetReviewDetail: (id: string) =>
       `/api/v1/dashboard/manage-interns/reviews/timesheets/${id}/review/`,
-    reviews: "/api/v1/dashboard/manage-interns/reviews/",
-    weeklyReviewDetail: (id: string) =>
-      `/api/v1/dashboard/manage-interns/reviews/reviews/${id}/review/`,
+    monthlyReviews: "/api/v1/dashboard/manage-interns/reviews/monthly/",
+    monthlyReviewDetail: (id: string) =>
+      `/api/v1/dashboard/manage-interns/reviews/monthly/${id}/review/`,
     importTemplate: "/api/v1/dashboard/manage-interns/interns/import/template/",
     bulkImport: "/api/v1/dashboard/manage-interns/interns/import/",
   },

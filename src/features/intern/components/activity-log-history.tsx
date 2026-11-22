@@ -22,31 +22,66 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useDebounce } from "@/hooks/use-debounce";
 import {
   useInternTasks,
+  useMonthlyReviewHistory,
   useTimesheetHistory,
-  useWeeklyReviewHistory,
 } from "../hooks/use-intern";
 import type { TInternTask } from "../types";
 import { getTaskBaseKarma } from "../utils/intern-helpers";
 import {
   ActivityDetailDialog,
   getActivityStatusBadge,
+  monthlyReviewToActivity,
+  timesheetToActivity,
   type UnifiedActivity,
 } from "./activity-detail-dialog";
+
+const LONG_DATE_FORMAT: Intl.DateTimeFormatOptions = {
+  weekday: "short",
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+};
+
+type TFilterType = "all" | "timesheet" | "review" | "task";
+type TFilterStatus =
+  | "all"
+  | "SUBMITTED"
+  | "MISSING"
+  | "PENDING"
+  | "APPROVED"
+  | "REJECTED"
+  | "COMPLETED";
+
+const TIMESHEET_STATUSES = [
+  { value: "SUBMITTED", label: "Submitted" },
+  { value: "MISSING", label: "Missing" },
+] as const;
+const REVIEW_STATUSES = [
+  { value: "PENDING", label: "Pending" },
+  { value: "APPROVED", label: "Approved" },
+  { value: "REJECTED", label: "Rejected" },
+] as const;
+const TASK_STATUSES = [{ value: "COMPLETED", label: "Completed" }] as const;
+
+/** Status filter options per type (timesheet mode filters server-side). */
+const STATUS_OPTIONS: Record<
+  TFilterType,
+  ReadonlyArray<{ value: Exclude<TFilterStatus, "all">; label: string }>
+> = {
+  all: [...TIMESHEET_STATUSES, ...REVIEW_STATUSES, ...TASK_STATUSES],
+  timesheet: TIMESHEET_STATUSES,
+  review: REVIEW_STATUSES,
+  task: TASK_STATUSES,
+};
 
 export function QuestLogHistory() {
   const [page, setPage] = useState(1);
   const perPage = 10;
-
-  const { data: timesheetHistory, isLoading: isTimesheetLoading } =
-    useTimesheetHistory({ page: 1, perPage: 100 });
-  const { data: weeklyReviews, isLoading: isWeeklyLoading } =
-    useWeeklyReviewHistory({ page: 1, perPage: 100 });
-  const { data: myTasks, isLoading: isTasksLoading } = useInternTasks({
-    page: 1,
-    perPage: 100,
-  });
 
   const [selectedItem, setSelectedItem] = useState<UnifiedActivity | null>(
     null,
@@ -54,18 +89,48 @@ export function QuestLogHistory() {
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterType, setFilterType] = useState<"all" | "timesheet" | "task">(
-    "all",
-  );
-  const [filterStatus, setFilterStatus] = useState<
-    "all" | "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "COMPLETED"
-  >("all");
+  const debouncedSearch = useDebounce(searchQuery.trim(), 400);
+  const [filterType, setFilterType] = useState<TFilterType>("all");
+  const [filterStatus, setFilterStatus] = useState<TFilterStatus>("all");
 
+  // "Timesheets" filter pages through the intern's full history on the
+  // server, so entries older than the latest 100 stay reachable.
+  const isTimesheetMode = filterType === "timesheet";
+
+  const { data: timesheetHistory, isLoading: isTimesheetLoading } =
+    useTimesheetHistory(
+      { page: 1, perPage: 100 },
+      { enabled: !isTimesheetMode },
+    );
+  const {
+    data: pagedTimesheets,
+    isLoading: isPagedLoading,
+    isFetching: isPagedFetching,
+  } = useTimesheetHistory(
+    {
+      page,
+      perPage,
+      search: debouncedSearch || undefined,
+      sortBy: "-entry_date",
+    },
+    { enabled: isTimesheetMode },
+  );
+  const { data: monthlyReviews, isLoading: isMonthlyLoading } =
+    useMonthlyReviewHistory({ page: 1, perPage: 100 });
+  const { data: myTasks, isLoading: isTasksLoading } = useInternTasks({
+    page: 1,
+    perPage: 100,
+  });
+
+  // Reset to the first page whenever the view or query changes.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset on filter/search change only
   useEffect(() => {
     setPage(1);
-  }, []);
+  }, [filterType, filterStatus, debouncedSearch]);
 
-  const isLoading = isTimesheetLoading || isWeeklyLoading || isTasksLoading;
+  const isLoading = isTimesheetMode
+    ? isPagedLoading
+    : isTimesheetLoading || isMonthlyLoading || isTasksLoading;
 
   if (isLoading) {
     return (
@@ -76,51 +141,13 @@ export function QuestLogHistory() {
   }
 
   const timesheets = timesheetHistory?.data || [];
-  const reviews = weeklyReviews?.data || [];
+  const reviews = monthlyReviews?.data || [];
   const tasks = myTasks?.data || [];
   const completedTasks = tasks.filter((t) => t.status === "COMPLETED");
 
   const allActivities: UnifiedActivity[] = [
-    ...timesheets.map(
-      (ts): UnifiedActivity => ({
-        id: ts.id,
-        type: "timesheet",
-        title: "Daily Timesheet",
-        description: ts.description || "",
-        dateStr: new Date(ts.created_at).toLocaleDateString(undefined, {
-          weekday: "short",
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        rawDate: new Date(ts.created_at),
-        status: ts.status,
-        karma: null,
-        raw: ts,
-      }),
-    ),
-    ...reviews.map(
-      (wr): UnifiedActivity => ({
-        id: wr.id,
-        type: "weekly_timesheet",
-        title: `Weekly Timesheet - Week ${wr.iso_week}`,
-        description: wr.weekly_review || "",
-        dateStr: new Date(wr.created_at).toLocaleDateString(undefined, {
-          weekday: "short",
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        rawDate: new Date(wr.created_at),
-        status: wr.status,
-        karma: null,
-        raw: wr,
-      }),
-    ),
+    ...timesheets.map((ts) => timesheetToActivity(ts, LONG_DATE_FORMAT)),
+    ...reviews.map((mr) => monthlyReviewToActivity(mr, LONG_DATE_FORMAT)),
     ...completedTasks.map(
       (task): UnifiedActivity => ({
         id: task.id,
@@ -161,9 +188,7 @@ export function QuestLogHistory() {
 
     const matchesType =
       filterType === "all" ||
-      (filterType === "timesheet" &&
-        (activity.type === "timesheet" ||
-          activity.type === "weekly_timesheet")) ||
+      (filterType === "review" && activity.type === "monthly_review") ||
       (filterType === "task" && activity.type === "completed_task");
 
     const matchesStatus =
@@ -172,11 +197,19 @@ export function QuestLogHistory() {
     return matchesSearch && matchesType && matchesStatus;
   });
 
-  const totalPages = Math.ceil(filteredActivities.length / perPage) || 1;
-  const paginatedActivities = filteredActivities.slice(
-    (page - 1) * perPage,
-    page * perPage,
+  const serverActivities = (pagedTimesheets?.data ?? []).map((ts) =>
+    timesheetToActivity(ts, LONG_DATE_FORMAT),
   );
+
+  const totalPages = isTimesheetMode
+    ? pagedTimesheets?.pagination.totalPages || 1
+    : Math.ceil(filteredActivities.length / perPage) || 1;
+  const paginatedActivities = isTimesheetMode
+    ? serverActivities
+    : filteredActivities.slice((page - 1) * perPage, page * perPage);
+  const hasAnyActivity = isTimesheetMode
+    ? (pagedTimesheets?.pagination.count ?? 0) > 0 || !!debouncedSearch
+    : allActivities.length > 0;
 
   return (
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 max-w-7xl mx-auto w-full bg-background/50">
@@ -204,7 +237,11 @@ export function QuestLogHistory() {
         <div className="relative w-full sm:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search by quest or description..."
+            placeholder={
+              isTimesheetMode
+                ? "Search by date (YYYY-MM-DD) or status..."
+                : "Search by quest or description..."
+            }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 bg-background/40 border-border/40 focus-visible:ring-brand-blue"
@@ -214,9 +251,10 @@ export function QuestLogHistory() {
           <div className="w-full sm:w-44">
             <Select
               value={filterType}
-              onValueChange={(val) =>
-                setFilterType(val as "all" | "timesheet" | "task")
-              }
+              onValueChange={(val) => {
+                setFilterType(val as TFilterType);
+                setFilterStatus("all");
+              }}
             >
               <SelectTrigger className="w-full bg-background/40 border-border/40 font-bold uppercase text-[10px] tracking-wider">
                 <SelectValue placeholder="All Types" />
@@ -231,6 +269,9 @@ export function QuestLogHistory() {
                 <SelectItem value="timesheet" className="uppercase text-[9px]">
                   Timesheets
                 </SelectItem>
+                <SelectItem value="review" className="uppercase text-[9px]">
+                  Monthly Reviews
+                </SelectItem>
                 <SelectItem value="task" className="uppercase text-[9px]">
                   Tasks
                 </SelectItem>
@@ -238,51 +279,44 @@ export function QuestLogHistory() {
             </Select>
           </div>
 
-          <div className="w-full sm:w-44">
-            <Select
-              value={filterStatus}
-              onValueChange={(val) =>
-                setFilterStatus(
-                  val as
-                    | "all"
-                    | "PENDING"
-                    | "APPROVED"
-                    | "REJECTED"
-                    | "CANCELLED"
-                    | "COMPLETED",
-                )
-              }
-            >
-              <SelectTrigger className="w-full bg-background/40 border-border/40 font-bold uppercase text-[10px] tracking-wider">
-                <SelectValue placeholder="All Statuses" />
-              </SelectTrigger>
-              <SelectContent
-                position="popper"
-                className="bg-card font-bold border-border/60"
+          {!isTimesheetMode && (
+            <div className="w-full sm:w-44">
+              <Select
+                value={filterStatus}
+                onValueChange={(val) => setFilterStatus(val as TFilterStatus)}
               >
-                <SelectItem value="all" className="uppercase text-[9px]">
-                  All Statuses
-                </SelectItem>
-                <SelectItem value="PENDING" className="uppercase text-[9px]">
-                  Pending
-                </SelectItem>
-                <SelectItem value="APPROVED" className="uppercase text-[9px]">
-                  Approved
-                </SelectItem>
-                <SelectItem value="COMPLETED" className="uppercase text-[9px]">
-                  Completed
-                </SelectItem>
-                <SelectItem value="REJECTED" className="uppercase text-[9px]">
-                  Rejected
-                </SelectItem>
-                <SelectItem value="CANCELLED" className="uppercase text-[9px]">
-                  Cancelled
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+                <SelectTrigger className="w-full bg-background/40 border-border/40 font-bold uppercase text-[10px] tracking-wider">
+                  <SelectValue placeholder="All Statuses" />
+                </SelectTrigger>
+                <SelectContent
+                  position="popper"
+                  className="bg-card font-bold border-border/60"
+                >
+                  <SelectItem value="all" className="uppercase text-[9px]">
+                    All Statuses
+                  </SelectItem>
+                  {STATUS_OPTIONS[filterType].map((opt) => (
+                    <SelectItem
+                      key={opt.value}
+                      value={opt.value}
+                      className="uppercase text-[9px]"
+                    >
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
       </div>
+
+      {filterType === "all" && (
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">
+          Showing recent activity. Filter by Timesheets to browse your full
+          timesheet history.
+        </p>
+      )}
 
       <div className="space-y-4">
         <Card className="border-border/40 bg-card/40 backdrop-blur-md overflow-hidden">
@@ -360,15 +394,15 @@ export function QuestLogHistory() {
                   </TableCell>
                 </TableRow>
               ))}
-              {filteredActivities.length === 0 && (
+              {paginatedActivities.length === 0 && (
                 <TableRow>
                   <TableCell
                     colSpan={4}
                     className="text-center py-12 text-sm font-bold text-muted-foreground uppercase tracking-wider italic"
                   >
-                    {allActivities.length === 0
-                      ? "No quests logged yet."
-                      : "No matching quests found."}
+                    {hasAnyActivity
+                      ? "No matching quests found."
+                      : "No quests logged yet."}
                   </TableCell>
                 </TableRow>
               )}
@@ -387,8 +421,11 @@ export function QuestLogHistory() {
             >
               <ChevronLeft className="w-4 h-4 mr-1" /> Prev
             </Button>
-            <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">
+            <span className="text-xs font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
               Page {page} of {totalPages}
+              {isTimesheetMode && isPagedFetching && (
+                <Spinner className="w-3 h-3" />
+              )}
             </span>
             <Button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}

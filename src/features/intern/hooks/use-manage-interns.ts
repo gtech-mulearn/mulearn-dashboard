@@ -1,7 +1,13 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { manageInternsApi, type TInternQueryParams } from "../api";
 import type {
@@ -10,12 +16,11 @@ import type {
   TLeaveRequest,
   TLeaveReviewPayload,
   TManageInternItem,
+  TMonthlyReviewReviewPayload,
   TOnboardInternPayload,
   TPaginatedData,
-  TTimesheetReviewPayload,
   TUpdateInternPayload,
   TUpdateTaskPayload,
-  TWeeklyReviewReviewPayload,
 } from "../types";
 import { internKeys } from "./query-keys";
 
@@ -329,7 +334,7 @@ export function useReviewLeave(id: string) {
   });
 }
 
-// ── Timesheet Review ───────────────────────────────────────
+// ── Timesheets (read-only; approval removed) ───────────────
 export function useManageTimesheets(
   params?: TInternQueryParams,
   enabled = true,
@@ -338,85 +343,59 @@ export function useManageTimesheets(
     queryKey: internKeys.manageTimesheets(params ?? {}),
     queryFn: () => manageInternsApi.getTimesheetsList(params),
     enabled,
+    placeholderData: keepPreviousData,
   });
 }
 
-export function useReviewTimesheet(id: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (payload: TTimesheetReviewPayload) =>
-      manageInternsApi.reviewTimesheet(id, payload),
-    onSuccess: async (_data, variables) => {
-      toast.success(
-        variables.action === "approve"
-          ? "Timesheet approved"
-          : "Timesheet rejected",
-      );
-      await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
-      await queryClient.invalidateQueries({
-        queryKey: internKeys.timesheets(),
-      });
-      await queryClient.invalidateQueries({
-        queryKey: internKeys.reviews(),
-      });
-      await queryClient.invalidateQueries({
-        queryKey: internKeys.overviewStatus(),
-      });
-      await queryClient.invalidateQueries({
-        queryKey: internKeys.leaderboard(),
-      });
-    },
-    onError: (error) => {
-      toast.error(
-        getApiResponseError(error, {
-          fallback: "Failed to submit timesheet review",
-        }),
-      );
-    },
-  });
-}
-
-// ── Weekly Review ──────────────────────────────────────────
-export function useManageWeeklyReviews(
+// ── Monthly Review ─────────────────────────────────────────
+export function useManageMonthlyReviews(
   params?: TInternQueryParams,
   enabled = true,
 ) {
   return useQuery({
-    queryKey: internKeys.manageReviews(params ?? {}),
-    queryFn: () => manageInternsApi.getWeeklyReviews(params),
+    queryKey: internKeys.manageMonthlyReviews(params ?? {}),
+    queryFn: () => manageInternsApi.getMonthlyReviews(params),
     enabled,
+    placeholderData: keepPreviousData,
   });
 }
 
-export function useReviewWeeklyReview(id: string) {
+/** Approval doesn't affect ranking, so the leaderboard isn't refreshed. */
+export function useReviewMonthlyReview(id: string) {
   const queryClient = useQueryClient();
+  const refresh = () =>
+    Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: internKeys.manageMonthlyReviewsAll(),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: internKeys.monthlyReviews(),
+      }),
+    ]);
   return useMutation({
-    mutationFn: (payload: TWeeklyReviewReviewPayload) =>
-      manageInternsApi.reviewWeeklyReview(id, payload),
+    mutationFn: (payload: TMonthlyReviewReviewPayload) =>
+      manageInternsApi.reviewMonthlyReview(id, payload),
     onSuccess: async (_data, variables) => {
       toast.success(
         variables.action === "approve"
-          ? "Weekly review approved"
-          : "Weekly review rejected",
+          ? "Monthly review approved"
+          : "Monthly review rejected",
       );
-      await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
-      await queryClient.invalidateQueries({ queryKey: internKeys.reviews() });
-      await queryClient.invalidateQueries({
-        queryKey: internKeys.timesheets(),
-      });
-      await queryClient.invalidateQueries({
-        queryKey: internKeys.overviewStatus(),
-      });
-      await queryClient.invalidateQueries({
-        queryKey: internKeys.leaderboard(),
-      });
+      await refresh();
     },
-    onError: (error) => {
+    onError: async (error) => {
       toast.error(
         getApiResponseError(error, {
-          fallback: "Failed to submit weekly review evaluation",
+          fallback: "Failed to review monthly review",
         }),
       );
+      // Someone else already reviewed it: reload the list.
+      if (
+        error instanceof ApiError &&
+        error.message === "Pending monthly review not found."
+      ) {
+        await refresh();
+      }
     },
   });
 }

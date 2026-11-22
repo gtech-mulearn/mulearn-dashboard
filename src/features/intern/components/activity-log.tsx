@@ -22,22 +22,24 @@ import {
 } from "@/components/ui/table";
 import {
   useInternTasks,
+  useMonthlyReviewHistory,
   useTimesheetHistory,
-  useWeeklyReviewHistory,
 } from "../hooks/use-intern";
 import type { TInternTask } from "../types";
 import { getTaskBaseKarma } from "../utils/intern-helpers";
 import {
   ActivityDetailDialog,
   getActivityStatusBadge,
+  monthlyReviewToActivity,
+  timesheetToActivity,
   type UnifiedActivity,
 } from "./activity-detail-dialog";
 
 export function QuestLog() {
   const { data: timesheetHistory, isLoading: isTimesheetLoading } =
     useTimesheetHistory({ page: 1, perPage: 20 });
-  const { data: weeklyReviews, isLoading: isWeeklyLoading } =
-    useWeeklyReviewHistory({ page: 1, perPage: 20 });
+  const { data: monthlyReviews, isLoading: isMonthlyLoading } =
+    useMonthlyReviewHistory({ page: 1, perPage: 20 });
   const { data: myTasks, isLoading: isTasksLoading } = useInternTasks({
     page: 1,
     perPage: 100,
@@ -47,7 +49,7 @@ export function QuestLog() {
     null,
   );
 
-  const isLoading = isTimesheetLoading || isWeeklyLoading || isTasksLoading;
+  const isLoading = isTimesheetLoading || isMonthlyLoading || isTasksLoading;
 
   if (isLoading) {
     return (
@@ -77,47 +79,13 @@ export function QuestLog() {
   }
 
   const timesheets = timesheetHistory?.data || [];
-  const reviews = weeklyReviews?.data || [];
+  const reviews = monthlyReviews?.data || [];
   const tasks = myTasks?.data || [];
   const completedTasks = tasks.filter((t) => t.status === "COMPLETED");
 
   const recentActivities: UnifiedActivity[] = [
-    ...timesheets.map(
-      (ts): UnifiedActivity => ({
-        id: ts.id,
-        type: "timesheet",
-        title: "Daily Timesheet",
-        description: ts.description || "",
-        dateStr: new Date(ts.created_at).toLocaleDateString(undefined, {
-          month: "short",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        rawDate: new Date(ts.created_at),
-        status: ts.status,
-        karma: null,
-        raw: ts,
-      }),
-    ),
-    ...reviews.map(
-      (wr): UnifiedActivity => ({
-        id: wr.id,
-        type: "weekly_review",
-        title: `Weekly Review - Week ${wr.iso_week}`,
-        description: wr.weekly_review || "",
-        dateStr: new Date(wr.created_at).toLocaleDateString(undefined, {
-          month: "short",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        rawDate: new Date(wr.created_at),
-        status: wr.status,
-        karma: null,
-        raw: wr,
-      }),
-    ),
+    ...timesheets.map((ts) => timesheetToActivity(ts)),
+    ...reviews.map((mr) => monthlyReviewToActivity(mr)),
     ...completedTasks.map(
       (task): UnifiedActivity => ({
         id: task.id,

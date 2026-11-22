@@ -179,6 +179,7 @@ The only hits are `complexity_score`, task karma helpers, and leaderboard files 
 
 ---
 
+
 ## Phase 3 — Daily timesheet: align with new backend
 
 **Goal:** timesheets match the new spec: no approval, `SUBMITTED` status, `task[]`, IST dates, today or yesterday.
@@ -314,7 +315,20 @@ Remove `sortOrder` from `TInternQueryParams` and both builders (`intern.api.ts` 
 - PATCH can send `task[]`. Warn the user that removed tasks revert to `NOT_STARTED`.
 - Activity log rows: show `SUBMITTED` as success.
 
-### 3.7 Admin daily tab (read-only)
+### 3.7 Intern can browse all past timesheets
+
+The spec lets an intern read all of their own timesheets (`GET timesheets/history/` with pagination, search and `sortBy`, plus `GET timesheets/<id>/`).
+
+1. **Quest Log (`activity-log-history.tsx`): page through timesheets on the server.**
+   - Today it fetches `perPage: 100` once and pages in the browser, so timesheets older than the latest 100 are unreachable.
+   - When the type filter is "Timesheets", use `useTimesheetHistory({ page, perPage, search, sortBy })` and the backend's `pagination` (`totalPages`, `isNext`, `isPrev`).
+   - Search hits the backend `search` param (entry date or status).
+   - The mixed "All" view keeps the current merged client-side list (recent items) and gets a hint: "Filter by Timesheets to see your full history."
+2. **Timesheet page calendar: clicking a day with an entry opens that timesheet** in `ActivityDetailDialog` (view, plus edit if still inside the edit window).
+   - Uses the entry already loaded from history.
+   - Fetch the history for the calendar's visible month (`search=YYYY-MM`, or a larger `perPage`) so older months also resolve.
+
+### 3.8 Admin daily tab (read-only)
 
 `timesheet-reviews-client.tsx` (moved to `timesheets/` in Phase 6):
 - Status filter: `ALL`, `SUBMITTED`, plus legacy `APPROVED` / `PENDING` / `REJECTED`. Add `SUBMITTED` to `statusColorClass` (success).
@@ -331,6 +345,7 @@ Remove `sortOrder` from `TInternQueryParams` and both builders (`intern.api.ts` 
 
 - Grep for `useReviewTimesheet`, `TTimesheetReviewPayload`, `task_status`, `karma_awarded` (timesheet) and `toISOString().split` in the timesheet client returns nothing.
 - Manual check: submit today, submit yesterday, the 409 → edit flow, and the edit-window lock.
+- Manual check: the Quest Log "Timesheets" filter pages past the first 100 entries, and clicking a calendar day opens that timesheet.
 
 **Commit:** `feat(intern): align daily timesheet with no-approval backend`
 

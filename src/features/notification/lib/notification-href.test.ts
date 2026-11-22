@@ -67,6 +67,17 @@ describe("resolveNotificationHref", () => {
     ).toBe("/dashboard/company/admin");
   });
 
+  it("sends monthly review reminders to the monthly review page", () => {
+    for (const type of [
+      "INTERN_MONTHLY_REVIEW_OPEN",
+      "INTERN_MONTHLY_REVIEW_LAST_DAY",
+    ]) {
+      expect(resolveNotificationHref(item(type), O)?.href).toBe(
+        "/dashboard/intern/monthly-review",
+      );
+    }
+  });
+
   it("returns null for an unknown type with no URL", () => {
     expect(resolveNotificationHref(item("X"), O)).toBeNull();
   });

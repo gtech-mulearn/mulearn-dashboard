@@ -4,7 +4,7 @@
  * 📍 src/features/tour/steps/pages/intern.ts
  *
  * In-page tours for `/dashboard/intern/*` pages (tasks, timesheet, leave,
- * weekly review, leaderboard).
+ * monthly review, leaderboard).
  *
  * `intern/quest-log/page.tsx` is skipped — it renders `QuestLogHistory`, a
  * shared component that lives outside this page's folder
@@ -207,48 +207,48 @@ export const internPageTours: readonly PageTourConfig[] = [
         elementId: "page:intern-timesheet:submit-form",
         title: "Submit Progress",
         description:
-          "Log today's hours, link them to a task, and describe what you got done.",
+          "Log today's (or yesterday's) hours, update your tasks, and describe what you got done.",
       },
       {
         id: "intern-timesheet-calendar",
         elementId: "page:intern-timesheet:calendar",
         title: "Daily History",
         description:
-          "See which days you've submitted, missed, or are still pending this month.",
+          "See which days you've submitted or missed. Click a submitted day to view or edit it.",
       },
     ],
   },
   {
-    route: "/dashboard/intern/weekly-review",
+    route: "/dashboard/intern/monthly-review",
     version: 1,
     steps: [
       {
-        id: "intern-weekly-review-intro",
-        title: "Weekly Review",
+        id: "intern-monthly-review-intro",
+        title: "Monthly Review",
         description:
-          "Reflect on your week — achievements, challenges, and what's next.",
+          "Reflect on your month — learnings, challenges, and your plan for the next one.",
         centered: true,
       },
       {
-        id: "intern-weekly-review-header",
-        elementId: "page:intern-weekly-review:header",
-        title: "Weekly Timesheet",
+        id: "intern-monthly-review-header",
+        elementId: "page:intern-monthly-review:header",
+        title: "Submission Window",
         description:
-          "Reflect on your progress and achievements. Submissions close Sunday at 23:59 UTC.",
+          "Reviews open on the last 2 days of the month and close on the 2nd of the next month (IST).",
       },
       {
-        id: "intern-weekly-review-status",
-        elementId: "page:intern-weekly-review:status",
-        title: "This Week's Status",
+        id: "intern-monthly-review-status",
+        elementId: "page:intern-monthly-review:status",
+        title: "Review Status",
         description:
-          "See the current week number and whether you've already submitted.",
+          "See which month you're reviewing, whether it's pending, approved or rejected, and if the window is open.",
       },
       {
-        id: "intern-weekly-review-form",
-        elementId: "page:intern-weekly-review:form",
+        id: "intern-monthly-review-form",
+        elementId: "page:intern-monthly-review:form",
         title: "Submit Your Review",
         description:
-          "Share your key achievements, challenges, and plan for next week.",
+          "Your month's tasks and leave days are filled in for you. Add your rating, learnings, challenges and next month's plan.",
       },
     ],
   },

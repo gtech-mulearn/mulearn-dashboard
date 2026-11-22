@@ -201,6 +201,11 @@ export function UpdateDialog({
                   </SelectItem>
                 </SelectContent>
               </Select>
+              {updateRole === "INTERN_LEAD" && (
+                <p className="text-[10px] font-bold text-muted-foreground mt-1">
+                  Intern Lead can review monthly reviews.
+                </p>
+              )}
             </div>
           </div>
 
