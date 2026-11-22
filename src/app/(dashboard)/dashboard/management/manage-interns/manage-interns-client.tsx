@@ -369,16 +369,6 @@ export function ManageInternsPageClient() {
               Reports
             </Button>
           </Link>
-          <Link href="/dashboard/management/manage-interns/minutes">
-            <Button
-              size="lg"
-              variant="default"
-              className="gap-2 text-xs tracking-widest shadow-lg"
-            >
-              <Crown className="w-4 h-4" />
-              Minutes
-            </Button>
-          </Link>
         </div>
       </div>
 

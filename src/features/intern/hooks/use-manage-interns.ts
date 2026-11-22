@@ -420,11 +420,3 @@ export function useReviewWeeklyReview(id: string) {
     },
   });
 }
-
-// ── Minutes (Management View) ──────────────────────────────
-export function useManageMinutes(params?: TInternQueryParams) {
-  return useQuery({
-    queryKey: internKeys.manageMinutes(params ?? {}),
-    queryFn: () => manageInternsApi.getAllMinutes(params),
-  });
-}

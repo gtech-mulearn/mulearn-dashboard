@@ -4,7 +4,7 @@
  * 📍 src/features/tour/steps/pages/intern.ts
  *
  * In-page tours for `/dashboard/intern/*` pages (tasks, timesheet, leave,
- * minutes, weekly review, leaderboard).
+ * weekly review, leaderboard).
  *
  * `intern/quest-log/page.tsx` is skipped — it renders `QuestLogHistory`, a
  * shared component that lives outside this page's folder
@@ -13,7 +13,6 @@
  * shared component.
  */
 
-import { ROLES } from "@/lib/auth/roles";
 import type { PageTourConfig } from "../../types";
 
 export const internPageTours: readonly PageTourConfig[] = [
@@ -152,44 +151,6 @@ export const internPageTours: readonly PageTourConfig[] = [
         title: "Apply for Leave",
         description:
           "Submit a new leave request here — your campus lead will review it.",
-      },
-    ],
-  },
-  {
-    route: "/dashboard/intern/minutes",
-    version: 1,
-    steps: [
-      {
-        id: "intern-minutes-intro",
-        title: "Guild Minutes",
-        description: "Keep track of your guild's daily meeting minutes here.",
-        centered: true,
-      },
-      {
-        id: "intern-minutes-header",
-        elementId: "page:intern-minutes:header",
-        title: "Guild Minutes",
-        description: "Track your guild's daily meeting minutes.",
-      },
-      {
-        id: "intern-minutes-upload",
-        elementId: "page:intern-minutes:upload",
-        title: "Upload Minutes",
-        description:
-          "Intern leads can submit today's meeting notes link or a brief summary here.",
-        requiresRole: [ROLES.INTERN_LEAD],
-      },
-      {
-        id: "intern-minutes-search",
-        elementId: "page:intern-minutes:search",
-        title: "Search Minutes",
-        description: "Quickly find a past entry by title or content.",
-      },
-      {
-        id: "intern-minutes-history",
-        elementId: "page:intern-minutes:history",
-        title: "Minutes History",
-        description: "Browse and view details of previously logged minutes.",
       },
     ],
   },

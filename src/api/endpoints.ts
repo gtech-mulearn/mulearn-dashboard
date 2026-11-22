@@ -1492,8 +1492,6 @@ export const endpoints = {
     leaderboard: "/api/v1/dashboard/intern/leaderboard/",
     leaderboardMe: "/api/v1/dashboard/intern/leaderboard/me/",
     guilds: "/api/v1/dashboard/intern/guilds/",
-    minutes: "/api/v1/dashboard/intern/minutes/",
-    minuteDetail: (id: string) => `/api/v1/dashboard/intern/minutes/${id}/`,
   },
   manageInterns: {
     interns: "/api/v1/dashboard/manage-interns/interns/",
@@ -1518,7 +1516,6 @@ export const endpoints = {
     reviews: "/api/v1/dashboard/manage-interns/reviews/",
     weeklyReviewDetail: (id: string) =>
       `/api/v1/dashboard/manage-interns/reviews/reviews/${id}/review/`,
-    minutes: "/api/v1/dashboard/intern/minutes/",
     importTemplate: "/api/v1/dashboard/manage-interns/interns/import/template/",
     bulkImport: "/api/v1/dashboard/manage-interns/interns/import/",
   },

@@ -85,10 +85,6 @@ export const routeAccessMap: Record<string, RouteConfig> = {
     roles: [ROLES.ADMIN, ROLES.INTERN, ROLES.INTERN_LEAD],
   },
 
-  "/dashboard/intern/minutes": {
-    roles: [ROLES.ADMIN, ROLES.INTERN, ROLES.INTERN_LEAD],
-  },
-
   // ── Interest Group Dashboard ─────────────────────────────
   // Kept in step with IG_ROLES in roles.ts, which gates the sidebar entry —
   // a nav item the middleware then redirects away from is a dead link.
@@ -139,9 +135,6 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   },
   "/dashboard/management/manage-interns": {
     roles: INTERN_MANAGEMENT_ROLES,
-  },
-  "/dashboard/management/manage-interns/minutes": {
-    roles: [ROLES.ADMIN, ROLES.ASSOCIATE, ROLES.INTERN, ROLES.INTERN_LEAD],
   },
   "/dashboard/management/manage-interest-groups": {
     roles: FELLOW_MANAGEMENT_ROLES,

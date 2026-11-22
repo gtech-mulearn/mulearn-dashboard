@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, ScrollText } from "lucide-react";
+import { Calendar } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -91,16 +91,6 @@ export function InternHeader() {
           >
             <Calendar className="w-4 h-4" />
             Leave Desk
-          </Button>
-        </Link>
-        <Link href="/dashboard/intern/minutes">
-          <Button
-            size="lg"
-            variant="outline"
-            className="gap-2 text-xs tracking-widest shadow-lg"
-          >
-            <ScrollText className="w-4 h-4" />
-            Minutes
           </Button>
         </Link>
         <Badge

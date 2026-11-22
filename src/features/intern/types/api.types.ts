@@ -306,28 +306,6 @@ export interface TWeeklyReviewReviewPayload {
   review_note?: string;
 }
 
-// ── Minutes Types ─────────────────────────────────────────────
-
-export interface TMinuteItem {
-  id: string;
-  date: string;
-  title: string;
-  minutes: string;
-  guild: string;
-  uploaded_by?: string;
-  uploaded_by_name?: string;
-  uploaded_by_muid?: string;
-  created_by_name?: string;
-  created_at: string;
-}
-
-export interface TSubmitMinutePayload {
-  guild: string;
-  date: string;
-  title: string;
-  minutes: string;
-}
-
 export interface TBulkImportRowError {
   row: number;
   muid: string;
