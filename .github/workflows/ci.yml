@@ -110,3 +110,8 @@ jobs:
           # compilability, not environment wiring.
           NEXT_PUBLIC_DJANGO_API_URL: ${{ vars.NEXT_PUBLIC_DJANGO_API_URL }}
           NEXT_PUBLIC_DISCORD_AUTH_URL: ${{ vars.NEXT_PUBLIC_DISCORD_AUTH_URL }}
+
+      # Fails when a route group's first-load JavaScript goes over its budget
+      # (scripts/allowlists/bundle-budgets.json). It prints every group's size.
+      - name: Bundle budgets
+        run: bun scripts/check-bundle-budgets.ts
