@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/sheet";
 import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
-import type { InterestGroupDetail } from "@/features/interest-groups/schemas";
+import type { InterestGroupDetail } from "@/features/interest-groups";
 import { useCommunityPartners } from "../hooks/use-community-partners";
 import { useEditInterestGroup } from "../hooks/use-edit-interest-group";
 import type {

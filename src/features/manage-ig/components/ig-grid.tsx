@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Loader from "@/app/loading";
 import { StateDisplay } from "@/components/ui/state-display";
-import type { InterestGroup } from "@/features/interest-groups/schemas";
+import type { InterestGroup } from "@/features/interest-groups";
 import { SearchInput } from "@/features/search/components/SearchInput";
 import { InterestGroupCard } from "./ig-card";
 

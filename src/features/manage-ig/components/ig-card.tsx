@@ -11,7 +11,7 @@
 import { ArrowRight, Users } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import type { InterestGroup } from "@/features/interest-groups/schemas";
+import type { InterestGroup } from "@/features/interest-groups";
 
 type InterestGroupCardProps = {
   group: InterestGroup;
