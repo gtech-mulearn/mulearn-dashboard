@@ -32,6 +32,9 @@ import {
 } from "@/components/ui/select";
 import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
+// Imports home's hook directly, not "@/features/home": home's MentorHome renders this form, so
+// importing home's index here would make an import cycle (dashboard issue 0013). Route it through
+// the index once the dashboard interest-group list no longer lives in home.
 import { useInterestGroupsList } from "@/features/home/hooks";
 import { useCollegeSearch, useCompanies } from "@/features/onboarding";
 import { MENTOR_HOURS_OPTIONS, toMentorHours } from "../../lib/hours";
