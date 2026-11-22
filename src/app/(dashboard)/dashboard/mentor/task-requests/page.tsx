@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { TaskRequestsPage } from "@/features/mentor/task-requests/components/task-requests-page";
+import { TaskRequestsPage } from "@/features/mentor";
 
 export const metadata: Metadata = {
   title: "Task Requests",

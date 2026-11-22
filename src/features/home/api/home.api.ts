@@ -1,5 +1,6 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import type { MentorSession } from "@/features/mentor";
 import {
   CampusCircleHealthResponseSchema,
   CampusHomeSummaryResponseSchema,
@@ -7,26 +8,12 @@ import {
   CampusRecentActivityResponseSchema,
   type CompanyHomeSummaryData,
   CompanyHomeSummaryResponseSchema,
-  InterestGroupsListResponseSchema,
   KarmaFeedResponseSchema,
   LearnerHomeSummaryResponseSchema,
   LearnerStreakResponseSchema,
   MentorOverviewResponseSchema,
-  MentorSessionsResponseSchema,
   PublicJobsResponseSchema,
 } from "../schemas";
-
-// ============================================
-// Interest Groups
-// ============================================
-
-export async function getInterestGroupsList() {
-  const response = await apiClient.get(
-    endpoints.dashboard.interestGroups,
-    InterestGroupsListResponseSchema,
-  );
-  return response.response.interestGroup;
-}
 
 // ============================================
 // Karma Feed
@@ -52,18 +39,6 @@ export async function getMentorOverview() {
   );
   // New API returns response directly (scopes + metrics)
   return response.response;
-}
-
-// ============================================
-// Mentor Sessions
-// ============================================
-
-export async function getMentorSessions(status = "SCHEDULED") {
-  const url = `${endpoints.mentor.sessionList}?status=${status}`;
-  const response = await apiClient.get(url, MentorSessionsResponseSchema, {
-    skipAuthRedirectOn403: true,
-  });
-  return response.response.data;
 }
 
 // ============================================
@@ -108,8 +83,8 @@ export async function getMentorHomeSummary() {
       delta_type: "positive" | "negative" | "neutral";
       period: string;
     }[],
-    upcoming_sessions: [] as import("../schemas").MentorSession[],
-    session_requests: [] as import("../schemas").MentorSession[],
+    upcoming_sessions: [] as MentorSession[],
+    session_requests: [] as MentorSession[],
     expertise_tags: [] as string[],
   };
 }
@@ -203,35 +178,4 @@ export async function getCampusRecentActivity(limit = 10) {
     { skipAuthRedirectOn403: true },
   );
   return response.response.data;
-}
-
-// ============================================
-// Session Accept / Decline (Mentor Home)
-// ============================================
-
-export async function acceptSessionRequest(
-  sessionId: string,
-  userId: string,
-): Promise<void> {
-  // Doc #20: POST /session/participant/list/<session_id>/ to add a participant
-  await apiClient.post(
-    endpoints.mentor.sessionParticipantList(sessionId),
-    { user: userId, participant_role: "MENTOR", attendance_status: "INVITED" },
-    undefined,
-    { skipAuthRedirectOn403: true },
-  );
-}
-
-export async function declineSessionRequest(
-  sessionId: string,
-  _userId: string,
-): Promise<void> {
-  // Doc #17: PATCH /session/admin/verify/<session_id>/ with status REJECTED
-  // The old DELETE endpoint no longer exists in the doc.
-  await apiClient.patch(
-    endpoints.mentor.sessionAdminVerify(sessionId),
-    { status: "REJECTED" },
-    undefined,
-    { skipAuthRedirectOn403: true },
-  );
 }

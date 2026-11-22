@@ -5,7 +5,7 @@
  */
 
 import { z } from "zod";
-import { upperEnum } from "@/lib/enum-casing";
+import { MentorSessionSchema } from "@/features/mentor";
 
 // ============================================
 // Django Response Wrapper (reusable)
@@ -18,31 +18,6 @@ export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
     message: z.record(z.string(), z.array(z.string())).optional(),
     response: dataSchema,
   });
-
-// ============================================
-// Interest Groups (/api/v1/dashboard/ig/list/)
-// ============================================
-
-export const InterestGroupListItemSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  category: z.string().optional(),
-});
-export type InterestGroupListItem = z.infer<typeof InterestGroupListItemSchema>;
-
-export const InterestGroupsListDataSchema = z.object({
-  interestGroup: z.array(InterestGroupListItemSchema),
-});
-export type InterestGroupsListData = z.infer<
-  typeof InterestGroupsListDataSchema
->;
-
-export const InterestGroupsListResponseSchema = ApiResponseSchema(
-  InterestGroupsListDataSchema,
-);
-export type InterestGroupsListResponse = z.infer<
-  typeof InterestGroupsListResponseSchema
->;
 
 // ============================================
 // Karma Feed (/api/v1/dashboard/profile/karma-feed/)
@@ -196,52 +171,6 @@ export const OverviewActivityItemSchema = z.object({
 });
 export type OverviewActivityItem = z.infer<typeof OverviewActivityItemSchema>;
 
-// ============================================
-// Mentor Sessions (/mentor/session/list/)
-// Response: { data: MentorSession[], pagination: {...} }
-// ============================================
-
-export const MentorSessionSchema = z.object({
-  id: z.string().max(36).optional(),
-  entity_id: z.string().max(36).nullable().optional(),
-  entity_name: z.string(),
-  session_type: upperEnum([
-    "IG_SESSION",
-    "CAMPUS_SESSION",
-    "COMPANY_SESSION",
-  ]).optional(),
-  title: z.string().max(150),
-  mode: z.enum(["ONLINE", "OFFLINE", "HYBRID"]).optional(),
-  starts_at: z.string(),
-  ends_at: z.string(),
-  status: z.enum([
-    "SCHEDULED",
-    "PENDING_APPROVAL",
-    "COMPLETED",
-    "CANCELLED",
-    "REJECTED",
-  ]),
-  created_by_id: z.string(),
-  created_by_name: z.string(),
-  created_at: z.string(),
-  max_participants: z.number().nullable().optional(),
-  is_recurring: z.boolean().optional(),
-  parent_session_id: z.string().nullable(),
-  recurrence_type: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).nullable().optional(),
-  recurrence_interval: z.number().nullable().optional(),
-  recurrence_end_date: z.string().nullable().optional(),
-});
-export type MentorSession = z.infer<typeof MentorSessionSchema>;
-/** @deprecated Use MentorSession instead */
-export type MentorSessionPartial = MentorSession;
-
-export const MentorSessionsResponseSchema = ApiResponseSchema(
-  z.object({
-    data: z.array(MentorSessionSchema),
-    // Sessions API returns a different pagination shape — use passthrough to avoid mismatch
-    pagination: z.record(z.string(), z.unknown()).optional(),
-  }),
-);
 // ============================================
 // Public Jobs Count (/public/jobs/)
 // ============================================

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserInfo } from "@/features/auth";
-import { useAcceptSession } from "@/features/mentor/hooks/use-session-actions";
+import { useAcceptSession } from "../../hooks/use-session-actions";
 import type { OverviewSessionListItem } from "../../schemas/home.schema";
 
 type Props = {

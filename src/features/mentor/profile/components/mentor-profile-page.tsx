@@ -17,7 +17,6 @@
 
 import { useState } from "react";
 import Loader from "@/app/loading";
-import { useMentorSessions } from "@/features/home";
 import {
   useMentorOverview,
   useProfileCompletion,
@@ -27,6 +26,7 @@ import {
   useMentorProfile,
 } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import { ShareProfileModal, useUserProfile } from "@/features/profile";
+import { useMentorSessions } from "../../hooks";
 import { MentorEditProfileModal } from "./mentor-edit-profile-modal";
 import {
   MentorProfileCompletion,

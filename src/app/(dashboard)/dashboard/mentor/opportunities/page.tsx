@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { OpportunitiesPage } from "@/features/mentor/opportunities";
+import { OpportunitiesPage } from "@/features/mentor";
 
 export const metadata: Metadata = {
   title: "Mentor Opportunities",

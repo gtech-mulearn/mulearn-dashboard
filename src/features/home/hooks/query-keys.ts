@@ -1,7 +1,6 @@
 export const homeKeys = {
   all: ["home"] as const,
 
-  interestGroups: () => [...homeKeys.all, "interest-groups"] as const,
   karmaFeed: () => [...homeKeys.all, "karma-feed"] as const,
   events: () => [...homeKeys.all, "events"] as const,
   dashboardCalendarAll: () => [...homeKeys.all, "dashboard-calendar"] as const,
@@ -10,8 +9,6 @@ export const homeKeys = {
   topPerformers: () => [...homeKeys.all, "top-performers"] as const,
 
   mentorOverview: () => [...homeKeys.all, "mentor", "overview"] as const,
-  mentorSessions: (status?: string) =>
-    [...homeKeys.all, "mentor", "sessions", status ?? "SCHEDULED"] as const,
   publicJobsCount: () => [...homeKeys.all, "public-jobs-count"] as const,
   mentorHomeSummary: () => [...homeKeys.all, "mentor", "home-summary"] as const,
   learnerHomeSummary: () =>

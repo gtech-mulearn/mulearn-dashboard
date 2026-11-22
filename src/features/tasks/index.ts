@@ -1,4 +1,4 @@
-export type { TaskTypeListData, TaskTypeParams } from "./api";
+export type { TaskLevel, TaskTypeListData, TaskTypeParams } from "./api";
 export {
   createTask,
   createTaskType,
@@ -9,6 +9,7 @@ export {
   fetchPendingTasks,
   fetchPublicTasks,
   fetchTaskDetail,
+  fetchTaskLevels,
   fetchTaskReferences,
   fetchTaskTypes,
   importTasks,
@@ -42,6 +43,7 @@ export {
   usePublicTasks,
   useReviewTask,
   useTaskDetail,
+  useTaskLevels,
   useTaskReferences,
   useTaskTypes,
   useUpdateTask,

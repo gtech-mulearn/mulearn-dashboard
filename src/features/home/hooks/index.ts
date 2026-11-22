@@ -6,13 +6,11 @@ export {
   useCampusRecentActivity,
   useCompanyHomeSummary,
   useDashboardCalendar,
-  useInterestGroupsList,
   useKarmaFeed,
   useLearnerHomeSummary,
   useLearnerStreak,
   useMentorHomeSummary,
   useMentorOverview,
-  useMentorSessions,
   usePublicJobsCount,
   useTopPerformers,
 } from "./use-home";

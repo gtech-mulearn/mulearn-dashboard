@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AdminSessionVerificationPage } from "@/features/mentor/sessions/components/admin-session-verification-page";
+import { AdminSessionVerificationPage } from "@/features/mentor";
 import { ADMIN_ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 

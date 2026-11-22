@@ -7,27 +7,17 @@ import {
   getCampusMemberFunnel,
   getCampusRecentActivity,
   getCompanyHomeSummary,
-  getInterestGroupsList,
   getKarmaFeed,
   getLearnerHomeSummary,
   getLearnerStreak,
   getMentorHomeSummary,
   getMentorOverview,
-  getMentorSessions,
   getPublicJobsCount,
 } from "../api";
 import type { DashboardCalendarParams } from "../schemas";
 import { homeKeys } from "./query-keys";
 
 const HOME_STALE_TIME = 5 * 60 * 1000;
-
-export function useInterestGroupsList() {
-  return useQuery({
-    queryKey: homeKeys.interestGroups(),
-    queryFn: getInterestGroupsList,
-    staleTime: 10 * 60 * 1000,
-  });
-}
 
 export function useKarmaFeed() {
   return useQuery({
@@ -72,15 +62,6 @@ export function useMentorOverview(enabled = true) {
     staleTime: HOME_STALE_TIME,
     retry: no403Retry,
     enabled,
-  });
-}
-
-export function useMentorSessions(status = "SCHEDULED") {
-  return useQuery({
-    queryKey: homeKeys.mentorSessions(status),
-    queryFn: () => getMentorSessions(status),
-    staleTime: 2 * 60 * 1000,
-    retry: no403Retry,
   });
 }
 

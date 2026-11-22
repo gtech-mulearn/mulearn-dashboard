@@ -1,10 +1,10 @@
 import { ArrowRight, Layers } from "lucide-react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { InterestGroupListItem } from "../schemas";
+import type { DashboardInterestGroup } from "@/features/interest-groups";
 
 type InterestGroupsCardProps = {
-  groups: InterestGroupListItem[];
+  groups: DashboardInterestGroup[];
   isLoading?: boolean;
 };
 

@@ -3,11 +3,8 @@
 import { format } from "date-fns";
 import { useState } from "react";
 import { useUserInfo, useUserProfile } from "@/features/auth/hooks/use-session";
-import {
-  useDashboardCalendar,
-  useInterestGroupsList,
-  useLearnerHomeSummary,
-} from "../hooks";
+import { useDashboardInterestGroups } from "@/features/interest-groups";
+import { useDashboardCalendar, useLearnerHomeSummary } from "../hooks";
 import { flattenDashboardCalendar } from "../utils";
 import { EventCalendarCard } from "./event-calendar-card";
 import { HeroCard } from "./hero-card";
@@ -20,7 +17,7 @@ export function MuLearnerHome() {
   const { data: userInfo } = useUserInfo();
   const { data: userProfile } = useUserProfile();
   const { data: interestGroups, isLoading: loadingGroups } =
-    useInterestGroupsList();
+    useDashboardInterestGroups();
   const { data: summary } = useLearnerHomeSummary();
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const { data: calendarData, isLoading: loadingCalendar } =
