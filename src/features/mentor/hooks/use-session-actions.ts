@@ -2,6 +2,8 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+// Imports home's internals directly, not "@/features/home": home's SessionRequestsCard uses these
+// hooks, so importing home's index here would make an import cycle (dashboard issue 0013).
 import {
   acceptSessionRequest,
   declineSessionRequest,

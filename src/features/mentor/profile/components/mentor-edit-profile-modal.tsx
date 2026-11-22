@@ -47,7 +47,7 @@ import {
 } from "@/components/ui/select";
 import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
-import { useInterestGroupsList } from "@/features/home/hooks";
+import { useInterestGroupsList } from "@/features/home";
 import {
   MENTOR_HOURS_OPTIONS,
   MentorHoursSchema,

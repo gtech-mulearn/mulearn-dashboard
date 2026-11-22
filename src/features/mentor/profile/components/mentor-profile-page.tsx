@@ -17,7 +17,7 @@
 
 import { useState } from "react";
 import Loader from "@/app/loading";
-import { useMentorSessions } from "@/features/home/hooks";
+import { useMentorSessions } from "@/features/home";
 import {
   useMentorOverview,
   useProfileCompletion,

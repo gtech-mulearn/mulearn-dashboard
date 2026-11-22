@@ -86,10 +86,6 @@ grit-meter | src/app/(dashboard)/dashboard/management/system/features/page.tsx |
 home | src/features/mentor/hooks/use-session-actions.ts | @/features/home/api/home.api
 home | src/features/mentor/hooks/use-session-actions.ts | @/features/home/hooks
 home | src/features/mentor/onboarding/components/mentor-onboarding-form.tsx | @/features/home/hooks
-home | src/features/mentor/profile/components/mentor-edit-profile-modal.tsx | @/features/home/hooks
-home | src/features/mentor/profile/components/mentor-profile-page.tsx | @/features/home/hooks
-home | src/features/mentor/profile/components/mentor-profile-sidebar.tsx | @/features/home/schemas
-home | src/features/mentor/profile/components/tabs/sessions-tab.tsx | @/features/home/schemas/home.schema
 interest-groups | src/app/(dashboard)/dashboard/talent-pool/talent-pool-client.tsx | @/features/interest-groups/api/interest-groups.api
 interest-groups | src/features/manage-ig/components/edit-interest-group-form.tsx | @/features/interest-groups/schemas
 interest-groups | src/features/manage-ig/components/ig-card.tsx | @/features/interest-groups/schemas

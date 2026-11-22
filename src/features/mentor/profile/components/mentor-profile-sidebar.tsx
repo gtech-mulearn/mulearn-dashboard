@@ -22,7 +22,7 @@ import {
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { MentorSession } from "@/features/home/schemas";
+import type { MentorSession } from "@/features/home";
 import { formatMentorHours } from "@/features/mentor/lib/hours";
 import { formatMentorRating } from "@/features/mentor/lib/rating";
 import type {

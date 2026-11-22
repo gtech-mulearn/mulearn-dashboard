@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { MentorSession } from "@/features/home/schemas/home.schema";
+import type { MentorSession } from "@/features/home";
 
 interface SessionsTabProps {
   sessions: MentorSession[] | undefined;
