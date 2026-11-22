@@ -26,8 +26,7 @@ import {
   useMentorApplicationStatus,
   useMentorProfile,
 } from "@/features/mentor/onboarding/hooks/use-onboarding";
-import { useUserProfile } from "@/features/profile";
-import { ShareProfileModal } from "@/features/profile/components/share-profile-modal";
+import { ShareProfileModal, useUserProfile } from "@/features/profile";
 import { MentorEditProfileModal } from "./mentor-edit-profile-modal";
 import {
   MentorProfileCompletion,

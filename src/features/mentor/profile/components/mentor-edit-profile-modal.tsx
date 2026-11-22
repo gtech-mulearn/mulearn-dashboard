@@ -62,8 +62,8 @@ import {
 import { mentorTierLabel } from "@/features/mentor/onboarding/lib/mentor-status";
 import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
 import { useCompanies } from "@/features/onboarding";
+import type { UserProfile } from "@/features/profile";
 import { useUpdateProfile, useUpdateProfileImage } from "@/features/profile";
-import type { UserProfile } from "@/features/profile/schemas";
 import {
   MAX_IMAGE_UPLOAD_LABEL,
   validateImageFile,

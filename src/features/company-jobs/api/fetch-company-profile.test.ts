@@ -11,7 +11,7 @@ const { fetchCompanyOnboardingStatus, getEditableUserProfile, apiGet } =
 vi.mock("@/features/auth/api/auth.api", () => ({
   fetchCompanyOnboardingStatus,
 }));
-vi.mock("@/features/profile/api/profile.api", () => ({
+vi.mock("@/features/profile", () => ({
   getEditableUserProfile,
 }));
 vi.mock("@/api/client", () => ({
