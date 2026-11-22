@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { NotificationManageCard } from "@/features/notification/components/manage/notification-manage-card";
-import { PushAdminCard } from "@/features/push/components/push-admin-card";
+import { PushAdminCard } from "@/features/push";
 import { ADMIN_ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 

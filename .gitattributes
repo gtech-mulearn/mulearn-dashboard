@@ -1,0 +1,18 @@
+# Line endings are LF everywhere, on every OS, whatever core.autocrlf says.
+# Biome expects LF, so a CRLF checkout (Git for Windows' default) fails bun run lint.
+* text=auto eol=lf
+
+# Binary files: never converted, never diffed as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.pdf binary
+*.zip binary
