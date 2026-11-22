@@ -133,7 +133,7 @@ describe("proxy public routes", () => {
   });
 });
 
-import { ROLES } from "./lib/auth/roles";
+import { igLeadRole, ROLES } from "./lib/auth/roles";
 
 describe("proxy jobs route policy", () => {
   it("grants access to ADMIN and STUDENT", () => {
@@ -171,5 +171,65 @@ describe("proxy jobs route policy", () => {
       expect(location).toContain("/dashboard");
       expect(location).toContain("unauthorized=true");
     });
+  });
+});
+
+// Users hold several roles at once (a student who is also a mentor and a campus
+// lead): a page opens if ANY role the user holds allows it.
+describe("proxy: users who hold several roles", () => {
+  const visit = (pathname: string, roles: string[]) =>
+    proxy(
+      requestFor(pathname, {
+        accessToken: makeToken({ expiry: FUTURE, roles }),
+        refreshToken: "r",
+      }),
+    ).headers.get("location");
+
+  it("opens a route when any one of the user's roles allows it", () => {
+    expect(
+      visit("/dashboard/mentor", [ROLES.STUDENT, ROLES.MENTOR]),
+    ).toBeNull();
+    expect(
+      visit("/dashboard/collaborations", [
+        ROLES.STUDENT,
+        ROLES.MENTOR,
+        ROLES.CAMPUS_LEAD,
+      ]),
+    ).toBeNull();
+    // The route allows Admin or IG Lead; holding just one of them is enough.
+    expect(
+      visit("/dashboard/edit-ig", [ROLES.STUDENT, ROLES.IG_LEAD]),
+    ).toBeNull();
+  });
+
+  it("redirects when none of the user's roles allows it", () => {
+    for (const [path, roles] of [
+      ["/dashboard/mentor", [ROLES.STUDENT, ROLES.COMPANY]],
+      ["/dashboard/collaborations", [ROLES.STUDENT, ROLES.MENTOR]],
+    ] as const) {
+      const location = visit(path, [...roles]);
+      expect(location).toContain("/dashboard");
+      expect(location).toContain("unauthorized=true");
+    }
+  });
+
+  it("combines per-interest-group lead roles with ordinary roles", () => {
+    expect(
+      visit("/dashboard/collaborations", [ROLES.STUDENT, igLeadRole("WEB")]),
+    ).toBeNull();
+    expect(
+      visit("/dashboard/edit-ig", [ROLES.MENTOR, igLeadRole("AI")]),
+    ).toBeNull();
+    expect(
+      visit("/dashboard/edit-ig", [ROLES.MENTOR, ROLES.STUDENT]),
+    ).toContain("unauthorized=true");
+  });
+
+  // Known gap: /dashboard/jobs excludes every Mentor and Company instead of
+  // allowing roles, so a Student who is also a Mentor is turned away. This test
+  // documents the intended rule and is expected to fail until the route is fixed;
+  // when it starts passing, drop the .fails.
+  it.fails("opens /dashboard/jobs for a Student who is also a Mentor", () => {
+    expect(visit("/dashboard/jobs", [ROLES.STUDENT, ROLES.MENTOR])).toBeNull();
   });
 });
