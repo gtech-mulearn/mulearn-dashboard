@@ -26,6 +26,10 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      # Fails on a new import across feature boundaries (scripts/allowlists/feature-imports.txt).
+      - name: Check feature imports
+        run: bun scripts/check-feature-imports.ts
+
       - name: Run lint
         run: bun run lint
 
