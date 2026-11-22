@@ -15,8 +15,9 @@
 "use client";
 
 import { useMemo } from "react";
-// Direct import on purpose: this runs in the sidebar on every page, and the
-// company-jobs barrel isn't tree-shaken here — it would add ~800 KB of JS.
+// Direct import, listed in scripts/allowlists/feature-imports.txt: a shared hook
+// may not import a feature at all, even through its index
+// (docs/architecture/04-module-rules.md, rule 4).
 import { useCompanyAccess } from "@/features/company-jobs/hooks/use-company-access";
 import { useMentorApplicationStatus } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import { usePermissions } from "@/hooks/use-permissions";

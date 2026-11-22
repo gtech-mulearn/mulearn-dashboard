@@ -21,8 +21,9 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserInfo } from "@/features/auth/hooks/use-session";
 import { useCompanyProfile } from "@/features/company-jobs/hooks";
-// Direct import on purpose: the topbar is on every page, and the mentor barrel
-// (admin verification and more) isn't tree-shaken in this build.
+// Direct import, listed in scripts/allowlists/feature-imports.txt: the topbar
+// is a shared layer, which may not import a feature at all, even through its
+// index (docs/architecture/04-module-rules.md, rule 4).
 import { PersonaSwitcher } from "@/features/mentor/components/persona-switcher";
 import { GameProgressBar } from "@/features/mujourney/components/GameProgressBar";
 import { NotificationPopover } from "@/features/notification";
