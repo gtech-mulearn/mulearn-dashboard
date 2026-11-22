@@ -49,3 +49,6 @@ bun.lock
 
 .env*
 !.env.example
+
+# Vitest JSON report (CI test job, scripts/check-test-baseline.ts)
+vitest-report.json
