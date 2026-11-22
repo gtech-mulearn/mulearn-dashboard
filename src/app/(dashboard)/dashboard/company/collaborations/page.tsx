@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CompanyCollaborationsPageClient } from "@/features/company-jobs/components/collaborations/company-collaborations-client";
+import { CompanyCollaborationsPageClient } from "@/features/company-jobs";
 
 export const metadata: Metadata = {
   title: "Company Collaborations | μLearn",

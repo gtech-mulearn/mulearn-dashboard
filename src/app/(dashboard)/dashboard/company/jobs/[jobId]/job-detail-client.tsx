@@ -4,18 +4,16 @@ import { AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
+import type { RuleFormValues } from "@/features/company-jobs";
 import {
   CompanyStatusGuard,
   JobDetailSkeleton,
   JobDetailView,
-} from "@/features/company-jobs/components";
-import {
   useCreateJobRule,
   useDeleteJob,
   useDeleteJobRule,
   useJobDetail,
-} from "@/features/company-jobs/hooks";
-import type { RuleFormValues } from "@/features/company-jobs/schemas";
+} from "@/features/company-jobs";
 
 interface JobDetailPageClientProps {
   jobId: string;

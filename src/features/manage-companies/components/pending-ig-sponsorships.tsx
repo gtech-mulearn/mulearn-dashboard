@@ -4,11 +4,11 @@ import { Zap } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import type { PendingIgSponsorship } from "@/features/company-jobs";
 import {
   usePendingIgSponsorships,
   useReviewIgSponsorship,
-} from "@/features/company-jobs/hooks/use-ig-sponsorships";
-import type { PendingIgSponsorship } from "@/features/company-jobs/types";
+} from "@/features/company-jobs";
 import { formatShortDate } from "@/lib/datetime";
 
 /**

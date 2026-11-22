@@ -8,7 +8,7 @@
 
 import { useFormContext, useWatch } from "react-hook-form";
 import { Badge } from "@/components/ui/badge";
-import { useCompanyProfile } from "@/features/company-jobs/hooks/use-company-profile";
+import { useCompanyProfile } from "@/features/company-jobs";
 import type { ProfileEditFormValues } from "../../schemas";
 
 function ReviewRow({

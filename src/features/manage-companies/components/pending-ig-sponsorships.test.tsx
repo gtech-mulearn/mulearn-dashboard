@@ -14,7 +14,7 @@ const mocks = vi.hoisted(() => ({
   reviewIgSponsorship: vi.fn(),
 }));
 vi.mock("@/features/company-jobs/api", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/features/company-jobs/api")>()),
+  ...(await importOriginal<Record<string, unknown>>()),
   fetchPendingIgSponsorships: mocks.fetchPendingIgSponsorships,
   reviewIgSponsorship: mocks.reviewIgSponsorship,
 }));

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CompanyAdminsPageClient } from "@/features/company-jobs/components/admin/company-admins-client";
+import { CompanyAdminsPageClient } from "@/features/company-jobs";
 
 export const metadata: Metadata = {
   title: "Company Administrators | μLearn",

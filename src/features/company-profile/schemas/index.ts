@@ -4,7 +4,7 @@ import { z } from "zod";
 import {
   CompanyProfileResponseSchema,
   CompanyProfileSchema,
-} from "@/features/company-jobs/schemas";
+} from "@/features/company-jobs";
 import { ApiResponseSchema } from "@/lib/schemas/api-response";
 
 // ─── Re-export for convenience ────────────────────────────────

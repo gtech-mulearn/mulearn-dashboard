@@ -59,7 +59,7 @@ import {
   useJobs,
   useTalentPoolAnalytics,
   useTasksAnalytics,
-} from "@/features/company-jobs/hooks";
+} from "@/features/company-jobs";
 import {
   extractInterestGroups,
   useInterestGroupsList,

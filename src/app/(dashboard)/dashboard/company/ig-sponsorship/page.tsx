@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CompanySponsorshipPageClient } from "@/features/company-jobs/components/sponsorship/company-sponsorship-client";
+import { CompanySponsorshipPageClient } from "@/features/company-jobs";
 
 export const metadata: Metadata = {
   title: "Interest Group Sponsorships | μLearn",

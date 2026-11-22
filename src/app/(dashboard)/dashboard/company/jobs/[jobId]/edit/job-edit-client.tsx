@@ -10,15 +10,15 @@ import { AlertTriangle, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import type { JobFormValues, JobRule } from "@/features/company-jobs";
 import {
+  buildUpdateJobPayload,
   CompanyStatusGuard,
   JobDetailSkeleton,
   JobStepper,
-} from "@/features/company-jobs/components";
-import { useJobDetail, useUpdateJob } from "@/features/company-jobs/hooks";
-import { buildUpdateJobPayload } from "@/features/company-jobs/lib";
-import type { JobFormValues } from "@/features/company-jobs/schemas";
-import type { JobRule } from "@/features/company-jobs/types";
+  useJobDetail,
+  useUpdateJob,
+} from "@/features/company-jobs";
 
 interface EditJobPageClientProps {
   jobId: string;

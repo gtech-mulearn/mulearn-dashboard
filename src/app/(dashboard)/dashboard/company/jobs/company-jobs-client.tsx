@@ -13,10 +13,10 @@ import {
   JobsList,
   JobsListSkeleton,
   JobsPageHeader,
+  PendingJobApprovals,
   useCompanyAccess,
   useJobs,
 } from "@/features/company-jobs";
-import { PendingJobApprovals } from "@/features/company-jobs/components/pending-job-approvals";
 import { useDebounce } from "@/hooks/use-debounce";
 
 export function CompanyJobsPageClient() {
