@@ -174,6 +174,27 @@ This project follows [semver](https://semver.org): `MAJOR.MINOR.PATCH`
 
 When in doubt, use `patch` for fixes and `minor` for features.
 
+## Feature anatomy
+
+Each feature lives in `src/features/<name>/`, with the same layout: `index.ts`, `api/`, `schemas/`, `hooks/` and `components/`, plus `types/` and `utils/` when needed. [04-module-rules.md](docs/architecture/04-module-rules.md#the-anatomy-of-a-feature) gives what goes in each.
+
+- **`index.ts` is the feature's only public surface.** Code outside the feature imports `@/features/<name>`, never a file inside it ([import rules](docs/architecture/04-module-rules.md#import-rules), [ADR-002](docs/architecture/adr/ADR-002-feature-anatomy-and-public-surface.md)).
+- **Query keys come from the feature's factory in `hooks/query-keys.ts`,** for every query and every invalidation, never an inline array ([server state and keys](docs/architecture/04-module-rules.md#server-state-and-keys), [ADR-004](docs/architecture/adr/ADR-004-server-state-and-ui-state.md)).
+- **Not sure where something goes?** See [Where does my code go?](docs/architecture/04-module-rules.md#where-does-my-code-go).
+
+## When a check fails
+
+CI compares four things with a list of what exists on `dev` today, in `scripts/allowlists/`. Each list **only shrinks**: fix the code, never add a line. A listed finding that no longer exists also fails, so after a fix, run the check with `--update` to remove its line, and commit the list.
+
+| Check | It fails when | Fix it by |
+|---|---|---|
+| `bun scripts/check-feature-imports.ts` | code outside a feature imports a file inside it, or a feature has no `index.ts` | importing `@/features/<name>`; export the thing from `index.ts` if it's missing, or move a generic helper to `src/components/`, `src/hooks/` or `src/lib/` |
+| `bun scripts/check-import-cycles.ts` | a new import cycle appears | breaking the cycle, usually by moving the shared piece down to a layer both sides can import |
+| `bun scripts/check-query-keys.ts` | a file gains an inline `queryKey` array | using the feature's key factory in `hooks/query-keys.ts` |
+| `bun scripts/check-test-baseline.ts <report>` | a test that isn't in the baseline fails | fixing the test. Produce the report with `bunx vitest run --reporter=json --outputFile=vitest-report.json` |
+
+[How CI enforces each rule](docs/architecture/04-module-rules.md#how-ci-enforces-each-rule) has the full list.
+
 ## Pull Request Checklist
 
 Before opening a PR:
