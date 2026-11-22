@@ -147,14 +147,6 @@ onboarding | src/features/auth/components/register-role-details.tsx | @/features
 onboarding | src/features/auth/components/register-role-details.tsx | @/features/onboarding/schemas
 onboarding | src/features/mentor/opportunities/components/opportunity-form-dialog.tsx | @/features/onboarding/hooks
 organizations | src/features/search/components/CampusesSearchClient.tsx | @/features/organizations/hooks
-profile | src/features/auth/hooks/use-session.ts | @/features/profile/hooks/use-profile
-profile | src/features/company-jobs/api/jobs.api.ts | @/features/profile/api/profile.api
-profile | src/features/company-jobs/components/profile/company-public-view.tsx | @/features/profile/schemas
-profile | src/features/mentor/profile/components/mentor-edit-profile-modal.tsx | @/features/profile/schemas
-profile | src/features/mentor/profile/components/mentor-profile-header.tsx | @/features/profile/schemas
-profile | src/features/mentor/profile/components/mentor-profile-page.tsx | @/features/profile/components/share-profile-modal
-profile | src/features/mujourney/hooks/useInterestGroups.ts | @/features/profile/api/profile.api
-profile | src/features/settings/hooks/use-change-organization.ts | @/features/profile/hooks/query-keys
 search | src/features/interest-groups/components/interest-groups-grid.tsx | @/features/search/components/SearchInput
 search | src/features/manage-ig/components/ig-grid.tsx | @/features/search/components/SearchInput
 tour | src/components/dashboard/app-sidebar.tsx | @/features/tour

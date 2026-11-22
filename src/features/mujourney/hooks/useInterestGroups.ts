@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { getUserProfile } from "@/features/profile/api/profile.api";
+import { getUserProfile } from "@/features/profile";
 import { authStore } from "@/lib/auth";
 import { mujourneyKeys } from "./query-keys";
 

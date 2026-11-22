@@ -30,7 +30,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
-import type { UserProfile } from "@/features/profile/schemas";
+import type { UserProfile } from "@/features/profile";
 
 const DEFAULT_COVER = "/images/profile-banner.webp";
 

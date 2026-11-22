@@ -3,7 +3,7 @@ import { apiClient, publicApiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import { ApiError } from "@/api/errors";
 import { fetchCompanyOnboardingStatus } from "@/features/auth/api/auth.api";
-import { getEditableUserProfile } from "@/features/profile/api/profile.api";
+import { getEditableUserProfile } from "@/features/profile";
 import type { CollaborationCreatePayload } from "../lib/collaboration-payload";
 import type { PublicCompanyProfile, PublicJobsBySlugData } from "../schemas";
 import {

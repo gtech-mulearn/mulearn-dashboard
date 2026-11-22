@@ -1,6 +1,6 @@
 "use client";
 
-import type { UserProfile } from "@/features/profile/schemas";
+import type { UserProfile } from "@/features/profile";
 import { usePublicCompanyJobs, usePublicCompanyProfile } from "../../hooks";
 import type { PublicCompanyProfile } from "../../schemas";
 import { CompanyCredibilitySection } from "./company-credibility-section";

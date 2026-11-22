@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { authKeys } from "@/features/auth/hooks/query-keys";
-import { profileKeys } from "@/features/profile/hooks/query-keys";
+import { profileKeys } from "@/features/profile";
 import { changeOrganization } from "@/features/settings";
 import { getApiResponseError } from "@/hooks/use-get-error";
 

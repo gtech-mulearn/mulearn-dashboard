@@ -22,9 +22,9 @@ import { authKeys } from "./query-keys";
  * under a single canonical query key (`profileKeys.profile()`). Previously this
  * feature defined its own `useUserProfile` with a separate query key, which
  * caused a duplicate `user-profile` network request and meant profile mutations
- * never invalidated this copy. See `@/features/profile/hooks/use-profile`.
+ * never invalidated this copy. See `@/features/profile`.
  */
-export { useUserProfile } from "@/features/profile/hooks/use-profile";
+export { useUserProfile } from "@/features/profile";
 
 /**
  * Hook for fetching current user info (lightweight)
