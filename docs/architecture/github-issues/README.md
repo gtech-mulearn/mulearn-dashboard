@@ -71,9 +71,7 @@ Some issues follow a change in the backend. The backend's plan is in its own rep
 
 ## Reporting a vulnerability
 
-Never open a public issue or pull request for a security problem. Report it privately to the maintainers.
-- **Private vulnerability reporting** for this repository is switched on, and a `SECURITY.md` added, by issue 0040. Maintainers: do that before filing these issues.
-- **Until then,** contact a maintainer directly and privately, never in a public channel.
+Never open a public issue or pull request for a security problem. Report it privately, through the repository's private vulnerability reporting, as [SECURITY.md](../../../SECURITY.md) explains.
 
 ## Phases and milestones
 
