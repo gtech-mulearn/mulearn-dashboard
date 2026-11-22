@@ -13,6 +13,7 @@
     "prepare": "husky",
     "typecheck": "node --max-semi-space-size=64 ./node_modules/typescript/bin/tsc --noEmit",
     "test": "vitest run",
+    "smoke": "playwright test e2e/smoke",
     "changeset": "changeset",
     "version-packages": "changeset version"
   },
@@ -68,6 +69,7 @@
     "@commitlint/cli": "^20.2.0",
     "@commitlint/config-conventional": "^20.2.0",
     "@netlify/plugin-nextjs": "^5.15.8",
+    "@playwright/test": "1.65.1",
     "@tailwindcss/postcss": "^4",
     "@tanstack/react-query-devtools": "^5.91.2",
     "@testing-library/jest-dom": "^6.9.1",
