@@ -1,9 +1,9 @@
 {
   "comment": "Gzipped first-load JS budget per route group, in bytes (scripts/check-bundle-budgets.ts). Seeded from the first measurement plus 5%. --update only lowers a budget; raising one needs a reviewer.",
   "budgets": {
-    "(auth)": 644109,
-    "(dashboard)": 919761,
-    "(onboarding)": 649792,
+    "(auth)": 334536,
+    "(dashboard)": 684539,
+    "(onboarding)": 335006,
     "(root)": 207520
   }
 }

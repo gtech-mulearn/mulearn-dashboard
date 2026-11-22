@@ -23,9 +23,10 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { VersionBadge } from "@/components/ui/version-badge";
-// Direct imports on purpose: the sidebar renders on every page, and feature
-// barrels aren't tree-shaken in this build (no package.json "sideEffects"), so
-// importing @/features/company-jobs here would add ~800 KB of JS to most routes.
+// Direct imports, listed in scripts/allowlists/feature-imports.txt: the sidebar
+// is a shared layer, which may not import a feature at all, even through its
+// index (docs/architecture/04-module-rules.md, rule 4). They stay until the
+// shell gets its company data from the dashboard layout.
 import { useCompanyAccess } from "@/features/company-jobs/hooks/use-company-access";
 import { useCompanyProfile } from "@/features/company-jobs/hooks/use-company-profile";
 import { ReplayTourButton } from "@/features/tour";

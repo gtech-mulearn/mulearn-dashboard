@@ -3,7 +3,7 @@ import { usePathname } from "next/navigation";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useUserInfo } from "@/features/auth";
-import { useCompanyProfile } from "@/features/company-jobs/hooks";
+import { useCompanyProfile } from "@/features/company-jobs";
 import { useMentorApplicationStatus } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import { useFilteredNav } from "@/hooks/use-filtered-nav";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -13,7 +13,7 @@ import { useTour } from "./use-tour";
 
 vi.mock("next/navigation", () => ({ usePathname: vi.fn() }));
 vi.mock("@/features/auth", () => ({ useUserInfo: vi.fn() }));
-vi.mock("@/features/company-jobs/hooks", () => ({
+vi.mock("@/features/company-jobs", () => ({
   useCompanyProfile: vi.fn(),
 }));
 vi.mock("@/features/mentor/onboarding/hooks/use-onboarding", () => ({

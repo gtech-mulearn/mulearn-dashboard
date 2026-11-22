@@ -16,11 +16,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useUserInfo } from "@/features/auth";
-// Direct import on purpose: the tour loads on every dashboard page, and feature
-// barrels aren't tree-shaken in this build (no package.json "sideEffects").
-// Importing @/features/company-jobs here added about 50 kB gzipped to every
-// dashboard route that doesn't already load company-jobs (measured for issue 0009).
-import { useCompanyProfile } from "@/features/company-jobs/hooks";
+import { useCompanyProfile } from "@/features/company-jobs";
 import { useMentorApplicationStatus } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import { useFilteredNav } from "@/hooks/use-filtered-nav";
 import { usePermissions } from "@/hooks/use-permissions";

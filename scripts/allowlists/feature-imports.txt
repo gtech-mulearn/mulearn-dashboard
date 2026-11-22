@@ -30,8 +30,6 @@ channels | src/app/(dashboard)/dashboard/management/channels/page.tsx | @/featur
 company-jobs | src/components/dashboard/app-sidebar.tsx | @/features/company-jobs/hooks/use-company-access
 company-jobs | src/components/dashboard/app-sidebar.tsx | @/features/company-jobs/hooks/use-company-profile
 company-jobs | src/components/dashboard/app-topbar.tsx | @/features/company-jobs/hooks
-company-jobs | src/features/tour/hooks/use-tour.test.tsx | @/features/company-jobs/hooks
-company-jobs | src/features/tour/hooks/use-tour.ts | @/features/company-jobs/hooks
 company-jobs | src/hooks/use-filtered-nav.ts | @/features/company-jobs/hooks/use-company-access
 company-tasks | src/app/(dashboard)/dashboard/company/tasks/page.tsx | @/features/company-tasks/components/tasks-page
 events | src/features/home/components/events-slider-card.tsx | @/features/events/hooks
