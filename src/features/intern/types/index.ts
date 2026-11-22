@@ -20,7 +20,6 @@ export type {
   TTimesheet,
   TTimesheetReviewPayload,
   TTimesheetSubmitPayload,
-  TTimesheetSummary,
   TTimesheetUpdatePayload,
   TUpdateInternPayload,
   TUpdateTaskPayload,

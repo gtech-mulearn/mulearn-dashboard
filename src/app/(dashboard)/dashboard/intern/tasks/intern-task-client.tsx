@@ -24,7 +24,6 @@ import { StateDisplay } from "@/components/ui/state-display";
 import {
   getComplexityColor,
   getTaskBaseKarma,
-  getTaskKarma,
   type TInternTask,
   useInternTasks,
   useUpdateTaskStatus,
@@ -199,12 +198,6 @@ export function InternTasksPageClient() {
                       className="text-[9px] uppercase font-black tracking-widest bg-success/10 text-success border-success/20"
                     >
                       {getTaskBaseKarma(task)} Karma
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className="text-[9px] uppercase font-black tracking-widest bg-brand-purple/10 text-brand-purple border-brand-purple/20"
-                    >
-                      {getTaskKarma(task)} Pts
                     </Badge>
                   </div>
                   {task.deadline && (

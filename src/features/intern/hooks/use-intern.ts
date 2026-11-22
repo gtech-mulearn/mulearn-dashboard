@@ -298,13 +298,6 @@ export function useLeaveBalance() {
   });
 }
 
-export function useTimesheetSummary() {
-  return useQuery({
-    queryKey: internKeys.timesheetSummary(),
-    queryFn: () => internApi.getTimesheetSummary(),
-  });
-}
-
 export function useLeaderboard(params?: TInternQueryParams) {
   return useQuery({
     queryKey: internKeys.leaderboardFull(params ?? {}),

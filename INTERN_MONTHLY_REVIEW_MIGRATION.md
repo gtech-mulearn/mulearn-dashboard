@@ -109,6 +109,8 @@ Returns only `minute: "2-digit"` (date-format options). Typecheck and lint pass.
 
 ---
 
+
+
 ## Phase 2 — Remove score & streaks (leaderboard excluded)
 
 **Goal:** score and streak appear **only** inside leaderboard UI.

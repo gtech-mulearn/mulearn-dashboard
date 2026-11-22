@@ -19,7 +19,6 @@ import {
 import {
   getComplexityColor,
   getTaskBaseKarma,
-  getTaskKarma,
   type TInternTask,
 } from "@/features/intern";
 
@@ -68,12 +67,6 @@ export function TaskDetailDialog({
                 className="bg-success/10 text-success border-success/20 text-[9px] font-black rounded-md uppercase tracking-wider px-2 py-0.5"
               >
                 {getTaskBaseKarma(task)} Karma
-              </Badge>
-              <Badge
-                variant="outline"
-                className="bg-brand-purple/10 text-brand-purple border-brand-purple/20 text-[9px] font-black rounded-md uppercase tracking-wider px-2 py-0.5"
-              >
-                {getTaskKarma(task)} Pts
               </Badge>
               <Badge
                 variant="default"
@@ -132,14 +125,6 @@ export function TaskDetailDialog({
               </p>
               <p className="text-sm font-bold text-foreground">
                 {getTaskBaseKarma(task)}
-              </p>
-            </div>
-            <div className="space-y-1 bg-background/25 border border-border/20 p-3 rounded-xl">
-              <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">
-                Points
-              </p>
-              <p className="text-sm font-bold text-foreground">
-                {getTaskKarma(task)}
               </p>
             </div>
             {task.status === "COMPLETED" && task.output_link && (

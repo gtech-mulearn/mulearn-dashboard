@@ -11,7 +11,6 @@ import type {
   TPaginatedData,
   TTimesheet,
   TTimesheetSubmitPayload,
-  TTimesheetSummary,
   TTimesheetUpdatePayload,
   TWeeklyReview,
   TWeeklyReviewSubmitPayload,
@@ -127,10 +126,6 @@ export const internApi = {
     return apiClient.get<TPaginatedData<TTimesheet>>(
       `${endpoints.intern.timesheetHistory}${qs}`,
     );
-  },
-
-  getTimesheetSummary: async (): Promise<TTimesheetSummary> => {
-    return apiClient.get<TTimesheetSummary>(endpoints.intern.timesheetSummary);
   },
 
   // ── Weekly Reviews ──────────────────────────────────────────

@@ -156,24 +156,6 @@ export function getTaskBaseKarma(task: Partial<TInternTask>): number {
   return TASK_COMPLEXITY_KARMA[complexity];
 }
 
-export function getTaskKarma(task: Partial<TInternTask>): number {
-  const record = task as UnknownRecord;
-  let complexityScore = getRecordNumber(record, "complexity_score");
-  if (complexityScore === undefined) {
-    const comp = normalizeString(task.complexity);
-    if (comp === "LOW") complexityScore = 1;
-    else if (comp === "MEDIUM") complexityScore = 2;
-    else if (comp === "HIGH") complexityScore = 3;
-    else if (comp === "CRITICAL") complexityScore = 4;
-  }
-
-  const baseKarma = getTaskBaseKarma(task);
-  if (complexityScore !== undefined) {
-    return complexityScore * baseKarma;
-  }
-  return baseKarma;
-}
-
 const CATEGORY_TO_GUILD: Record<string, string> = {
   "Backend API": "Backend Guild",
   "Auth API": "Backend Guild",

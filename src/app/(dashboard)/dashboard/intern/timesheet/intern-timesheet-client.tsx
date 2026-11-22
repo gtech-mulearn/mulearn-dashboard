@@ -6,7 +6,6 @@ import {
   ChevronRight,
   Clock,
   FileText,
-  Sparkles,
   Zap,
 } from "lucide-react";
 import { useState } from "react";
@@ -207,12 +206,6 @@ export function TimesheetPageClient() {
     );
   };
 
-  const streak = overview?.daily_streak ?? 0;
-  let multiplier = "1.0×";
-  if (streak >= 30) multiplier = "2.0×";
-  else if (streak >= 14) multiplier = "1.5×";
-  else if (streak >= 7) multiplier = "1.2×";
-
   const activeTasks =
     tasksData?.data?.filter((t) => t.status !== "COMPLETED") || [];
 
@@ -237,7 +230,7 @@ export function TimesheetPageClient() {
             Daily Timesheet
           </h2>
           <p className="text-muted-foreground mt-1 font-medium italic">
-            Log your daily activities to maintain your legendary streak.
+            Log what you worked on today.
           </p>
         </div>
       </div>
@@ -258,9 +251,8 @@ export function TimesheetPageClient() {
                       Daily timesheet commited
                     </AlertTitle>
                     <AlertDescription className="font-bold opacity-80 text-sm">
-                      Awesome job! You have already submitted your daily
-                      timesheet for today. Keep up the consistency and maintain
-                      your streak tomorrow!
+                      You have already submitted your daily timesheet for today.
+                      See you tomorrow!
                     </AlertDescription>
                   </div>
                 </Alert>
@@ -414,9 +406,6 @@ export function TimesheetPageClient() {
                       onChange={(e) => setDescription(e.target.value)}
                       className="min-h-[180px] bg-background/50 border-border/50 font-bold focus:ring-brand-blue/30 resize-none p-4"
                     />
-                    <p className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest text-right italic">
-                      Quality logs earn streak multipliers
-                    </p>
                   </div>
 
                   <div className="space-y-2">
@@ -616,95 +605,6 @@ export function TimesheetPageClient() {
                   Today
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card
-            className="border-border/40 bg-card/30 backdrop-blur-md shadow-xl overflow-hidden gap-1.5 py-4"
-            data-tour-id="page:intern-timesheet:streak"
-          >
-            <CardHeader className="pb-0">
-              <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-brand-blue" />
-                Streak Bonus
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-1.5 space-y-3">
-              {/* Current streak big number */}
-              <div className="flex items-end justify-between">
-                <div>
-                  <div className="text-4xl font-black tracking-tighter tabular-nums bg-gradient-to-r from-brand-blue to-brand-purple bg-clip-text text-transparent">
-                    {streak}
-                  </div>
-                  <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                    Day Streak
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-0.5">
-                  <Badge
-                    variant="secondary"
-                    className="font-black text-[10px] px-2 py-0.5"
-                  >
-                    {multiplier} Point Boost
-                  </Badge>
-                  <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60">
-                    Active multiplier
-                  </span>
-                </div>
-              </div>
-
-              {/* Milestone progress */}
-              <div className="space-y-1.5">
-                {[
-                  { label: "1.2× at 7 days", target: 7 },
-                  { label: "1.5× at 14 days", target: 14 },
-                  { label: "2.0× at 30 days", target: 30 },
-                ].map(({ label, target }) => {
-                  const pct = Math.min(
-                    100,
-                    Math.round((streak / target) * 100),
-                  );
-                  const reached = streak >= target;
-                  return (
-                    <div key={target}>
-                      <div className="flex items-center justify-between mb-0.5">
-                        <span
-                          className={`text-[9px] font-black uppercase tracking-widest ${
-                            reached
-                              ? "text-brand-blue"
-                              : "text-muted-foreground/60"
-                          }`}
-                        >
-                          {label}
-                        </span>
-                        <span
-                          className={`text-[9px] font-black tabular-nums ${
-                            reached
-                              ? "text-brand-blue"
-                              : "text-muted-foreground/40"
-                          }`}
-                        >
-                          {Math.min(streak, target)}/{target}d
-                        </span>
-                      </div>
-                      <div className="h-1 w-full bg-muted/40 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-700 ${
-                            reached
-                              ? "bg-gradient-to-r from-brand-blue to-brand-purple"
-                              : "bg-brand-blue/40"
-                          }`}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <p className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-widest italic">
-                Submit daily to unlock higher multipliers!
-              </p>
             </CardContent>
           </Card>
         </div>

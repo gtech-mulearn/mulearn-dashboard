@@ -13,7 +13,6 @@ export const internKeys = {
   timesheetHistory: (params: TInternQueryParams) =>
     [...internKeys.timesheets(), "history", params] as const,
   timesheetToday: () => [...internKeys.timesheets(), "today"] as const,
-  timesheetSummary: () => [...internKeys.timesheets(), "summary"] as const,
   reviews: () => [...internKeys.all, "reviews"] as const,
   reviewHistory: (params: TInternQueryParams) =>
     [...internKeys.reviews(), "history", params] as const,

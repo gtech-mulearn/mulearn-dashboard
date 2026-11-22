@@ -349,8 +349,8 @@ export function useReviewTimesheet(id: string) {
     onSuccess: async (_data, variables) => {
       toast.success(
         variables.action === "approve"
-          ? "Timesheet approved — streak & score updated!"
-          : "Timesheet rejected — streak reset to 0!",
+          ? "Timesheet approved"
+          : "Timesheet rejected",
       );
       await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
       await queryClient.invalidateQueries({
@@ -396,8 +396,8 @@ export function useReviewWeeklyReview(id: string) {
     onSuccess: async (_data, variables) => {
       toast.success(
         variables.action === "approve"
-          ? "Weekly review approved — weekly streak updated!"
-          : "Weekly review rejected — streak reset to 0!",
+          ? "Weekly review approved"
+          : "Weekly review rejected",
       );
       await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
       await queryClient.invalidateQueries({ queryKey: internKeys.reviews() });

@@ -28,7 +28,7 @@ import {
   useWeeklyReviewHistory,
 } from "../hooks/use-intern";
 import type { TInternTask } from "../types";
-import { getTaskBaseKarma, getTaskKarma } from "../utils/intern-helpers";
+import { getTaskBaseKarma } from "../utils/intern-helpers";
 import {
   ActivityDetailDialog,
   getActivityStatusBadge,
@@ -97,8 +97,7 @@ export function QuestLogHistory() {
         }),
         rawDate: new Date(ts.created_at),
         status: ts.status,
-        points: ts.score ?? null,
-        karma: ts.karma_awarded ?? null,
+        karma: null,
         raw: ts,
       }),
     ),
@@ -118,8 +117,7 @@ export function QuestLogHistory() {
         }),
         rawDate: new Date(wr.created_at),
         status: wr.status,
-        points: wr.score ?? null,
-        karma: wr.karma_awarded ?? null,
+        karma: null,
         raw: wr,
       }),
     ),
@@ -150,7 +148,6 @@ export function QuestLogHistory() {
           ? new Date(task.updated_at)
           : new Date(task.created_at),
         status: "COMPLETED",
-        points: getTaskKarma(task),
         karma: getTaskBaseKarma(task),
         raw: task,
       }),
@@ -329,26 +326,10 @@ export function QuestLogHistory() {
                           {activity.title}
                         </span>
                         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1">
-                          {activity.type === "completed_task" ? (
+                          {activity.type === "completed_task" && (
                             <div className="flex items-center gap-1.5">
-                              <span className="inline-flex items-center rounded bg-brand-purple/10 px-1 py-0.2 text-[8px] font-black uppercase text-brand-purple">
-                                +{activity.points ?? 0} Pts
-                              </span>
                               <span className="inline-flex items-center rounded bg-success/10 px-1 py-0.2 text-[8px] font-black uppercase text-success">
                                 +{activity.karma ?? 0} Karma
-                              </span>
-                            </div>
-                          ) : activity.status === "APPROVED" ? (
-                            <div className="flex items-center gap-1.5">
-                              <span className="inline-flex items-center rounded bg-brand-purple/10 px-1 py-0.2 text-[8px] font-black uppercase text-brand-purple">
-                                +{activity.points ?? 0} Pts
-                              </span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-1.5">
-                              <span className="inline-flex items-center rounded bg-muted/40 px-1 py-0.2 text-[8px] font-black uppercase text-muted-foreground">
-                                {activity.type === "timesheet" ? 25 : 50} Pts
-                                (Est.)
                               </span>
                             </div>
                           )}

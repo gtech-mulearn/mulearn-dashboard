@@ -16,13 +16,9 @@ export interface TInternOverviewStatus {
   status: string;
   role?: "INTERN" | "INTERN_LEAD" | "Intern" | "Intern Lead";
   total_intern_karma: number;
-  daily_streak: number;
-  weekly_streak: number;
   completed_tasks: number;
   complexity_score: number;
-  score: number;
   join_date?: string;
-  longest_daily_streak?: number;
 }
 
 export interface TInternActivityLog {
@@ -58,7 +54,6 @@ export interface TTimesheet {
   edit_reason: string | null;
   status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
   karma_awarded: number | null;
-  score?: number | null;
   review_note: string | null;
   created_at: string;
   user_name?: string; // admin view
@@ -86,11 +81,6 @@ export interface TTimesheetUpdatePayload {
   blockers?: string;
   end_of_day_note?: string;
   edit_reason: string; // mandatory
-}
-
-export interface TTimesheetSummary {
-  current_streak: number;
-  longest_streak: number;
 }
 
 export interface TTaskRemarks {
@@ -127,7 +117,6 @@ export interface TWeeklyReview {
   is_late: boolean;
   status: "PENDING" | "APPROVED" | "REJECTED";
   karma_awarded: number | null;
-  score?: number | null;
   review_note: string | null;
   created_at: string;
   user_name?: string; // admin view

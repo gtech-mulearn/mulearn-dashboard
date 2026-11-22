@@ -38,8 +38,7 @@ export const internPageTours: readonly PageTourConfig[] = [
         id: "intern-dashboard-stats",
         elementId: "page:intern-dashboard:stats",
         title: "Key Stats",
-        description:
-          "Track your karma, streak, and other core metrics at a glance.",
+        description: "Track your karma, rank, and completed tasks at a glance.",
       },
       {
         id: "intern-dashboard-active-quests",
@@ -194,16 +193,14 @@ export const internPageTours: readonly PageTourConfig[] = [
       {
         id: "intern-timesheet-intro",
         title: "Daily Timesheet",
-        description:
-          "Log your daily activities to maintain your streak and earn multipliers.",
+        description: "Log your daily work here, once a day.",
         centered: true,
       },
       {
         id: "intern-timesheet-header",
         elementId: "page:intern-timesheet:header",
         title: "Daily Timesheet",
-        description:
-          "Log your daily activities to maintain your legendary streak.",
+        description: "Log what you worked on today.",
       },
       {
         id: "intern-timesheet-submit-form",
@@ -218,13 +215,6 @@ export const internPageTours: readonly PageTourConfig[] = [
         title: "Daily History",
         description:
           "See which days you've submitted, missed, or are still pending this month.",
-      },
-      {
-        id: "intern-timesheet-streak",
-        elementId: "page:intern-timesheet:streak",
-        title: "Streak Bonus",
-        description:
-          "Keep your streak going to unlock higher point multipliers.",
       },
     ],
   },

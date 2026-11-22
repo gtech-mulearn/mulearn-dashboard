@@ -42,7 +42,6 @@ export type UnifiedActivity = {
   dateStr: string;
   rawDate: Date;
   status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "COMPLETED";
-  points: number | null;
   karma: number | null;
   raw: TTimesheet | TWeeklyReview | TInternTask;
 };
@@ -260,40 +259,16 @@ export function ActivityDetailDialog({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-6">
+                {selectedItem.type === "completed_task" && (
                   <div className="text-right">
                     <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                      {selectedItem.status === "APPROVED" ||
-                      selectedItem.type === "completed_task" ||
-                      (selectedItem.status === "COMPLETED" &&
-                        (selectedItem.raw as TInternTask).is_verified)
-                        ? "Points Earned"
-                        : "Estimated Points"}
+                      Karma Earned
                     </p>
                     <p className="text-sm font-black text-foreground mt-0.5 tabular-nums">
-                      {selectedItem.status === "APPROVED" ||
-                      selectedItem.type === "completed_task" ||
-                      (selectedItem.status === "COMPLETED" &&
-                        (selectedItem.raw as TInternTask).is_verified)
-                        ? `+${selectedItem.points ?? 0}`
-                        : selectedItem.type === "timesheet"
-                          ? 25
-                          : 50}{" "}
-                      Pts
+                      +{selectedItem.karma ?? 0} Karma
                     </p>
                   </div>
-
-                  {selectedItem.type === "completed_task" && (
-                    <div className="text-right">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                        Karma Earned
-                      </p>
-                      <p className="text-sm font-black text-foreground mt-0.5 tabular-nums">
-                        +{selectedItem.karma ?? 0} Karma
-                      </p>
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
 
               {/* Reviewer Note / Remarks */}

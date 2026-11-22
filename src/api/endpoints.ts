@@ -1475,7 +1475,6 @@ export const endpoints = {
       `/api/v1/dashboard/intern/timesheets/${id}/`,
     timesheetToday: "/api/v1/dashboard/intern/timesheets/today/",
     timesheetHistory: "/api/v1/dashboard/intern/timesheets/history/",
-    timesheetSummary: "/api/v1/dashboard/intern/timesheets/summary/",
     reviews: "/api/v1/dashboard/intern/reviews/",
     reviewsPrefill: "/api/v1/dashboard/intern/reviews/prefill/",
     reviewDetail: (id: string) => `/api/v1/dashboard/intern/reviews/${id}/`,
