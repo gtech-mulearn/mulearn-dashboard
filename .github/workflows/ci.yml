@@ -30,6 +30,10 @@ jobs:
       - name: Check feature imports
         run: bun scripts/check-feature-imports.ts
 
+      # Fails on new inline query keys (scripts/allowlists/query-keys.txt): use the feature's key factory.
+      - name: Check query keys
+        run: bun scripts/check-query-keys.ts
+
       - name: Run lint
         run: bun run lint
 
