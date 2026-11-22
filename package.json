@@ -12,6 +12,7 @@
     "format": "biome format --write",
     "prepare": "husky",
     "typecheck": "node --max-semi-space-size=64 ./node_modules/typescript/bin/tsc --noEmit",
+    "test": "vitest run",
     "changeset": "changeset",
     "version-packages": "changeset version"
   },

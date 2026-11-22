@@ -1,0 +1,25 @@
+# Tests that fail on dev today. This list only shrinks: fix a test, never add one.
+# A failing test that isn't listed fails CI, and so does a listed test that passes or no longer exists.
+# Format: <file> > <full test name>, sorted. After a fix, remove its line with:
+#   bunx vitest run --reporter=json --outputFile=vitest-report.json; bun scripts/check-test-baseline.ts vitest-report.json --update
+src/features/company-jobs/schemas/jobs.form.test.ts > JobFormSchema — compensation required per job type requires hourly_rate for a Gig
+src/features/company-jobs/schemas/jobs.form.test.ts > JobFormSchema — compensation required per job type requires stipend for an Internship
+src/features/company-jobs/schemas/jobs.form.test.ts > JobFormSchema — duration_value/duration_unit must pair rejects a duration unit outside the backend enum
+src/features/company-jobs/schemas/jobs.form.test.ts > JobFormSchema — duration_value/duration_unit must pair rejects a duration unit with no value
+src/features/company-jobs/schemas/jobs.form.test.ts > JobFormSchema — duration_value/duration_unit must pair rejects a duration value with no unit
+src/features/company-jobs/schemas/jobs.form.test.ts > JobFormSchema — hourly_rate (DecimalField(10, 2)) rejects currency-formatted text like the old placeholder suggested
+src/features/company-jobs/schemas/jobs.form.test.ts > JobFormSchema — hourly_rate (DecimalField(10, 2)) rejects more than 2 decimal places
+src/features/company-jobs/schemas/jobs.form.test.ts > JobFormSchema — hourly_rate (DecimalField(10, 2)) rejects more than 8 integer digits (max_digits 10 - 2 decimals)
+src/features/company-jobs/schemas/jobs.form.test.ts > JobFormSchema — job_type enum rejects Contract, which the backend enum does not list
+src/features/company-jobs/schemas/jobs.form.test.ts > JobFormSchema — job_type enum rejects a job type outside the backend enum
+src/features/company-jobs/schemas/jobs.form.test.ts > JobFormSchema — lengths match backend column widths rejects a location longer than 75 chars (CharField(75))
+src/features/company-jobs/schemas/jobs.form.test.ts > JobFormSchema — lengths match backend column widths rejects a salary_range longer than 36 chars (CharField(36))
+src/features/company-jobs/schemas/jobs.form.test.ts > JobFormSchema — lengths match backend column widths rejects a title longer than 75 chars (CharField(75))
+src/features/company-jobs/schemas/jobs.form.test.ts > JobFormSchema — lengths match backend column widths rejects an experience longer than 20 chars (CharField(20))
+src/features/mujourney/utils/markdown.test.ts > (file failed to load)
+src/features/tour/hooks/use-tour.test.tsx > useTour launch conditions commits the outcome via recordTourOutcome on skip/complete
+src/features/tour/hooks/use-tour.test.tsx > useTour launch conditions does not launch twice on re-render (hasLaunchedRef guard)
+src/features/tour/hooks/use-tour.test.tsx > useTour launch conditions does not launch when no resolved step's nav item is visible to this user
+src/features/tour/hooks/use-tour.test.tsx > useTour launch conditions does not launch when the cookie version is already current
+src/features/tour/hooks/use-tour.test.tsx > useTour launch conditions launches when all conditions hold and the nav item is visible
+src/features/tour/lib/resolve-tour-key.test.ts > resolveTourKey returns null for Admin, even with other qualifying roles
