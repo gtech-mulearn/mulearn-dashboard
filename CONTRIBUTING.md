@@ -195,6 +195,19 @@ CI compares four things with a list of what exists on `dev` today, in `scripts/a
 
 [How CI enforces each rule](docs/architecture/04-module-rules.md#how-ci-enforces-each-rule) has the full list.
 
+## Staging smoke suite
+
+`e2e/smoke/` signs in, checks that the dashboard home and the events, learning circles, interest groups and profile pages render without an error state, and signs out. **Maintainers run it by hand, against staging only.** It isn't part of CI, and it never runs against production.
+
+```sh
+bunx playwright install chromium        # first use only
+SMOKE_BASE_URL=https://staging.app.mulearn.org SMOKE_USER=… SMOKE_PASSWORD=… bun run smoke
+```
+
+- `SMOKE_BASE_URL` is required. The suite refuses to run without it.
+- `SMOKE_USER` and `SMOKE_PASSWORD` come from your environment, never a committed file. Without them, the signed-in steps are skipped with a message.
+- `bunx playwright test --list` lists the tests without running them.
+
 ## Pull Request Checklist
 
 Before opening a PR:

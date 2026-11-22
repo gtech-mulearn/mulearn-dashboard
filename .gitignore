@@ -52,3 +52,7 @@ bun.lock
 
 # Vitest JSON report (CI test job, scripts/check-test-baseline.ts)
 vitest-report.json
+
+# Playwright smoke suite output (bun run smoke)
+/playwright-report/
+/test-results/
