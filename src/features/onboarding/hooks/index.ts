@@ -6,6 +6,7 @@
 
 export { onboardingKeys } from "./query-keys";
 export { useCollegeSearch } from "./use-college-search";
+export { useCommunities } from "./use-communities";
 export { useCompanies } from "./use-companies";
 export { useDepartmentSearch } from "./use-department-search";
 export { useCountries, useDistricts, useStates } from "./use-location";

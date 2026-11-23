@@ -7,6 +7,7 @@
 export {
   createOrganization,
   fetchColleges,
+  fetchCommunities,
   fetchCompanies,
   fetchCountries,
   fetchDepartments,

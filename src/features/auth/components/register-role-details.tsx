@@ -38,6 +38,7 @@ import {
 } from "@/features/onboarding/hooks";
 import type {
   College,
+  Community,
   Company,
   Department,
 } from "@/features/onboarding/schemas";
@@ -78,15 +79,14 @@ const INDUSTRY_SECTOR_OPTIONS = [
 // Schema for Student
 const studentDetailsSchema = z
   .object({
-    organizationType: z.enum(["College", "Company"]),
+    organizationType: z.enum(["College", "Community"]),
     // College fields
     college: z.string().optional(),
     customCollege: z.string().optional(),
     department: z.string().optional(),
     graduationYear: z.number().optional(),
-    // Organization fields
+    // Community field (organization UUID of the selected community)
     organization: z.string().optional(),
-    customOrganization: z.string().optional(),
   })
   .refine(
     (data) => {
@@ -142,32 +142,14 @@ const studentDetailsSchema = z
   )
   .refine(
     (data) => {
-      if (data.organizationType === "Company") {
+      if (data.organizationType === "Community") {
         return !!data.organization && data.organization.trim().length > 0;
       }
       return true;
     },
     {
-      message: "Please select your organization",
+      message: "Please select your community",
       path: ["organization"],
-    },
-  )
-  .refine(
-    (data) => {
-      if (
-        data.organizationType === "Company" &&
-        data.organization === "others"
-      ) {
-        return (
-          !!data.customOrganization &&
-          data.customOrganization.trim().length >= 3
-        );
-      }
-      return true;
-    },
-    {
-      message: "Organization name must be at least 3 characters",
-      path: ["customOrganization"],
     },
   );
 
@@ -344,7 +326,7 @@ interface RegisterRoleDetailsProps {
       graduationYear?: number;
       organization?: string;
       customOrganization?: string;
-      organizationType?: "College" | "Company";
+      organizationType?: "College" | "Community";
       role?: string;
       mentorType?: "ig" | "company";
       isFreelancer?: boolean;
@@ -355,9 +337,11 @@ interface RegisterRoleDetailsProps {
   colleges?: College[];
   departments?: Department[];
   companies?: Company[];
+  communities?: Community[];
   isLoadingColleges?: boolean;
   isLoadingDepartments?: boolean;
   isLoadingCompanies?: boolean;
+  isLoadingCommunities?: boolean;
   onCollegeSearchChange?: (search: string) => void;
   onDepartmentSearchChange?: (search: string) => void;
 }
@@ -370,9 +354,11 @@ export function RegisterRoleDetails({
   colleges = [],
   departments = [],
   companies = [],
+  communities = [],
   isLoadingColleges = false,
   isLoadingDepartments = false,
   isLoadingCompanies = false,
+  isLoadingCommunities = false,
   onCollegeSearchChange,
   onDepartmentSearchChange,
 }: RegisterRoleDetailsProps) {
@@ -448,7 +434,7 @@ export function RegisterRoleDetails({
   // Track if "Others" is selected
   const [showCustomCollege, setShowCustomCollege] = useState(false);
   const [showCustomOrganization, setShowCustomOrganization] = useState(false);
-  const [studentOrgType, setStudentOrgType] = useState<"College" | "Company">(
+  const [studentOrgType, setStudentOrgType] = useState<"College" | "Community">(
     "College",
   );
 
@@ -662,17 +648,17 @@ export function RegisterRoleDetails({
                         <button
                           type="button"
                           onClick={() => {
-                            field.onChange("Company");
-                            setStudentOrgType("Company");
+                            field.onChange("Community");
+                            setStudentOrgType("Community");
                           }}
                           className={`flex-1 h-12 rounded-xl border-2 transition-all ${
-                            studentOrgType === "Company"
+                            studentOrgType === "Community"
                               ? "border-brand-blue bg-brand-blue/10 text-brand-blue"
                               : "border-border bg-muted text-muted-foreground hover:border-border/80"
                           }`}
                           disabled={isLoading}
                         >
-                          Organization
+                          Community
                         </button>
                       </div>
                     </FormControl>
@@ -797,65 +783,29 @@ export function RegisterRoleDetails({
                   />
                 </>
               ) : (
-                <>
-                  <FormField
-                    control={form.control}
-                    name="organization"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">
-                          Organization Name
-                        </FormLabel>
-                        <FormControl>
-                          <Combobox
-                            options={companies}
-                            value={
-                              showCustomOrganization ? "others" : field.value
-                            }
-                            onValueChange={(value) => {
-                              field.onChange(value);
-                              setShowCustomOrganization(false);
-                              form.setValue("customOrganization", "");
-                            }}
-                            placeholder="Select your organization"
-                            searchPlaceholder="Search organizations..."
-                            disabled={isLoading || isLoadingCompanies}
-                            onCreateNew={(searchTerm) => {
-                              field.onChange("others");
-                              form.setValue("customOrganization", searchTerm);
-                              setShowCustomOrganization(true);
-                            }}
-                            createNewText="Others"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {showCustomOrganization && (
-                    <FormField
-                      control={form.control}
-                      name="customOrganization"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium">
-                            Organization Name
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Enter your organization name"
-                              className="h-12 rounded-xl border-border bg-muted/50 px-4"
-                              disabled={isLoading}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                <FormField
+                  control={form.control}
+                  name="organization"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium">
+                        Community
+                      </FormLabel>
+                      <FormControl>
+                        <Combobox
+                          options={communities}
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          placeholder="Select your community"
+                          searchPlaceholder="Search communities..."
+                          disabled={isLoading || isLoadingCommunities}
+                          loading={isLoadingCommunities}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </>
+                />
               )}
             </>
           )}
