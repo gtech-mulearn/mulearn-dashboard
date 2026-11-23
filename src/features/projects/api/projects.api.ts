@@ -1,4 +1,4 @@
-import { ApiError, apiClient, authedFetch } from "@/api/client";
+import { apiClient, authedFetch, toApiError } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
@@ -121,7 +121,7 @@ async function postMultipart(
       fallback:
         "Something went wrong while saving the project. Please try again.",
     });
-    throw new ApiError(res.status, msg, raw);
+    throw await toApiError(res, url, { data: raw, message: msg });
   }
   return ProjectDetailResponseSchema.parse(raw).response.Project;
 }

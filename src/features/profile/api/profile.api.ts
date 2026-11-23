@@ -12,6 +12,7 @@ import {
   apiClient,
   authedFetch,
   publicApiClient,
+  toApiError,
 } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
@@ -221,7 +222,16 @@ export async function updateProfileImage(
       (typeof rawData?.message === "string" ? rawData?.message : null) ??
       "An error occurred while updating profile image.";
 
-    throw new ApiError(response.status || 400, errorMsg, rawData);
+    const error = await toApiError(
+      response,
+      endpoints.user.updateProfileImage,
+      {
+        data: rawData,
+        message: errorMsg,
+      },
+    );
+    error.status = response.status || 400;
+    throw error;
   }
 }
 
@@ -282,7 +292,10 @@ export async function uploadCoverPic(cover: File): Promise<string | null> {
     }
     const message =
       rawData?.message?.general?.[0] ?? "Failed to upload cover image";
-    throw new ApiError(response.status, message, rawData);
+    throw await toApiError(response, endpoints.user.coverPic, {
+      data: rawData,
+      message,
+    });
   }
 
   const parsed = CoverPicResponseSchema.safeParse(rawData);
