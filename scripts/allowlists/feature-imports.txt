@@ -2,26 +2,6 @@
 # A new finding fails CI, and so does a listed one that no longer exists.
 # Format: <target feature> | <importing file> | <import as written>, or <feature> | missing-index; sorted.
 # After a fix, remove its line with: bun scripts/check-feature-imports.ts --update
-auth | src/app/(onboarding)/onboarding/interests/interests-client.tsx | @/features/auth/hooks/query-keys
-auth | src/components/auth/role-gate.tsx | @/features/auth
-auth | src/components/dashboard/app-topbar.tsx | @/features/auth/hooks/use-session
-auth | src/components/dashboard/connect-banner.tsx | @/features/auth
-auth | src/features/company-jobs/api/jobs.api.ts | @/features/auth/api/auth.api
-auth | src/features/company-profile/api/company-profile.api.ts | @/features/auth/api/register.api
-auth | src/features/company-profile/api/company-profile.api.ts | @/features/auth/schemas
-auth | src/features/events/components/manage-events-dashboard.tsx | @/features/auth/hooks
-auth | src/features/home/components/company-home.tsx | @/features/auth/hooks
-auth | src/features/home/components/company-home.tsx | @/features/auth/hooks/use-session
-auth | src/features/home/components/company/company-verified-banner.tsx | @/features/auth/schemas
-auth | src/features/home/components/home-page.tsx | @/features/auth/hooks/use-session
-auth | src/features/home/components/mentor/mentor-hero-card.tsx | @/features/auth/hooks/use-session
-auth | src/features/home/components/mulearner-home.tsx | @/features/auth/hooks/use-session
-auth | src/features/home/components/verification-status-banner.tsx | @/features/auth/hooks
-auth | src/features/home/components/verification-status-banner.tsx | @/features/auth/hooks/use-session
-auth | src/features/onboarding/hooks/use-select-organization.ts | @/features/auth/hooks/query-keys
-auth | src/features/profile/hooks/use-profile-mutations.ts | @/features/auth/hooks/query-keys
-auth | src/features/settings/hooks/use-change-organization.ts | @/features/auth/hooks/query-keys
-auth | src/hooks/use-permissions.ts | @/features/auth
 campus | src/features/campus-manage/components/campus-manage-dashboard.tsx | @/features/campus/hooks/campus.hooks
 campus | src/features/home/components/enabler-home.tsx | @/features/campus/components
 campus-manage | src/features/home/components/campus/top-students-card.tsx | @/features/campus-manage/types

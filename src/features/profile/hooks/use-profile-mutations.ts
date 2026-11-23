@@ -8,8 +8,8 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { authKeys } from "@/features/auth/hooks/query-keys";
 import { getApiResponseError } from "@/hooks/use-get-error";
+import { userInfoKey } from "@/lib/auth/user-info";
 import {
   deleteCoverPic,
   issueVC,
@@ -125,7 +125,7 @@ export function useUpdateProfileImage(
       queryClient.invalidateQueries({
         queryKey: profileKeys.editableProfile(),
       });
-      queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
+      queryClient.invalidateQueries({ queryKey: userInfoKey() });
       toast.success("Profile image updated");
     },
     onError: (error) => {
@@ -229,7 +229,7 @@ export function useUpdateProfile(
       queryClient.invalidateQueries({
         queryKey: profileKeys.editableProfile(),
       });
-      queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
+      queryClient.invalidateQueries({ queryKey: userInfoKey() });
       toast.success("Profile updated");
     },
     onError: (error) => {

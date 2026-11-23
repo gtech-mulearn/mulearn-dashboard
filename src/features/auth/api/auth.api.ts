@@ -22,8 +22,6 @@ import {
   LoginResponseSchema,
   RequestOTPResponseSchema,
   ResetPasswordResponseSchema,
-  type UserInfo,
-  UserInfoResponseSchema,
   type UserProfile,
   UserProfileResponseSchema,
   VerifyResetTokenResponseSchema,
@@ -120,17 +118,6 @@ export async function resetPassword(
 // ============================================
 // User Data Functions
 // ============================================
-
-/**
- * Get current user info (lightweight)
- */
-export async function fetchUserInfo(): Promise<UserInfo> {
-  const response = await apiClient.get(
-    endpoints.user.info,
-    UserInfoResponseSchema,
-  );
-  return response.response;
-}
 
 /**
  * Get public user profile by muid

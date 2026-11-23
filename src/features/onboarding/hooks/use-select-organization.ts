@@ -8,8 +8,8 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { authKeys } from "@/features/auth/hooks/query-keys";
 import { getApiResponseError } from "@/hooks/use-get-error";
+import { userInfoKey } from "@/lib/auth/user-info";
 import { createOrganization, selectOrganization } from "../api";
 import type {
   CreateOrganizationRequest,
@@ -28,7 +28,7 @@ export function useSelectOrganization() {
       return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
+      queryClient.invalidateQueries({ queryKey: userInfoKey() });
     },
     onError: (error) => {
       toast.error(
@@ -52,7 +52,7 @@ export function useCreateOrganization() {
       return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
+      queryClient.invalidateQueries({ queryKey: userInfoKey() });
     },
     onError: (error) => {
       toast.error(

@@ -106,32 +106,6 @@ export const ResetPasswordRequestSchema = z.object({
 export const ResetPasswordResponseSchema = ApiResponseSchema(z.object({}));
 
 // ============================================
-// User Info Schemas
-// ============================================
-
-export const UserInfoSchema = z.object({
-  muid: z.string(),
-  full_name: z.string(),
-  email: z.string().email(),
-  mobile: z.string().nullable(),
-  gender: z.string().nullable(),
-  dob: z.string().nullable(),
-  joined: z.string(),
-  exist_in_guild: z.boolean(),
-  roles: z.array(z.string()),
-  dynamic_type: z.array(z.string()).optional().default([]),
-  profile_pic: z.string().nullable(),
-  user_domains: z.array(z.string()),
-  user_endgoals: z.array(z.string()),
-  interested_in_work: z.boolean().optional(),
-  interested_in_gig_work: z.boolean().optional(),
-  is_verified: z.boolean().optional(),
-  company: z.unknown().nullable().optional(),
-});
-
-export const UserInfoResponseSchema = ApiResponseSchema(UserInfoSchema);
-
-// ============================================
 // User Profile Schemas
 // ============================================
 
@@ -190,9 +164,6 @@ export type ResetPasswordRequest = z.infer<typeof ResetPasswordRequestSchema>;
 export type VerifyResetTokenResponse = z.infer<
   typeof VerifyResetTokenResponseSchema
 >;
-
-export type UserInfo = z.infer<typeof UserInfoSchema>;
-export type UserInfoResponse = z.infer<typeof UserInfoResponseSchema>;
 
 export type UserProfile = z.infer<typeof UserProfileSchema>;
 export type UserProfileResponse = z.infer<typeof UserProfileResponseSchema>;

@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
-import { useUserInfo } from "@/features/auth";
+import { useUserInfo } from "@/lib/auth/use-user-info";
 import { cn } from "@/lib/utils";
 import { Spinner } from "../ui/spinner";
 

@@ -6,6 +6,13 @@
  * Public exports for auth schemas and types.
  */
 
+// The user info lives in the shared auth layer (issue 0011); re-exported here.
+export {
+  type UserInfo,
+  type UserInfoResponse,
+  UserInfoResponseSchema,
+  UserInfoSchema,
+} from "@/lib/auth/user-info";
 // Auth schemas and types
 export {
   // Schemas
@@ -43,10 +50,6 @@ export {
   type ResetPasswordRequest,
   ResetPasswordRequestSchema,
   ResetPasswordResponseSchema,
-  type UserInfo,
-  type UserInfoResponse,
-  UserInfoResponseSchema,
-  UserInfoSchema,
   type UserProfile,
   type UserProfileResponse,
   UserProfileResponseSchema,
@@ -54,7 +57,6 @@ export {
   type VerifyResetTokenResponse,
   VerifyResetTokenResponseSchema,
 } from "./auth.schema";
-
 // Registration schemas and types
 export {
   // Company signup

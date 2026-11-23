@@ -19,9 +19,8 @@
 "use client";
 
 import { type ReactNode, useMemo } from "react";
-import { useUserInfo } from "@/features/auth";
-
 import { hasAnyRole, hasPermission, type Permission } from "@/lib/auth";
+import { useUserInfo } from "@/lib/auth/use-user-info";
 
 // ─── Props ──────────────────────────────────────────────────
 
