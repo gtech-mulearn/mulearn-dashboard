@@ -1,4 +1,4 @@
-import { ApiError, apiClient, authedFetch } from "@/api/client";
+import { apiClient, authedFetch, toApiError } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import type {
@@ -74,7 +74,14 @@ export async function uploadImpactProjectImage(
     const msg = getApiResponseError(raw, {
       fallback: "Failed to upload image. Please try again.",
     });
-    throw new ApiError(res.status, msg, raw);
+    throw await toApiError(
+      res,
+      endpoints.impactProjects.image(igId, projectId),
+      {
+        data: raw,
+        message: msg,
+      },
+    );
   }
   return ImpactProjectImageResponseSchema.parse(raw).response.image;
 }

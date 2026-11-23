@@ -12,11 +12,11 @@
 import type { z } from "zod";
 import { env } from "../../config/env";
 import { authStore } from "../lib/auth";
-import { ApiError, extractDjangoMessage, logSchemaMismatch } from "./errors";
+import { ApiError, logSchemaMismatch, parseApiError } from "./errors";
 import { refreshAccessToken } from "./refresh.client";
 
 // Re-export so existing `import { ApiError } from "@/api/client"` still works.
-export { ApiError } from "./errors";
+export { ApiError, parseApiError, toApiError } from "./errors";
 
 const API_BASE = env.NEXT_PUBLIC_DJANGO_API_URL;
 
@@ -166,10 +166,7 @@ async function request<T>(
         throw new ApiError(401, "Session expired", errData);
       }
     }
-    const backendMsg =
-      extractDjangoMessage(errData) ??
-      "Something went wrong. Please try again.";
-    throw new ApiError(res.status, backendMsg, errData);
+    throw parseApiError(res.status, errData, endpoint);
   }
 
   // ── JSON branch ───────────────────────────────────────────
@@ -191,10 +188,7 @@ async function request<T>(
 
   // Permission 403 (not token expiry) — throw as normal error
   if (res.status === 403 && options.skipAuthRedirectOn403) {
-    const backendMsg =
-      extractDjangoMessage(rawData) ??
-      "Something went wrong. Please try again.";
-    throw new ApiError(403, backendMsg, rawData);
+    throw parseApiError(403, rawData, endpoint);
   }
 
   // Business error (hasError true even on 200)
@@ -204,10 +198,8 @@ async function request<T>(
     "hasError" in rawData &&
     rawData.hasError === true
   ) {
-    const backendMsg =
-      extractDjangoMessage(rawData) ??
-      "Something went wrong. Please try again.";
-    const error = new ApiError(res.status, backendMsg, rawData);
+    const error = parseApiError(res.status, rawData, endpoint);
+    const backendMsg = error.message;
     if (process.env.NODE_ENV === "development") {
       console.error(
         `[API Client] Business error: [Status ${res.status}] ${endpoint}\nMessage: ${backendMsg}`,
@@ -218,10 +210,8 @@ async function request<T>(
   }
 
   if (!res.ok) {
-    const backendMsg =
-      extractDjangoMessage(rawData) ??
-      "Something went wrong. Please try again.";
-    const error = new ApiError(res.status, backendMsg, rawData);
+    const error = parseApiError(res.status, rawData, endpoint);
+    const backendMsg = error.message;
     if (process.env.NODE_ENV === "development") {
       console.error(
         `[API Client] HTTP error: [Status ${res.status}] ${endpoint}\nMessage: ${backendMsg}`,

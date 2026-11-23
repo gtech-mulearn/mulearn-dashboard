@@ -9,7 +9,7 @@
 import { cookies } from "next/headers";
 import type { z } from "zod";
 import { getBaseUrl } from "./base-url.server";
-import { ApiError, extractDjangoMessage, logSchemaMismatch } from "./errors";
+import { ApiError, logSchemaMismatch, parseApiError } from "./errors";
 import { refreshAccessTokenServer } from "./refresh.server";
 
 // ─── URL + Headers ──────────────────────────────────────────────────────────
@@ -160,10 +160,7 @@ async function request<T>(
       }
     }
 
-    const backendMsg =
-      extractDjangoMessage(rawData) ??
-      "Something went wrong. Please try again.";
-    throw new ApiError(res.status, backendMsg, rawData);
+    throw parseApiError(res.status, rawData, endpoint);
   }
 
   if (options.schema) {
