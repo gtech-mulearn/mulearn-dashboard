@@ -27,13 +27,22 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { LinkListInput } from "@/components/ui/link-list-input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   useCountries,
+  useDistrictSearch,
   useDistricts,
+  useSchoolsByDistrict,
   useStates,
 } from "@/features/onboarding/hooks";
 import type {
@@ -76,18 +85,60 @@ const INDUSTRY_SECTOR_OPTIONS = [
   { id: "Other", title: "Other" },
 ];
 
+// Learner organization types. A learner who is not a student can only pick
+// Company or Community — School and College imply they are studying.
+const LEARNER_ORG_TYPES = [
+  "School",
+  "College",
+  "Company",
+  "Community",
+] as const;
+export type LearnerOrgType = (typeof LEARNER_ORG_TYPES)[number];
+const NON_STUDENT_ORG_TYPES: readonly LearnerOrgType[] = [
+  "Company",
+  "Community",
+];
+
 // Schema for Student
 const studentDetailsSchema = z
   .object({
-    organizationType: z.enum(["College", "Community"]),
+    organizationType: z.enum(LEARNER_ORG_TYPES),
+    isStudent: z.boolean(),
     // College fields
     college: z.string().optional(),
     customCollege: z.string().optional(),
     department: z.string().optional(),
     graduationYear: z.number().optional(),
-    // Community field (organization UUID of the selected community)
+    // School only: district the school list is filtered by
+    district: z.string().optional(),
+    // School / Company / Community: selected org UUID, or "others"
     organization: z.string().optional(),
+    customOrganization: z.string().optional(),
   })
+  .refine(
+    (data) =>
+      data.isStudent || NON_STUDENT_ORG_TYPES.includes(data.organizationType),
+    {
+      message: "Pick a company or community",
+      path: ["organizationType"],
+    },
+  )
+  .refine(
+    (data) => {
+      // A district is only needed to look up an existing school.
+      if (
+        data.organizationType === "School" &&
+        data.organization !== "others"
+      ) {
+        return !!data.district && data.district.trim().length > 0;
+      }
+      return true;
+    },
+    {
+      message: "Please select your district",
+      path: ["district"],
+    },
+  )
   .refine(
     (data) => {
       if (data.organizationType === "College") {
@@ -142,14 +193,32 @@ const studentDetailsSchema = z
   )
   .refine(
     (data) => {
-      if (data.organizationType === "Community") {
+      if (data.organizationType !== "College") {
         return !!data.organization && data.organization.trim().length > 0;
       }
       return true;
     },
     {
-      message: "Please select your community",
+      message: "Please select one from the list, or choose Others",
       path: ["organization"],
+    },
+  )
+  .refine(
+    (data) => {
+      if (
+        data.organizationType !== "College" &&
+        data.organization === "others"
+      ) {
+        return (
+          !!data.customOrganization &&
+          data.customOrganization.trim().length >= 3
+        );
+      }
+      return true;
+    },
+    {
+      message: "Name must be at least 3 characters",
+      path: ["customOrganization"],
     },
   );
 
@@ -326,7 +395,9 @@ interface RegisterRoleDetailsProps {
       graduationYear?: number;
       organization?: string;
       customOrganization?: string;
-      organizationType?: "College" | "Community";
+      organizationType?: LearnerOrgType;
+      isStudent?: boolean;
+      district?: string;
       role?: string;
       mentorType?: "ig" | "company";
       isFreelancer?: boolean;
@@ -377,11 +448,13 @@ export function RegisterRoleDetails({
   const getDefaultValues = () => {
     if (role === "student") {
       return {
-        organizationType: "College" as const,
+        organizationType: "College" as LearnerOrgType,
+        isStudent: true,
         college: "",
         customCollege: "",
         department: "",
         graduationYear: undefined as number | undefined,
+        district: "",
         organization: "",
         customOrganization: "",
       };
@@ -434,9 +507,65 @@ export function RegisterRoleDetails({
   // Track if "Others" is selected
   const [showCustomCollege, setShowCustomCollege] = useState(false);
   const [showCustomOrganization, setShowCustomOrganization] = useState(false);
-  const [studentOrgType, setStudentOrgType] = useState<"College" | "Community">(
-    "College",
+  const [studentOrgType, setStudentOrgType] =
+    useState<LearnerOrgType>("College");
+  const [isStudent, setIsStudent] = useState(true);
+  const visibleOrgTypes = isStudent ? LEARNER_ORG_TYPES : NON_STUDENT_ORG_TYPES;
+
+  // School lookup: search district → list schools in that district
+  const [districtSearch, setDistrictSearch] = useState("");
+  const [schoolDistrict, setSchoolDistrict] = useState("");
+  const isSchoolLookup = role === "student" && studentOrgType === "School";
+  const districtResults = useDistrictSearch(
+    isSchoolLookup ? districtSearch : "",
   );
+  const schools = useSchoolsByDistrict(
+    isSchoolLookup && schoolDistrict ? schoolDistrict : undefined,
+  );
+
+  // Switching org type clears the previous pick so a company UUID never
+  // gets submitted as a community, etc.
+  const selectStudentOrgType = (type: LearnerOrgType) => {
+    setStudentOrgType(type);
+    form.setValue("organizationType", type);
+    form.setValue("organization", "");
+    form.setValue("customOrganization", "");
+    form.setValue("district", "");
+    setSchoolDistrict("");
+    setDistrictSearch("");
+    setShowCustomOrganization(false);
+    form.clearErrors();
+  };
+
+  const toggleIsStudent = (studying: boolean) => {
+    setIsStudent(studying);
+    form.setValue("isStudent", studying);
+    // Not studying → School/College are no longer valid; fall back to Company.
+    if (!studying && !NON_STUDENT_ORG_TYPES.includes(studentOrgType)) {
+      selectStudentOrgType("Company");
+    }
+  };
+
+  // Option list + labels for the School/Company/Community picker
+  const orgPicker = {
+    School: {
+      options: schools.data ?? [],
+      loading: schools.isFetching,
+      placeholder: schoolDistrict
+        ? "Select your school"
+        : "Select your district first",
+    },
+    Company: {
+      options: companies,
+      loading: isLoadingCompanies,
+      placeholder: "Select your company",
+    },
+    Community: {
+      options: communities,
+      loading: isLoadingCommunities,
+      placeholder: "Select your community",
+    },
+  } as const;
 
   // Mentor-specific: freelancer toggle & mentor type selection
   const [isFreelancer, setIsFreelancer] = useState(false);
@@ -619,49 +748,47 @@ export function RegisterRoleDetails({
           {/* Student Fields */}
           {role === "student" && (
             <>
+              {/* Not-a-student toggle: limits org types to Company/Community */}
+              <div className="flex items-center justify-between py-2">
+                <p className="text-sm font-semibold text-foreground">
+                  I am not a student
+                </p>
+                <Switch
+                  checked={!isStudent}
+                  onCheckedChange={(checked) => toggleIsStudent(!checked)}
+                  disabled={isLoading}
+                />
+              </div>
+
               {/* Organization Type Selection */}
               <FormField
                 control={form.control}
                 name="organizationType"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <FormLabel className="text-sm font-medium">
                       Organization Type
                     </FormLabel>
-                    <FormControl>
-                      <div className="flex gap-4">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            field.onChange("College");
-                            setStudentOrgType("College");
-                          }}
-                          className={`flex-1 h-12 rounded-xl border-2 transition-all ${
-                            studentOrgType === "College"
-                              ? "border-brand-blue bg-brand-blue/10 text-brand-blue"
-                              : "border-border bg-muted text-muted-foreground hover:border-border/80"
-                          }`}
-                          disabled={isLoading}
-                        >
-                          College
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            field.onChange("Community");
-                            setStudentOrgType("Community");
-                          }}
-                          className={`flex-1 h-12 rounded-xl border-2 transition-all ${
-                            studentOrgType === "Community"
-                              ? "border-brand-blue bg-brand-blue/10 text-brand-blue"
-                              : "border-border bg-muted text-muted-foreground hover:border-border/80"
-                          }`}
-                          disabled={isLoading}
-                        >
-                          Community
-                        </button>
-                      </div>
-                    </FormControl>
+                    <Select
+                      value={studentOrgType}
+                      onValueChange={(value) =>
+                        selectStudentOrgType(value as LearnerOrgType)
+                      }
+                      disabled={isLoading}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full h-12 rounded-xl border-border bg-muted/50 px-4">
+                          <SelectValue placeholder="Select organization type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {visibleOrgTypes.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -783,29 +910,98 @@ export function RegisterRoleDetails({
                   />
                 </>
               ) : (
-                <FormField
-                  control={form.control}
-                  name="organization"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium">
-                        Community
-                      </FormLabel>
-                      <FormControl>
-                        <Combobox
-                          options={communities}
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          placeholder="Select your community"
-                          searchPlaceholder="Search communities..."
-                          disabled={isLoading || isLoadingCommunities}
-                          loading={isLoadingCommunities}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                <>
+                  {/* School list is per-district: pick the district first */}
+                  {studentOrgType === "School" && !showCustomOrganization && (
+                    <FormField
+                      control={form.control}
+                      name="district"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">
+                            District
+                          </FormLabel>
+                          <FormControl>
+                            <Combobox
+                              options={districtResults.data ?? []}
+                              value={field.value}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                setSchoolDistrict(value);
+                                form.setValue("organization", "");
+                              }}
+                              placeholder="Search your district"
+                              searchPlaceholder="Type your district name..."
+                              disabled={isLoading}
+                              onSearchChange={setDistrictSearch}
+                              loading={districtResults.isFetching}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   )}
-                />
+
+                  <FormField
+                    control={form.control}
+                    name="organization"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          {studentOrgType}
+                        </FormLabel>
+                        <FormControl>
+                          <Combobox
+                            options={orgPicker[studentOrgType].options}
+                            value={
+                              showCustomOrganization ? "others" : field.value
+                            }
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              setShowCustomOrganization(false);
+                              form.setValue("customOrganization", "");
+                            }}
+                            placeholder={orgPicker[studentOrgType].placeholder}
+                            searchPlaceholder={`Search ${studentOrgType.toLowerCase()}...`}
+                            disabled={isLoading}
+                            loading={orgPicker[studentOrgType].loading}
+                            onCreateNew={(searchTerm) => {
+                              field.onChange("others");
+                              form.setValue("customOrganization", searchTerm);
+                              setShowCustomOrganization(true);
+                            }}
+                            createNewText="Others"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {showCustomOrganization && (
+                    <FormField
+                      control={form.control}
+                      name="customOrganization"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">
+                            {studentOrgType} Name
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={`Enter your ${studentOrgType.toLowerCase()} name`}
+                              className="h-12 rounded-xl border-border bg-muted/50 px-4"
+                              disabled={isLoading}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </>
               )}
             </>
           )}

@@ -22,6 +22,7 @@ import {
   buildCompanySignupPayload,
   type CompanyDetailsValues,
   CompanySignupRequestSchema,
+  type LearnerOrgType,
   RegisterForm,
   RegisterRoleDetails,
   RegisterRoleSelection,
@@ -140,10 +141,12 @@ export function RegisterClient({
     // Student / Mentor (College type)
     department?: string;
     graduationYear?: number;
-    // Mentor (company) / Student (Community type)
+    // Mentor (company) / Student (School, Company or Community type)
     organization?: string;
     customOrganization?: string;
-    organizationType?: "College" | "Community";
+    organizationType?: LearnerOrgType;
+    isStudent?: boolean;
+    district?: string;
     role?: string;
     // Mentor-specific
     mentorType?: "ig" | "company";
@@ -230,19 +233,22 @@ export function RegisterClient({
     graduationYear?: number;
     organization?: string;
     customOrganization?: string;
-    organizationType?: "College" | "Community";
+    organizationType?: LearnerOrgType;
+    isStudent?: boolean;
+    district?: string;
     role?: string;
     mentorType?: "ig" | "company";
     isFreelancer?: boolean;
   }) {
     if (!basicData || !selectedRole) return;
 
-    // A learner who picked a community joins it through the register
-    // payload's `communities` list — the backend links it on account creation.
-    const isCommunityLearner =
-      selectedRole === "student" && values.organizationType === "Community";
-    const communityIds =
-      isCommunityLearner && values.organization ? [values.organization] : [];
+    // Learner who picked School / Company / Community (anything but College).
+    // These link through /dashboard/user/organization/ after signup — the
+    // register endpoint ignores org fields.
+    const learnerOrgType =
+      selectedRole === "student" && values.organizationType !== "College"
+        ? values.organizationType
+        : undefined;
 
     // 1. Resolve role title → DB UUID
     const roleTitle =
@@ -265,7 +271,6 @@ export function RegisterClient({
         role: roleId,
       },
       referral: referralId ? { muid: referralId } : undefined,
-      ...(communityIds.length > 0 ? { communities: communityIds } : {}),
       ...(isGoogleSignup && tempToken ? { tempToken } : {}),
     });
 
@@ -275,10 +280,24 @@ export function RegisterClient({
     // duplicate it for the custom-org/college submission paths.
     let orgSubmittedForReview = false;
 
-    if (
-      (selectedRole === "student" || selectedRole === "enabler") &&
-      !isCommunityLearner
-    ) {
+    if (learnerOrgType) {
+      if (values.organization === "others" && values.customOrganization) {
+        // Not in the list → submit an unverified org for admin review
+        await createOrganization.mutateAsync({
+          title: values.customOrganization,
+          org_type: learnerOrgType,
+        });
+        toast.success(`${learnerOrgType} submitted for review!`);
+        orgSubmittedForReview = true;
+      } else if (values.organization) {
+        await selectOrganization.mutateAsync({
+          organization: values.organization,
+          department: null,
+          graduation_year: null,
+          is_student: values.isStudent ?? true,
+        });
+      }
+    } else if (selectedRole === "student" || selectedRole === "enabler") {
       if (values.college === "others" && values.customCollege) {
         // Submit unverified org for admin review
         const payload: {
