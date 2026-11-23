@@ -11,13 +11,16 @@ import { endpoints } from "@/api/endpoints";
 import {
   CollegeSearchResponseSchema,
   CollegesResponseSchema,
+  CommunitiesResponseSchema,
   CompaniesResponseSchema,
   CountriesResponseSchema,
   type CreateOrganizationRequest,
   CreateOrganizationResponseSchema,
   DepartmentsResponseSchema,
+  DistrictSearchResponseSchema,
   DistrictsResponseSchema,
   RolesResponseSchema,
+  SchoolsResponseSchema,
   SelectDomainsResponseSchema,
   SelectEndgoalsResponseSchema,
   type SelectOrganizationRequest,
@@ -73,6 +76,37 @@ export function searchDepartments(search: string) {
  */
 export function fetchCompanies() {
   return apiClient.get(endpoints.onboarding.companies, CompaniesResponseSchema);
+}
+
+/**
+ * Search districts by name (public). Returns "District, State, Country" labels.
+ */
+export function searchDistricts(query: string) {
+  return apiClient.get(
+    endpoints.onboarding.location(encodeURIComponent(query)),
+    DistrictSearchResponseSchema,
+  );
+}
+
+/**
+ * Fetch schools in a district (public)
+ */
+export function fetchSchoolsByDistrict(districtId: string) {
+  return apiClient.post(
+    endpoints.location.schools,
+    { district: districtId },
+    SchoolsResponseSchema,
+  );
+}
+
+/**
+ * Fetch list of communities
+ */
+export function fetchCommunities() {
+  return apiClient.get(
+    endpoints.onboarding.communities,
+    CommunitiesResponseSchema,
+  );
 }
 
 /**

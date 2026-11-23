@@ -21,7 +21,13 @@ export const ORG_TYPES = [
   { label: "Company", value: "Company" },
 ] as const;
 
-export const ORG_TYPE_VALUES = ["College", "Company"] as const;
+// Every org type the backend accepts on POST /register/organization/create/.
+export const ORG_TYPE_VALUES = [
+  "College",
+  "Company",
+  "School",
+  "Community",
+] as const;
 
 // ============================================
 // College/Organization Schemas (flexible field names)
@@ -63,6 +69,42 @@ export const CompanySchema = z
 // Backend returns { companies: [...] } — same shape as colleges/departments.
 export const CompaniesResponseSchema = ApiResponseSchema(
   z.object({ companies: z.array(CompanySchema) }).passthrough(),
+);
+
+export const CommunitySchema = z
+  .object({
+    id: z.string(),
+    title: z.string(),
+  })
+  .passthrough();
+
+// Backend returns { communities: [...] } from /register/community/list/.
+export const CommunitiesResponseSchema = ApiResponseSchema(
+  z.object({ communities: z.array(CommunitySchema) }).passthrough(),
+);
+
+export const SchoolSchema = z
+  .object({
+    id: z.string(),
+    title: z.string(),
+  })
+  .passthrough();
+
+// POST /register/schools/list/ { district } → { schools: [...] }
+export const SchoolsResponseSchema = ApiResponseSchema(
+  z.object({ schools: z.array(SchoolSchema) }).passthrough(),
+);
+
+// GET /register/location/?q= → [{ id, location: "District, State, Country" }]
+export const DistrictSearchItemSchema = z
+  .object({
+    id: z.string(),
+    location: z.string(),
+  })
+  .passthrough();
+
+export const DistrictSearchResponseSchema = ApiResponseSchema(
+  z.array(DistrictSearchItemSchema),
 );
 
 export const RoleSchema = z
@@ -156,6 +198,10 @@ export type DepartmentsResponse = z.infer<typeof DepartmentsResponseSchema>;
 
 export type Company = z.infer<typeof CompanySchema>;
 export type CompaniesResponse = z.infer<typeof CompaniesResponseSchema>;
+export type Community = z.infer<typeof CommunitySchema>;
+export type School = z.infer<typeof SchoolSchema>;
+export type DistrictSearchItem = z.infer<typeof DistrictSearchItemSchema>;
+export type CommunitiesResponse = z.infer<typeof CommunitiesResponseSchema>;
 
 export type Role = z.infer<typeof RoleSchema>;
 export type RolesResponse = z.infer<typeof RolesResponseSchema>;

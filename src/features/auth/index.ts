@@ -28,7 +28,11 @@ export {
   validateRegistrationData,
   verifyResetToken,
 } from "./api";
-export type { CompanyDetailsValues, Role } from "./components";
+export type {
+  CompanyDetailsValues,
+  LearnerOrgType,
+  Role,
+} from "./components";
 // Components
 export {
   ForgotPasswordForm,
