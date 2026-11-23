@@ -104,7 +104,7 @@ only way anything reaches a live site:
 
 | Environment | Branch | URL |
 |---|---|---|
-| Staging | `staging` | https://staging.app.mulearn.org |
+| Staging | `staging` | https://staging-mulearn.netlify.app |
 | Production | `master` | https://app.mulearn.org |
 
 On push, the matching workflow (`.github/workflows/staging-deploy.yml` /

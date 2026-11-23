@@ -39,9 +39,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.DOCS_REPO_TOKEN }}
         run: |
-          git clone https://x-access-token:$GH_TOKEN@github.com/gtech-mulearn/changelog-gitbooks.git docs
-          cp CHANGELOG.md docs/dashboard.md
-          cd docs
+          # Clone outside the checkout: this repository has its own docs/ folder, and cloning into
+          # docs/ failed with "destination path 'docs' already exists" (11 Nov 2026).
+          CHANGELOG_DIR="$RUNNER_TEMP/changelog-gitbooks"
+          git clone https://x-access-token:$GH_TOKEN@github.com/gtech-mulearn/changelog-gitbooks.git "$CHANGELOG_DIR"
+          cp CHANGELOG.md "$CHANGELOG_DIR/dashboard.md"
+          cd "$CHANGELOG_DIR"
           git config user.name  "changelog-bot"
           git config user.email "bot@mulearn.org"
           git add dashboard.md

@@ -68,7 +68,7 @@ Long-lived branches and where they go:
 | Branch | Role | Deploys to |
 |---|---|---|
 | `dev` | Integration — all PRs target this | — |
-| `staging` | Pre-production verification | staging.app.mulearn.org |
+| `staging` | Pre-production verification | staging-mulearn.netlify.app |
 | `master` | Production | app.mulearn.org |
 
 Promotion flows `dev` → `staging` → `master`, each hop via pull request opened by a
@@ -201,7 +201,7 @@ CI compares four things with a list of what exists on `dev` today, in `scripts/a
 
 ```sh
 bunx playwright install chromium        # first use only
-SMOKE_BASE_URL=https://staging.app.mulearn.org SMOKE_USER=… SMOKE_PASSWORD=… bun run smoke
+SMOKE_BASE_URL=https://staging-mulearn.netlify.app SMOKE_USER=… SMOKE_PASSWORD=… bun run smoke
 ```
 
 - `SMOKE_BASE_URL` is required. The suite refuses to run without it.
