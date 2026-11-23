@@ -31,7 +31,7 @@ import { useCompanyAccess } from "@/features/company-jobs/hooks/use-company-acce
 import { useCompanyProfile } from "@/features/company-jobs/hooks/use-company-profile";
 import { ReplayTourButton } from "@/features/tour";
 import { useFilteredNav } from "@/hooks/use-filtered-nav";
-import { authStore } from "@/lib/auth";
+import { announceSignedOut, authStore } from "@/lib/auth";
 import { isCompanyFeatureItem, type NavItem } from "@/lib/nav-config";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
@@ -65,6 +65,7 @@ export function AppSidebar() {
       toast.error("Couldn't reach the server, logging out locally");
     } finally {
       await authStore.clearTokens();
+      announceSignedOut();
       useUIStore.getState().resetUI();
       setIsLogoutDialogOpen(false);
       toast.success("Logged out successfully");
