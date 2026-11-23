@@ -13,6 +13,17 @@ these steps are complete.**
 
 Promotion flows `dev` → `staging` → `master`, each hop via pull request.
 
+> **How it actually runs today** (checked 23 Nov 2026; details and the full list of environments
+> and secrets in `docs/architecture/10-build-and-deployment.md`):
+> - **`dev`** deploys to Vercel (`https://mulearn-dashboard.vercel.app`) through Vercel's Git
+>   integration. Vercel calls these deployments "Production", so they appear under GitHub's
+>   `Production` environment. Its variables live in the Vercel project's settings.
+> - **Staging** deploys from the Actions runner, as this guide describes.
+> - **Production** has no deploy workflow yet. Netlify's own builders build `master`
+>   (`scripts/netlify-ignore.sh` lets them), so production's build-time variables come from the
+>   production Netlify site, not from GitHub. The steps below describe the Actions-driven
+>   production deploy this guide was written for.
+
 ---
 
 ## How it works
@@ -85,7 +96,7 @@ Use each environment's own values — the staging site points at the staging bac
 
 ## Step 4 — GitHub Environments
 
-Create two environments (Settings → Environments): **`staging`** and **`production`**.
+Create two environments (Settings → Environments): **`staging`** and **`production`**. (The production one exists today as **`Production`**, capitalised, a name Vercel also uses for `dev`'s deployments. A production deploy workflow must use that exact name.)
 
 In **each**, add these **variables**:
 
