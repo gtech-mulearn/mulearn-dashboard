@@ -20,7 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { authStore } from "@/lib/auth";
+import { announceSignedOut, authStore } from "@/lib/auth";
 import { useUIStore } from "@/stores/ui-store";
 
 interface AccountSettingsModalProps {
@@ -41,6 +41,7 @@ export function AccountSettingsModal({
     // and bounces /login back to /dashboard.
     await fetch("/api/auth/logout", { method: "POST" });
     await authStore.clearTokens();
+    announceSignedOut();
 
     // Reset UI state
     useUIStore.getState().resetUI();

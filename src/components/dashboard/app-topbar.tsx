@@ -28,7 +28,7 @@ import { PersonaSwitcher } from "@/features/mentor/components/persona-switcher";
 import { GameProgressBar } from "@/features/mujourney/components/GameProgressBar";
 import { NotificationPopover } from "@/features/notification";
 import { ReplayPageTourButton } from "@/features/tour/components/replay-page-tour-button";
-import { authStore, ROLES } from "@/lib/auth";
+import { announceSignedOut, authStore, ROLES } from "@/lib/auth";
 import { useUIStore } from "@/stores/ui-store";
 
 function getInitials(name: string) {
@@ -60,6 +60,7 @@ export function AppTopbar() {
       toast.error("Couldn't reach the server, logging out locally");
     } finally {
       await authStore.clearTokens();
+      announceSignedOut();
       useUIStore.getState().resetUI();
       setIsLogoutDialogOpen(false);
       toast.success("Logged out successfully");

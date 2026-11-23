@@ -11,6 +11,14 @@
  * Import server utilities directly: `import { requireRole } from "@/lib/auth/server"`
  */
 
+// Auth messages between tabs (ADR-010)
+export {
+  AUTH_CHANNEL,
+  type AuthMessage,
+  announceSignedOut,
+  listenForSignOut,
+  postAuthMessage,
+} from "./auth-channel";
 // Permissions
 export {
   getRolesForPermission,
@@ -53,6 +61,5 @@ export {
   type RouteConfig,
   routeAccessMap,
 } from "./route-access";
-
 // Token Store (migrated from src/lib/auth.ts)
 export { authStore } from "./token-store";

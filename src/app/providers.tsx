@@ -3,7 +3,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { listenForSignOut } from "@/lib/auth";
 
 const ReactQueryDevtools =
   process.env.NODE_ENV === "development"
@@ -42,6 +43,9 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   const [queryClient] = useState(makeQueryClient);
+
+  // When another tab signs out, or its token refresh is refused, sign this tab out too (ADR-010).
+  useEffect(() => listenForSignOut(), []);
 
   return (
     <QueryClientProvider client={queryClient}>
