@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  keepPreviousData,
   useInfiniteQuery,
   useMutation,
   useQuery,
@@ -16,6 +17,7 @@ import {
   deleteBroadcast,
   deleteNotification,
   dispatchAdminBroadcast,
+  getActivityLog,
   getAllBroadcasts,
   getNotificationFeed,
   getTargetCampusIGChapters,
@@ -29,6 +31,7 @@ import {
   updateBroadcast,
 } from "../api";
 import type {
+  ActivityLogQuery,
   AdminBroadcastDispatchPayload,
   BroadcastCreatePayload,
   TargetType,
@@ -202,6 +205,9 @@ export function useDispatchAdminBroadcast() {
       queryClient.invalidateQueries({
         queryKey: notificationKeys.unreadCount(),
       });
+      queryClient.invalidateQueries({
+        queryKey: notificationKeys.activityLogAll(),
+      });
       toast.success("Announcement sent successfully.");
     },
     onError: (error) => {
@@ -229,6 +235,9 @@ export function useCreateBroadcast() {
       queryClient.invalidateQueries({
         queryKey: notificationKeys.adminBroadcasts(),
       });
+      queryClient.invalidateQueries({
+        queryKey: notificationKeys.activityLogAll(),
+      });
       toast.success("Announcement created");
     },
     onError: (error) => {
@@ -255,6 +264,9 @@ export function useUpdateBroadcast() {
       queryClient.invalidateQueries({
         queryKey: notificationKeys.adminBroadcasts(),
       });
+      queryClient.invalidateQueries({
+        queryKey: notificationKeys.activityLogAll(),
+      });
       toast.success("Announcement updated");
     },
     onError: (error) => {
@@ -275,6 +287,9 @@ export function useDeleteBroadcast() {
       queryClient.invalidateQueries({
         queryKey: notificationKeys.adminBroadcasts(),
       });
+      queryClient.invalidateQueries({
+        queryKey: notificationKeys.activityLogAll(),
+      });
       toast.success("Announcement deleted");
     },
     onError: (error) => {
@@ -294,6 +309,9 @@ export function useDeleteAllBroadcasts() {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: notificationKeys.adminBroadcasts(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: notificationKeys.activityLogAll(),
       });
       toast.success("All announcements deleted");
     },
@@ -326,5 +344,13 @@ export function useTargetOptions(targetType: TargetType | undefined) {
     },
     enabled: !!targetType && targetType !== "global",
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useActivityLog(q: ActivityLogQuery) {
+  return useQuery({
+    queryKey: notificationKeys.activityLog(q),
+    queryFn: () => getActivityLog(q),
+    placeholderData: keepPreviousData,
   });
 }

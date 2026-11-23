@@ -1,3 +1,5 @@
+import type { ActivityLogQuery } from "../schemas";
+
 export const notificationKeys = {
   all: ["notifications"] as const,
   /** @deprecated Legacy — use feed() instead for user-facing popover */
@@ -7,4 +9,8 @@ export const notificationKeys = {
   feed: () => [...notificationKeys.all, "feed"] as const,
   /** Personal unread count (new API) */
   unreadCount: () => [...notificationKeys.all, "unread-count"] as const,
+  /** Every activity-log page, for invalidation */
+  activityLogAll: () => [...notificationKeys.all, "activity-log"] as const,
+  activityLog: (q: ActivityLogQuery) =>
+    [...notificationKeys.activityLogAll(), q] as const,
 };

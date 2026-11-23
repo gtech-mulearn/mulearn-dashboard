@@ -37,7 +37,7 @@ export function PushAdminCard() {
           <TabsList>
             <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
-            <TabsTrigger value="activity">Activity</TabsTrigger>
+            <TabsTrigger value="activity">Delivery stats</TabsTrigger>
           </TabsList>
           <TabsContent value="campaigns" className="pt-4">
             <PushCampaignsTable />

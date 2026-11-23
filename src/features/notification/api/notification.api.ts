@@ -1,6 +1,8 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import type {
+  ActivityLogPage,
+  ActivityLogQuery,
   AdminBroadcast,
   AdminBroadcastDispatchPayload,
   BroadcastCreatePayload,
@@ -166,4 +168,18 @@ export async function getTargetEventList(): Promise<TargetOption[]> {
     id: String(ev.id ?? ""),
     name: String(ev.title ?? ev.name ?? ev.id ?? ""),
   }));
+}
+
+// ─── Activity log (GET /api/v1/notification/activity-log/) ─────────────────────
+
+export async function getActivityLog(
+  q: ActivityLogQuery,
+): Promise<ActivityLogPage> {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(q)) {
+    if (value !== undefined && value !== "") params.set(key, String(value));
+  }
+  return apiClient.get<ActivityLogPage>(
+    `${endpoints.notifications.activityLog}?${params.toString()}`,
+  );
 }

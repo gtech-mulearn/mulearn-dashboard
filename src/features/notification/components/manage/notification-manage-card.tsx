@@ -4,6 +4,8 @@ import { Loader2, Megaphone, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Separator } from "@/components/ui/separator";
 import { useAdminBroadcasts, useDeleteAllBroadcasts } from "../../hooks";
 import type { AdminBroadcast } from "../../schemas";
@@ -17,8 +19,17 @@ export function NotificationManageCard() {
     undefined,
   );
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
+  // Frozen when the dialog opens so the title doesn't change under the admin.
+  const [deleteAllCount, setDeleteAllCount] = useState(0);
 
-  const { data: broadcasts, isLoading } = useAdminBroadcasts();
+  const {
+    data: broadcasts,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useAdminBroadcasts();
   const { mutate: deleteAll, isPending: isDeletingAll } =
     useDeleteAllBroadcasts();
 
@@ -65,7 +76,10 @@ export function NotificationManageCard() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => deleteAll()}
+              onClick={() => {
+                setDeleteAllCount(broadcasts?.length ?? 0);
+                setConfirmDeleteAll(true);
+              }}
               disabled={isDeletingAll}
               className="text-destructive hover:text-destructive"
             >
@@ -79,15 +93,35 @@ export function NotificationManageCard() {
           )}
         </CardHeader>
         <CardContent>
-          <BroadcastTable
-            broadcasts={broadcasts ?? []}
-            isLoading={isLoading}
-            onEdit={handleEdit}
-          />
+          {isError ? (
+            <QueryErrorState
+              title="Couldn't load announcements."
+              error={error}
+              onRetry={() => refetch()}
+            />
+          ) : (
+            <BroadcastTable
+              broadcasts={broadcasts ?? []}
+              isLoading={isLoading}
+              onEdit={handleEdit}
+            />
+          )}
         </CardContent>
       </Card>
 
       {/* ── Dialogs ── */}
+      <ConfirmDialog
+        open={confirmDeleteAll}
+        onOpenChange={setConfirmDeleteAll}
+        title={`Delete all ${deleteAllCount} ${deleteAllCount === 1 ? "announcement" : "announcements"}?`}
+        description="This includes ones the system created for learning circles, projects and events. This can't be undone."
+        variant="destructive"
+        confirmLabel="Delete all"
+        isPending={isDeletingAll}
+        onConfirm={() =>
+          deleteAll(undefined, { onSuccess: () => setConfirmDeleteAll(false) })
+        }
+      />
       <AdminBroadcastDialog
         open={adminDialogOpen}
         onOpenChange={setAdminDialogOpen}

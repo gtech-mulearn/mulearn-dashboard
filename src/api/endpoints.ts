@@ -1608,6 +1608,8 @@ export const endpoints = {
     adminStats: "/api/v1/push/admin/stats/",
   },
   notifications: {
+    /** GET - Activity log of announcement and push changes (Admin, Fellow, Associate) */
+    activityLog: "/api/v1/notification/activity-log/",
     /** DELETE - Delete all personal notifications for the authenticated user */
     deleteAll: "/api/v1/notification/delete/all/",
 

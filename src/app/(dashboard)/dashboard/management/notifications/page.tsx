@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { ActivityLogCard } from "@/features/notification/components/manage/activity-log-card";
 import { NotificationManageCard } from "@/features/notification/components/manage/notification-manage-card";
 import { PushAdminCard } from "@/features/push/components/push-admin-card";
-import { ADMIN_ROLES } from "@/lib/auth/roles";
+import { MANAGEMENT_ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function NotificationsManagePage() {
-  await requireRole(ADMIN_ROLES);
+  await requireRole(MANAGEMENT_ROLES);
   return (
     <div className="space-y-6">
       <div>
@@ -21,6 +22,7 @@ export default async function NotificationsManagePage() {
       </div>
       <NotificationManageCard />
       <PushAdminCard />
+      <ActivityLogCard />
     </div>
   );
 }

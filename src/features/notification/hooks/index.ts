@@ -1,5 +1,6 @@
 export { notificationKeys } from "./query-keys";
 export {
+  useActivityLog,
   useAdminBroadcasts,
   useCreateBroadcast,
   useDeleteAllBroadcasts,
