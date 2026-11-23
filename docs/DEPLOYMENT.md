@@ -8,7 +8,7 @@ these steps are complete.**
 
 | Environment | Branch | Netlify site | URL |
 |---|---|---|---|
-| Staging | `staging` | staging site | https://staging.app.mulearn.org |
+| Staging | `staging` | staging site | https://staging-mulearn.netlify.app (`staging.app.mulearn.org` has no DNS record yet) |
 | Production | `master` | production site | https://app.mulearn.org |
 
 Promotion flows `dev` → `staging` → `master`, each hop via pull request.
@@ -19,16 +19,17 @@ Promotion flows `dev` → `staging` → `master`, each hop via pull request.
 >   integration. Vercel calls these deployments "Production", so they appear under GitHub's
 >   `Production` environment. Its variables live in the Vercel project's settings.
 > - **Staging** deploys from the Actions runner, as this guide describes.
-> - **Production** has no deploy workflow yet. Netlify's own builders build `master`
->   (`scripts/netlify-ignore.sh` lets them), so production's build-time variables come from the
->   production Netlify site, not from GitHub. The steps below describe the Actions-driven
->   production deploy this guide was written for.
+> - **Production** has had no deploy workflow since `production-deploy.yml` was deleted on
+>   21 Jul 2026, after all 8 of its runs failed. How production builds now isn't visible from
+>   GitHub. It may be Netlify's own builders building `master`, which `scripts/netlify-ignore.sh`
+>   allows (page 10, "Still to confirm"). The rest of this guide describes the Actions-driven
+>   pipeline: staging runs it today, and production would again once its workflow is back.
 
 ---
 
 ## How it works
 
-Both deploy workflows run `netlify deploy --build` **on the GitHub Actions runner**, not on
+The deploy workflows (staging's today, production's once it is back) run `netlify deploy --build` **on the GitHub Actions runner**, not on
 Netlify's builders. This matters more than anything else in this guide:
 
 - **Build-time** variables (anything `NEXT_PUBLIC_*`, plus `config/env.ts` validation) come from
@@ -67,7 +68,7 @@ CONTRIBUTING.md tells contributors to do.
 Create **two separate sites** from the same repository:
 
 1. **Production site** → attach domain `app.mulearn.org`
-2. **Staging site** → attach domain `staging.app.mulearn.org`
+2. **Staging site** → attach domain `staging.app.mulearn.org` (not attached today: it has no DNS record, and the site answers at `https://staging-mulearn.netlify.app`)
 
 Point DNS at Netlify per their instructions for each domain.
 
@@ -96,7 +97,7 @@ Use each environment's own values — the staging site points at the staging bac
 
 ## Step 4 — GitHub Environments
 
-Create two environments (Settings → Environments): **`staging`** and **`production`**. (The production one exists today as **`Production`**, capitalised, a name Vercel also uses for `dev`'s deployments. A production deploy workflow must use that exact name.)
+Create two environments (Settings → Environments): **`staging`** and **`production`**. (The production one exists as `Production`, created for the deleted workflow. Environment names aren't case-sensitive. Vercel also files `dev`'s deployments under that name.)
 
 In **each**, add these **variables**:
 
@@ -183,7 +184,7 @@ A required variable is missing from the GitHub **Environment** (not the Netlify 
 "How it works"). The error names the variable.
 
 **Version badge reads `dev` in a deployed build**
-`COMMIT_REF` is not set. Both deploy workflows pass `COMMIT_REF: ${{ github.sha }}`; check it
+`COMMIT_REF` is not set. The deploy workflows pass `COMMIT_REF: ${{ github.sha }}`; check it
 was not removed from the deploy step's `env:` block.
 
 **Deploy job is skipped or errors on the environment**
