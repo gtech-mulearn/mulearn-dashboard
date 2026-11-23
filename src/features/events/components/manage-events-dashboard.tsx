@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useUserInfo } from "@/features/auth/hooks";
+import { useUserInfo } from "@/features/auth";
 import { ROLES } from "@/lib/auth/roles";
 import { eventsApi } from "../api";
 import {

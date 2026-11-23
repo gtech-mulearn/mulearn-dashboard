@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { useState } from "react";
-import { useUserInfo, useUserProfile } from "@/features/auth/hooks/use-session";
+import { useUserInfo, useUserProfile } from "@/features/auth";
 import { useDashboardInterestGroups } from "@/features/interest-groups";
 import { useDashboardCalendar, useLearnerHomeSummary } from "../hooks";
 import { flattenDashboardCalendar } from "../utils";

@@ -7,9 +7,11 @@
  * Ensures consistent cache invalidation.
  */
 
+import { userInfoKey } from "@/lib/auth/user-info";
+
 export const authKeys = {
   all: ["auth"] as const,
-  userInfo: () => [...authKeys.all, "userInfo"] as const,
+  userInfo: userInfoKey,
   publicProfile: (muid: string) =>
     [...authKeys.all, "publicProfile", muid] as const,
   session: () => [...authKeys.all, "session"] as const,
