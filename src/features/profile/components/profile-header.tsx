@@ -273,10 +273,16 @@ export function ProfileHeader({
               <h1 className="truncate text-lg font-bold text-white drop-shadow-md sm:text-xl md:text-2xl">
                 {profile.full_name}
               </h1>
-              {profile.college_code && (
+              {profile.college_code ? (
                 <span className="hidden shrink-0 rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm sm:inline">
                   {profile.college_code}
                 </span>
+              ) : (
+                profile.company_name && (
+                  <span className="hidden max-w-[12rem] shrink-0 truncate rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm sm:inline">
+                    {profile.company_name}
+                  </span>
+                )
               )}
             </div>
 

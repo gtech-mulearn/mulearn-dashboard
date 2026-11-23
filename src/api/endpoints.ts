@@ -1590,6 +1590,20 @@ export const endpoints = {
   // ============================================
   // Notifications
   // ============================================
+  /** Mobile push notifications (backend docs/push-notifications.md). Admins. */
+  push: {
+    /** GET / PATCH - kill switch, caps, rate, rules, per-type push switches */
+    adminConfig: "/api/v1/push/admin/config/",
+    /** GET list / POST create (draft or scheduled) */
+    adminCampaigns: "/api/v1/push/admin/campaigns/",
+    /** POST - send now | cancel */
+    adminCampaignAction: (id: string, action: "send" | "cancel") =>
+      `/api/v1/push/admin/campaigns/${id}/${action}/`,
+    /** POST - push to the admin's own devices */
+    adminTest: "/api/v1/push/admin/test/",
+    /** GET - sent / skipped / opened by source and rule */
+    adminStats: "/api/v1/push/admin/stats/",
+  },
   notifications: {
     /** DELETE - Delete all personal notifications for the authenticated user */
     deleteAll: "/api/v1/notification/delete/all/",
