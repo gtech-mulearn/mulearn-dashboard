@@ -65,6 +65,18 @@ export const CompaniesResponseSchema = ApiResponseSchema(
   z.object({ companies: z.array(CompanySchema) }).passthrough(),
 );
 
+export const CommunitySchema = z
+  .object({
+    id: z.string(),
+    title: z.string(),
+  })
+  .passthrough();
+
+// Backend returns { communities: [...] } from /register/community/list/.
+export const CommunitiesResponseSchema = ApiResponseSchema(
+  z.object({ communities: z.array(CommunitySchema) }).passthrough(),
+);
+
 export const RoleSchema = z
   .object({
     id: z.string(),
@@ -156,6 +168,8 @@ export type DepartmentsResponse = z.infer<typeof DepartmentsResponseSchema>;
 
 export type Company = z.infer<typeof CompanySchema>;
 export type CompaniesResponse = z.infer<typeof CompaniesResponseSchema>;
+export type Community = z.infer<typeof CommunitySchema>;
+export type CommunitiesResponse = z.infer<typeof CommunitiesResponseSchema>;
 
 export type Role = z.infer<typeof RoleSchema>;
 export type RolesResponse = z.infer<typeof RolesResponseSchema>;

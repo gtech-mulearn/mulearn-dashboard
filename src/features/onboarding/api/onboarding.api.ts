@@ -11,6 +11,7 @@ import { endpoints } from "@/api/endpoints";
 import {
   CollegeSearchResponseSchema,
   CollegesResponseSchema,
+  CommunitiesResponseSchema,
   CompaniesResponseSchema,
   CountriesResponseSchema,
   type CreateOrganizationRequest,
@@ -73,6 +74,16 @@ export function searchDepartments(search: string) {
  */
 export function fetchCompanies() {
   return apiClient.get(endpoints.onboarding.companies, CompaniesResponseSchema);
+}
+
+/**
+ * Fetch list of communities
+ */
+export function fetchCommunities() {
+  return apiClient.get(
+    endpoints.onboarding.communities,
+    CommunitiesResponseSchema,
+  );
 }
 
 /**

@@ -31,6 +31,7 @@ import {
 } from "@/features/auth";
 import {
   useCollegeSearch,
+  useCommunities,
   useCompanies,
   useCreateOrganization,
   useDepartmentSearch,
@@ -111,6 +112,7 @@ export function RegisterClient({
   const colleges = useCollegeSearch(collegeSearch);
   const departments = useDepartmentSearch(departmentSearch);
   const companies = useCompanies();
+  const communities = useCommunities();
   const roles = useRoles(); // for resolving role title → DB UUID
 
   // ─── Step handlers ──────────────────────────────────────────
@@ -135,13 +137,13 @@ export function RegisterClient({
     // Student / Enabler
     college?: string;
     customCollege?: string;
-    // Student / Mentor (College type) / Student (Company type)
+    // Student / Mentor (College type)
     department?: string;
     graduationYear?: number;
-    // Mentor / Student (Company type)
+    // Mentor (company) / Student (Community type)
     organization?: string;
     customOrganization?: string;
-    organizationType?: "College" | "Company";
+    organizationType?: "College" | "Community";
     role?: string;
     // Mentor-specific
     mentorType?: "ig" | "company";
@@ -228,12 +230,19 @@ export function RegisterClient({
     graduationYear?: number;
     organization?: string;
     customOrganization?: string;
-    organizationType?: "College" | "Company";
+    organizationType?: "College" | "Community";
     role?: string;
     mentorType?: "ig" | "company";
     isFreelancer?: boolean;
   }) {
     if (!basicData || !selectedRole) return;
+
+    // A learner who picked a community joins it through the register
+    // payload's `communities` list — the backend links it on account creation.
+    const isCommunityLearner =
+      selectedRole === "student" && values.organizationType === "Community";
+    const communityIds =
+      isCommunityLearner && values.organization ? [values.organization] : [];
 
     // 1. Resolve role title → DB UUID
     const roleTitle =
@@ -256,6 +265,7 @@ export function RegisterClient({
         role: roleId,
       },
       referral: referralId ? { muid: referralId } : undefined,
+      ...(communityIds.length > 0 ? { communities: communityIds } : {}),
       ...(isGoogleSignup && tempToken ? { tempToken } : {}),
     });
 
@@ -265,50 +275,35 @@ export function RegisterClient({
     // duplicate it for the custom-org/college submission paths.
     let orgSubmittedForReview = false;
 
-    if (selectedRole === "student" || selectedRole === "enabler") {
-      if (selectedRole === "student" && values.organizationType === "Company") {
-        if (values.organization === "others" && values.customOrganization) {
-          await createOrganization.mutateAsync({
-            title: values.customOrganization,
-            org_type: "Company",
-          });
-          toast.success("Organization submitted for review!");
-          orgSubmittedForReview = true;
-        } else if (values.organization) {
-          await selectOrganization.mutateAsync({
-            organization: values.organization,
-            department: null,
-            graduation_year: null,
-            is_student: true,
-          });
-        }
-      } else {
-        if (values.college === "others" && values.customCollege) {
-          // Submit unverified org for admin review
-          const payload: {
-            title: string;
-            org_type: "College" | "Company";
-            department?: string;
-            graduation_year?: string;
-          } = { title: values.customCollege, org_type: "College" };
+    if (
+      (selectedRole === "student" || selectedRole === "enabler") &&
+      !isCommunityLearner
+    ) {
+      if (values.college === "others" && values.customCollege) {
+        // Submit unverified org for admin review
+        const payload: {
+          title: string;
+          org_type: "College" | "Company";
+          department?: string;
+          graduation_year?: string;
+        } = { title: values.customCollege, org_type: "College" };
 
-          if (selectedRole === "student") {
-            if (values.department) payload.department = values.department;
-            if (values.graduationYear)
-              payload.graduation_year = values.graduationYear.toString();
-          }
-
-          await createOrganization.mutateAsync(payload);
-          toast.success("College submitted for review!");
-          orgSubmittedForReview = true;
-        } else if (values.college) {
-          await selectOrganization.mutateAsync({
-            organization: values.college,
-            department: values.department ?? null,
-            graduation_year: values.graduationYear ?? null,
-            is_student: selectedRole === "student",
-          });
+        if (selectedRole === "student") {
+          if (values.department) payload.department = values.department;
+          if (values.graduationYear)
+            payload.graduation_year = values.graduationYear.toString();
         }
+
+        await createOrganization.mutateAsync(payload);
+        toast.success("College submitted for review!");
+        orgSubmittedForReview = true;
+      } else if (values.college) {
+        await selectOrganization.mutateAsync({
+          organization: values.college,
+          department: values.department ?? null,
+          graduation_year: values.graduationYear ?? null,
+          is_student: selectedRole === "student",
+        });
       }
     }
 
@@ -322,7 +317,8 @@ export function RegisterClient({
 
     if (selectedRole === "mentor") {
       if (values.organization === "others" && values.customOrganization) {
-        const orgType = values.organizationType || "Company";
+        const orgType =
+          values.organizationType === "College" ? "College" : "Company";
         const orgPayload: {
           title: string;
           org_type: "College" | "Company";
@@ -445,9 +441,11 @@ export function RegisterClient({
         colleges={colleges.data ?? []}
         departments={departments.data ?? []}
         companies={companies.data ?? []}
+        communities={communities.data ?? []}
         isLoadingColleges={colleges.isFetching}
         isLoadingDepartments={departments.isFetching}
         isLoadingCompanies={companies.isLoading}
+        isLoadingCommunities={communities.isLoading}
         onCollegeSearchChange={setCollegeSearch}
         onDepartmentSearchChange={setDepartmentSearch}
       />
