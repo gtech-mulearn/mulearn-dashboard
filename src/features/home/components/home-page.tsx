@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useUserInfo } from "@/features/auth/hooks/use-session";
+import { useUserInfo } from "@/features/auth";
 import { usePermissions } from "@/hooks/use-permissions";
 import { CAMPUS_MANAGEMENT_ROLES, ROLES } from "@/lib/auth";
 import { CompanyHome } from "./company-home";

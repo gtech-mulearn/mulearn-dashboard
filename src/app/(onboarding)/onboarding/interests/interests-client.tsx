@@ -15,7 +15,6 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { OptionCard } from "@/components/ui/option-card";
 import { useUserInfo } from "@/features/auth";
-import { authKeys } from "@/features/auth/hooks/query-keys";
 import {
   InterestSelector,
   PathwayQuiz,
@@ -23,6 +22,7 @@ import {
   useSelectEndgoals,
 } from "@/features/onboarding";
 import { getRoleHomePath, sanitizeReturnPath } from "@/lib/auth";
+import { userInfoKey } from "@/lib/auth/user-info";
 
 interface InterestsClientProps {
   redirectUri?: string;
@@ -84,7 +84,7 @@ export function InterestsClient({
     try {
       setIsSubmitting(true);
       await selectDomains.mutateAsync(pathways);
-      await queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
+      await queryClient.invalidateQueries({ queryKey: userInfoKey() });
       toast.success("Pathways saved! Welcome to μLearn!");
       router.replace(getRedirectPath());
     } catch {
@@ -101,7 +101,7 @@ export function InterestsClient({
       setIsSubmitting(true);
       await selectDomains.mutateAsync(pathways);
       await selectEndgoals.mutateAsync(endgoals);
-      await queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
+      await queryClient.invalidateQueries({ queryKey: userInfoKey() });
       toast.success("Interests saved! Welcome to μLearn!");
       router.replace(getRedirectPath());
     } catch {

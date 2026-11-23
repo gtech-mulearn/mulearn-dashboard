@@ -1,6 +1,6 @@
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
-import type { CompanyOnboardingStatus } from "@/features/auth/schemas";
+import type { CompanyOnboardingStatus } from "@/features/auth";
 
 type CompanyVerifiedBannerProps = {
   status?: CompanyOnboardingStatus;

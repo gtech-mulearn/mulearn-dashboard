@@ -13,8 +13,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { useUserInfo } from "@/features/auth";
 import { hasAnyRole, hasPermission, type Permission } from "@/lib/auth";
+import { useUserInfo } from "@/lib/auth/use-user-info";
 
 // ─── Return Type ────────────────────────────────────────────
 

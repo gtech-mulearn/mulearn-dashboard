@@ -2,8 +2,7 @@
 
 import { format } from "date-fns";
 import { useState } from "react";
-import { useCompanyOnboardingStatus } from "@/features/auth/hooks";
-import { useUserInfo } from "@/features/auth/hooks/use-session";
+import { useCompanyOnboardingStatus, useUserInfo } from "@/features/auth";
 import { useCompanyProfile, useJobs } from "@/features/company-jobs";
 import { ROLES } from "@/lib/auth";
 import { useCompanyHomeSummary, useDashboardCalendar } from "../hooks";

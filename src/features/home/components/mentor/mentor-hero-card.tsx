@@ -1,5 +1,5 @@
 import { Calendar, CheckCircle2, Shield } from "lucide-react";
-import { useUserInfo } from "@/features/auth/hooks/use-session";
+import { useUserInfo } from "@/features/auth";
 import type { MentorNextSession } from "../../schemas/home.schema";
 
 type MentorHeroCardProps = {

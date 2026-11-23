@@ -5,7 +5,7 @@ import { ROLES } from "@/lib/auth/roles";
 // Users hold several roles at once: RoleGate shows its content if ANY role allows it.
 
 let roles: string[] = [];
-vi.mock("@/features/auth", () => ({
+vi.mock("@/lib/auth/use-user-info", () => ({
   useUserInfo: () => ({ data: { roles }, isLoading: false }),
 }));
 
