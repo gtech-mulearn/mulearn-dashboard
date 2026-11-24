@@ -84,6 +84,7 @@ import type {
 import { ProblemStatementAboutSection } from "./problem-statement-about-section";
 import { ProblemStatementCompany } from "./problem-statement-company";
 import { ProblemStatementFormDialog } from "./problem-statement-form-dialog";
+import { ProblemStatementOnBehalfOf } from "./problem-statement-on-behalf-of";
 import {
   ProblemStatementAvailabilityBadge,
   ProblemStatementParticipationBadge,
@@ -308,6 +309,12 @@ export function ManageProblemStatementDetailView({
               company={statement.company}
               nameClassName="text-sm"
             />
+            {isAdmin && (
+              <ProblemStatementOnBehalfOf
+                user={statement.on_behalf_of}
+                className="text-sm"
+              />
+            )}
             <span className="text-sm text-muted-foreground">
               Updated {formatDateTime(statement.updated_at)}
             </span>

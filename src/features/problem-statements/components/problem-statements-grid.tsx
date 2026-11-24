@@ -7,6 +7,8 @@ import { ProblemStatementCardComponent } from "./problem-statement-card";
 interface ProblemStatementsGridProps {
   statements: ProblemStatement[];
   isManageView?: boolean;
+  /** Admin-only: show the user a statement was drafted on behalf of */
+  showOnBehalfOf?: boolean;
   onView: (statement: ProblemStatement) => void;
   emptyTitle: string;
   emptyDescription: string;
@@ -16,6 +18,7 @@ interface ProblemStatementsGridProps {
 export function ProblemStatementsGrid({
   statements,
   isManageView,
+  showOnBehalfOf,
   onView,
   emptyTitle,
   emptyDescription,
@@ -39,6 +42,7 @@ export function ProblemStatementsGrid({
           key={statement.id}
           statement={statement}
           isManageView={isManageView}
+          showOnBehalfOf={showOnBehalfOf}
           onView={onView}
         />
       ))}

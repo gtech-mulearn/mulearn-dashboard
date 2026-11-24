@@ -8,6 +8,7 @@ export * from "./problem-statement-detail-modal";
 export * from "./problem-statement-detail-view";
 export * from "./problem-statement-form-dialog";
 export * from "./problem-statement-join-dialog";
+export * from "./problem-statement-on-behalf-of";
 export * from "./problem-statement-participation";
 export * from "./problem-statement-status-badge";
 export * from "./problem-statement-submit-dialog";

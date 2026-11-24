@@ -14,11 +14,13 @@
  * would otherwise block editing a closed statement.
  *
  * Admin-created statements are authored under µLearn (no company_id).
+ * Admins can also mention a user (`muid`) the statement is drafted on behalf
+ * of; the backend notifies that user. Company payloads never send `muid`.
  */
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { Loader2, UserRound, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
@@ -43,6 +45,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { MarkdownEditor } from "@/components/ui/markdown-editor";
+import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import { TagInput } from "@/components/ui/tag-input";
 import { CATEGORY_SUGGESTIONS } from "../constants/problem-statement.constants";
 import {
@@ -53,9 +56,12 @@ import {
 } from "../hooks";
 import { StatementFormSchema } from "../schemas/problem-statement.schema";
 import type {
+  AdminUpdateStatementPayload,
+  EmbeddedUser,
   ProblemStatement,
-  UpdateStatementPayload,
 } from "../types/problem-statement.types";
+
+type MentionedUser = Pick<EmbeddedUser, "muid" | "full_name">;
 
 type Mode = "company-create" | "company-edit" | "admin-create" | "admin-edit";
 
@@ -114,8 +120,18 @@ export function ProblemStatementFormDialog({
   });
   const { reset, formState } = form;
 
+  // Admin-only "on behalf of" mention. Kept outside the zod form: company
+  // payloads must never carry `muid` (backend rejects unknown fields).
+  const [mentioned, setMentioned] = useState<MentionedUser | null>(() =>
+    isEditing && statement?.on_behalf_of ? statement.on_behalf_of : null,
+  );
+
   useEffect(() => {
-    if (open) reset(toFormValues(isEditing ? statement : undefined));
+    if (!open) return;
+    reset(toFormValues(isEditing ? statement : undefined));
+    setMentioned(
+      isEditing && statement?.on_behalf_of ? statement.on_behalf_of : null,
+    );
   }, [open, isEditing, statement, reset]);
 
   const companyCreate = useCreateCompanyStatement();
@@ -136,28 +152,39 @@ export function ProblemStatementFormDialog({
       let result: ProblemStatement;
       if (isEditing && statement) {
         const dirty = formState.dirtyFields;
-        const payload: UpdateStatementPayload = {};
+        const payload: AdminUpdateStatementPayload = {};
         if (dirty.title) payload.title = values.title;
         if (dirty.description) payload.description = values.description;
         if (dirty.category) payload.category = values.category;
         if (dirty.skills) payload.skills = values.skills;
         if (dirty.deadline) payload.deadline = values.deadline ?? null;
+        if (
+          isAdmin &&
+          (mentioned?.muid ?? null) !== (statement.on_behalf_of?.muid ?? null)
+        ) {
+          // "" clears the mention on the backend
+          payload.muid = mentioned?.muid ?? "";
+        }
         if (Object.keys(payload).length === 0) {
           onClose();
           return;
         }
-        const update = isAdmin ? adminUpdate : companyUpdate;
-        result = await update.mutateAsync({ id: statement.id, payload });
+        result = isAdmin
+          ? await adminUpdate.mutateAsync({ id: statement.id, payload })
+          : await companyUpdate.mutateAsync({ id: statement.id, payload });
         toast.success("Problem statement updated.");
       } else {
-        const create = isAdmin ? adminCreate : companyCreate;
-        result = await create.mutateAsync(values);
+        result = isAdmin
+          ? await adminCreate.mutateAsync(
+              mentioned ? { ...values, muid: mentioned.muid } : values,
+            )
+          : await companyCreate.mutateAsync(values);
         toast.success("Draft created. Publish it when you're ready.");
       }
       onSuccess?.(result);
       onClose();
     } catch {
-      // error toasts are owned by the mutation hooks
+      // error toasts (incl. unknown-muid 400) are owned by the mutation hooks
     }
   };
 
@@ -292,6 +319,49 @@ export function ProblemStatementFormDialog({
                   </FormItem>
                 )}
               />
+
+              {isAdmin && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-foreground">
+                    On behalf of
+                  </p>
+                  {mentioned ? (
+                    <div className="flex h-9 items-center gap-2 rounded-md border border-input bg-background px-3 text-sm">
+                      <UserRound className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                      <span className="truncate font-medium text-foreground">
+                        {mentioned.full_name}
+                      </span>
+                      <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                        ({mentioned.muid})
+                      </span>
+                      <button
+                        type="button"
+                        className="ml-auto rounded-sm opacity-60 transition-opacity hover:opacity-100 disabled:pointer-events-none"
+                        onClick={() => setMentioned(null)}
+                        disabled={isPending}
+                        aria-label="Remove mentioned user"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <MuidSearchInput
+                      onSelectUser={(user) =>
+                        setMentioned({
+                          muid: user.muid,
+                          full_name: user.full_name,
+                        })
+                      }
+                      placeholder="Search a user by name or muid…"
+                      disabled={isPending}
+                    />
+                  )}
+                  <p className="text-sm text-muted-foreground">
+                    Optional. Mention the user this statement is drafted for —
+                    they'll get a notification.
+                  </p>
+                </div>
+              )}
 
               <FormField
                 control={form.control}

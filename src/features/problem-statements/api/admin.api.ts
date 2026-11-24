@@ -22,11 +22,11 @@ import {
 import type {
   AdminCreateStatementPayload,
   AdminQueryParams,
+  AdminUpdateStatementPayload,
   InteractionsQueryParams,
   InteractionUser,
   PaginatedResponse,
   ProblemStatement,
-  UpdateStatementPayload,
 } from "../types/problem-statement.types";
 
 // ─── List ─────────────────────────────────────────────────────────────────────
@@ -103,7 +103,7 @@ export async function adminCreateStatement(
 /** PATCH admin/<id>/ — update any statement. The company cannot be changed. */
 export async function adminUpdateStatement(
   id: string,
-  payload: UpdateStatementPayload,
+  payload: AdminUpdateStatementPayload,
 ): Promise<ProblemStatement> {
   const res = await apiClient.patch(
     endpoints.problemStatements.adminUpdate(id),
