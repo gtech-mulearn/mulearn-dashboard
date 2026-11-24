@@ -1022,12 +1022,6 @@ export const endpoints = {
     list: "/api/v1/dashboard/skill/",
     /** POST - Create skill (admin only). Body: { name, code, description?, icon?, is_active? } */
     create: "/api/v1/dashboard/skill/create/",
-    /** GET - Active skills for dropdowns → [{ id, name, code }] */
-    dropdown: "/api/v1/dashboard/skill/dropdown/",
-    /** GET/PUT/DELETE - Skill detail (PUT/DELETE admin only) */
-    detail: (skillId: string) => `/api/v1/dashboard/skill/${skillId}/`,
-    /** GET - Tasks linked to a skill */
-    tasks: (skillId: string) => `/api/v1/dashboard/skill/${skillId}/tasks/`,
   },
 
   // ============================================
