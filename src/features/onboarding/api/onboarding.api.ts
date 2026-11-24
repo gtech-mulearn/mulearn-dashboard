@@ -17,10 +17,9 @@ import {
   type CreateOrganizationRequest,
   CreateOrganizationResponseSchema,
   DepartmentsResponseSchema,
-  DistrictSearchResponseSchema,
   DistrictsResponseSchema,
   RolesResponseSchema,
-  SchoolsResponseSchema,
+  SchoolSearchResponseSchema,
   SelectDomainsResponseSchema,
   SelectEndgoalsResponseSchema,
   type SelectOrganizationRequest,
@@ -79,23 +78,13 @@ export function fetchCompanies() {
 }
 
 /**
- * Search districts by name (public). Returns "District, State, Country" labels.
+ * Server-side search of schools by name
  */
-export function searchDistricts(query: string) {
+export function searchSchools(search: string) {
+  const query = new URLSearchParams({ search, perPage: "20" });
   return apiClient.get(
-    endpoints.onboarding.location(encodeURIComponent(query)),
-    DistrictSearchResponseSchema,
-  );
-}
-
-/**
- * Fetch schools in a district (public)
- */
-export function fetchSchoolsByDistrict(districtId: string) {
-  return apiClient.post(
-    endpoints.location.schools,
-    { district: districtId },
-    SchoolsResponseSchema,
+    `${endpoints.search.schools}?${query}`,
+    SchoolSearchResponseSchema,
   );
 }
 

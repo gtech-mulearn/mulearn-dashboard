@@ -40,9 +40,8 @@ import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   useCountries,
-  useDistrictSearch,
   useDistricts,
-  useSchoolsByDistrict,
+  useSchoolSearch,
   useStates,
 } from "@/features/onboarding/hooks";
 import type {
@@ -109,8 +108,6 @@ const studentDetailsSchema = z
     customCollege: z.string().optional(),
     department: z.string().optional(),
     graduationYear: z.number().optional(),
-    // School only: district the school list is filtered by
-    district: z.string().optional(),
     // School / Company / Community: selected org UUID, or "others"
     organization: z.string().optional(),
     customOrganization: z.string().optional(),
@@ -121,22 +118,6 @@ const studentDetailsSchema = z
     {
       message: "Pick a company or community",
       path: ["organizationType"],
-    },
-  )
-  .refine(
-    (data) => {
-      // A district is only needed to look up an existing school.
-      if (
-        data.organizationType === "School" &&
-        data.organization !== "others"
-      ) {
-        return !!data.district && data.district.trim().length > 0;
-      }
-      return true;
-    },
-    {
-      message: "Please select your district",
-      path: ["district"],
     },
   )
   .refine(
@@ -397,7 +378,6 @@ interface RegisterRoleDetailsProps {
       customOrganization?: string;
       organizationType?: LearnerOrgType;
       isStudent?: boolean;
-      district?: string;
       role?: string;
       mentorType?: "ig" | "company";
       isFreelancer?: boolean;
@@ -454,7 +434,6 @@ export function RegisterRoleDetails({
         customCollege: "",
         department: "",
         graduationYear: undefined as number | undefined,
-        district: "",
         organization: "",
         customOrganization: "",
       };
@@ -512,16 +491,10 @@ export function RegisterRoleDetails({
   const [isStudent, setIsStudent] = useState(true);
   const visibleOrgTypes = isStudent ? LEARNER_ORG_TYPES : NON_STUDENT_ORG_TYPES;
 
-  // School lookup: search district → list schools in that district
-  const [districtSearch, setDistrictSearch] = useState("");
-  const [schoolDistrict, setSchoolDistrict] = useState("");
+  // School lookup: server-side search by name (same as colleges)
+  const [schoolSearch, setSchoolSearch] = useState("");
   const isSchoolLookup = role === "student" && studentOrgType === "School";
-  const districtResults = useDistrictSearch(
-    isSchoolLookup ? districtSearch : "",
-  );
-  const schools = useSchoolsByDistrict(
-    isSchoolLookup && schoolDistrict ? schoolDistrict : undefined,
-  );
+  const schools = useSchoolSearch(schoolSearch, isSchoolLookup);
 
   // Switching org type clears the previous pick so a company UUID never
   // gets submitted as a community, etc.
@@ -530,9 +503,7 @@ export function RegisterRoleDetails({
     form.setValue("organizationType", type);
     form.setValue("organization", "");
     form.setValue("customOrganization", "");
-    form.setValue("district", "");
-    setSchoolDistrict("");
-    setDistrictSearch("");
+    setSchoolSearch("");
     setShowCustomOrganization(false);
     form.clearErrors();
   };
@@ -551,9 +522,7 @@ export function RegisterRoleDetails({
     School: {
       options: schools.data ?? [],
       loading: schools.isFetching,
-      placeholder: schoolDistrict
-        ? "Select your school"
-        : "Select your district first",
+      placeholder: "Select your school",
     },
     Company: {
       options: companies,
@@ -911,38 +880,6 @@ export function RegisterRoleDetails({
                 </>
               ) : (
                 <>
-                  {/* School list is per-district: pick the district first */}
-                  {studentOrgType === "School" && !showCustomOrganization && (
-                    <FormField
-                      control={form.control}
-                      name="district"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium">
-                            District
-                          </FormLabel>
-                          <FormControl>
-                            <Combobox
-                              options={districtResults.data ?? []}
-                              value={field.value}
-                              onValueChange={(value) => {
-                                field.onChange(value);
-                                setSchoolDistrict(value);
-                                form.setValue("organization", "");
-                              }}
-                              placeholder="Search your district"
-                              searchPlaceholder="Type your district name..."
-                              disabled={isLoading}
-                              onSearchChange={setDistrictSearch}
-                              loading={districtResults.isFetching}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-
                   <FormField
                     control={form.control}
                     name="organization"
@@ -966,6 +903,11 @@ export function RegisterRoleDetails({
                             searchPlaceholder={`Search ${studentOrgType.toLowerCase()}...`}
                             disabled={isLoading}
                             loading={orgPicker[studentOrgType].loading}
+                            onSearchChange={
+                              studentOrgType === "School"
+                                ? setSchoolSearch
+                                : undefined
+                            }
                             onCreateNew={(searchTerm) => {
                               field.onChange("others");
                               form.setValue("customOrganization", searchTerm);
