@@ -107,7 +107,7 @@ export const endpoints = {
     districts: "/api/v1/register/district/list/",
     /** POST - List of colleges in district */
     collegesInDistrict: "/api/v1/register/college/list/",
-    /** GET - List of schools */
+    /** POST - List of schools in district (requires district) */
     schools: "/api/v1/register/schools/list/",
   },
 

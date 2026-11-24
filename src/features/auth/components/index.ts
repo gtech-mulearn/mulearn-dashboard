@@ -12,6 +12,7 @@ export { OTPLoginForm } from "./otp-login-form";
 export { RegisterForm } from "./register-form";
 export {
   type CompanyDetailsValues,
+  type LearnerOrgType,
   RegisterRoleDetails,
 } from "./register-role-details";
 export { RegisterRoleSelection, type Role } from "./register-role-selection";

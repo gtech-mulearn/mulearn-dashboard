@@ -11,6 +11,7 @@ import { endpoints } from "@/api/endpoints";
 import {
   CollegeSearchResponseSchema,
   CollegesResponseSchema,
+  CommunitiesResponseSchema,
   CompaniesResponseSchema,
   CountriesResponseSchema,
   type CreateOrganizationRequest,
@@ -18,6 +19,7 @@ import {
   DepartmentsResponseSchema,
   DistrictsResponseSchema,
   RolesResponseSchema,
+  SchoolSearchResponseSchema,
   SelectDomainsResponseSchema,
   SelectEndgoalsResponseSchema,
   type SelectOrganizationRequest,
@@ -73,6 +75,27 @@ export function searchDepartments(search: string) {
  */
 export function fetchCompanies() {
   return apiClient.get(endpoints.onboarding.companies, CompaniesResponseSchema);
+}
+
+/**
+ * Server-side search of schools by name
+ */
+export function searchSchools(search: string) {
+  const query = new URLSearchParams({ search, perPage: "20" });
+  return apiClient.get(
+    `${endpoints.search.schools}?${query}`,
+    SchoolSearchResponseSchema,
+  );
+}
+
+/**
+ * Fetch list of communities
+ */
+export function fetchCommunities() {
+  return apiClient.get(
+    endpoints.onboarding.communities,
+    CommunitiesResponseSchema,
+  );
 }
 
 /**
