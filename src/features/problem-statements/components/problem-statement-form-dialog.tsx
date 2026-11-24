@@ -6,7 +6,7 @@
  * 📍 src/features/problem-statements/components/problem-statement-form-dialog.tsx
  *
  * Create / edit a problem statement using the shared form primitives
- * (Form*, Input, TagInput, CustomDateTimePicker, MarkdownEditor).
+ * (Form*, Input, SkillSearchInput, CustomDateTimePicker, MarkdownEditor).
  *
  * The backend rejects unknown fields with 400, so only the whitelisted
  * fields (title, description, category, skills, deadline) are sent. Edits
@@ -46,7 +46,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { MarkdownEditor } from "@/components/ui/markdown-editor";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
-import { TagInput } from "@/components/ui/tag-input";
+import { SkillSearchInput } from "@/components/ui/skill-search-input";
 import { CATEGORY_SUGGESTIONS } from "../constants/problem-statement.constants";
 import {
   useAdminCreateStatement,
@@ -303,17 +303,26 @@ export function ProblemStatementFormDialog({
                   <FormItem>
                     <FormLabel>Skills</FormLabel>
                     <FormControl>
-                      <TagInput
-                        value={field.value ?? []}
-                        onChange={(tags) =>
-                          field.onChange(normalizeSkills(tags))
+                      <SkillSearchInput
+                        value={(field.value ?? []).map((name) => ({
+                          id: name,
+                          name,
+                          code: "",
+                        }))}
+                        onChange={(skills) =>
+                          field.onChange(
+                            normalizeSkills(skills.map((s) => s.name)),
+                          )
                         }
-                        placeholder="Type a skill and press Enter"
+                        placeholder={"Search a skill…"}
+                        disabled={isPending}
+                        maxSelected={MAX_SKILLS}
+                        creatable={isAdmin}
                       />
                     </FormControl>
                     <FormDescription>
-                      {(field.value ?? []).length}/{MAX_SKILLS} — press Enter or
-                      comma to add.
+                      {(field.value ?? []).length}/{MAX_SKILLS}
+                      {" — press Enter or comma to add."}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

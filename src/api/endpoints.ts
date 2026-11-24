@@ -1015,6 +1015,16 @@ export const endpoints = {
   },
 
   // ============================================
+  // Skill Endpoints
+  // ============================================
+  skills: {
+    /** GET - Paginated skill list (query: search, perPage, pageIndex, sortBy, isAsc, activeOnly) → { skills, pagination } */
+    list: "/api/v1/dashboard/skill/",
+    /** POST - Create skill (admin only). Body: { name, code, description?, icon?, is_active? } */
+    create: "/api/v1/dashboard/skill/create/",
+  },
+
+  // ============================================
   // Utility Endpoints
   // ============================================
   utils: {
