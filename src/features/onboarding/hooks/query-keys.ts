@@ -14,10 +14,8 @@ export const onboardingKeys = {
     [...onboardingKeys.all, "departments", "search", search] as const,
   companies: () => [...onboardingKeys.all, "companies"] as const,
   communities: () => [...onboardingKeys.all, "communities"] as const,
-  districtSearch: (search: string) =>
-    [...onboardingKeys.all, "districts", "search", search] as const,
-  schools: (districtId: string) =>
-    [...onboardingKeys.all, "schools", districtId] as const,
+  schoolSearch: (search: string) =>
+    [...onboardingKeys.all, "schools", "search", search] as const,
   roles: () => [...onboardingKeys.all, "roles"] as const,
   countries: () => [...onboardingKeys.all, "countries"] as const,
   states: (countryId: string) =>
