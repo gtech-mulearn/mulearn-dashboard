@@ -146,7 +146,6 @@ export function RegisterClient({
     customOrganization?: string;
     organizationType?: LearnerOrgType;
     isStudent?: boolean;
-    district?: string;
     role?: string;
     // Mentor-specific
     mentorType?: "ig" | "company";
@@ -235,7 +234,6 @@ export function RegisterClient({
     customOrganization?: string;
     organizationType?: LearnerOrgType;
     isStudent?: boolean;
-    district?: string;
     role?: string;
     mentorType?: "ig" | "company";
     isFreelancer?: boolean;

@@ -11,7 +11,7 @@ export { useCompanies } from "./use-companies";
 export { useDepartmentSearch } from "./use-department-search";
 export { useCountries, useDistricts, useStates } from "./use-location";
 export { useRoles } from "./use-roles";
-export { useDistrictSearch, useSchoolsByDistrict } from "./use-schools";
+export { useSchoolSearch } from "./use-schools";
 export { useSelectDomains, useSelectEndgoals } from "./use-select-interests";
 export {
   useCreateOrganization,
