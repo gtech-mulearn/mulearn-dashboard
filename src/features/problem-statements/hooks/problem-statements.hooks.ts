@@ -49,6 +49,7 @@ import {
 import type {
   AdminCreateStatementPayload,
   AdminQueryParams,
+  AdminUpdateStatementPayload,
   CompanyCreateStatementPayload,
   CompanyQueryParams,
   FeedQueryParams,
@@ -495,7 +496,7 @@ export function useAdminUpdateStatement() {
       payload,
     }: {
       id: string;
-      payload: UpdateStatementPayload;
+      payload: AdminUpdateStatementPayload;
     }) => adminUpdateStatement(id, payload),
     onSuccess: async (_data, { id }) => {
       await queryClient.invalidateQueries({

@@ -16,12 +16,15 @@ import {
 import { formatDeadline, participantCount } from "../lib/format";
 import type { ProblemStatement } from "../types/problem-statement.types";
 import { ProblemStatementCompany } from "./problem-statement-company";
+import { ProblemStatementOnBehalfOf } from "./problem-statement-on-behalf-of";
 import { ProblemStatementStatusBadges } from "./problem-statement-status-badge";
 
 interface ProblemStatementsTableProps {
   statements: ProblemStatement[];
   onView: (statement: ProblemStatement) => void;
   isManageView?: boolean;
+  /** Admin-only: show the user a statement was drafted on behalf of */
+  showOnBehalfOf?: boolean;
   emptyTitle: string;
   emptyDescription: string;
   emptyAction?: ReactNode;
@@ -31,6 +34,7 @@ export function ProblemStatementsTable({
   statements,
   onView,
   isManageView = false,
+  showOnBehalfOf = false,
   emptyTitle,
   emptyDescription,
   emptyAction,
@@ -76,6 +80,12 @@ export function ProblemStatementsTable({
                   company={statement.company}
                   className="mt-1"
                 />
+                {showOnBehalfOf && (
+                  <ProblemStatementOnBehalfOf
+                    user={statement.on_behalf_of}
+                    className="mt-1 text-xs"
+                  />
+                )}
               </TableCell>
               <TableCell>
                 <Badge>{statement.category}</Badge>

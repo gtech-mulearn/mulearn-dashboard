@@ -40,6 +40,16 @@ export const EmbeddedCompanySchema = z.object({
   logo: z.string().nullable().optional(),
 });
 
+/**
+ * User an admin-authored statement was created on behalf of (mentioned by muid).
+ * Only present on company/admin responses; null when nobody is mentioned.
+ */
+export const EmbeddedUserSchema = z.object({
+  id: z.string(),
+  muid: z.string(),
+  full_name: z.string(),
+});
+
 /** Pagination object returned by all list responses */
 export const PaginationSchema = z.object({
   count: z.number().int(),
@@ -65,6 +75,8 @@ export const ProblemStatementSchema = z.object({
   deadline: z.string().nullable(),
   status: ProblemStatementStatusSchema,
   company: EmbeddedCompanySchema,
+  /** Mentioned user (admin statements only). Absent on learner responses. */
+  on_behalf_of: EmbeddedUserSchema.nullable().optional(),
   /** true when status === "Published" AND deadline has not passed */
   is_open: z.boolean(),
   /** Number of users per interaction status. Always has every status key: { Trying: number, Submitted: number }. */
@@ -195,11 +207,18 @@ export const CompanyCreateStatementSchema = StatementFormSchema;
  * Full create payload for admin users.
  * Statements are created directly for muLearn and are not attributed to any
  * company — company_id is NOT an accepted field (causes 400 if sent).
+ * Admins may also send `muid` to create the statement on behalf of a user
+ * (the user gets an in-app notification). Blank / null = nobody.
  */
-export const AdminCreateStatementSchema = StatementFormSchema;
+export const AdminCreateStatementSchema = StatementFormSchema.extend({
+  muid: z.string().max(100).nullable().optional(),
+});
 
 /** PATCH payload — all fields optional */
 export const UpdateStatementSchema = StatementFormSchema.partial();
+
+/** Admin PATCH payload — also accepts `muid` (null / "" clears the mention). */
+export const AdminUpdateStatementSchema = AdminCreateStatementSchema.partial();
 
 /**
  * Payload for PUT <id>/interaction/

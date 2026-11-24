@@ -4,7 +4,7 @@
  * 📍 src/features/tour/steps/pages/intern.ts
  *
  * In-page tours for `/dashboard/intern/*` pages (tasks, timesheet, leave,
- * minutes, weekly review, leaderboard).
+ * monthly review, leaderboard).
  *
  * `intern/quest-log/page.tsx` is skipped — it renders `QuestLogHistory`, a
  * shared component that lives outside this page's folder
@@ -13,7 +13,6 @@
  * shared component.
  */
 
-import { ROLES } from "@/lib/auth/roles";
 import type { PageTourConfig } from "../../types";
 
 export const internPageTours: readonly PageTourConfig[] = [
@@ -39,8 +38,7 @@ export const internPageTours: readonly PageTourConfig[] = [
         id: "intern-dashboard-stats",
         elementId: "page:intern-dashboard:stats",
         title: "Key Stats",
-        description:
-          "Track your karma, streak, and other core metrics at a glance.",
+        description: "Track your karma, rank, and completed tasks at a glance.",
       },
       {
         id: "intern-dashboard-active-quests",
@@ -156,44 +154,6 @@ export const internPageTours: readonly PageTourConfig[] = [
     ],
   },
   {
-    route: "/dashboard/intern/minutes",
-    version: 1,
-    steps: [
-      {
-        id: "intern-minutes-intro",
-        title: "Guild Minutes",
-        description: "Keep track of your guild's daily meeting minutes here.",
-        centered: true,
-      },
-      {
-        id: "intern-minutes-header",
-        elementId: "page:intern-minutes:header",
-        title: "Guild Minutes",
-        description: "Track your guild's daily meeting minutes.",
-      },
-      {
-        id: "intern-minutes-upload",
-        elementId: "page:intern-minutes:upload",
-        title: "Upload Minutes",
-        description:
-          "Intern leads can submit today's meeting notes link or a brief summary here.",
-        requiresRole: [ROLES.INTERN_LEAD],
-      },
-      {
-        id: "intern-minutes-search",
-        elementId: "page:intern-minutes:search",
-        title: "Search Minutes",
-        description: "Quickly find a past entry by title or content.",
-      },
-      {
-        id: "intern-minutes-history",
-        elementId: "page:intern-minutes:history",
-        title: "Minutes History",
-        description: "Browse and view details of previously logged minutes.",
-      },
-    ],
-  },
-  {
     route: "/dashboard/intern/tasks",
     version: 1,
     steps: [
@@ -233,71 +193,62 @@ export const internPageTours: readonly PageTourConfig[] = [
       {
         id: "intern-timesheet-intro",
         title: "Daily Timesheet",
-        description:
-          "Log your daily activities to maintain your streak and earn multipliers.",
+        description: "Log your daily work here, once a day.",
         centered: true,
       },
       {
         id: "intern-timesheet-header",
         elementId: "page:intern-timesheet:header",
         title: "Daily Timesheet",
-        description:
-          "Log your daily activities to maintain your legendary streak.",
+        description: "Log what you worked on today.",
       },
       {
         id: "intern-timesheet-submit-form",
         elementId: "page:intern-timesheet:submit-form",
         title: "Submit Progress",
         description:
-          "Log today's hours, link them to a task, and describe what you got done.",
+          "Log today's (or yesterday's) hours, update your tasks, and describe what you got done.",
       },
       {
         id: "intern-timesheet-calendar",
         elementId: "page:intern-timesheet:calendar",
         title: "Daily History",
         description:
-          "See which days you've submitted, missed, or are still pending this month.",
-      },
-      {
-        id: "intern-timesheet-streak",
-        elementId: "page:intern-timesheet:streak",
-        title: "Streak Bonus",
-        description:
-          "Keep your streak going to unlock higher point multipliers.",
+          "See which days you've submitted or missed. Click a submitted day to view or edit it.",
       },
     ],
   },
   {
-    route: "/dashboard/intern/weekly-review",
+    route: "/dashboard/intern/monthly-review",
     version: 1,
     steps: [
       {
-        id: "intern-weekly-review-intro",
-        title: "Weekly Review",
+        id: "intern-monthly-review-intro",
+        title: "Monthly Review",
         description:
-          "Reflect on your week — achievements, challenges, and what's next.",
+          "Reflect on your month — learnings, challenges, and your plan for the next one.",
         centered: true,
       },
       {
-        id: "intern-weekly-review-header",
-        elementId: "page:intern-weekly-review:header",
-        title: "Weekly Timesheet",
+        id: "intern-monthly-review-header",
+        elementId: "page:intern-monthly-review:header",
+        title: "Submission Window",
         description:
-          "Reflect on your progress and achievements. Submissions close Sunday at 23:59 UTC.",
+          "Reviews open on the last 2 days of the month and close on the 2nd of the next month (IST).",
       },
       {
-        id: "intern-weekly-review-status",
-        elementId: "page:intern-weekly-review:status",
-        title: "This Week's Status",
+        id: "intern-monthly-review-status",
+        elementId: "page:intern-monthly-review:status",
+        title: "Review Status",
         description:
-          "See the current week number and whether you've already submitted.",
+          "See which month you're reviewing, whether it's pending, approved or rejected, and if the window is open.",
       },
       {
-        id: "intern-weekly-review-form",
-        elementId: "page:intern-weekly-review:form",
+        id: "intern-monthly-review-form",
+        elementId: "page:intern-monthly-review:form",
         title: "Submit Your Review",
         description:
-          "Share your key achievements, challenges, and plan for next week.",
+          "Your month's tasks and leave days are filled in for you. Add your rating, learnings, challenges and next month's plan.",
       },
     ],
   },

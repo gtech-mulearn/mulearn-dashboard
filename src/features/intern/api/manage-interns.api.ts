@@ -1,43 +1,20 @@
 import { apiClient, endpoints } from "@/api";
 import type {
+  TAdminMonthlyReview,
   TBulkImportResponse,
   TCreateTaskPayload,
   TInternTask,
   TLeaveRequest,
   TLeaveReviewPayload,
   TManageInternItem,
-  TMinuteItem,
+  TMonthlyReviewReviewPayload,
   TOnboardInternPayload,
   TPaginatedData,
   TTimesheet,
-  TTimesheetReviewPayload,
   TUpdateInternPayload,
   TUpdateTaskPayload,
-  TWeeklyReview,
-  TWeeklyReviewReviewPayload,
 } from "../types";
-import type { TInternQueryParams } from "./intern.api";
-
-function buildQueryString(params?: TInternQueryParams): string {
-  if (!params) return "";
-  const searchParams = new URLSearchParams();
-  if (params.page !== undefined) {
-    searchParams.set("pageIndex", String(params.page));
-  }
-  if (params.perPage !== undefined) {
-    searchParams.set("perPage", String(params.perPage));
-  }
-  if (params.search) searchParams.set("search", params.search);
-  if (params.sortBy) searchParams.set("sortBy", params.sortBy);
-  if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder);
-  if (params.status) searchParams.set("status", params.status);
-  if (params.guild) searchParams.set("guild", params.guild);
-  if (params.complexity) searchParams.set("complexity", params.complexity);
-  if (params.category) searchParams.set("category", params.category);
-  if (params.team) searchParams.set("team", params.team);
-  const qStr = searchParams.toString();
-  return qStr ? `?${qStr}` : "";
-}
+import { buildQueryString, type TInternQueryParams } from "./intern.api";
 
 export const manageInternsApi = {
   // ── Interns Management ─────────────────────────────────────
@@ -152,7 +129,7 @@ export const manageInternsApi = {
     await apiClient.patch(endpoints.manageInterns.leaveReview(id), payload);
   },
 
-  // ── Timesheet Review ───────────────────────────────────────
+  // ── Timesheets (read-only; approval removed) ───────────────
   getTimesheetsList: async (
     params?: TInternQueryParams,
   ): Promise<TPaginatedData<TTimesheet>> => {
@@ -168,49 +145,30 @@ export const manageInternsApi = {
     );
   },
 
-  reviewTimesheet: async (
-    id: string,
-    payload: TTimesheetReviewPayload,
-  ): Promise<void> => {
-    await apiClient.patch(
-      endpoints.manageInterns.timesheetReviewDetail(id),
-      payload,
-    );
-  },
-
-  // ── Weekly Review ──────────────────────────────────────────
-  getWeeklyReviews: async (
+  // ── Monthly Review ─────────────────────────────────────────
+  getMonthlyReviews: async (
     params?: TInternQueryParams,
-  ): Promise<TPaginatedData<TWeeklyReview>> => {
+  ): Promise<TPaginatedData<TAdminMonthlyReview>> => {
     const qs = buildQueryString(params);
-    return apiClient.get<TPaginatedData<TWeeklyReview>>(
-      `${endpoints.manageInterns.reviews}${qs}`,
+    return apiClient.get<TPaginatedData<TAdminMonthlyReview>>(
+      `${endpoints.manageInterns.monthlyReviews}${qs}`,
     );
   },
 
-  getWeeklyReviewDetail: async (id: string): Promise<TWeeklyReview> => {
-    return apiClient.get<TWeeklyReview>(
-      endpoints.manageInterns.weeklyReviewDetail(id),
+  getMonthlyReviewDetail: async (id: string): Promise<TAdminMonthlyReview> => {
+    return apiClient.get<TAdminMonthlyReview>(
+      endpoints.manageInterns.monthlyReviewDetail(id),
     );
   },
 
-  reviewWeeklyReview: async (
+  /** Approve or reject a `PENDING` monthly review. */
+  reviewMonthlyReview: async (
     id: string,
-    payload: TWeeklyReviewReviewPayload,
-  ): Promise<void> => {
-    await apiClient.patch(
-      endpoints.manageInterns.weeklyReviewDetail(id),
+    payload: TMonthlyReviewReviewPayload,
+  ): Promise<TAdminMonthlyReview> => {
+    return apiClient.patch<TAdminMonthlyReview>(
+      endpoints.manageInterns.monthlyReviewDetail(id),
       payload,
-    );
-  },
-
-  // ── Minutes (Admin/Lead View) ─────────────────────────────
-  getAllMinutes: async (
-    params?: TInternQueryParams,
-  ): Promise<TPaginatedData<TMinuteItem>> => {
-    const qs = buildQueryString(params);
-    return apiClient.get<TPaginatedData<TMinuteItem>>(
-      `${endpoints.manageInterns.minutes}${qs}`,
     );
   },
 

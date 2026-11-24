@@ -15,7 +15,6 @@ import {
   Plus,
   Search,
   Shield,
-  Sparkles,
   Users,
   X,
 } from "lucide-react";
@@ -329,7 +328,7 @@ export function ManageInternsPageClient() {
             <Plus className="w-4 h-4" />
             Onboard Intern
           </Button>
-          <Link href="/dashboard/management/manage-interns/timesheet-reviews">
+          <Link href="/dashboard/management/manage-interns/timesheets">
             <Button
               size="lg"
               variant="default"
@@ -357,26 +356,6 @@ export function ManageInternsPageClient() {
             >
               <ListTodo className="w-4 h-4" />
               Tasks
-            </Button>
-          </Link>
-          <Link href="/dashboard/management/manage-interns/intern-report">
-            <Button
-              size="lg"
-              variant="default"
-              className="gap-2 text-xs tracking-widest shadow-lg"
-            >
-              <Sparkles className="w-4 h-4" />
-              Reports
-            </Button>
-          </Link>
-          <Link href="/dashboard/management/manage-interns/minutes">
-            <Button
-              size="lg"
-              variant="default"
-              className="gap-2 text-xs tracking-widest shadow-lg"
-            >
-              <Crown className="w-4 h-4" />
-              Minutes
             </Button>
           </Link>
         </div>

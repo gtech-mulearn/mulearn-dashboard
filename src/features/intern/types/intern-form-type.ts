@@ -17,39 +17,9 @@ export interface TApiResponse<T> {
 }
 
 /**
- * Weekly review form submission data
- */
-export interface TWeeklyReviewForm {
-  fullName: string;
-  muid: string;
-  email: string;
-  team: string;
-  tasksAssigned: string;
-  tasksCompleted: string;
-  worksDone: string;
-  hoursCommitted: string;
-  blockers: string;
-  leaveDays: string;
-  weeklyReview: string;
-}
-
-/**
  * Team selection options
  */
 export interface TTeam {
   id: string;
   name: string;
 }
-
-/**
- * Weekly review submission result
- */
-export interface TWeeklyReviewResult {
-  id: string;
-  submittedAt: string;
-}
-
-/**
- * API Response types
- */
-export type TWeeklyReviewResponse = TApiResponse<TWeeklyReviewResult>;

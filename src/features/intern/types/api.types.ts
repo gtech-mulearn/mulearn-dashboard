@@ -16,13 +16,9 @@ export interface TInternOverviewStatus {
   status: string;
   role?: "INTERN" | "INTERN_LEAD" | "Intern" | "Intern Lead";
   total_intern_karma: number;
-  daily_streak: number;
-  weekly_streak: number;
   completed_tasks: number;
   complexity_score: number;
-  score: number;
   join_date?: string;
-  longest_daily_streak?: number;
 }
 
 export interface TInternActivityLog {
@@ -44,125 +40,193 @@ export interface TLeaderboardRow {
   daily_streak?: number;
 }
 
+export type TInternTaskStatus =
+  | "NOT_STARTED"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "WAITING_FOR_REVIEW"
+  | "ON_HOLD"
+  | "OVERDUE";
+
+/**
+ * `SUBMITTED` is the only status for new timesheets (no approval).
+ * `APPROVED` / `PENDING` / `REJECTED` exist only on legacy rows.
+ */
+export type TTimesheetStatus =
+  | "SUBMITTED"
+  | "APPROVED"
+  | "PENDING"
+  | "REJECTED";
+
+/** Snapshot of a task update stored on a timesheet. */
+export interface TTimesheetTaskEntry {
+  task_id: string;
+  title: string;
+  status: TInternTaskStatus;
+  remark: string | null;
+}
+
 export interface TTimesheet {
   id: string;
   entry_date: string;
-  task_id: string | null;
-  category: string;
+  task: TTimesheetTaskEntry[] | null;
   description: string;
   hours: string;
-  blockers: string;
-  task_status: string | null;
-  remark: string | null;
+  blockers: string | null;
   end_of_day_note: string | null;
   edit_reason: string | null;
-  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
-  karma_awarded: number | null;
-  score?: number | null;
+  status: TTimesheetStatus;
   review_note: string | null;
   created_at: string;
+  user_id?: string; // admin view
   user_name?: string; // admin view
-  full_name?: string; // admin view
   muid?: string; // admin view
 }
 
+export interface TTimesheetTaskInput {
+  task_id: string;
+  status: TInternTaskStatus;
+  remark?: string;
+}
+
 export interface TTimesheetSubmitPayload {
+  /** Today or yesterday (IST), `YYYY-MM-DD`. */
   entry_date: string;
-  description: string;
+  /** Greater than 0, at most 24. */
   hours: number;
-  blockers?: string;
-  end_of_day_note?: string;
-  edit_reason?: string;
-  task?: Array<{
-    task_id: string;
-    status: string;
-    remark?: string;
-  }>;
+  /** 30–2000 characters. */
+  description: string;
+  blockers?: string | null;
+  end_of_day_note?: string | null;
+  task?: TTimesheetTaskInput[];
 }
 
 export interface TTimesheetUpdatePayload {
+  /** Required on every edit, max 300 characters. */
+  edit_reason: string;
   hours?: number;
   description?: string;
-  blockers?: string;
-  end_of_day_note?: string;
-  edit_reason: string; // mandatory
+  blockers?: string | null;
+  end_of_day_note?: string | null;
+  /** Replaces the task list. Removed tasks revert to `NOT_STARTED`. */
+  task?: TTimesheetTaskInput[];
 }
 
-export interface TTimesheetSummary {
-  current_streak: number;
-  longest_streak: number;
+export interface TTimesheetPrefillTask {
+  task_id: string;
+  title: string;
+  category: string;
+  deadline: string;
+  status: TInternTaskStatus;
+  complexity: string;
+  output_link: string | null;
+  is_overdue: boolean;
 }
 
-export interface TTaskRemarks {
-  rating?: number;
-  next_week_plan?: string;
-  challenges_faced?: string;
-  learnings?: string;
+export interface TTimesheetPrefill {
+  tasks: TTimesheetPrefillTask[];
+  on_leave: boolean;
 }
 
-export interface TWeeklyReview {
+// ── Monthly review ───────────────────────────────────────────
+
+export type TMonthlyReviewStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+/** Submission window: last 2 days of the month + first 2 days of the next (IST). */
+export interface TMonthlyReviewWindow {
+  window_open: boolean;
+  year: number;
+  /** 1–12 */
+  month: number;
+  month_name: string;
+  period_start: string;
+  period_end: string;
+  opens_on: string;
+  closes_on: string;
+}
+
+export interface TMonthlyTaskRemarks {
+  rating: number | null;
+  learnings: string | null;
+  challenges_faced: string | null;
+  next_month_plan: string | null;
+}
+
+export interface TMonthlyReviewTaskCompleted {
+  task_id: string;
+  title: string;
+  category: string;
+  complexity: string;
+  deadline: string;
+  final_status: string;
+  output_link: string | null;
+}
+
+export interface TMonthlyReview {
   id: string;
-  iso_year: number;
-  iso_week: number;
-  week_start_date: string;
-  week_end_date: string;
+  year: number;
+  month: number;
+  period_start: string;
+  period_end: string;
   team: string;
-  is_on_leave: boolean;
-  tasks_assigned: Record<string, string> | null;
-  tasks_completed: Array<{
-    task_id: string;
-    title: string;
-    category: string;
-    complexity: string;
-    deadline?: string;
-    final_status: string;
-    output_link: string;
-  }> | null;
-  weekly_review: string | null;
-  task_remarks: TTaskRemarks | null;
-  hours_committed: number;
+  tasks_completed: TMonthlyReviewTaskCompleted[];
+  monthly_review: string;
+  task_remarks: TMonthlyTaskRemarks;
   blockers: string | null;
+  /** Approved leave days inside the month (calculated by the server). */
   leave_days: number;
   suggestions: string | null;
-  is_late: boolean;
-  status: "PENDING" | "APPROVED" | "REJECTED";
-  karma_awarded: number | null;
-  score?: number | null;
+  status: TMonthlyReviewStatus;
   review_note: string | null;
+  reviewed_at: string | null;
   created_at: string;
-  user_name?: string; // admin view
-  full_name?: string; // admin view
-  user_id?: string;
-  muid?: string;
+  updated_at: string;
 }
 
-export interface TWeeklyReviewSubmitPayload {
-  team: string;
-  is_on_leave: boolean;
-  hours_committed: number;
-  weekly_review?: string;
-  blockers?: string;
-  leave_days?: number;
-  suggestions?: string;
-  rating?: number;
-  learnings?: string;
-  challenges_faced?: string;
-  next_week_plan?: string;
-  week_start_date?: string;
+export interface TAdminMonthlyReview extends TMonthlyReview {
+  user_id: string;
+  user_name: string;
+  muid: string;
+  reviewed_by_id: string | null;
 }
 
-export interface TWeeklyReviewUpdatePayload {
-  blockers?: string;
-  suggestions?: string;
-  rating?: number;
-  weekly_review?: string;
-  tasks_assigned?: string;
-  tasks_completed?: string;
-  hours_committed?: number;
-  leave_days?: number;
-  learnings?: string;
-  challenges_faced?: string;
-  next_week_plan?: string;
+export interface TMonthlyReviewPrefillTask {
+  task_id: string;
+  title: string;
+  category: string;
+  complexity: string;
+  deadline: string;
+  status: string;
+  output_link: string | null;
+}
+
+export interface TMonthlyReviewPrefill extends TMonthlyReviewWindow {
+  existing_review: {
+    id: string;
+    status: TMonthlyReviewStatus;
+    review_note: string | null;
+  } | null;
+  /** Leave days from the 1st of the month up to today. Display only. */
+  leave_days: number;
+  tasks: TMonthlyReviewPrefillTask[];
+}
+
+export interface TMonthlyReviewCurrent {
+  window: TMonthlyReviewWindow;
+  review: TMonthlyReview | null;
+}
+
+/** POST + PATCH. Month, team, leave_days and tasks are filled by the server. */
+export interface TMonthlyReviewPayload {
+  /** Max 5000 characters. */
+  monthly_review?: string | null;
+  /** 1–5 */
+  rating?: number | null;
+  learnings?: string | null;
+  challenges_faced?: string | null;
+  next_month_plan?: string | null;
+  blockers?: string | null;
+  suggestions?: string | null;
 }
 
 export interface TInternTask {
@@ -176,7 +240,7 @@ export interface TInternTask {
   assigned_to: string;
   assigned_to_name?: string;
   assigned_to_muid?: string;
-  status: "WAITING_FOR_REVIEW" | "IN_PROGRESS" | "COMPLETED" | "ON_HOLD";
+  status: TInternTaskStatus;
   output_link?: string | null;
   is_verified?: boolean;
   remark?: string | null;
@@ -187,7 +251,6 @@ export interface TInternTask {
   team?: string;
   guild?: string;
   deadline?: string;
-  iso_week?: number;
 }
 
 export interface TLeaveRequest {
@@ -274,7 +337,6 @@ export interface TCreateTaskPayload {
   assigned_to: string;
   team?: string;
   deadline?: string;
-  iso_week?: number;
 }
 
 export interface TUpdateTaskPayload {
@@ -286,7 +348,6 @@ export interface TUpdateTaskPayload {
   assigned_to?: string;
   team?: string;
   deadline?: string;
-  iso_week?: number;
   status?: string;
   remark?: string;
 }
@@ -296,36 +357,10 @@ export interface TLeaveReviewPayload {
   review_note?: string;
 }
 
-export interface TTimesheetReviewPayload {
+export interface TMonthlyReviewReviewPayload {
   action: "approve" | "reject";
+  /** Max 300 characters. */
   review_note?: string;
-}
-
-export interface TWeeklyReviewReviewPayload {
-  action: "approve" | "reject";
-  review_note?: string;
-}
-
-// ── Minutes Types ─────────────────────────────────────────────
-
-export interface TMinuteItem {
-  id: string;
-  date: string;
-  title: string;
-  minutes: string;
-  guild: string;
-  uploaded_by?: string;
-  uploaded_by_name?: string;
-  uploaded_by_muid?: string;
-  created_by_name?: string;
-  created_at: string;
-}
-
-export interface TSubmitMinutePayload {
-  guild: string;
-  date: string;
-  title: string;
-  minutes: string;
 }
 
 export interface TBulkImportRowError {

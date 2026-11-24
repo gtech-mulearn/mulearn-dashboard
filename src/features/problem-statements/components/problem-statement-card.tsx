@@ -10,17 +10,21 @@ import {
 } from "../lib/format";
 import type { ProblemStatement } from "../types/problem-statement.types";
 import { ProblemStatementCompany } from "./problem-statement-company";
+import { ProblemStatementOnBehalfOf } from "./problem-statement-on-behalf-of";
 import { ProblemStatementStatusBadges } from "./problem-statement-status-badge";
 
 interface ProblemStatementCardProps {
   statement: ProblemStatement;
   isManageView?: boolean;
+  /** Admin-only: show the user a statement was drafted on behalf of */
+  showOnBehalfOf?: boolean;
   onView: (statement: ProblemStatement) => void;
 }
 
 export function ProblemStatementCardComponent({
   statement,
   isManageView = false,
+  showOnBehalfOf = false,
   onView,
 }: ProblemStatementCardProps) {
   const participants = participantCount(statement.interaction_counts);
@@ -47,6 +51,13 @@ export function ProblemStatementCardComponent({
       <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
         {markdownToPlainText(statement.description)}
       </p>
+
+      {showOnBehalfOf && (
+        <ProblemStatementOnBehalfOf
+          user={statement.on_behalf_of}
+          className="mt-3 w-full text-xs"
+        />
+      )}
 
       <div className="mt-4 flex flex-wrap gap-1.5">
         <Badge>{statement.category}</Badge>

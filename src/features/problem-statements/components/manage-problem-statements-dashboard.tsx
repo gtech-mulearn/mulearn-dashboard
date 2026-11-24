@@ -212,6 +212,7 @@ export default function ManageProblemStatementsDashboard() {
             <ProblemStatementsGrid
               statements={statements}
               isManageView
+              showOnBehalfOf={isAdmin}
               onView={handleView}
               emptyTitle={empty.title}
               emptyDescription={empty.description}
@@ -221,6 +222,7 @@ export default function ManageProblemStatementsDashboard() {
             <ProblemStatementsTable
               statements={statements}
               isManageView
+              showOnBehalfOf={isAdmin}
               onView={handleView}
               emptyTitle={empty.title}
               emptyDescription={empty.description}

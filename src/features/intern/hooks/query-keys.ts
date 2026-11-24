@@ -13,11 +13,17 @@ export const internKeys = {
   timesheetHistory: (params: TInternQueryParams) =>
     [...internKeys.timesheets(), "history", params] as const,
   timesheetToday: () => [...internKeys.timesheets(), "today"] as const,
-  timesheetSummary: () => [...internKeys.timesheets(), "summary"] as const,
-  reviews: () => [...internKeys.all, "reviews"] as const,
-  reviewHistory: (params: TInternQueryParams) =>
-    [...internKeys.reviews(), "history", params] as const,
-  reviewCurrent: () => [...internKeys.reviews(), "current"] as const,
+  monthlyReviews: () => [...internKeys.all, "monthly-reviews"] as const,
+  monthlyReviewList: (params: TInternQueryParams) =>
+    [...internKeys.monthlyReviews(), "list", params] as const,
+  monthlyReviewHistory: (params: TInternQueryParams) =>
+    [...internKeys.monthlyReviews(), "history", params] as const,
+  monthlyReviewCurrent: () =>
+    [...internKeys.monthlyReviews(), "current"] as const,
+  monthlyReviewPrefill: () =>
+    [...internKeys.monthlyReviews(), "prefill"] as const,
+  monthlyReviewDetail: (id: string) =>
+    [...internKeys.monthlyReviews(), "detail", id] as const,
   tasks: () => [...internKeys.all, "tasks"] as const,
   tasksMine: (params: TInternQueryParams) =>
     [...internKeys.tasks(), "mine", params] as const,
@@ -30,8 +36,6 @@ export const internKeys = {
     [...internKeys.leaderboard(), "full", params] as const,
   leaderboardMe: () => [...internKeys.leaderboard(), "me"] as const,
   guilds: () => [...internKeys.all, "guilds"] as const,
-  myMinutes: (params: TInternQueryParams) =>
-    [...internKeys.all, "minutes", "mine", params] as const,
 
   // Admin Manage Dashboard
   manage: () => [...internKeys.all, "manage"] as const,
@@ -46,10 +50,10 @@ export const internKeys = {
     [...internKeys.manage(), "leaves", "detail", id] as const,
   manageTimesheets: (params: TInternQueryParams) =>
     [...internKeys.manage(), "timesheets", params] as const,
-  manageReviews: (params: TInternQueryParams) =>
-    [...internKeys.manage(), "reviews", params] as const,
-  manageMinutes: (params: TInternQueryParams) =>
-    [...internKeys.manage(), "minutes", params] as const,
+  manageMonthlyReviewsAll: () =>
+    [...internKeys.manage(), "monthly-reviews"] as const,
+  manageMonthlyReviews: (params: TInternQueryParams) =>
+    [...internKeys.manageMonthlyReviewsAll(), params] as const,
   manageTaskDetail: (id: string) =>
     [...internKeys.manage(), "tasks", "detail", id] as const,
 };

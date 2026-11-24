@@ -22,22 +22,24 @@ import {
 } from "@/components/ui/table";
 import {
   useInternTasks,
+  useMonthlyReviewHistory,
   useTimesheetHistory,
-  useWeeklyReviewHistory,
 } from "../hooks/use-intern";
 import type { TInternTask } from "../types";
-import { getTaskBaseKarma, getTaskKarma } from "../utils/intern-helpers";
+import { getTaskBaseKarma } from "../utils/intern-helpers";
 import {
   ActivityDetailDialog,
   getActivityStatusBadge,
+  monthlyReviewToActivity,
+  timesheetToActivity,
   type UnifiedActivity,
 } from "./activity-detail-dialog";
 
 export function QuestLog() {
   const { data: timesheetHistory, isLoading: isTimesheetLoading } =
     useTimesheetHistory({ page: 1, perPage: 20 });
-  const { data: weeklyReviews, isLoading: isWeeklyLoading } =
-    useWeeklyReviewHistory({ page: 1, perPage: 20 });
+  const { data: monthlyReviews, isLoading: isMonthlyLoading } =
+    useMonthlyReviewHistory({ page: 1, perPage: 20 });
   const { data: myTasks, isLoading: isTasksLoading } = useInternTasks({
     page: 1,
     perPage: 100,
@@ -47,7 +49,7 @@ export function QuestLog() {
     null,
   );
 
-  const isLoading = isTimesheetLoading || isWeeklyLoading || isTasksLoading;
+  const isLoading = isTimesheetLoading || isMonthlyLoading || isTasksLoading;
 
   if (isLoading) {
     return (
@@ -77,49 +79,13 @@ export function QuestLog() {
   }
 
   const timesheets = timesheetHistory?.data || [];
-  const reviews = weeklyReviews?.data || [];
+  const reviews = monthlyReviews?.data || [];
   const tasks = myTasks?.data || [];
   const completedTasks = tasks.filter((t) => t.status === "COMPLETED");
 
   const recentActivities: UnifiedActivity[] = [
-    ...timesheets.map(
-      (ts): UnifiedActivity => ({
-        id: ts.id,
-        type: "timesheet",
-        title: "Daily Timesheet",
-        description: ts.description || "",
-        dateStr: new Date(ts.created_at).toLocaleDateString(undefined, {
-          month: "short",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        rawDate: new Date(ts.created_at),
-        status: ts.status,
-        points: ts.score ?? null,
-        karma: ts.karma_awarded ?? null,
-        raw: ts,
-      }),
-    ),
-    ...reviews.map(
-      (wr): UnifiedActivity => ({
-        id: wr.id,
-        type: "weekly_review",
-        title: `Weekly Review - Week ${wr.iso_week}`,
-        description: wr.weekly_review || "",
-        dateStr: new Date(wr.created_at).toLocaleDateString(undefined, {
-          month: "short",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        rawDate: new Date(wr.created_at),
-        status: wr.status,
-        points: wr.score ?? null,
-        karma: wr.karma_awarded ?? null,
-        raw: wr,
-      }),
-    ),
+    ...timesheets.map((ts) => timesheetToActivity(ts)),
+    ...reviews.map((mr) => monthlyReviewToActivity(mr)),
     ...completedTasks.map(
       (task): UnifiedActivity => ({
         id: task.id,
@@ -143,7 +109,6 @@ export function QuestLog() {
           ? new Date(task.updated_at)
           : new Date(task.created_at),
         status: "COMPLETED",
-        points: getTaskKarma(task),
         karma: getTaskBaseKarma(task),
         raw: task,
       }),
@@ -204,26 +169,10 @@ export function QuestLog() {
                         <span className="text-[9px] text-muted-foreground @md:hidden">
                           {activity.dateStr}
                         </span>
-                        {activity.type === "completed_task" ? (
+                        {activity.type === "completed_task" && (
                           <div className="flex items-center gap-1.5">
-                            <span className="inline-flex items-center rounded bg-brand-purple/10 px-1 py-0.2 text-[8px] font-black uppercase text-brand-purple">
-                              +{activity.points ?? 0} Pts
-                            </span>
                             <span className="inline-flex items-center rounded bg-success/10 px-1 py-0.2 text-[8px] font-black uppercase text-success">
                               +{activity.karma ?? 0} Karma
-                            </span>
-                          </div>
-                        ) : activity.status === "APPROVED" ? (
-                          <div className="flex items-center gap-1.5">
-                            <span className="inline-flex items-center rounded bg-brand-purple/10 px-1 py-0.2 text-[8px] font-black uppercase text-brand-purple">
-                              +{activity.points ?? 0} Pts
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1.5">
-                            <span className="inline-flex items-center rounded bg-muted/40 px-1 py-0.2 text-[8px] font-black uppercase text-muted-foreground">
-                              {activity.type === "timesheet" ? 25 : 50} Pts
-                              (Est.)
                             </span>
                           </div>
                         )}

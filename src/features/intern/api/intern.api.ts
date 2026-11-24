@@ -3,21 +3,21 @@ import type {
   TInternActivityLog,
   TInternOverviewStatus,
   TInternTask,
+  TInternTaskStatus,
   TLeaderboardMe,
   TLeaderboardRow,
   TLeaveBalance,
   TLeaveRequest,
   TLeaveSubmitPayload,
-  TMinuteItem,
+  TMonthlyReview,
+  TMonthlyReviewCurrent,
+  TMonthlyReviewPayload,
+  TMonthlyReviewPrefill,
   TPaginatedData,
-  TSubmitMinutePayload,
   TTimesheet,
+  TTimesheetPrefill,
   TTimesheetSubmitPayload,
-  TTimesheetSummary,
   TTimesheetUpdatePayload,
-  TWeeklyReview,
-  TWeeklyReviewSubmitPayload,
-  TWeeklyReviewUpdatePayload,
 } from "../types";
 
 export interface TInternQueryParams {
@@ -26,15 +26,33 @@ export interface TInternQueryParams {
   page_size?: number;
   search?: string;
   sortBy?: string;
-  sortOrder?: string;
+  /**
+   * UI-only sort direction. Never sent as its own query param: the backend
+   * expects direction as a `-` prefix on `sortBy` (e.g. `sortBy=-entry_date`).
+   */
+  sortOrder?: "asc" | "desc" | string;
   status?: string;
   guild?: string;
   complexity?: string;
   category?: string;
   team?: string;
+  muid?: string;
+  date_from?: string;
+  date_to?: string;
+  year?: number;
+  month?: number;
 }
 
-function buildQueryString(params?: TInternQueryParams): string {
+function buildSortBy(params: TInternQueryParams): string | undefined {
+  if (!params.sortBy) return undefined;
+  const field = params.sortBy.replace(/^-/, "");
+  const isDesc =
+    params.sortOrder === "desc" ||
+    (params.sortOrder === undefined && params.sortBy.startsWith("-"));
+  return isDesc ? `-${field}` : field;
+}
+
+export function buildQueryString(params?: TInternQueryParams): string {
   if (!params) return "";
   const searchParams = new URLSearchParams();
   if (params.page !== undefined) {
@@ -45,13 +63,20 @@ function buildQueryString(params?: TInternQueryParams): string {
     searchParams.set("perPage", String(perPageVal));
   }
   if (params.search) searchParams.set("search", params.search);
-  if (params.sortBy) searchParams.set("sortBy", params.sortBy);
-  if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder);
+  const sortBy = buildSortBy(params);
+  if (sortBy) searchParams.set("sortBy", sortBy);
   if (params.status) searchParams.set("status", params.status);
   if (params.guild) searchParams.set("guild", params.guild);
   if (params.complexity) searchParams.set("complexity", params.complexity);
   if (params.category) searchParams.set("category", params.category);
   if (params.team) searchParams.set("team", params.team);
+  if (params.muid) searchParams.set("muid", params.muid);
+  if (params.date_from) searchParams.set("date_from", params.date_from);
+  if (params.date_to) searchParams.set("date_to", params.date_to);
+  if (params.year !== undefined) searchParams.set("year", String(params.year));
+  if (params.month !== undefined) {
+    searchParams.set("month", String(params.month));
+  }
   const qStr = searchParams.toString();
   return qStr ? `?${qStr}` : "";
 }
@@ -91,20 +116,8 @@ export const internApi = {
     return apiClient.get<TTimesheet>(endpoints.intern.timesheetDetail(id));
   },
 
-  getTimesheetsPrefill: async (): Promise<{
-    tasks: Array<{
-      task_id: string;
-      title: string;
-      category: string;
-      deadline: string;
-      status: string;
-      complexity: string;
-      output_link: string | null;
-      is_overdue: boolean;
-    }>;
-    on_leave: boolean;
-  }> => {
-    return apiClient.get(endpoints.intern.timesheetsPrefill);
+  getTimesheetsPrefill: async (): Promise<TTimesheetPrefill> => {
+    return apiClient.get<TTimesheetPrefill>(endpoints.intern.timesheetsPrefill);
   },
 
   submitTimesheet: async (payload: TTimesheetSubmitPayload): Promise<void> => {
@@ -118,8 +131,16 @@ export const internApi = {
     await apiClient.patch(endpoints.intern.timesheetDetail(id), payload);
   },
 
-  getTimesheetToday: async (): Promise<TTimesheet> => {
-    return apiClient.get<TTimesheet>(endpoints.intern.timesheetToday);
+  /** Returns `null` when nothing was submitted today (backend answers 400). */
+  getTimesheetToday: async (): Promise<TTimesheet | null> => {
+    try {
+      return await apiClient.get<TTimesheet>(endpoints.intern.timesheetToday);
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 400) {
+        return null;
+      }
+      throw error;
+    }
   },
 
   getTimesheetHistory: async (
@@ -131,65 +152,61 @@ export const internApi = {
     );
   },
 
-  getTimesheetSummary: async (): Promise<TTimesheetSummary> => {
-    return apiClient.get<TTimesheetSummary>(endpoints.intern.timesheetSummary);
-  },
-
-  // ── Weekly Reviews ──────────────────────────────────────────
-  getWeeklyReviews: async (
+  // ── Monthly Reviews ─────────────────────────────────────────
+  getMonthlyReviews: async (
     params?: TInternQueryParams,
-  ): Promise<TPaginatedData<TWeeklyReview>> => {
+  ): Promise<TPaginatedData<TMonthlyReview>> => {
     const qs = buildQueryString(params);
-    return apiClient.get<TPaginatedData<TWeeklyReview>>(
-      `${endpoints.intern.reviews}${qs}`,
+    return apiClient.get<TPaginatedData<TMonthlyReview>>(
+      `${endpoints.intern.monthlyReviews}${qs}`,
     );
   },
 
-  getWeeklyReviewDetail: async (id: string): Promise<TWeeklyReview> => {
-    return apiClient.get<TWeeklyReview>(endpoints.intern.reviewDetail(id));
+  getMonthlyReviewDetail: async (id: string): Promise<TMonthlyReview> => {
+    return apiClient.get<TMonthlyReview>(
+      endpoints.intern.monthlyReviewDetail(id),
+    );
   },
 
-  getWeeklyReviewsPrefill: async (): Promise<{
-    iso_year: number;
-    iso_week: number;
-    week_start: string;
-    week_end: string;
-    tasks: Array<{
-      task_id: string;
-      title: string;
-      category: string;
-      complexity: string;
-      deadline: string;
-      status: string;
-      output_link: string | null;
-    }>;
-  }> => {
-    return apiClient.get(endpoints.intern.reviewsPrefill);
+  getMonthlyReviewPrefill: async (): Promise<TMonthlyReviewPrefill> => {
+    return apiClient.get<TMonthlyReviewPrefill>(
+      endpoints.intern.monthlyReviewsPrefill,
+    );
   },
 
-  submitWeeklyReview: async (
-    payload: TWeeklyReviewSubmitPayload,
-  ): Promise<void> => {
-    await apiClient.post(endpoints.intern.reviews, payload);
+  getMonthlyReviewCurrent: async (): Promise<TMonthlyReviewCurrent> => {
+    return apiClient.get<TMonthlyReviewCurrent>(
+      endpoints.intern.monthlyReviewCurrent,
+    );
   },
 
-  updateWeeklyReview: async (
-    id: string,
-    payload: TWeeklyReviewUpdatePayload,
-  ): Promise<void> => {
-    await apiClient.patch(endpoints.intern.reviewDetail(id), payload);
-  },
-
-  getWeeklyReviewCurrent: async (): Promise<TWeeklyReview> => {
-    return apiClient.get<TWeeklyReview>(endpoints.intern.reviewCurrent);
-  },
-
-  getWeeklyReviewHistory: async (
+  getMonthlyReviewHistory: async (
     params?: TInternQueryParams,
-  ): Promise<TPaginatedData<TWeeklyReview>> => {
+  ): Promise<TPaginatedData<TMonthlyReview>> => {
     const qs = buildQueryString(params);
-    return apiClient.get<TPaginatedData<TWeeklyReview>>(
-      `${endpoints.intern.reviewHistory}${qs}`,
+    return apiClient.get<TPaginatedData<TMonthlyReview>>(
+      `${endpoints.intern.monthlyReviewHistory}${qs}`,
+    );
+  },
+
+  /** Submits (or, after a rejection, resubmits) the open window's review. */
+  submitMonthlyReview: async (
+    payload: TMonthlyReviewPayload,
+  ): Promise<TMonthlyReview> => {
+    return apiClient.post<TMonthlyReview>(
+      endpoints.intern.monthlyReviews,
+      payload,
+    );
+  },
+
+  /** Edits a `PENDING` review while its window is open. */
+  updateMonthlyReview: async (
+    id: string,
+    payload: TMonthlyReviewPayload,
+  ): Promise<TMonthlyReview> => {
+    return apiClient.patch<TMonthlyReview>(
+      endpoints.intern.monthlyReviewDetail(id),
+      payload,
     );
   },
 
@@ -205,7 +222,7 @@ export const internApi = {
 
   updateMyTaskStatus: async (
     id: string,
-    status: "WAITING_FOR_REVIEW" | "IN_PROGRESS" | "COMPLETED" | "ON_HOLD",
+    status: TInternTaskStatus,
     output_link?: string,
   ): Promise<void> => {
     await apiClient.patch(endpoints.intern.taskSubmit(id), {
@@ -287,26 +304,5 @@ export const internApi = {
   // ── Guilds ─────────────────────────────────────────────────
   getGuilds: async (): Promise<string[]> => {
     return apiClient.get<string[]>(endpoints.intern.guilds);
-  },
-
-  // ── Minutes ────────────────────────────────────────────────
-  submitMinute: async (payload: TSubmitMinutePayload): Promise<void> => {
-    await apiClient.post(endpoints.intern.minutes, payload);
-  },
-
-  updateMinute: async (
-    id: string,
-    payload: TSubmitMinutePayload,
-  ): Promise<void> => {
-    await apiClient.put(endpoints.intern.minuteDetail(id), payload);
-  },
-
-  getMyMinutes: async (
-    params?: TInternQueryParams,
-  ): Promise<TPaginatedData<TMinuteItem>> => {
-    const qs = buildQueryString(params);
-    return apiClient.get<TPaginatedData<TMinuteItem>>(
-      `${endpoints.intern.minutes}${qs}`,
-    );
   },
 };

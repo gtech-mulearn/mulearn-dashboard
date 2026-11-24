@@ -23,7 +23,7 @@ export function ActiveQuests() {
                   Daily Timesheet
                 </h4>
                 <p className="text-xs text-muted-foreground mt-1 font-medium">
-                  Log today's work to earn 25 points
+                  Log today's work (or yesterday's)
                 </p>
               </div>
             </CardContent>
@@ -48,7 +48,7 @@ export function ActiveQuests() {
           </Card>
         </Link>
 
-        <Link href="/dashboard/intern/weekly-review">
+        <Link href="/dashboard/intern/monthly-review">
           <Card className="h-full border-2 quest-card-purple transition-all cursor-pointer group shadow-lg">
             <CardContent className="p-6 flex flex-col items-center text-center gap-4">
               <div className="p-4 bg-brand-purple/10 rounded-2xl group-hover:scale-110 transition-transform">
@@ -56,10 +56,10 @@ export function ActiveQuests() {
               </div>
               <div>
                 <h4 className="font-black text-lg group-hover:text-brand-purple transition-colors uppercase tracking-tight">
-                  Weekly Timesheet
+                  Monthly Review
                 </h4>
                 <p className="text-xs text-muted-foreground mt-1 font-medium">
-                  Log week's work to earn 50 points
+                  Reflect on your month during the review window
                 </p>
               </div>
             </CardContent>

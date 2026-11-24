@@ -1,4 +1,79 @@
-import type { TInternTask, TLeaderboardRow, TManageInternItem } from "../types";
+import type {
+  TInternTask,
+  TInternTaskStatus,
+  TLeaderboardRow,
+  TManageInternItem,
+  TTimesheet,
+} from "../types";
+
+// ── Dates (IST) ──────────────────────────────────────────────
+// The intern backend works in IST. Never derive a calendar date with
+// `toISOString()`, which is UTC and is a day behind between 00:00–05:30 IST.
+
+const IST_DATE_FORMAT = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Kolkata",
+});
+
+/** `YYYY-MM-DD` in IST. `offsetDays = -1` gives yesterday. */
+export function getISTDateString(offsetDays = 0): string {
+  return IST_DATE_FORMAT.format(
+    new Date(Date.now() + offsetDays * 24 * 60 * 60 * 1000),
+  );
+}
+
+/** Adds whole days to a `YYYY-MM-DD` string (pure calendar arithmetic). */
+export function addDaysToDateString(date: string, days: number): string {
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+/**
+ * A timesheet can be edited until the end of the day after its `entry_date`
+ * (IST). Legacy `REJECTED` timesheets can never be edited.
+ */
+export function isTimesheetEditable(
+  timesheet: Pick<TTimesheet, "entry_date" | "status">,
+): boolean {
+  if (timesheet.status === "REJECTED") return false;
+  return getISTDateString() <= addDaysToDateString(timesheet.entry_date, 1);
+}
+
+/** Every status except legacy `REJECTED` counts as submitted. */
+export function isTimesheetCounted(timesheet: Pick<TTimesheet, "status">) {
+  return timesheet.status !== "REJECTED";
+}
+
+/**
+ * Timesheets have no approval, so the UI only shows Submitted / Pending /
+ * Missing. Legacy `APPROVED` / `PENDING` rows count, so they show as
+ * `SUBMITTED`; legacy `REJECTED` rows don't count, so they show as `MISSING`.
+ * (`PENDING` in the UI means "today, not yet submitted" — calendar only.)
+ */
+export function getTimesheetDisplayStatus(
+  status: TTimesheet["status"],
+): "SUBMITTED" | "MISSING" {
+  return status === "REJECTED" ? "MISSING" : "SUBMITTED";
+}
+
+export const TIMESHEET_TASK_STATUS_OPTIONS: Array<{
+  value: TInternTaskStatus;
+  label: string;
+}> = [
+  { value: "NOT_STARTED", label: "Not Started" },
+  { value: "IN_PROGRESS", label: "In Progress" },
+  { value: "WAITING_FOR_REVIEW", label: "Waiting for Review" },
+  { value: "COMPLETED", label: "Completed" },
+  { value: "ON_HOLD", label: "On Hold" },
+  { value: "OVERDUE", label: "Overdue" },
+];
+
+export function formatTaskStatus(status: string): string {
+  return (
+    TIMESHEET_TASK_STATUS_OPTIONS.find((o) => o.value === status)?.label ??
+    status.replaceAll("_", " ")
+  );
+}
 
 export type TResolvedInternStatus =
   | "ACTIVE"
@@ -156,24 +231,6 @@ export function getTaskBaseKarma(task: Partial<TInternTask>): number {
   return TASK_COMPLEXITY_KARMA[complexity];
 }
 
-export function getTaskKarma(task: Partial<TInternTask>): number {
-  const record = task as UnknownRecord;
-  let complexityScore = getRecordNumber(record, "complexity_score");
-  if (complexityScore === undefined) {
-    const comp = normalizeString(task.complexity);
-    if (comp === "LOW") complexityScore = 1;
-    else if (comp === "MEDIUM") complexityScore = 2;
-    else if (comp === "HIGH") complexityScore = 3;
-    else if (comp === "CRITICAL") complexityScore = 4;
-  }
-
-  const baseKarma = getTaskBaseKarma(task);
-  if (complexityScore !== undefined) {
-    return complexityScore * baseKarma;
-  }
-  return baseKarma;
-}
-
 const CATEGORY_TO_GUILD: Record<string, string> = {
   "Backend API": "Backend Guild",
   "Auth API": "Backend Guild",
@@ -275,32 +332,23 @@ export function isCurrentLeaderboardUser(
   return false;
 }
 
-export function formatTasksAssigned(
-  tasksAssigned: Record<string, string> | string | null | undefined,
-): string {
-  if (!tasksAssigned) return "No tasks assigned.";
-  if (typeof tasksAssigned === "object") {
-    return Object.values(tasksAssigned)
-      .map((title) => `- ${title}`)
-      .join("\n");
-  }
-  return tasksAssigned;
+// ── Monthly review ───────────────────────────────────────────
+
+/** "November 2026" for a review/window `{ year, month }` (month is 1–12). */
+export function formatReviewMonth(item: { year: number; month: number }) {
+  return new Date(item.year, item.month - 1, 1).toLocaleDateString(undefined, {
+    month: "long",
+    year: "numeric",
+  });
 }
 
-export function formatTasksCompleted(
-  tasksCompleted:
-    | Array<{ title: string; final_status?: string }>
-    | string
-    | null
-    | undefined,
-): string {
-  if (!tasksCompleted) return "No tasks completed.";
-  if (Array.isArray(tasksCompleted)) {
-    return tasksCompleted
-      .map((t) => `- ${t.title} (${t.final_status || "COMPLETED"})`)
-      .join("\n");
-  }
-  return tasksCompleted;
+/** "29 Nov 2026" for a `YYYY-MM-DD` date (no timezone shift). */
+export function formatDateOnly(date: string) {
+  return new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 export function getComplexityColor(complexity: string): string {

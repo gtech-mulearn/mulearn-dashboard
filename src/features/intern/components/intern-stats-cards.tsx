@@ -1,9 +1,7 @@
-"use client";
-
-import { Flame, Star, Target, Trophy } from "lucide-react";
+import { Star, Target, Trophy } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useInternOverview, useLeaderboardMe } from "@/features/intern";
+import { useInternOverview, useLeaderboardMe } from "../hooks/use-intern";
 
 const RANK_MILESTONE_MESSAGES = {
   peak: [
@@ -95,10 +93,7 @@ export function InternStatsCards() {
     );
   }
 
-  const userScore = overview?.score ?? 0;
-  const userDailyStreak = overview?.daily_streak ?? 0;
-  const _userWeeklyStreak = overview?.weekly_streak ?? 0;
-  const userLongestDailyStreak = overview?.longest_daily_streak ?? 0;
+  const totalKarma = overview?.total_intern_karma ?? 0;
   const userGuild = overview?.guild || "—";
   const userRank = meRank?.rank ?? "—";
 
@@ -111,52 +106,22 @@ export function InternStatsCards() {
   const completedTasks = overview?.completed_tasks ?? 0;
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {/* Score Card */}
+    <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-3">
+      {/* Karma Card */}
       <Card className="relative overflow-hidden group border-border/40 bg-card/50 backdrop-blur-sm transition-all hover:bg-card hover:shadow-xl hover:-translate-y-1">
         <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 rounded-full blur-3xl transition-all bg-chart-1/10 group-hover:bg-chart-1/20" />
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-            Score
+            Total Karma
           </CardTitle>
-          <Star className="h-4 w-4 text-chart-1 animate-pulse" />
+          <Star className="h-4 w-4 text-chart-1" />
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-black font-mono tracking-tighter text-foreground">
-            {userScore.toLocaleString()}
+            {totalKarma.toLocaleString()}
           </div>
           <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-widest">
             Currently in <span className="text-success">{formattedGuild}</span>
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Streak Card */}
-      <Card className="relative overflow-hidden group border-border/40 bg-card/50 backdrop-blur-sm transition-all hover:bg-card hover:shadow-xl hover:-translate-y-1">
-        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 rounded-full blur-3xl transition-all bg-chart-3/10 group-hover:bg-chart-3/20" />
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-            Daily Streak
-          </CardTitle>
-          <Flame className="h-4 w-4 text-chart-3 fill-chart-3" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-black font-mono tracking-tighter text-foreground flex items-baseline gap-1 flex-wrap">
-            {userDailyStreak}
-            <span className="text-sm font-bold text-muted-foreground uppercase">
-              DAYS
-            </span>
-          </div>
-          <div className="mt-2 h-1.5 w-full bg-muted overflow-hidden rounded-full p-[1px]">
-            <div
-              className="h-full bg-gradient-to-r from-warning to-destructive rounded-full"
-              style={{
-                width: `${Math.min(100, (userDailyStreak / 30) * 100)}%`,
-              }}
-            />
-          </div>
-          <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-widest">
-            Longest Streak: {userLongestDailyStreak} Days
           </p>
         </CardContent>
       </Card>
@@ -180,36 +145,21 @@ export function InternStatsCards() {
         </CardContent>
       </Card>
 
-      {/* Weekly Completion Card */}
+      {/* Completed Tasks Card */}
       <Card className="relative overflow-hidden group border-border/40 bg-card/50 backdrop-blur-sm transition-all hover:bg-card hover:shadow-xl hover:-translate-y-1">
         <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 rounded-full blur-3xl transition-all bg-chart-4/10 group-hover:bg-chart-4/20" />
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-            Weekly Streak
+            Completed Tasks
           </CardTitle>
           <Target className="h-4 w-4 text-chart-4" />
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-black font-mono tracking-tighter text-foreground flex items-baseline gap-1 flex-wrap">
+          <div className="text-3xl font-black font-mono tracking-tighter text-foreground">
             {completedTasks}
-            <span className="text-xs font-bold text-muted-foreground uppercase">
-              COMPLETED TASKS
-            </span>
-          </div>
-          <div className="mt-2 h-1.5 w-full bg-muted overflow-hidden rounded-full flex gap-1">
-            {[1, 2, 3, 4, 5].map((day) => (
-              <div
-                key={day}
-                className={`h-full flex-1 rounded-full ${
-                  day <= completedTasks
-                    ? "bg-success"
-                    : "bg-muted-foreground/20"
-                }`}
-              />
-            ))}
           </div>
           <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-widest">
-            Log progress daily to keep streak
+            Tasks completed so far
           </p>
         </CardContent>
       </Card>

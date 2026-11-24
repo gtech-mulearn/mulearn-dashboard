@@ -1,16 +1,23 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { internApi, type TInternQueryParams } from "../api";
 import type {
+  TInternTaskStatus,
   TLeaveSubmitPayload,
-  TSubmitMinutePayload,
+  TMonthlyReview,
+  TMonthlyReviewPayload,
+  TMonthlyReviewWindow,
   TTimesheetSubmitPayload,
   TTimesheetUpdatePayload,
-  TWeeklyReviewSubmitPayload,
-  TWeeklyReviewUpdatePayload,
 } from "../types";
 import { internKeys } from "./query-keys";
 
@@ -35,10 +42,15 @@ export function useTopLeaderboard() {
   });
 }
 
-export function useTimesheetHistory(params?: TInternQueryParams) {
+export function useTimesheetHistory(
+  params?: TInternQueryParams,
+  options?: { enabled?: boolean },
+) {
   return useQuery({
     queryKey: internKeys.timesheetHistory(params ?? {}),
     queryFn: () => internApi.getTimesheetHistory(params),
+    placeholderData: keepPreviousData,
+    ...options,
   });
 }
 
@@ -59,9 +71,25 @@ export function useTimesheetsPrefill() {
 export function useTimesheetToday() {
   return useQuery({
     queryKey: internKeys.timesheetToday(),
+    // Resolves to `null` when nothing was submitted today.
     queryFn: () => internApi.getTimesheetToday(),
-    retry: false, // Don't spam if 400 (none submitted today)
+    retry: false,
   });
+}
+
+/**
+ * Refreshes everything a timesheet submit/edit can change. Submitting also
+ * moves the intern on the leaderboard (backend ranking), so refresh it too.
+ */
+async function invalidateAfterTimesheetChange(
+  queryClient: ReturnType<typeof useQueryClient>,
+) {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: internKeys.timesheets() }),
+    queryClient.invalidateQueries({ queryKey: internKeys.tasks() }),
+    queryClient.invalidateQueries({ queryKey: internKeys.leaderboard() }),
+    queryClient.invalidateQueries({ queryKey: internKeys.topLeaderboard() }),
+  ]);
 }
 
 export function useSubmitTimesheet() {
@@ -70,15 +98,12 @@ export function useSubmitTimesheet() {
     mutationFn: (payload: TTimesheetSubmitPayload) =>
       internApi.submitTimesheet(payload),
     onSuccess: async () => {
-      toast.success("Timesheet submitted successfully!");
-      await queryClient.invalidateQueries({
-        queryKey: internKeys.timesheets(),
-      });
-      await queryClient.invalidateQueries({
-        queryKey: internKeys.overviewStatus(),
-      });
+      toast.success("Timesheet submitted");
+      await invalidateAfterTimesheetChange(queryClient);
     },
     onError: (error) => {
+      // 409 (already submitted for that date) is handled by the caller.
+      if (error instanceof ApiError && error.status === 409) return;
       toast.error(
         getApiResponseError(error, { fallback: "Failed to submit timesheet" }),
       );
@@ -97,10 +122,8 @@ export function useEditTimesheet() {
       payload: TTimesheetUpdatePayload;
     }) => internApi.updateTimesheet(id, payload),
     onSuccess: async () => {
-      toast.success("Timesheet updated successfully!");
-      await queryClient.invalidateQueries({
-        queryKey: internKeys.timesheets(),
-      });
+      toast.success("Timesheet updated");
+      await invalidateAfterTimesheetChange(queryClient);
     },
     onError: (error) => {
       toast.error(
@@ -110,58 +133,109 @@ export function useEditTimesheet() {
   });
 }
 
-export function useWeeklyReviews(params?: TInternQueryParams) {
+// ── Monthly reviews ──────────────────────────────────────────
+
+export function useMonthlyReviews(params?: TInternQueryParams) {
   return useQuery({
-    queryKey: internKeys.reviewHistory(params ?? {}),
-    queryFn: () => internApi.getWeeklyReviews(params),
+    queryKey: internKeys.monthlyReviewList(params ?? {}),
+    queryFn: () => internApi.getMonthlyReviews(params),
   });
 }
 
-export function useWeeklyReviewsPrefill() {
+export function useMonthlyReviewPrefill(options?: { enabled?: boolean }) {
   return useQuery({
-    queryKey: [...internKeys.reviews(), "prefill"],
-    queryFn: () => internApi.getWeeklyReviewsPrefill(),
+    queryKey: internKeys.monthlyReviewPrefill(),
+    queryFn: () => internApi.getMonthlyReviewPrefill(),
+    ...options,
   });
 }
 
-export function useWeeklyReviewHistory(params?: TInternQueryParams) {
+export function useMonthlyReviewCurrent() {
   return useQuery({
-    queryKey: [...internKeys.reviews(), "history", params ?? {}],
-    queryFn: () => internApi.getWeeklyReviewHistory(params),
+    queryKey: internKeys.monthlyReviewCurrent(),
+    queryFn: () => internApi.getMonthlyReviewCurrent(),
   });
 }
 
-export function useWeeklyReviewCurrent() {
+export function useMonthlyReviewHistory(params?: TInternQueryParams) {
   return useQuery({
-    queryKey: internKeys.reviewCurrent(),
-    queryFn: () => internApi.getWeeklyReviewCurrent(),
-    retry: false,
+    queryKey: internKeys.monthlyReviewHistory(params ?? {}),
+    queryFn: () => internApi.getMonthlyReviewHistory(params),
   });
 }
 
-export function useSubmitWeeklyReview() {
+export function useMonthlyReviewDetail(id: string | undefined) {
+  return useQuery({
+    queryKey: internKeys.monthlyReviewDetail(id ?? ""),
+    queryFn: () => internApi.getMonthlyReviewDetail(id as string),
+    enabled: !!id,
+  });
+}
+
+/** `response.window` on the "window closed" 400, if present. */
+export function getMonthlyReviewErrorWindow(
+  error: unknown,
+): TMonthlyReviewWindow | null {
+  if (!(error instanceof ApiError)) return null;
+  const data = error.data as
+    | { response?: { window?: TMonthlyReviewWindow } }
+    | undefined;
+  return data?.response?.window ?? null;
+}
+
+const MONTHLY_REVIEW_STALE_MESSAGES = [
+  "Pending monthly review not found.",
+  "This review can no longer be edited; its submission window has closed.",
+];
+
+async function syncMonthlyReview(
+  queryClient: ReturnType<typeof useQueryClient>,
+  review?: TMonthlyReview,
+) {
+  if (review) {
+    queryClient.setQueryData(internKeys.monthlyReviewDetail(review.id), review);
+  }
+  await queryClient.invalidateQueries({
+    queryKey: internKeys.monthlyReviews(),
+  });
+}
+
+export function useSubmitMonthlyReview() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: TWeeklyReviewSubmitPayload) =>
-      internApi.submitWeeklyReview(payload),
-    onSuccess: async () => {
-      toast.success("Weekly review submitted successfully!");
-      await queryClient.invalidateQueries({ queryKey: internKeys.reviews() });
-      await queryClient.invalidateQueries({
-        queryKey: internKeys.overviewStatus(),
-      });
+    mutationFn: ({
+      payload,
+    }: {
+      payload: TMonthlyReviewPayload;
+      /** True when replacing a rejected review (changes the toast only). */
+      isResubmit?: boolean;
+    }) => internApi.submitMonthlyReview(payload),
+    onSuccess: async (review, { isResubmit }) => {
+      toast.success(
+        isResubmit ? "Monthly review resubmitted" : "Monthly review submitted",
+      );
+      await syncMonthlyReview(queryClient, review);
     },
-    onError: (error) => {
+    onError: async (error) => {
+      // Field errors are mapped onto the form by the caller.
+      if (error instanceof ApiError && getFieldErrors(error)) return;
       toast.error(
         getApiResponseError(error, {
-          fallback: "Failed to submit weekly review",
+          fallback: "Failed to submit monthly review",
         }),
       );
+      // 409 (already submitted) or window closed: the form state is stale.
+      if (
+        error instanceof ApiError &&
+        (error.status === 409 || getMonthlyReviewErrorWindow(error))
+      ) {
+        await syncMonthlyReview(queryClient);
+      }
     },
   });
 }
 
-export function useEditWeeklyReview() {
+export function useEditMonthlyReview() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
@@ -169,20 +243,51 @@ export function useEditWeeklyReview() {
       payload,
     }: {
       id: string;
-      payload: TWeeklyReviewUpdatePayload;
-    }) => internApi.updateWeeklyReview(id, payload),
-    onSuccess: async () => {
-      toast.success("Weekly review updated successfully!");
-      await queryClient.invalidateQueries({ queryKey: internKeys.reviews() });
+      payload: TMonthlyReviewPayload;
+    }) => internApi.updateMonthlyReview(id, payload),
+    onSuccess: async (review) => {
+      toast.success("Monthly review updated");
+      await syncMonthlyReview(queryClient, review);
     },
-    onError: (error) => {
+    onError: async (error) => {
+      if (error instanceof ApiError && getFieldErrors(error)) return;
       toast.error(
         getApiResponseError(error, {
-          fallback: "Failed to update weekly review",
+          fallback: "Failed to update monthly review",
         }),
       );
+      if (
+        error instanceof ApiError &&
+        MONTHLY_REVIEW_STALE_MESSAGES.includes(error.message)
+      ) {
+        await syncMonthlyReview(queryClient);
+      }
     },
   });
+}
+
+/**
+ * Backend field errors (`response.<field>: string[]`) on a validation 400,
+ * or `null` when the error isn't a field-validation error.
+ */
+export function getFieldErrors(
+  error: unknown,
+): Record<string, string[]> | null {
+  if (!(error instanceof ApiError)) return null;
+  const data = error.data as { response?: unknown } | undefined;
+  const response = data?.response;
+  if (!response || typeof response !== "object" || Array.isArray(response)) {
+    return null;
+  }
+  const entries = Object.entries(response).filter(
+    ([key, value]) =>
+      key !== "window" &&
+      Array.isArray(value) &&
+      value.every((v) => typeof v === "string"),
+  );
+  return entries.length > 0
+    ? (Object.fromEntries(entries) as Record<string, string[]>)
+    : null;
 }
 
 export function useInternTasks(params?: TInternQueryParams) {
@@ -216,7 +321,7 @@ export function useUpdateTaskStatus() {
       outputLink,
     }: {
       id: string;
-      status: "WAITING_FOR_REVIEW" | "IN_PROGRESS" | "COMPLETED" | "ON_HOLD";
+      status: TInternTaskStatus;
       outputLink?: string;
     }) => internApi.updateMyTaskStatus(id, status, outputLink),
     onSuccess: async () => {
@@ -299,13 +404,6 @@ export function useLeaveBalance() {
   });
 }
 
-export function useTimesheetSummary() {
-  return useQuery({
-    queryKey: internKeys.timesheetSummary(),
-    queryFn: () => internApi.getTimesheetSummary(),
-  });
-}
-
 export function useLeaderboard(params?: TInternQueryParams) {
   return useQuery({
     queryKey: internKeys.leaderboardFull(params ?? {}),
@@ -325,63 +423,5 @@ export function useGuilds(options?: { enabled?: boolean }) {
     queryKey: internKeys.guilds(),
     queryFn: () => internApi.getGuilds(),
     ...options,
-  });
-}
-
-export function useMyMinutes(params?: TInternQueryParams, enabled = true) {
-  return useQuery({
-    queryKey: internKeys.myMinutes(params ?? {}),
-    queryFn: () => internApi.getMyMinutes(params),
-    enabled,
-  });
-}
-
-export function useSubmitMinute() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (payload: TSubmitMinutePayload) =>
-      internApi.submitMinute(payload),
-    onSuccess: async () => {
-      toast.success("Minutes uploaded successfully!");
-      await queryClient.invalidateQueries({
-        queryKey: ["intern", "minutes", "mine"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["manage-minutes"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["intern", "manage", "minutes"],
-      });
-    },
-    onError: (error: unknown) => {
-      toast.error(
-        getApiResponseError(error, { fallback: "Failed to upload minutes" }),
-      );
-    },
-  });
-}
-
-export function useUpdateMinute(id: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (payload: TSubmitMinutePayload) =>
-      internApi.updateMinute(id, payload),
-    onSuccess: async () => {
-      toast.success("Minutes updated successfully!");
-      await queryClient.invalidateQueries({
-        queryKey: ["intern", "minutes", "mine"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["manage-minutes"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["intern", "manage", "minutes"],
-      });
-    },
-    onError: (error: unknown) => {
-      toast.error(
-        getApiResponseError(error, { fallback: "Failed to upload minutes" }),
-      );
-    },
   });
 }

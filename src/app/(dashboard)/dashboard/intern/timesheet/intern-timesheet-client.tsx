@@ -1,16 +1,19 @@
 "use client";
 import {
+  AlertTriangle,
   Calendar,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Clock,
   FileText,
-  Sparkles,
+  Plus,
+  Trash2,
   Zap,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,31 +43,75 @@ import {
 } from "@/components/ui/tooltip";
 import { useUserProfile } from "@/features/auth";
 import {
+  ActivityDetailDialog,
+  getISTDateString,
+  isTimesheetCounted,
+  TIMESHEET_TASK_STATUS_OPTIONS,
+  type TInternTaskStatus,
+  type TTimesheet,
+  timesheetToActivity,
+  type UnifiedActivity,
   useInternOverview,
-  useInternTasks,
   useSubmitTimesheet,
   useTimesheetHistory,
-  useTimesheets,
-  useTimesheetToday,
+  useTimesheetsPrefill,
 } from "@/features/intern";
+
+const DESCRIPTION_MIN = 30;
+const DESCRIPTION_MAX = 2000;
+const NOTE_MAX = 1000;
+
+type TTaskRow = {
+  key: number;
+  task_id: string;
+  status: TInternTaskStatus;
+  remark: string;
+};
+
+function formatEntryDate(date: string) {
+  return new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+  });
+}
 
 export function TimesheetPageClient() {
   const submitTimesheetMutation = useSubmitTimesheet();
-  const { data: todayTimesheet, isLoading: isTodayLoading } =
-    useTimesheetToday();
-  const { data: timesheetHistory, isLoading: isHistoryLoading } =
-    useTimesheetHistory({ page: 1, perPage: 50 });
-  const { data: _timesheetsData, isLoading: isTimesheetsLoading } =
-    useTimesheets({ page: 1, perPage: 100 });
+  // Covers about a year of entries so older calendar months stay accurate.
+  const {
+    data: timesheetHistory,
+    isLoading: isHistoryLoading,
+    refetch: refetchHistory,
+  } = useTimesheetHistory({ page: 1, perPage: 366, sortBy: "-entry_date" });
+  const { data: prefill, isLoading: isPrefillLoading } = useTimesheetsPrefill();
   const { data: overview } = useInternOverview();
-  const { data: tasksData } = useInternTasks({ page: 1, perPage: 100 });
   const { data: profile } = useUserProfile();
 
+  const todayStr = getISTDateString();
+  const yesterdayStr = getISTDateString(-1);
+
+  const entriesByDate = new Map<string, TTimesheet>();
+  for (const ts of timesheetHistory?.data ?? []) {
+    if (isTimesheetCounted(ts)) entriesByDate.set(ts.entry_date, ts);
+  }
+  const availableDates = [todayStr, yesterdayStr].filter(
+    (d) => !entriesByDate.has(d),
+  );
+
+  const [entryDate, setEntryDate] = useState<string>("");
   const [hours, setHours] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [blockers, setBlockers] = useState<string>("");
-  const [linkedTaskId, setLinkedTaskId] = useState<string>("");
-  const [taskStatus, setTaskStatus] = useState<string>("COMPLETED");
+  const [endOfDayNote, setEndOfDayNote] = useState<string>("");
+  const [taskRows, setTaskRows] = useState<TTaskRow[]>([]);
+  const [nextRowKey, setNextRowKey] = useState(0);
+  const [selectedActivity, setSelectedActivity] =
+    useState<UnifiedActivity | null>(null);
+
+  const effectiveEntryDate = availableDates.includes(entryDate)
+    ? entryDate
+    : (availableDates[0] ?? "");
 
   // Month navigation state — default to current month
   const todayForNav = new Date();
@@ -79,6 +126,8 @@ export function TimesheetPageClient() {
   };
 
   const isSubmitting = submitTimesheetMutation.isPending;
+  const prefillTasks = prefill?.tasks ?? [];
+  const isOnLeave = prefill?.on_leave ?? false;
 
   // Parse the user's onboarding date (strip time so comparisons are date-only)
   const dateVal = overview?.join_date || profile?.joined;
@@ -96,11 +145,13 @@ export function TimesheetPageClient() {
     : null;
 
   // Generate calendar based on currentDate (navigable)
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = new Date(`${todayStr}T00:00:00`);
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const toDateStr = (y: number, m: number, d: number) =>
+    `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
   const days = Array.from({ length: daysInMonth }, (_, i) => {
     const d = new Date(year, month, i + 1);
@@ -110,25 +161,20 @@ export function TimesheetPageClient() {
     const isBeforeOnboarding =
       onboardingDate !== null && d.getTime() < onboardingDate.getTime();
 
-    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(i + 1).padStart(2, "0")}`;
-    const entry = timesheetHistory?.data?.find(
-      (ts) => ts.entry_date === dateStr,
-    );
+    const entry = entriesByDate.get(toDateStr(year, month, i + 1));
 
     let status = "missing";
     if (isBeforeOnboarding) {
       status = "disabled";
     } else if (entry) {
-      if (entry.status === "APPROVED") status = "submitted";
-      else if (entry.status === "PENDING") status = "pending";
-      else if (entry.status === "REJECTED") status = "missing";
+      status = "submitted";
     } else if (isToday) {
       status = "pending";
     } else if (isFuture || isWeekend) {
       status = "exempt";
     }
 
-    return { date: d, status, isToday };
+    return { date: d, status, isToday, entry };
   });
 
   // First weekday offset for the month grid
@@ -148,10 +194,7 @@ export function TimesheetPageClient() {
     (_, i) => {
       const dayNum = prevMonthDaysCount - firstDayOffset + 1 + i;
       const d = new Date(prevYear, prevMonth, dayNum);
-      const dateStr = `${prevYear}-${String(prevMonth + 1).padStart(2, "0")}-${String(dayNum).padStart(2, "0")}`;
-      const entry = timesheetHistory?.data?.find(
-        (ts) => ts.entry_date === dateStr,
-      );
+      const entry = entriesByDate.get(toDateStr(prevYear, prevMonth, dayNum));
       const isWeekend = d.getDay() === 0 || d.getDay() === 6;
       const isBeforeOnboarding =
         onboardingDate !== null && d.getTime() < onboardingDate.getTime();
@@ -160,63 +203,101 @@ export function TimesheetPageClient() {
       if (isPrevMonthBeforeOnboarding || isBeforeOnboarding) {
         status = "blank"; // hide entirely
       } else if (entry) {
-        if (entry.status === "APPROVED") status = "submitted";
-        else if (entry.status === "PENDING") status = "pending";
-        else if (entry.status === "REJECTED") status = "missing";
+        status = "submitted";
       } else if (!isWeekend) {
         status = "missing";
       }
-      return { date: d, dayNum, status };
+      return { date: d, dayNum, status, entry };
     },
   );
 
+  const openEntry = (entry: TTimesheet | undefined) => {
+    if (entry) setSelectedActivity(timesheetToActivity(entry));
+  };
+
+  // ── Task rows ──────────────────────────────────────────────
+  const usedTaskIds = new Set(taskRows.map((r) => r.task_id).filter(Boolean));
+  const canAddTaskRow =
+    prefillTasks.length > 0 && taskRows.length < prefillTasks.length;
+
+  const addTaskRow = () => {
+    setTaskRows((rows) => [
+      ...rows,
+      { key: nextRowKey, task_id: "", status: "IN_PROGRESS", remark: "" },
+    ]);
+    setNextRowKey((k) => k + 1);
+  };
+
+  const updateTaskRow = (key: number, patch: Partial<TTaskRow>) => {
+    setTaskRows((rows) =>
+      rows.map((r) => (r.key === key ? { ...r, ...patch } : r)),
+    );
+  };
+
+  const removeTaskRow = (key: number) => {
+    setTaskRows((rows) => rows.filter((r) => r.key !== key));
+  };
+
+  // ── Validation ─────────────────────────────────────────────
+  const hoursNum = Number(hours);
+  const trimmedDescription = description.trim();
+  const validationError = !effectiveEntryDate
+    ? "You've already submitted for today and yesterday."
+    : !(hoursNum > 0 && hoursNum <= 24)
+      ? "Hours must be greater than 0 and at most 24."
+      : trimmedDescription.length < DESCRIPTION_MIN
+        ? `Description must be at least ${DESCRIPTION_MIN} characters.`
+        : taskRows.some((r) => !r.task_id)
+          ? "Pick a task for every task row, or remove the empty row."
+          : null;
+
+  const resetForm = () => {
+    setHours("");
+    setDescription("");
+    setBlockers("");
+    setEndOfDayNote("");
+    setTaskRows([]);
+    setEntryDate("");
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!hours || !description) {
-      toast.error("Please fill in all required fields.");
+    if (validationError) {
+      toast.error(validationError);
       return;
     }
 
-    const dateStr = new Date().toISOString().split("T")[0];
-
     submitTimesheetMutation.mutate(
       {
-        entry_date: dateStr,
-        hours: parseFloat(hours),
-        description,
-        blockers: blockers || "None",
+        entry_date: effectiveEntryDate,
+        hours: hoursNum,
+        description: trimmedDescription,
+        blockers: blockers.trim() || null,
+        end_of_day_note: endOfDayNote.trim() || null,
         task:
-          linkedTaskId && linkedTaskId !== "none"
-            ? [
-                {
-                  task_id: linkedTaskId,
-                  status: taskStatus,
-                  remark: "",
-                },
-              ]
+          taskRows.length > 0
+            ? taskRows.map((r) => ({
+                task_id: r.task_id,
+                status: r.status,
+                ...(r.remark.trim() ? { remark: r.remark.trim() } : {}),
+              }))
             : undefined,
       },
       {
-        onSuccess: () => {
-          setHours("");
-          setDescription("");
-          setBlockers("");
-          setLinkedTaskId("");
+        onSuccess: resetForm,
+        onError: (error) => {
+          if (error instanceof ApiError && error.status === 409) {
+            toast.error(
+              `A timesheet for ${formatEntryDate(effectiveEntryDate)} already exists.`,
+            );
+            void refetchHistory();
+          }
         },
       },
     );
   };
 
-  const streak = overview?.daily_streak ?? 0;
-  let multiplier = "1.0×";
-  if (streak >= 30) multiplier = "2.0×";
-  else if (streak >= 14) multiplier = "1.5×";
-  else if (streak >= 7) multiplier = "1.2×";
-
-  const activeTasks =
-    tasksData?.data?.filter((t) => t.status !== "COMPLETED") || [];
-
-  if (isTodayLoading || isHistoryLoading || isTimesheetsLoading) {
+  if (isHistoryLoading || isPrefillLoading) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
         <Spinner className="w-8 h-8 text-primary" />
@@ -224,7 +305,7 @@ export function TimesheetPageClient() {
     );
   }
 
-  const hasSubmittedToday = !!todayTimesheet;
+  const isAllSubmitted = availableDates.length === 0;
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto w-full">
@@ -237,15 +318,16 @@ export function TimesheetPageClient() {
             Daily Timesheet
           </h2>
           <p className="text-muted-foreground mt-1 font-medium italic">
-            Log your daily activities to maintain your legendary streak.
+            Log what you worked on today. Missed yesterday? You can still log
+            it.
           </p>
         </div>
       </div>
 
       <div className="grid gap-8 md:grid-cols-3 items-start">
-        {/* Today's Form */}
+        {/* Submit Form */}
         <div className="md:col-span-2">
-          {hasSubmittedToday ? (
+          {isAllSubmitted ? (
             <Card
               className="border-border/40 bg-card/40 backdrop-blur-md shadow-2xl relative overflow-hidden"
               data-tour-id="page:intern-timesheet:submit-form"
@@ -255,12 +337,12 @@ export function TimesheetPageClient() {
                   <CheckCircle2 className="h-8 w-8 text-success mt-1" />
                   <div className="space-y-2">
                     <AlertTitle className="text-2xl font-black uppercase tracking-tight">
-                      Daily timesheet commited
+                      Daily timesheet committed
                     </AlertTitle>
                     <AlertDescription className="font-bold opacity-80 text-sm">
-                      Awesome job! You have already submitted your daily
-                      timesheet for today. Keep up the consistency and maintain
-                      your streak tomorrow!
+                      You have already submitted your timesheet for today. You
+                      can still edit it from the calendar until the end of
+                      tomorrow.
                     </AlertDescription>
                   </div>
                 </Alert>
@@ -282,172 +364,278 @@ export function TimesheetPageClient() {
                         Submit Progress
                       </CardTitle>
                       <CardDescription className="font-bold text-muted-foreground/60 uppercase text-[10px] tracking-[0.1em]">
-                        Detail your heroic deeds for today
+                        Detail your heroic deeds
                       </CardDescription>
                     </div>
-                    <Badge
-                      variant="default"
-                      className="px-4 py-1.5 font-black text-xs"
-                    >
-                      {new Date().toLocaleDateString(undefined, {
-                        weekday: "long",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6 pt-8">
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
-                        <Clock className="w-3 h-3" />
-                        Time Channelled
-                      </Label>
-                      <div className="relative">
-                        <Input
-                          type="number"
-                          placeholder="Hours..."
-                          required
-                          value={hours}
-                          onChange={(e) => setHours(e.target.value)}
-                          className="bg-background/50 border-border/50 h-10 font-bold pl-4 focus:ring-brand-blue/30"
-                          min="1"
-                          max="24"
-                          step="0.25"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                        Link to Assigned Task
-                      </Label>
+                    {availableDates.length > 1 ? (
                       <Select
-                        onValueChange={setLinkedTaskId}
-                        value={linkedTaskId}
-                        disabled={activeTasks.length === 0}
+                        value={effectiveEntryDate}
+                        onValueChange={setEntryDate}
+                        disabled={isOnLeave}
                       >
-                        <SelectTrigger className="w-full bg-background/50 border-border/50 !h-10 font-bold focus:ring-brand-blue/30">
-                          <SelectValue
-                            placeholder={
-                              activeTasks.length > 0
-                                ? "Link an assigned task..."
-                                : "No active tasks assigned"
-                            }
-                          />
+                        <SelectTrigger className="w-full sm:w-56 bg-background/50 border-border/50 !h-9 font-bold">
+                          <SelectValue placeholder="Pick a date" />
                         </SelectTrigger>
                         <SelectContent position="popper">
-                          <SelectItem
-                            value="none"
-                            className="font-bold uppercase text-xs text-muted-foreground"
-                          >
-                            None
-                          </SelectItem>
-                          {activeTasks.map((task) => (
+                          {availableDates.map((d) => (
                             <SelectItem
-                              key={task.id}
-                              value={task.id}
-                              className="font-bold uppercase text-xs"
+                              key={d}
+                              value={d}
+                              className="font-bold text-xs"
                             >
-                              {task.title}
+                              {d === todayStr ? "Today" : "Yesterday"} ·{" "}
+                              {formatEntryDate(d)}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                    </div>
+                    ) : (
+                      <Badge
+                        variant="default"
+                        className="px-4 py-1.5 font-black text-xs"
+                      >
+                        {effectiveEntryDate === yesterdayStr
+                          ? "Yesterday · "
+                          : ""}
+                        {formatEntryDate(effectiveEntryDate)}
+                      </Badge>
+                    )}
                   </div>
+                </CardHeader>
+                <CardContent className="space-y-6 pt-8">
+                  {isOnLeave && (
+                    <Alert className="bg-warning/10 text-warning border-warning/30">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertTitle className="font-black uppercase tracking-tight">
+                        You're on approved leave
+                      </AlertTitle>
+                      <AlertDescription className="font-bold opacity-80 text-xs">
+                        Timesheets can't be submitted while you're on leave.
+                      </AlertDescription>
+                    </Alert>
+                  )}
 
-                  {linkedTaskId && linkedTaskId !== "none" && (
+                  <fieldset disabled={isOnLeave} className="space-y-6">
+                    <div className="space-y-2 md:w-1/2">
+                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
+                        <Clock className="w-3 h-3" />
+                        Time Channelled
+                      </Label>
+                      <Input
+                        type="number"
+                        placeholder="Hours..."
+                        required
+                        value={hours}
+                        onChange={(e) => setHours(e.target.value)}
+                        className="bg-background/50 border-border/50 h-10 font-bold pl-4 focus:ring-brand-blue/30"
+                        min="0.25"
+                        max="24"
+                        step="0.25"
+                      />
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                          Task Updates (Optional)
+                        </Label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={addTaskRow}
+                          disabled={!canAddTaskRow}
+                          className="h-7 text-[10px] font-black uppercase tracking-wider"
+                        >
+                          <Plus className="w-3 h-3 mr-1" />
+                          Add Task
+                        </Button>
+                      </div>
+                      {prefillTasks.length === 0 && (
+                        <p className="text-[11px] font-bold text-muted-foreground/70">
+                          No open tasks assigned to you.
+                        </p>
+                      )}
+                      {taskRows.map((row) => {
+                        const selectedTask = prefillTasks.find(
+                          (t) => t.task_id === row.task_id,
+                        );
+                        return (
+                          <div
+                            key={row.key}
+                            className="rounded-xl border border-border/40 bg-background/30 p-3 space-y-3"
+                          >
+                            <div className="flex flex-col sm:flex-row gap-3">
+                              <Select
+                                value={row.task_id}
+                                onValueChange={(val) =>
+                                  updateTaskRow(row.key, {
+                                    task_id: val,
+                                    status:
+                                      row.status === "COMPLETED" &&
+                                      !prefillTasks.find(
+                                        (t) => t.task_id === val,
+                                      )?.output_link
+                                        ? "IN_PROGRESS"
+                                        : row.status,
+                                  })
+                                }
+                              >
+                                <SelectTrigger className="w-full sm:flex-1 bg-background/50 border-border/50 !h-10 font-bold">
+                                  <SelectValue placeholder="Pick a task..." />
+                                </SelectTrigger>
+                                <SelectContent position="popper">
+                                  {prefillTasks.map((task) => (
+                                    <SelectItem
+                                      key={task.task_id}
+                                      value={task.task_id}
+                                      disabled={
+                                        task.task_id !== row.task_id &&
+                                        usedTaskIds.has(task.task_id)
+                                      }
+                                      className="font-bold text-xs"
+                                    >
+                                      {task.title}
+                                      {task.is_overdue && (
+                                        <span className="ml-2 text-[9px] font-black uppercase text-destructive">
+                                          Overdue
+                                        </span>
+                                      )}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Select
+                                value={row.status}
+                                onValueChange={(val) =>
+                                  updateTaskRow(row.key, {
+                                    status: val as TInternTaskStatus,
+                                  })
+                                }
+                              >
+                                <SelectTrigger className="w-full sm:w-48 bg-background/50 border-border/50 !h-10 font-bold">
+                                  <SelectValue placeholder="Status..." />
+                                </SelectTrigger>
+                                <SelectContent position="popper">
+                                  {TIMESHEET_TASK_STATUS_OPTIONS.map((opt) => (
+                                    <SelectItem
+                                      key={opt.value}
+                                      value={opt.value}
+                                      disabled={
+                                        opt.value === "COMPLETED" &&
+                                        !selectedTask?.output_link
+                                      }
+                                      className="font-bold uppercase text-xs"
+                                    >
+                                      {opt.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => removeTaskRow(row.key)}
+                                aria-label="Remove task"
+                                className="shrink-0 text-muted-foreground hover:text-destructive"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                            {selectedTask && !selectedTask.output_link && (
+                              <p className="text-[10px] font-bold text-muted-foreground/70">
+                                Add an output link on the Tasks page to mark
+                                this task completed.
+                              </p>
+                            )}
+                            <Input
+                              placeholder="Remark (optional)"
+                              value={row.remark}
+                              onChange={(e) =>
+                                updateTaskRow(row.key, {
+                                  remark: e.target.value,
+                                })
+                              }
+                              className="bg-background/50 border-border/50 h-9 text-xs font-medium"
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-between gap-2">
+                        <span className="flex items-center gap-2">
+                          <FileText className="w-3 h-3" />
+                          Daily Achievement Log
+                        </span>
+                        <span
+                          className={
+                            trimmedDescription.length > 0 &&
+                            trimmedDescription.length < DESCRIPTION_MIN
+                              ? "text-destructive"
+                              : ""
+                          }
+                        >
+                          {trimmedDescription.length}/{DESCRIPTION_MAX}
+                        </span>
+                      </Label>
+                      <Textarea
+                        placeholder={`Describe your progress (at least ${DESCRIPTION_MIN} characters)...`}
+                        required
+                        value={description}
+                        maxLength={DESCRIPTION_MAX}
+                        onChange={(e) => setDescription(e.target.value)}
+                        className="min-h-[180px] bg-background/50 border-border/50 font-bold focus:ring-brand-blue/30 resize-none p-4"
+                      />
+                    </div>
+
                     <div className="grid gap-6 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                          Update Task Status
+                          Blockers Encountered (Optional)
                         </Label>
-                        <Select
-                          onValueChange={setTaskStatus}
-                          value={taskStatus}
-                        >
-                          <SelectTrigger className="w-full bg-background/50 border-border/50 !h-10 font-bold focus:ring-brand-blue/30">
-                            <SelectValue placeholder="Update status..." />
-                          </SelectTrigger>
-                          <SelectContent position="popper">
-                            <SelectItem
-                              value="WAITING_FOR_REVIEW"
-                              className="font-bold uppercase text-xs"
-                            >
-                              Waiting for Review
-                            </SelectItem>
-                            <SelectItem
-                              value="IN_PROGRESS"
-                              className="font-bold uppercase text-xs"
-                            >
-                              In Progress
-                            </SelectItem>
-                            <SelectItem
-                              value="COMPLETED"
-                              className="font-bold uppercase text-xs"
-                            >
-                              Completed
-                            </SelectItem>
-                            <SelectItem
-                              value="ON_HOLD"
-                              className="font-bold uppercase text-xs"
-                            >
-                              On Hold
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <Textarea
+                          placeholder="Any shadows holding you back?"
+                          value={blockers}
+                          maxLength={NOTE_MAX}
+                          onChange={(e) => setBlockers(e.target.value)}
+                          className="min-h-[100px] bg-background/50 border-border/50 font-bold focus:ring-brand-blue/30 resize-none p-4"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                          End of Day Note (Optional)
+                        </Label>
+                        <Textarea
+                          placeholder="Plans for tomorrow, wins, anything else..."
+                          value={endOfDayNote}
+                          maxLength={NOTE_MAX}
+                          onChange={(e) => setEndOfDayNote(e.target.value)}
+                          className="min-h-[100px] bg-background/50 border-border/50 font-bold focus:ring-brand-blue/30 resize-none p-4"
+                        />
                       </div>
                     </div>
-                  )}
 
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
-                      <FileText className="w-3 h-3" />
-                      Daily Achievement Log
-                    </Label>
-                    <Textarea
-                      placeholder="Describe your progress, conquered bugs, and legendary PRs..."
-                      required
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      className="min-h-[180px] bg-background/50 border-border/50 font-bold focus:ring-brand-blue/30 resize-none p-4"
-                    />
-                    <p className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest text-right italic">
-                      Quality logs earn streak multipliers
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                      Blockers Encountered (Optional)
-                    </Label>
-                    <Textarea
-                      placeholder="Any shadows holding you back?"
-                      value={blockers}
-                      onChange={(e) => setBlockers(e.target.value)}
-                      className="min-h-[100px] bg-background/50 border-border/50 font-bold focus:ring-brand-blue/30 resize-none p-4"
-                    />
-                  </div>
-
-                  <div className="pt-4">
-                    <Button
-                      type="submit"
-                      size="lg"
-                      disabled={isSubmitting}
-                      className="w-full text-sm shadow-[0_8px_16px_rgba(46,133,254,0.25)] font-bold rounded-full"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Spinner className="mr-3 h-5 w-5" />
-                          Channeling Progress...
-                        </>
-                      ) : (
-                        "Commit Daily Timesheet"
-                      )}
-                    </Button>
-                  </div>
+                    <div className="pt-4">
+                      <Button
+                        type="submit"
+                        size="lg"
+                        disabled={isSubmitting || isOnLeave}
+                        className="w-full text-sm shadow-[0_8px_16px_rgba(46,133,254,0.25)] font-bold rounded-full"
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Spinner className="mr-3 h-5 w-5" />
+                            Channeling Progress...
+                          </>
+                        ) : (
+                          "Commit Daily Timesheet"
+                        )}
+                      </Button>
+                    </div>
+                  </fieldset>
                 </CardContent>
               </Card>
             </form>
@@ -514,7 +702,7 @@ export function TimesheetPageClient() {
               </div>
               <TooltipProvider>
                 <div className="grid grid-cols-7 gap-1.5 sm:gap-2.5">
-                  {prevMonthTrailingDays.map((prev, _i) => {
+                  {prevMonthTrailingDays.map((prev) => {
                     const keyStr = prev.date.toISOString();
                     // Blank out days before onboarding
                     if (prev.status === "blank") {
@@ -534,11 +722,14 @@ export function TimesheetPageClient() {
                     return (
                       <Tooltip key={keyStr}>
                         <TooltipTrigger asChild>
-                          <div
-                            className={`aspect-square flex items-center justify-center rounded-lg text-xs font-black border transition-all cursor-help opacity-50 ${prevStyles}`}
+                          <button
+                            type="button"
+                            onClick={() => openEntry(prev.entry)}
+                            disabled={!prev.entry}
+                            className={`aspect-square flex items-center justify-center rounded-lg text-xs font-black border transition-all opacity-50 ${prev.entry ? "cursor-pointer" : "cursor-help"} ${prevStyles}`}
                           >
                             {prev.dayNum}
-                          </div>
+                          </button>
                         </TooltipTrigger>
                         <TooltipContent>
                           <p className="font-bold text-xs uppercase tracking-wider">
@@ -549,14 +740,8 @@ export function TimesheetPageClient() {
                       </Tooltip>
                     );
                   })}
-                  {days.map((day, _i) => {
+                  {days.map((day) => {
                     const keyStr = day.date.toISOString();
-                    // Blank out days before onboarding (if any are marked blank)
-                    if (day.status === "blank") {
-                      return (
-                        <div key={keyStr} className="aspect-square opacity-0" />
-                      );
-                    }
 
                     const isCalendarDisabled = day.status === "disabled";
 
@@ -581,19 +766,24 @@ export function TimesheetPageClient() {
                     return (
                       <Tooltip key={keyStr}>
                         <TooltipTrigger asChild>
-                          <div
+                          <button
+                            type="button"
+                            onClick={() => openEntry(day.entry)}
                             className={`aspect-square flex items-center justify-center rounded-lg text-xs font-black border transition-all ${
                               isCalendarDisabled
                                 ? "cursor-not-allowed opacity-40"
-                                : "hover:scale-110 cursor-help"
+                                : day.entry
+                                  ? "hover:scale-110 cursor-pointer"
+                                  : "hover:scale-110 cursor-help"
                             } ${styles}`}
                           >
                             {day.date.getDate()}
-                          </div>
+                          </button>
                         </TooltipTrigger>
                         <TooltipContent>
                           <p className="font-bold text-xs uppercase tracking-wider">
                             {day.date.toLocaleDateString()} &bull; {day.status}
+                            {day.entry ? " · click to view" : ""}
                           </p>
                         </TooltipContent>
                       </Tooltip>
@@ -618,97 +808,13 @@ export function TimesheetPageClient() {
               </div>
             </CardContent>
           </Card>
-
-          <Card
-            className="border-border/40 bg-card/30 backdrop-blur-md shadow-xl overflow-hidden gap-1.5 py-4"
-            data-tour-id="page:intern-timesheet:streak"
-          >
-            <CardHeader className="pb-0">
-              <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-brand-blue" />
-                Streak Bonus
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-1.5 space-y-3">
-              {/* Current streak big number */}
-              <div className="flex items-end justify-between">
-                <div>
-                  <div className="text-4xl font-black tracking-tighter tabular-nums bg-gradient-to-r from-brand-blue to-brand-purple bg-clip-text text-transparent">
-                    {streak}
-                  </div>
-                  <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                    Day Streak
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-0.5">
-                  <Badge
-                    variant="secondary"
-                    className="font-black text-[10px] px-2 py-0.5"
-                  >
-                    {multiplier} Point Boost
-                  </Badge>
-                  <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60">
-                    Active multiplier
-                  </span>
-                </div>
-              </div>
-
-              {/* Milestone progress */}
-              <div className="space-y-1.5">
-                {[
-                  { label: "1.2× at 7 days", target: 7 },
-                  { label: "1.5× at 14 days", target: 14 },
-                  { label: "2.0× at 30 days", target: 30 },
-                ].map(({ label, target }) => {
-                  const pct = Math.min(
-                    100,
-                    Math.round((streak / target) * 100),
-                  );
-                  const reached = streak >= target;
-                  return (
-                    <div key={target}>
-                      <div className="flex items-center justify-between mb-0.5">
-                        <span
-                          className={`text-[9px] font-black uppercase tracking-widest ${
-                            reached
-                              ? "text-brand-blue"
-                              : "text-muted-foreground/60"
-                          }`}
-                        >
-                          {label}
-                        </span>
-                        <span
-                          className={`text-[9px] font-black tabular-nums ${
-                            reached
-                              ? "text-brand-blue"
-                              : "text-muted-foreground/40"
-                          }`}
-                        >
-                          {Math.min(streak, target)}/{target}d
-                        </span>
-                      </div>
-                      <div className="h-1 w-full bg-muted/40 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-700 ${
-                            reached
-                              ? "bg-gradient-to-r from-brand-blue to-brand-purple"
-                              : "bg-brand-blue/40"
-                          }`}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <p className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-widest italic">
-                Submit daily to unlock higher multipliers!
-              </p>
-            </CardContent>
-          </Card>
         </div>
       </div>
+
+      <ActivityDetailDialog
+        selectedItem={selectedActivity}
+        onClose={() => setSelectedActivity(null)}
+      />
     </div>
   );
 }

@@ -9,62 +9,61 @@
 import { z } from "zod";
 
 // ============================================
-// Weekly Review Schema
+// Monthly Review Schema
 // ============================================
 
-/**
- * Weekly review form validation schema
- */
-const baseWeeklyReviewSchema = z.object({
-  fullName: z.string().min(1, "Name is required"),
-  muid: z.string().min(1, "MUID is required"),
-  email: z.string().email("Invalid email address"),
-  team: z.string().min(1, "Team is required"),
-  isOnLeave: z.boolean(),
-  worksDone: z.string().optional(),
-  hoursCommitted: z.string().optional(),
-  blockers: z.string().optional(),
-  leaveDays: z.string().optional(),
-  rating: z.string().optional(),
-  learnings: z.string().optional(),
-  challengesFaced: z.string().optional(),
-  nextWeekPlan: z.string().optional(),
-  suggestions: z.string().optional(),
-});
+export const MONTHLY_REVIEW_TEXT_MAX = 5000;
+export const MONTHLY_REVIEW_FIELD_MAX = 2000;
 
-export const weeklyReviewSchema = baseWeeklyReviewSchema.superRefine(
-  (data, ctx) => {
-    if (!data.isOnLeave) {
-      if (!data.worksDone) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Works done are required",
-          path: ["worksDone"],
-        });
-      }
-      if (
-        data.hoursCommitted === undefined ||
-        data.hoursCommitted === null ||
-        data.hoursCommitted.trim() === ""
-      ) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Hours committed is required",
-          path: ["hoursCommitted"],
-        });
-      } else {
-        const num = Number(data.hoursCommitted);
-        if (Number.isNaN(num) || num < 0) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Hours must be a positive number",
-            path: ["hoursCommitted"],
-          });
-        }
-      }
+/**
+ * Monthly review form. Some review text is required: either the free-text
+ * review, or at least one of learnings / challenges / next month's plan.
+ * Month, team, leave days and tasks are filled in by the server.
+ */
+export const monthlyReviewSchema = z
+  .object({
+    monthlyReview: z
+      .string()
+      .max(MONTHLY_REVIEW_TEXT_MAX, "Max 5000 characters")
+      .optional(),
+    rating: z.string().optional(),
+    learnings: z
+      .string()
+      .max(MONTHLY_REVIEW_FIELD_MAX, "Max 2000 characters")
+      .optional(),
+    challengesFaced: z
+      .string()
+      .max(MONTHLY_REVIEW_FIELD_MAX, "Max 2000 characters")
+      .optional(),
+    nextMonthPlan: z
+      .string()
+      .max(MONTHLY_REVIEW_FIELD_MAX, "Max 2000 characters")
+      .optional(),
+    blockers: z
+      .string()
+      .max(MONTHLY_REVIEW_FIELD_MAX, "Max 2000 characters")
+      .optional(),
+    suggestions: z
+      .string()
+      .max(MONTHLY_REVIEW_FIELD_MAX, "Max 2000 characters")
+      .optional(),
+  })
+  .superRefine((data, ctx) => {
+    const hasText = [
+      data.monthlyReview,
+      data.learnings,
+      data.challengesFaced,
+      data.nextMonthPlan,
+    ].some((v) => v?.trim());
+    if (!hasText) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["monthlyReview"],
+        message:
+          "Write your monthly review, or fill in learnings, challenges faced or next month's plan.",
+      });
     }
-  },
-);
+  });
 
 // ============================================
 // Team Schema
@@ -81,5 +80,5 @@ export const teamSchema = z.object({
 // Derived Types
 // ============================================
 
-export type WeeklyReviewFormValues = z.infer<typeof weeklyReviewSchema>;
+export type MonthlyReviewFormValues = z.infer<typeof monthlyReviewSchema>;
 export type TeamFormValues = z.infer<typeof teamSchema>;

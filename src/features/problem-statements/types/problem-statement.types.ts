@@ -10,8 +10,10 @@
 import type { z } from "zod";
 import type {
   AdminCreateStatementSchema,
+  AdminUpdateStatementSchema,
   CompanyCreateStatementSchema,
   EmbeddedCompanySchema,
+  EmbeddedUserSchema,
   InteractionStatusSchema,
   InteractionsResponseSchema,
   InteractionUserSchema,
@@ -58,6 +60,10 @@ export type AdminCreateStatementPayload = z.infer<
   typeof AdminCreateStatementSchema
 >;
 export type UpdateStatementPayload = z.infer<typeof UpdateStatementSchema>;
+export type AdminUpdateStatementPayload = z.infer<
+  typeof AdminUpdateStatementSchema
+>;
+export type EmbeddedUser = z.infer<typeof EmbeddedUserSchema>;
 export type SetInteractionPayload = z.infer<typeof SetInteractionSchema>;
 export type SubmitSolutionPayload = z.infer<typeof SubmitSolutionSchema>;
 
