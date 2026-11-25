@@ -41,6 +41,17 @@ export function launchDriver(
 ) {
   let d: ReturnType<typeof driver>;
 
+  // driver.js's public `destroy()` skips `onDestroyStarted`, so every exit
+  // path must record its outcome here before destroying.
+  const end = (outcome: "completed" | "skipped") => {
+    if (outcome === "completed") handlers.onComplete();
+    else handlers.onSkip();
+    // Abandoning mid-tour may leave the mobile sidebar sheet open —
+    // `centered: true` is the "close it back down" signal.
+    void handlers.prepareStep?.({ centered: true } as TourStep);
+    d.destroy();
+  };
+
   const goToIndex = (index: number, direction: "next" | "prev") => {
     const target = steps[index];
     void (async () => {
@@ -83,11 +94,9 @@ export function launchDriver(
     })),
     onNextClick: (_element, _step, opts) => {
       // The "Finish" button on the last step reuses this same hook (there's
-      // no separate onDoneClick configured) — destroy directly instead of
-      // stepping past the end; `onDestroyStarted` below reads `isLastStep()`
-      // to route this to `onComplete`.
+      // no separate onDoneClick configured).
       if (d.isLastStep()) {
-        d.destroy();
+        end("completed");
         return;
       }
       goToIndex((opts.state.activeIndex ?? 0) + 1, "next");
@@ -98,8 +107,7 @@ export function launchDriver(
     onPopoverRender: (popover) => {
       // Default close (×) button is dropped entirely: its slot is taken by
       // the "Step X of Y" progress text, moved up out of the footer, while
-      // the footer slot it vacates gets an explicit "Skip tour" action —
-      // same destroy path `onDestroyStarted` below already handles.
+      // the footer slot it vacates gets an explicit "Skip tour" action.
       popover.wrapper.appendChild(popover.progress);
       popover.progress.classList.add("driver-popover-progress-corner");
 
@@ -107,25 +115,12 @@ export function launchDriver(
       skipBtn.type = "button";
       skipBtn.textContent = "Skip tour";
       skipBtn.className = "driver-popover-footer-btn driver-popover-skip-btn";
-      skipBtn.addEventListener("click", () => d.destroy());
+      skipBtn.addEventListener("click", () => end("skipped"));
       popover.footer.insertBefore(skipBtn, popover.footer.firstChild);
     },
-    onDestroyStarted: () => {
-      // Fires for Skip, Esc, and outside-click alike — driver.js doesn't
-      // distinguish these by default, so `isLastStep()` is the signal used
-      // to tell a natural Finish apart from every other exit path (Esc /
-      // outside-click must still count as Skip, not a silent no-op).
-      if (d.isLastStep()) {
-        handlers.onComplete();
-      } else {
-        handlers.onSkip();
-      }
-      // Abandoning mid-tour (Skip/Esc/outside-click) may leave the mobile
-      // sidebar sheet open — `centered: true` is the same "close it back
-      // down" signal a real centered step carries, no full step needed.
-      void handlers.prepareStep?.({ centered: true } as TourStep);
-      d.destroy();
-    },
+    // Only driver.js's internal exits reach this (Esc/overlay are off via
+    // `allowClose: false`); route them through `end` too.
+    onDestroyStarted: () => end(d.isLastStep() ? "completed" : "skipped"),
   });
 
   d.drive();

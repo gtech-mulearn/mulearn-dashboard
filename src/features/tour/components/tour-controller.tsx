@@ -9,6 +9,7 @@
  * manages its own overlay DOM; this just wires up the launch-condition hook.
  */
 
+import { useState } from "react";
 import { usePageTour, useTour } from "../hooks/use-tour";
 import type { TourCookiePayload } from "../types";
 
@@ -25,7 +26,9 @@ interface TourControllerProps {
  * `isAnyTourActive()` guard keeps them from ever overlapping.
  */
 export function TourController({ initialState, blocked }: TourControllerProps) {
-  useTour({ initialState, blocked });
-  usePageTour({ initialState, blocked });
+  // One shared copy, so a home-tour skip/finish stops page tours this session.
+  const [state, setState] = useState(initialState);
+  useTour({ state, setState, blocked });
+  usePageTour({ state, setState, blocked });
   return null;
 }

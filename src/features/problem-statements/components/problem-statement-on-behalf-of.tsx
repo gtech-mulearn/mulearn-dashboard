@@ -24,7 +24,7 @@ export function ProblemStatementOnBehalfOf({
       )}
     >
       <UserRound className="size-3.5 shrink-0" />
-      <span>On behalf of</span>
+      <span>Curated and supported by</span>
       <span className="break-words font-medium text-foreground">
         {user.full_name}
       </span>
