@@ -39,6 +39,8 @@ export type InteractionStatus = z.infer<typeof InteractionStatusSchema>;
 
 export type EmbeddedCompany = z.infer<typeof EmbeddedCompanySchema>;
 export type ProblemStatement = z.infer<typeof ProblemStatementSchema>;
+/** Who owns a statement: a verified company, a community, or muLearn. */
+export type StatementSource = NonNullable<ProblemStatement["source"]>;
 
 /** Alias used in learner-facing view (same shape, my_interaction populated) */
 export type ProblemStatementCard = ProblemStatement;
@@ -80,8 +82,9 @@ export interface FeedQueryParams {
   skill?: string;
   /** filter by a specific company */
   company_id?: string;
-  /** "company" or "mulearn" (admin-authored) */
-  source?: "company" | "mulearn";
+  /** filter by a specific community */
+  community_id?: string;
+  source?: StatementSource;
   /** hide statements whose deadline has passed */
   open_only?: boolean;
   /** published_at (default, newest first), deadline, title */
@@ -102,8 +105,10 @@ export interface CompanyQueryParams {
 }
 
 /** Query params for GET admin/ (superset of CompanyQueryParams) */
-export interface AdminQueryParams extends CompanyQueryParams {
+export interface AdminQueryParams extends Omit<CompanyQueryParams, "source"> {
   company_id?: string;
+  community_id?: string;
+  source?: StatementSource;
 }
 
 /** Query params for GET <id>/interactions/ (company and admin) */
