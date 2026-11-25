@@ -332,7 +332,7 @@ export function ProblemStatementFormDialog({
               {isAdmin && (
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-foreground">
-                    On behalf of
+                    Curated and supported by
                   </p>
                   {mentioned ? (
                     <div className="flex h-9 items-center gap-2 rounded-md border border-input bg-background px-3 text-sm">
