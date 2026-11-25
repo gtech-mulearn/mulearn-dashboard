@@ -13,8 +13,9 @@
  * send only the fields that changed — re-sending an untouched past deadline
  * would otherwise block editing a closed statement.
  *
- * Admin-created statements are authored under µLearn (no company_id).
- * Admins can also mention a user (`muid`) the statement is drafted on behalf
+ * Admins pick who posts the statement: µLearn (default), a verified company
+ * (`company_id`) or a community (`community_id`) — never both. Company
+ * payloads never send either. Admins can also mention a user (`muid`) the statement is drafted on behalf
  * of; the backend notifies that user. Company payloads never send `muid`.
  */
 
@@ -25,6 +26,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { CustomDateTimePicker } from "@/components/ui/custom-datetime-picker";
 import {
   Dialog,
@@ -47,6 +49,10 @@ import { Input } from "@/components/ui/input";
 import { MarkdownEditor } from "@/components/ui/markdown-editor";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import { SkillSearchInput } from "@/components/ui/skill-search-input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCompanyVerificationList } from "@/features/manage-companies";
+import { useCommunities } from "@/features/onboarding";
+import { useDebounce } from "@/hooks/use-debounce";
 import { CATEGORY_SUGGESTIONS } from "../constants/problem-statement.constants";
 import {
   useAdminCreateStatement,
@@ -59,9 +65,17 @@ import type {
   AdminUpdateStatementPayload,
   EmbeddedUser,
   ProblemStatement,
+  StatementSource,
 } from "../types/problem-statement.types";
 
 type MentionedUser = Pick<EmbeddedUser, "muid" | "full_name">;
+type Owner = { source: StatementSource; id: string | null; name?: string };
+
+const OWNER_HINTS: Record<StatementSource, string> = {
+  mulearn: "Authored by µLearn, not linked to any company or community.",
+  company: "The company can edit and publish it, and gets a notification.",
+  community: "Shown under the community's name. Only admins can edit it.",
+};
 
 type Mode = "company-create" | "company-edit" | "admin-create" | "admin-edit";
 
@@ -104,6 +118,69 @@ function normalizeSkills(skills: string[]) {
   return out.slice(0, MAX_SKILLS);
 }
 
+/** Current owner. For community statements `company` carries the community. */
+function toOwner(statement?: ProblemStatement): Owner {
+  const c = statement?.company;
+  if (!c?.id) return { source: "mulearn", id: null };
+  const source = statement?.source === "community" ? "community" : "company";
+  return { source, id: c.id, name: c.name };
+}
+
+type PickerProps = {
+  value: Owner;
+  onChange: (id: string, name: string) => void;
+  disabled?: boolean;
+};
+
+/** Server-searched verified companies (admin only). */
+function CompanyPicker({ value, onChange, disabled }: PickerProps) {
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+  const { data, isLoading } = useCompanyVerificationList({
+    pageIndex: 1,
+    perPage: 20,
+    search: debouncedSearch,
+    sortBy: "",
+    status: "verified",
+  });
+  const options = (data?.data ?? []).map((c) => ({ id: c.id, title: c.name }));
+  return (
+    <Combobox
+      options={options}
+      value={value.id ?? undefined}
+      selectedLabel={value.name}
+      onValueChange={(id) => {
+        const picked = options.find((o) => o.id === id);
+        if (picked) onChange(id, picked.title);
+      }}
+      onSearchChange={setSearch}
+      loading={isLoading}
+      placeholder="Search a verified company…"
+      disabled={disabled}
+    />
+  );
+}
+
+/** Communities from the public register list (filtered client-side). */
+function CommunityPicker({ value, onChange, disabled }: PickerProps) {
+  const { data, isLoading } = useCommunities();
+  const options = data ?? [];
+  return (
+    <Combobox
+      options={options}
+      value={value.id ?? undefined}
+      selectedLabel={value.name}
+      onValueChange={(id) => {
+        const picked = options.find((o) => o.id === id);
+        if (picked) onChange(id, picked.title);
+      }}
+      loading={isLoading}
+      placeholder="Search a community…"
+      disabled={disabled}
+    />
+  );
+}
+
 export function ProblemStatementFormDialog({
   open,
   onClose,
@@ -126,13 +203,26 @@ export function ProblemStatementFormDialog({
     isEditing && statement?.on_behalf_of ? statement.on_behalf_of : null,
   );
 
+  // Admin-only owner, sent as company_id / community_id.
+  const initialOwner = useMemo(
+    () => toOwner(isEditing ? statement : undefined),
+    [isEditing, statement],
+  );
+  const [owner, setOwner] = useState<Owner>(initialOwner);
+
   useEffect(() => {
     if (!open) return;
     reset(toFormValues(isEditing ? statement : undefined));
     setMentioned(
       isEditing && statement?.on_behalf_of ? statement.on_behalf_of : null,
     );
-  }, [open, isEditing, statement, reset]);
+    setOwner(initialOwner);
+  }, [open, isEditing, statement, reset, initialOwner]);
+
+  const changeSource = (source: StatementSource) =>
+    setOwner(
+      source === initialOwner.source ? initialOwner : { source, id: null },
+    );
 
   const companyCreate = useCreateCompanyStatement();
   const companyUpdate = useUpdateCompanyStatement();
@@ -148,6 +238,16 @@ export function ProblemStatementFormDialog({
   const minDeadline = useMemo(() => new Date(), []);
 
   const onSubmit = async (values: FormOutput) => {
+    if (isAdmin && owner.source !== "mulearn" && !owner.id) {
+      toast.error(`Pick a ${owner.source}, or switch to µLearn.`);
+      return;
+    }
+    const ownerField =
+      owner.source === "company"
+        ? { company_id: owner.id }
+        : owner.source === "community"
+          ? { community_id: owner.id }
+          : {};
     try {
       let result: ProblemStatement;
       if (isEditing && statement) {
@@ -165,6 +265,21 @@ export function ProblemStatementFormDialog({
           // "" clears the mention on the backend
           payload.muid = mentioned?.muid ?? "";
         }
+        if (
+          isAdmin &&
+          (owner.source !== initialOwner.source || owner.id !== initialOwner.id)
+        ) {
+          // Back to µLearn: null on the field that currently links it.
+          if (owner.source === "mulearn") {
+            payload[
+              initialOwner.source === "community"
+                ? "community_id"
+                : "company_id"
+            ] = null;
+          } else {
+            Object.assign(payload, ownerField);
+          }
+        }
         if (Object.keys(payload).length === 0) {
           onClose();
           return;
@@ -175,9 +290,11 @@ export function ProblemStatementFormDialog({
         toast.success("Problem statement updated.");
       } else {
         result = isAdmin
-          ? await adminCreate.mutateAsync(
-              mentioned ? { ...values, muid: mentioned.muid } : values,
-            )
+          ? await adminCreate.mutateAsync({
+              ...values,
+              ...ownerField,
+              ...(mentioned && { muid: mentioned.muid }),
+            })
           : await companyCreate.mutateAsync(values);
         toast.success("Draft created. Publish it when you're ready.");
       }
@@ -198,9 +315,7 @@ export function ProblemStatementFormDialog({
           <DialogDescription>
             {isEditing
               ? "Changes to a published statement are visible to learners right away."
-              : isAdmin
-                ? "Posted under µLearn and saved as a draft. Publish it from its page when it's ready."
-                : "Saved as a draft. Publish it from its page when it's ready."}
+              : "Saved as a draft. Publish it from its page when it's ready."}
           </DialogDescription>
         </DialogHeader>
 
@@ -210,6 +325,51 @@ export function ProblemStatementFormDialog({
             className="flex min-h-0 flex-1 flex-col"
           >
             <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5">
+              {isAdmin && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-foreground">
+                    Posted by
+                  </p>
+                  <Tabs
+                    value={owner.source}
+                    onValueChange={(v) => changeSource(v as StatementSource)}
+                  >
+                    <TabsList className="w-full">
+                      <TabsTrigger value="mulearn" disabled={isPending}>
+                        µLearn
+                      </TabsTrigger>
+                      <TabsTrigger value="company" disabled={isPending}>
+                        Company
+                      </TabsTrigger>
+                      <TabsTrigger value="community" disabled={isPending}>
+                        Community
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                  {owner.source === "company" && (
+                    <CompanyPicker
+                      value={owner}
+                      onChange={(id, name) =>
+                        setOwner({ source: "company", id, name })
+                      }
+                      disabled={isPending}
+                    />
+                  )}
+                  {owner.source === "community" && (
+                    <CommunityPicker
+                      value={owner}
+                      onChange={(id, name) =>
+                        setOwner({ source: "community", id, name })
+                      }
+                      disabled={isPending}
+                    />
+                  )}
+                  <p className="text-sm text-muted-foreground">
+                    {OWNER_HINTS[owner.source]}
+                  </p>
+                </div>
+              )}
+
               <FormField
                 control={form.control}
                 name="title"

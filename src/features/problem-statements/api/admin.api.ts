@@ -4,8 +4,8 @@
  * 📍 src/features/problem-statements/api/admin.api.ts
  *
  * Platform-admin endpoints. Admins can act on any statement in any status.
- * Admin list accepts company_id filter (or search for muLearn).
- * Admin create creates a statement directly from muLearn (company_id is NOT accepted).
+ * Admin list accepts company_id / community_id filters (or source).
+ * Admin create/edit accept one of company_id or community_id; neither = muLearn.
  *
  * Routes prefix: /api/v1/dashboard/problem-statements/admin/
  * Pattern: apiClient.get/post/patch/delete<T> — gateway auto-unwraps envelope.
@@ -31,7 +31,7 @@ import type {
 
 // ─── List ─────────────────────────────────────────────────────────────────────
 
-/** GET admin/ — all statements across all companies. Extra filter: company_id. */
+/** GET admin/ — all statements across all companies. Extra filters: company_id, community_id. */
 export async function adminFetchStatements(
   params?: AdminQueryParams,
 ): Promise<PaginatedResponse<ProblemStatement>> {
@@ -44,6 +44,7 @@ export async function adminFetchStatements(
   if (params?.source) q.set("source", params.source);
   if (params?.sortBy) q.set("sortBy", params.sortBy);
   if (params?.company_id) q.set("company_id", params.company_id);
+  if (params?.community_id) q.set("community_id", params.community_id);
   const query = q.toString();
   const url = query
     ? `${endpoints.problemStatements.adminList}?${query}`
@@ -86,7 +87,7 @@ export async function adminFetchStatementDetail(
 
 // ─── Create ───────────────────────────────────────────────────────────────────
 
-/** POST admin/ — create a statement from muLearn. Not attributed to any company — company_id is not accepted. Created as Draft. */
+/** POST admin/ — create a statement. Optional company_id or community_id (not both); neither = muLearn. Created as Draft. */
 export async function adminCreateStatement(
   payload: AdminCreateStatementPayload,
 ): Promise<ProblemStatement> {
@@ -100,7 +101,7 @@ export async function adminCreateStatement(
 
 // ─── Update ───────────────────────────────────────────────────────────────────
 
-/** PATCH admin/<id>/ — update any statement. The company cannot be changed. */
+/** PATCH admin/<id>/ — update any statement. company_id / community_id re-links it; null makes it muLearn's. */
 export async function adminUpdateStatement(
   id: string,
   payload: AdminUpdateStatementPayload,

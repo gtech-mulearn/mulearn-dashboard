@@ -97,6 +97,7 @@ function buildFeedQuery(params?: FeedQueryParams): string {
   if (params.category) q.set("category", params.category);
   if (params.skill) q.set("skill", params.skill);
   if (params.company_id) q.set("company_id", params.company_id);
+  if (params.community_id) q.set("community_id", params.community_id);
   if (params.source) q.set("source", params.source);
   if (params.open_only) q.set("open_only", "true");
   if (params.sortBy) q.set("sortBy", params.sortBy);

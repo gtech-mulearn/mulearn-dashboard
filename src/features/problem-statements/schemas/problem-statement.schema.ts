@@ -74,6 +74,8 @@ export const ProblemStatementSchema = z.object({
   skills: z.array(z.string()),
   deadline: z.string().nullable(),
   status: ProblemStatementStatusSchema,
+  /** Who owns it. For "community", `company` carries the community id + title. */
+  source: z.enum(["company", "community", "mulearn"]).optional(),
   company: EmbeddedCompanySchema,
   /** Mentioned user (admin statements only). Absent on learner responses. */
   on_behalf_of: EmbeddedUserSchema.nullable().optional(),
@@ -205,13 +207,16 @@ export const CompanyCreateStatementSchema = StatementFormSchema;
 
 /**
  * Full create payload for admin users.
- * Statements are created directly for muLearn and are not attributed to any
- * company — company_id is NOT an accepted field (causes 400 if sent).
+ * Owner: send at most one of `company_id` (verified company) or
+ * `community_id` (Community org); neither = muLearn. Both → 400. On PATCH,
+ * `null` for either makes it a muLearn statement. Company routes reject both.
  * Admins may also send `muid` to create the statement on behalf of a user
  * (the user gets an in-app notification). Blank / null = nobody.
  */
 export const AdminCreateStatementSchema = StatementFormSchema.extend({
   muid: z.string().max(100).nullable().optional(),
+  company_id: z.string().nullable().optional(),
+  community_id: z.string().nullable().optional(),
 });
 
 /** PATCH payload — all fields optional */
