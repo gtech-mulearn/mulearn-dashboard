@@ -48,8 +48,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { MarkdownEditor } from "@/components/ui/markdown-editor";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { SkillSearchInput } from "@/components/ui/skill-search-input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCompanyVerificationList } from "@/features/manage-companies";
 import { useCommunities } from "@/features/onboarding";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -307,7 +313,7 @@ export function ProblemStatementFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="flex max-h-[90vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
+      <DialogContent className="flex max-h-[90vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl lg:max-w-4xl">
         <DialogHeader className="shrink-0 border-b border-border px-6 pt-6 pb-4 text-left">
           <DialogTitle>
             {isEditing ? "Edit Problem Statement" : "New Problem Statement"}
@@ -327,43 +333,52 @@ export function ProblemStatementFormDialog({
             <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5">
               {isAdmin && (
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-foreground">
-                    Posted by
-                  </p>
-                  <Tabs
-                    value={owner.source}
-                    onValueChange={(v) => changeSource(v as StatementSource)}
-                  >
-                    <TabsList className="w-full">
-                      <TabsTrigger value="mulearn" disabled={isPending}>
-                        µLearn
-                      </TabsTrigger>
-                      <TabsTrigger value="company" disabled={isPending}>
-                        Company
-                      </TabsTrigger>
-                      <TabsTrigger value="community" disabled={isPending}>
-                        Community
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                  {owner.source === "company" && (
-                    <CompanyPicker
-                      value={owner}
-                      onChange={(id, name) =>
-                        setOwner({ source: "company", id, name })
-                      }
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <label
+                      htmlFor="problem-statement-owner"
+                      className="shrink-0 text-sm font-medium text-foreground"
+                    >
+                      Posted by
+                    </label>
+                    <Select
+                      value={owner.source}
+                      onValueChange={(v) => changeSource(v as StatementSource)}
                       disabled={isPending}
-                    />
-                  )}
-                  {owner.source === "community" && (
-                    <CommunityPicker
-                      value={owner}
-                      onChange={(id, name) =>
-                        setOwner({ source: "community", id, name })
-                      }
-                      disabled={isPending}
-                    />
-                  )}
+                    >
+                      <SelectTrigger
+                        id="problem-statement-owner"
+                        className="w-full sm:w-40 sm:shrink-0"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="mulearn">µLearn</SelectItem>
+                        <SelectItem value="company">Company</SelectItem>
+                        <SelectItem value="community">Community</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {owner.source !== "mulearn" && (
+                      <div className="min-w-0 flex-1">
+                        {owner.source === "company" ? (
+                          <CompanyPicker
+                            value={owner}
+                            onChange={(id, name) =>
+                              setOwner({ source: "company", id, name })
+                            }
+                            disabled={isPending}
+                          />
+                        ) : (
+                          <CommunityPicker
+                            value={owner}
+                            onChange={(id, name) =>
+                              setOwner({ source: "community", id, name })
+                            }
+                            disabled={isPending}
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
                   <p className="text-sm text-muted-foreground">
                     {OWNER_HINTS[owner.source]}
                   </p>
