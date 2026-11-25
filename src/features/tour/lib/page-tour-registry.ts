@@ -31,3 +31,14 @@ const ALL_PAGE_TOURS: readonly PageTourConfig[] = [
 
 export const PAGE_TOUR_REGISTRY: Record<string, PageTourConfig> =
   Object.fromEntries(ALL_PAGE_TOURS.map((c) => [c.route, c]));
+
+/**
+ * Stored in the single page-tours cookie entry on skip/finish. A page tour
+ * shows again only when its `version` is bumped above this.
+ */
+export function latestPageTourVersion(): number {
+  return Math.max(
+    0,
+    ...Object.values(PAGE_TOUR_REGISTRY).map((c) => c.version),
+  );
+}

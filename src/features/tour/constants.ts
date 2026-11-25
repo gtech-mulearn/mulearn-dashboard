@@ -22,6 +22,9 @@ export const TOUR_VERSIONS: Record<TourKey, number> = {
 
 export const TOUR_COOKIE_NAME = "mulearn-tour";
 
+/** One entry for all page tours: skipping or finishing any page tour stops them all. */
+export const PAGE_TOURS_SKIP_KEY = "page:*" as const;
+
 /** Mirrors `whats-new-actions.ts`'s `COOKIE_OPTIONS` shape exactly. */
 export const TOUR_COOKIE_OPTIONS = {
   httpOnly: true,

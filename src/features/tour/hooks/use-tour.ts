@@ -13,7 +13,14 @@
  */
 
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type Dispatch,
+  type SetStateAction,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useUserInfo } from "@/features/auth";
 import { useCompanyProfile } from "@/features/company-jobs/hooks";
@@ -22,10 +29,13 @@ import { useFilteredNav } from "@/hooks/use-filtered-nav";
 import { usePermissions } from "@/hooks/use-permissions";
 import { ROLES } from "@/lib/auth/roles";
 import { recordTourOutcome } from "../actions";
-import { TOUR_VERSIONS } from "../constants";
+import { PAGE_TOURS_SKIP_KEY, TOUR_VERSIONS } from "../constants";
 import { buildSteps } from "../lib/build-steps";
 import { isAnyTourActive, launchDriver } from "../lib/driver-adapter";
-import { PAGE_TOUR_REGISTRY } from "../lib/page-tour-registry";
+import {
+  latestPageTourVersion,
+  PAGE_TOUR_REGISTRY,
+} from "../lib/page-tour-registry";
 import { resolveTourKey, TOUR_HOME_ROUTE } from "../lib/resolve-tour-key";
 import { TOUR_STEP_REGISTRY } from "../lib/step-registry";
 import { waitForMobileSheet } from "../lib/wait-for-sheet";
@@ -139,7 +149,12 @@ function useMobileStepPreparer() {
 }
 
 interface UseTourOptions {
-  initialState: TourCookiePayload;
+  /**
+   * Owned by `TourController` and shared by `useTour`/`usePageTour`, so a
+   * home-tour skip/finish is seen by page tours without a reload.
+   */
+  state: TourCookiePayload;
+  setState: Dispatch<SetStateAction<TourCookiePayload>>;
   /**
    * True while a blocking overlay (e.g. the What's New popup) is open.
    * Kept as an explicit dep — rather than a one-off DOM query at effect-run
@@ -154,25 +169,29 @@ interface UseTourOptions {
  * mounted once in the dashboard layout). A second mounted instance would
  * run a second, independent launch effect and double-init driver.js.
  */
-export function useTour({ initialState, blocked = false }: UseTourOptions) {
+export function useTour({ state, setState, blocked = false }: UseTourOptions) {
   const pathname = usePathname();
   const { user, tourKey, ctx } = useTourResolution();
   const visibleNavIds = useVisibleNavIds();
   const prepareStep = useMobileStepPreparer();
 
-  const [state, setState] = useState<TourCookiePayload>(initialState);
   const hasLaunchedRef = useRef(false);
 
   const commitOutcomeBase = useCommitOutcome();
   const commitOutcome = useCallback(
     async (key: TourKey, outcome: TourOutcome) => {
+      // Skipping/finishing the home tour also dismisses all page tours.
+      const pageVersion = latestPageTourVersion();
       setState((prev) => ({
         ...prev,
         [key]: { version: TOUR_VERSIONS[key], outcome },
+        [PAGE_TOURS_SKIP_KEY]: { version: pageVersion, outcome },
       }));
+      // Sequential: each action rewrites the whole cookie from its last value.
       await commitOutcomeBase(key, TOUR_VERSIONS[key], outcome);
+      await commitOutcomeBase(PAGE_TOURS_SKIP_KEY, pageVersion, outcome);
     },
-    [commitOutcomeBase],
+    [commitOutcomeBase, setState],
   );
 
   useEffect(() => {
@@ -270,11 +289,14 @@ export function useReplayTour() {
  * No mobile-sidebar-sheet prep here — page-tour targets live in page
  * content, which is on-screen regardless of sidebar open/collapsed state.
  */
-export function usePageTour({ initialState, blocked = false }: UseTourOptions) {
+export function usePageTour({
+  state,
+  setState,
+  blocked = false,
+}: UseTourOptions) {
   const pathname = usePathname();
   const { user, ctx } = useTourResolution();
 
-  const [state, setState] = useState<TourCookiePayload>(initialState);
   const launchedForPathRef = useRef<string | null>(null);
 
   const commitOutcomeBase = useCommitOutcome();
@@ -283,7 +305,7 @@ export function usePageTour({ initialState, blocked = false }: UseTourOptions) {
       setState((prev) => ({ ...prev, [key]: { version, outcome } }));
       await commitOutcomeBase(key, version, outcome);
     },
-    [commitOutcomeBase],
+    [commitOutcomeBase, setState],
   );
 
   useEffect(() => {
@@ -294,9 +316,8 @@ export function usePageTour({ initialState, blocked = false }: UseTourOptions) {
     if (document.querySelector('[role="dialog"][data-state="open"]')) return;
     if (isAnyTourActive()) return;
 
-    const key: PageTourKey = `page:${pathname}`;
-    const seen = state[key];
-    if (seen && seen.version >= config.version) return;
+    const dismissed = state[PAGE_TOURS_SKIP_KEY];
+    if (dismissed && dismissed.version >= config.version) return;
 
     const resolvedSteps = buildSteps(config.steps, ctx).filter((s) => {
       if (s.centered) return true;
@@ -309,8 +330,18 @@ export function usePageTour({ initialState, blocked = false }: UseTourOptions) {
 
     launchedForPathRef.current = pathname;
     launchDriver(resolvedSteps, {
-      onSkip: () => void commitOutcome(key, config.version, "skipped"),
-      onComplete: () => void commitOutcome(key, config.version, "completed"),
+      onSkip: () =>
+        void commitOutcome(
+          PAGE_TOURS_SKIP_KEY,
+          latestPageTourVersion(),
+          "skipped",
+        ),
+      onComplete: () =>
+        void commitOutcome(
+          PAGE_TOURS_SKIP_KEY,
+          latestPageTourVersion(),
+          "completed",
+        ),
     });
   }, [pathname, user, ctx, state, blocked, commitOutcome]);
 }
@@ -338,12 +369,16 @@ export function useReplayPageTour() {
     });
     if (resolvedSteps.length === 0) return;
 
-    const key: PageTourKey = `page:${pathname}`;
     launchDriver(resolvedSteps, {
       onSkip: () => {},
-      onComplete: () => void commitOutcome(key, config.version, "completed"),
+      onComplete: () =>
+        void commitOutcome(
+          PAGE_TOURS_SKIP_KEY,
+          latestPageTourVersion(),
+          "completed",
+        ),
     });
-  }, [config, user, ctx, pathname, commitOutcome]);
+  }, [config, user, ctx, commitOutcome]);
 
   return { replay, canReplay: !!config && !!user };
 }

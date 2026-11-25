@@ -87,6 +87,11 @@ export interface TourStep {
 export interface PageTourConfig {
   /** Exact pathname this tour launches on (e.g. `"/dashboard/learning-circle"`). */
   route: string;
+  /**
+   * Skip/finish of any page tour dismisses all of them at the highest
+   * version in the registry. To re-show this tour, bump it ABOVE that highest
+   * version (e.g. highest is 2 -> set 3), not just +1 on this page.
+   */
   version: number;
   steps: readonly TourStep[];
 }
