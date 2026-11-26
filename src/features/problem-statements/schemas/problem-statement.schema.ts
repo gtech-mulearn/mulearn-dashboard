@@ -50,6 +50,19 @@ export const EmbeddedUserSchema = z.object({
   full_name: z.string(),
 });
 
+/**
+ * Who a statement is credited to. Mirrors `company` for company / community /
+ * mulearn; for "user" it's the person an admin created the statement for.
+ */
+export const EmbeddedCreatorSchema = z.object({
+  type: z.enum(["company", "community", "user", "mulearn"]),
+  id: z.string().nullable(),
+  name: z.string(),
+  logo: z.string().nullable().optional(),
+  muid: z.string().optional(),
+  profile_pic: z.string().nullable().optional(),
+});
+
 /** Pagination object returned by all list responses */
 export const PaginationSchema = z.object({
   count: z.number().int(),
@@ -77,6 +90,7 @@ export const ProblemStatementSchema = z.object({
   /** Who owns it. For "community", `company` carries the community id + title. */
   source: z.enum(["company", "community", "mulearn"]).optional(),
   company: EmbeddedCompanySchema,
+  creator: EmbeddedCreatorSchema.optional(),
   /** Mentioned user (admin statements only). Absent on learner responses. */
   on_behalf_of: EmbeddedUserSchema.nullable().optional(),
   /** true when status === "Published" AND deadline has not passed */

@@ -42,6 +42,10 @@ import type { ProblemStatement } from "../types/problem-statement.types";
 import { ProblemStatementAboutSection } from "./problem-statement-about-section";
 import { ProblemStatementCompany } from "./problem-statement-company";
 import {
+  creatorAsOnBehalfOf,
+  ProblemStatementOnBehalfOf,
+} from "./problem-statement-on-behalf-of";
+import {
   ProblemStatementParticipation,
   ProblemStatementSubmissionLink,
   useParticipationState,
@@ -153,6 +157,10 @@ function DetailContent({ statement }: { statement: ProblemStatement }) {
             company={statement.company}
             size="default"
             nameClassName="text-sm font-medium text-foreground"
+          />
+          <ProblemStatementOnBehalfOf
+            user={creatorAsOnBehalfOf(statement.creator)}
+            className="text-sm"
           />
           <h1 className="text-2xl font-bold leading-tight text-foreground md:text-3xl">
             {statement.title}

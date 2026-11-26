@@ -16,7 +16,10 @@ import {
 import { formatDeadline, participantCount } from "../lib/format";
 import type { ProblemStatement } from "../types/problem-statement.types";
 import { ProblemStatementCompany } from "./problem-statement-company";
-import { ProblemStatementOnBehalfOf } from "./problem-statement-on-behalf-of";
+import {
+  creatorAsOnBehalfOf,
+  ProblemStatementOnBehalfOf,
+} from "./problem-statement-on-behalf-of";
 import { ProblemStatementStatusBadges } from "./problem-statement-status-badge";
 
 interface ProblemStatementsTableProps {
@@ -80,12 +83,14 @@ export function ProblemStatementsTable({
                   company={statement.company}
                   className="mt-1"
                 />
-                {showOnBehalfOf && (
-                  <ProblemStatementOnBehalfOf
-                    user={statement.on_behalf_of}
-                    className="mt-1 text-xs"
-                  />
-                )}
+                <ProblemStatementOnBehalfOf
+                  user={
+                    showOnBehalfOf
+                      ? statement.on_behalf_of
+                      : creatorAsOnBehalfOf(statement.creator)
+                  }
+                  className="mt-1 text-xs"
+                />
               </TableCell>
               <TableCell>
                 <Badge>{statement.category}</Badge>

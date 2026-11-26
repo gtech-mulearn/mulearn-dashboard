@@ -24,6 +24,10 @@ import { formatDeadline, participantCount, pluralize } from "../lib/format";
 import type { ProblemStatement } from "../types/problem-statement.types";
 import { ProblemStatementCompany } from "./problem-statement-company";
 import {
+  creatorAsOnBehalfOf,
+  ProblemStatementOnBehalfOf,
+} from "./problem-statement-on-behalf-of";
+import {
   ProblemStatementParticipation,
   ProblemStatementSubmissionLink,
   useParticipationState,
@@ -75,6 +79,10 @@ function ModalBody({
       <DialogHeader className="shrink-0 border-b border-border px-6 pt-6 pb-4 text-left">
         <div className="pr-8">
           <ProblemStatementCompany company={statement.company} />
+          <ProblemStatementOnBehalfOf
+            user={creatorAsOnBehalfOf(statement.creator)}
+            className="mt-2 text-xs"
+          />
           <DialogTitle className="mt-2 text-xl leading-snug">
             {statement.title}
           </DialogTitle>
