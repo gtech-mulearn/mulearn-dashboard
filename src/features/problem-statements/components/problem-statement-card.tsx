@@ -10,7 +10,10 @@ import {
 } from "../lib/format";
 import type { ProblemStatement } from "../types/problem-statement.types";
 import { ProblemStatementCompany } from "./problem-statement-company";
-import { ProblemStatementOnBehalfOf } from "./problem-statement-on-behalf-of";
+import {
+  creatorAsOnBehalfOf,
+  ProblemStatementOnBehalfOf,
+} from "./problem-statement-on-behalf-of";
 import { ProblemStatementStatusBadges } from "./problem-statement-status-badge";
 
 interface ProblemStatementCardProps {
@@ -52,12 +55,14 @@ export function ProblemStatementCardComponent({
         {markdownToPlainText(statement.description)}
       </p>
 
-      {showOnBehalfOf && (
-        <ProblemStatementOnBehalfOf
-          user={statement.on_behalf_of}
-          className="mt-3 w-full text-xs"
-        />
-      )}
+      <ProblemStatementOnBehalfOf
+        user={
+          showOnBehalfOf
+            ? statement.on_behalf_of
+            : creatorAsOnBehalfOf(statement.creator)
+        }
+        className="mt-3 w-full text-xs"
+      />
 
       <div className="mt-4 flex flex-wrap gap-1.5">
         <Badge>{statement.category}</Badge>

@@ -1,6 +1,20 @@
 import { UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { EmbeddedUser } from "../types/problem-statement.types";
+import type {
+  EmbeddedUser,
+  ProblemStatement,
+} from "../types/problem-statement.types";
+
+/**
+ * Learner responses carry no `on_behalf_of`; the same person arrives as
+ * `creator` with type "user". Null for company / community / muLearn creators.
+ */
+export function creatorAsOnBehalfOf(
+  creator: ProblemStatement["creator"],
+): EmbeddedUser | null {
+  if (creator?.type !== "user" || !creator.id || !creator.muid) return null;
+  return { id: creator.id, muid: creator.muid, full_name: creator.name };
+}
 
 interface ProblemStatementOnBehalfOfProps {
   user: EmbeddedUser | null | undefined;
