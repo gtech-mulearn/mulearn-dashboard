@@ -133,7 +133,7 @@ export function useBulkAssignRole(roleId: string) {
       users: string[];
       extra?: BulkAssignExtraPayload;
     }) => bulkAssignRole(roleId, users, extra),
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({
         queryKey: [...manageRolesKeys.all, "users-by-role", roleId],
       });
@@ -143,7 +143,17 @@ export function useBulkAssignRole(roleId: string) {
       queryClient.invalidateQueries({
         queryKey: manageRolesKeys.usersWithoutRole(roleId),
       });
-      toast.success("Roles bulk-assigned");
+      if (result.success_count === undefined) {
+        toast.success("Roles bulk-assigned");
+        return;
+      }
+      toast.success(
+        `Assigned ${result.success_count} user(s)` +
+          (result.promoted_count ? `, ${result.promoted_count} promoted` : ""),
+      );
+      for (const f of result.failed ?? []) {
+        toast.error(`${f.muid ?? f.user_id}: ${f.reason}`);
+      }
     },
     onError: (error) => {
       toast.error(

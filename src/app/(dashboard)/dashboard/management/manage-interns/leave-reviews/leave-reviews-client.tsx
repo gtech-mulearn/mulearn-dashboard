@@ -17,7 +17,9 @@ import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -25,22 +27,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { type TLeaveRequest, useManageLeaves } from "@/features/intern";
+import {
+  TeamBadge,
+  TeamFilterSelect,
+  type TLeaveRequest,
+  type TTeamRef,
+  useManageLeaves,
+} from "@/features/intern";
 import { LeaveEvaluateDialog } from "./components/leave-evaluate-dialog";
-
-const calculateDurationDays = (startStr: string, endStr: string) => {
-  if (!startStr || !endStr) return 0;
-  const start = new Date(startStr);
-  const end = new Date(endStr);
-  start.setHours(0, 0, 0, 0);
-  end.setHours(0, 0, 0, 0);
-  const diffTime = end.getTime() - start.getTime();
-  return Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24))) + 1;
-};
 
 export function LeaveReviewsPageClient() {
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [teamFilter, setTeamFilter] = useState("ALL");
+  const [includeFormer, setIncludeFormer] = useState(false);
   const [page, setPage] = useState(1);
   const [perPage, _setPerPage] = useState(10);
 
@@ -82,8 +82,11 @@ export function LeaveReviewsPageClient() {
   const { data: listData, isLoading } = useManageLeaves({
     page,
     perPage,
-    search: searchText || undefined,
-    status: statusFilter === "ALL" ? undefined : statusFilter,
+    // Backend has no status filter, but `status` is a search field, so the
+    // status dropdown goes through `search` (one param: text or status).
+    search: searchText || (statusFilter === "ALL" ? undefined : statusFilter),
+    team_id: teamFilter === "ALL" ? undefined : teamFilter,
+    include_former: includeFormer || undefined,
     sortBy,
     sortOrder,
   });
@@ -91,62 +94,16 @@ export function LeaveReviewsPageClient() {
   const totalPages = listData?.pagination?.totalPages ?? 1;
   const totalCount = listData?.pagination?.count ?? 0;
 
-  const rows = useMemo(() => {
-    const data = (listData?.data ?? []) as unknown as TLeaveRequest[];
-    const resolved = [...data];
-    if (sortBy) {
-      resolved.sort((a, b) => {
-        let valA = a[sortBy as keyof TLeaveRequest];
-        let valB = b[sortBy as keyof TLeaveRequest];
-
-        if (sortBy === "duration_days") {
-          valA =
-            a.duration_days ?? calculateDurationDays(a.start_date, a.end_date);
-          valB =
-            b.duration_days ?? calculateDurationDays(b.start_date, b.end_date);
-        }
-
-        if (valA === undefined || valA === null) valA = "";
-        if (valB === undefined || valB === null) valB = "";
-
-        if (
-          sortBy === "start_date" ||
-          sortBy === "end_date" ||
-          sortBy === "created_at"
-        ) {
-          const timeA = valA ? new Date(valA as string).getTime() : 0;
-          const timeB = valB ? new Date(valB as string).getTime() : 0;
-          const isInvalidA = Number.isNaN(timeA);
-          const isInvalidB = Number.isNaN(timeB);
-          if (isInvalidA && isInvalidB) return 0;
-          if (isInvalidA) return sortOrder === "asc" ? 1 : -1;
-          if (isInvalidB) return sortOrder === "asc" ? -1 : 1;
-          return sortOrder === "asc" ? timeA - timeB : timeB - timeA;
-        }
-
-        const isNumA = typeof valA === "number";
-        const isNumB = typeof valB === "number";
-        if (isNumA && isNumB) {
-          return sortOrder === "asc"
-            ? (valA as unknown as number) - (valB as unknown as number)
-            : (valB as unknown as number) - (valA as unknown as number);
-        }
-
-        const strA = String(valA).toLowerCase();
-        const strB = String(valB).toLowerCase();
-        if (strA < strB) return sortOrder === "asc" ? -1 : 1;
-        if (strA > strB) return sortOrder === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
-    return resolved as unknown as Data[];
-  }, [listData, sortBy, sortOrder]);
+  const rows = useMemo(
+    () => (listData?.data ?? []) as unknown as Data[],
+    [listData],
+  );
 
   const columnOrder = [
     {
       column: "user_name",
       Label: "Intern Name",
-      isSortable: true,
+      isSortable: false,
       wrap: (data: string, _id: string, row: Data) => (
         <div className="flex flex-col">
           <span className="font-bold text-foreground uppercase tracking-tight text-sm">
@@ -163,9 +120,18 @@ export function LeaveReviewsPageClient() {
       ),
     },
     {
+      column: "team",
+      Label: "Team",
+      isSortable: false,
+      // Table stringifies object cells, so read the team from the row.
+      wrap: (_data: string, _id: string, row: Data) => (
+        <TeamBadge team={row.team as unknown as TTeamRef | null} />
+      ),
+    },
+    {
       column: "leave_type",
       Label: "Leave Type",
-      isSortable: true,
+      isSortable: false,
       wrap: (data: string) => (
         <Badge
           variant="outline"
@@ -178,7 +144,7 @@ export function LeaveReviewsPageClient() {
     {
       column: "start_date",
       Label: "Start Date",
-      isSortable: true,
+      isSortable: false,
       wrap: (data: string) => (
         <span className="text-xs font-bold text-foreground">
           {new Date(data).toLocaleDateString(undefined, {
@@ -192,7 +158,7 @@ export function LeaveReviewsPageClient() {
     {
       column: "end_date",
       Label: "End Date",
-      isSortable: true,
+      isSortable: false,
       wrap: (data: string) => (
         <span className="text-xs font-bold text-foreground">
           {new Date(data).toLocaleDateString(undefined, {
@@ -206,7 +172,7 @@ export function LeaveReviewsPageClient() {
     {
       column: "duration_days",
       Label: "Days",
-      isSortable: true,
+      isSortable: false,
       wrap: (data: string, _id: string, row: Data) => {
         let days = data ? Number(data) : null;
         if ((!days || Number.isNaN(days)) && row.start_date && row.end_date) {
@@ -303,6 +269,7 @@ export function LeaveReviewsPageClient() {
                 value={searchText}
                 onChange={(e) => {
                   setSearchText(e.target.value);
+                  setStatusFilter("ALL");
                   setPage(1);
                 }}
                 className="pl-12 h-12 bg-card/40 border-border/40 font-bold focus:ring-primary/20 w-full max-w-xl text-sm rounded-md"
@@ -310,12 +277,37 @@ export function LeaveReviewsPageClient() {
             </div>
           </div>
 
-          <div className="w-full lg:w-48 flex gap-4">
-            <div className="flex-1">
+          <div className="w-full lg:w-auto flex flex-wrap items-center gap-4">
+            <TeamFilterSelect
+              value={teamFilter}
+              onChange={(v) => {
+                setTeamFilter(v);
+                setPage(1);
+              }}
+              className="w-48 h-12 bg-card/40 border-border/40 font-black uppercase text-[10px] tracking-widest rounded-md"
+            />
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="leave-include-former"
+                checked={includeFormer}
+                onCheckedChange={(c) => {
+                  setIncludeFormer(c === true);
+                  setPage(1);
+                }}
+              />
+              <Label
+                htmlFor="leave-include-former"
+                className="text-xs font-bold text-muted-foreground"
+              >
+                Include former
+              </Label>
+            </div>
+            <div className="w-48">
               <Select
                 value={statusFilter}
                 onValueChange={(v) => {
                   setStatusFilter(v);
+                  setSearchText("");
                   setPage(1);
                 }}
               >

@@ -35,13 +35,23 @@ export const internKeys = {
   leaderboardFull: (params: TInternQueryParams) =>
     [...internKeys.leaderboard(), "full", params] as const,
   leaderboardMe: () => [...internKeys.leaderboard(), "me"] as const,
-  guilds: () => [...internKeys.all, "guilds"] as const,
+  activeTeams: () => [...internKeys.all, "active-teams"] as const,
+  myTeamMembers: (params: TInternQueryParams) =>
+    [...internKeys.all, "team-members", params] as const,
 
   // Admin Manage Dashboard
   manage: () => [...internKeys.all, "manage"] as const,
   manageInterns: (params: TInternQueryParams) =>
     [...internKeys.manage(), "interns", params] as const,
+  manageInternDetail: (userId: string) =>
+    [...internKeys.manage(), "interns", "detail", userId] as const,
   manageStatus: () => [...internKeys.manage(), "status"] as const,
+  manageTeams: (params: TInternQueryParams) =>
+    [...internKeys.manage(), "teams", params] as const,
+  missingTimesheets: (params: TInternQueryParams) =>
+    [...internKeys.manage(), "missing-timesheets", params] as const,
+  missingMonthlyReviews: (params: TInternQueryParams) =>
+    [...internKeys.manage(), "missing-monthly-reviews", params] as const,
   manageTasks: (params: TInternQueryParams) =>
     [...internKeys.manage(), "tasks", params] as const,
   manageLeaves: (params: TInternQueryParams) =>

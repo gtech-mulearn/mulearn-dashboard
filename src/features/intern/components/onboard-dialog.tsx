@@ -40,11 +40,12 @@ import {
   useOnboardIntern,
 } from "../hooks/use-manage-interns";
 import type { TBulkImportResponse } from "../types";
+import { getISTDateString } from "../utils/intern-helpers";
+import { useManageTeamOptions } from "./team-filter-select";
 
 interface OnboardDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  guildOptions: string[];
 }
 
 function getInitials(name: string): string {
@@ -54,15 +55,15 @@ function getInitials(name: string): string {
   return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
 }
 
-export function OnboardDialog({
-  open,
-  onOpenChange,
-  guildOptions,
-}: OnboardDialogProps) {
+export function OnboardDialog({ open, onOpenChange }: OnboardDialogProps) {
+  const today = getISTDateString();
   const [mode, setMode] = useState<"single" | "bulk">("single");
   const [onboardUser, setOnboardUser] = useState<UserResult | null>(null);
-  const [onboardGuild, setOnboardGuild] = useState("");
-  const [onboardStatus, setOnboardStatus] = useState("ACTIVE");
+  const [teamId, setTeamId] = useState("");
+  const [joinDate, setJoinDate] = useState(today);
+  const [endDate, setEndDate] = useState("");
+  const { teams } = useManageTeamOptions();
+  const activeTeams = teams.filter((t) => t.is_active);
   const [popoverOpen, setPopoverOpen] = useState(false);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -97,20 +98,15 @@ export function OnboardDialog({
   useEffect(() => {
     if (!open) {
       setOnboardUser(null);
-      setOnboardGuild("");
-      setOnboardStatus("ACTIVE");
+      setTeamId("");
+      setJoinDate(getISTDateString());
+      setEndDate("");
       clearResults();
       setSelectedFile(null);
       setImportResponse(null);
       setMode("single");
     }
   }, [open, clearResults]);
-
-  const statusColorClass: Record<string, string> = {
-    ACTIVE: "text-success",
-    AT_RISK: "text-warning",
-    INACTIVE: "text-muted-foreground",
-  };
 
   const handleSelectUser = (user: UserResult) => {
     setOnboardUser(user);
@@ -168,16 +164,24 @@ export function OnboardDialog({
       toast.error("Please select a user");
       return;
     }
-    if (!onboardGuild) {
-      toast.error("Please select a guild");
+    if (!teamId) {
+      toast.error("Please select a team");
+      return;
+    }
+    if (!joinDate || !endDate) {
+      toast.error("Join and end dates are required");
+      return;
+    }
+    if (endDate < joinDate) {
+      toast.error("End date can't be before the join date");
       return;
     }
     onboardMutation.mutate(
       {
-        mu_id: onboardUser.muid,
         user_id: onboardUser.id,
-        guild: onboardGuild,
-        status: onboardStatus,
+        team_id: teamId,
+        join_date: joinDate,
+        end_date: endDate,
       },
       {
         onSuccess: () => {
@@ -212,8 +216,8 @@ export function OnboardDialog({
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
             {mode === "single"
-              ? "Search for a user by MUID and assign their guild and base status. Leave state is handled from approved leave requests."
-              : "Upload an Excel spreadsheet containing MuID and guild to assign multiple users as interns at once."}
+              ? "Search for a user by MUID, pick their team and set the tenure (join date can't be in the past)."
+              : "Upload an Excel spreadsheet (muid, team, lead, join_date, end_date) to onboard multiple interns at once."}
           </DialogDescription>
         </DialogHeader>
 
@@ -365,67 +369,66 @@ export function OnboardDialog({
                 )}
               </div>
 
-              {/* Guild */}
+              {/* Team */}
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                  Guild
+                  Team <span className="text-destructive">*</span>
                 </Label>
-                <Select value={onboardGuild} onValueChange={setOnboardGuild}>
+                <Select value={teamId} onValueChange={setTeamId}>
                   <SelectTrigger className="w-full h-10 font-bold uppercase text-xs border-border/40 bg-background/50 rounded-xl">
-                    <SelectValue placeholder="Select Guild" />
+                    <SelectValue placeholder="Select Team" />
                   </SelectTrigger>
                   <SelectContent
                     position="popper"
                     className="bg-card/95 backdrop-blur-xl border-border/60 rounded-xl"
                   >
-                    {guildOptions.map((g) => (
+                    {activeTeams.map((t) => (
                       <SelectItem
-                        key={g}
-                        value={g}
+                        key={t.id}
+                        value={t.id}
                         className="font-bold uppercase text-xs text-foreground"
                       >
-                        {g}
+                        {t.name} ({t.code})
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Initial Status */}
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                  Initial Status
-                </Label>
-                <Select value={onboardStatus} onValueChange={setOnboardStatus}>
-                  <SelectTrigger
-                    className={`w-full h-10 font-bold uppercase text-xs border-border/40 bg-background/50 rounded-xl ${statusColorClass[onboardStatus] ?? ""}`}
+              {/* Tenure */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="onboard-join-date"
+                    className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground"
                   >
-                    <SelectValue placeholder="Select Status" />
-                  </SelectTrigger>
-                  <SelectContent
-                    position="popper"
-                    className="bg-card/95 backdrop-blur-xl border-border/60 rounded-xl"
+                    Join Date <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="onboard-join-date"
+                    type="date"
+                    min={today}
+                    value={joinDate}
+                    onChange={(e) => setJoinDate(e.target.value)}
+                    className="h-10 rounded-xl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="onboard-end-date"
+                    className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground"
                   >
-                    <SelectItem
-                      value="ACTIVE"
-                      className="font-bold uppercase text-xs text-success"
-                    >
-                      Active
-                    </SelectItem>
-                    <SelectItem
-                      value="AT_RISK"
-                      className="font-bold uppercase text-xs text-warning"
-                    >
-                      At Risk
-                    </SelectItem>
-                    <SelectItem
-                      value="INACTIVE"
-                      className="font-bold uppercase text-xs text-muted-foreground"
-                    >
-                      Inactive
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                    End Date <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="onboard-end-date"
+                    type="date"
+                    min={joinDate || today}
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="h-10 rounded-xl"
+                  />
+                </div>
               </div>
             </div>
 
@@ -462,8 +465,9 @@ export function OnboardDialog({
                     Import Template
                   </p>
                   <p className="text-[10px] text-muted-foreground mt-0.5 leading-normal">
-                    Download the template .xlsx file with required headers
-                    (`muid`, `guild`).
+                    Download the template .xlsx with headers `muid`, `team`,
+                    `lead`, `join_date`, `end_date` (dates required for new
+                    interns).
                   </p>
                 </div>
                 <Button

@@ -15,11 +15,3 @@ export interface TApiResponse<T> {
   message?: Record<string, string[]>;
   response: T;
 }
-
-/**
- * Team selection options
- */
-export interface TTeam {
-  id: string;
-  name: string;
-}

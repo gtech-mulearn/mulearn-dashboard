@@ -8,21 +8,33 @@ import {
 } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ApiError } from "@/api";
+import { useUserInfo } from "@/features/auth/hooks";
 import { getApiResponseError } from "@/hooks/use-get-error";
+import { ROLES } from "@/lib/auth/roles";
 import { manageInternsApi, type TInternQueryParams } from "../api";
 import type {
   TCreateTaskPayload,
   TInternTask,
   TLeaveRequest,
   TLeaveReviewPayload,
-  TManageInternItem,
   TMonthlyReviewReviewPayload,
   TOnboardInternPayload,
   TPaginatedData,
+  TReassignInternsPayload,
+  TTeamPayload,
   TUpdateInternPayload,
   TUpdateTaskPayload,
 } from "../types";
 import { internKeys } from "./query-keys";
+
+/** Admins see every team; Intern Leads only their own (server-scoped). */
+export function useIsInternAdmin() {
+  const { data: userInfo } = useUserInfo();
+  return (
+    Array.isArray(userInfo?.roles) &&
+    (userInfo.roles as string[]).includes(ROLES.ADMIN)
+  );
+}
 
 export function useManageInternsList(params?: TInternQueryParams) {
   return useQuery({
@@ -48,43 +60,14 @@ export function useOnboardIntern() {
   });
 }
 
-export function useUpdateIntern(id: string) {
+/** `userId` is the intern's user id (list rows: `row.user`). */
+export function useUpdateIntern(userId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: TUpdateInternPayload) =>
-      manageInternsApi.updateIntern(id, payload),
-    onSuccess: async (_data, payload) => {
+      manageInternsApi.updateIntern(userId, payload),
+    onSuccess: async () => {
       toast.success("Intern updated successfully!");
-
-      // Optimistically patch the role in every cached manage-interns list
-      // This ensures the Role column updates immediately even if the backend
-      // doesn't yet return the 'role' field in its list response.
-      queryClient.setQueriesData(
-        { queryKey: internKeys.manage() },
-        (old: unknown) => {
-          if (!old || typeof old !== "object") return old;
-          const cached = old as {
-            data?: TManageInternItem[];
-            [key: string]: unknown;
-          };
-          if (!Array.isArray(cached.data)) return old;
-          return {
-            ...cached,
-            data: cached.data.map((item) =>
-              item.id === id
-                ? {
-                    ...item,
-                    guild: payload.guild ?? item.guild,
-                    status: payload.status ?? item.status,
-                    role: payload.role ?? item.role,
-                  }
-                : item,
-            ),
-          };
-        },
-      );
-
-      // Invalidate to sync with backend once it's ready
       await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
       await queryClient.invalidateQueries({
         queryKey: internKeys.overviewStatus(),
@@ -101,7 +84,8 @@ export function useUpdateIntern(id: string) {
 export function useDeactivateIntern() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => manageInternsApi.deactivateIntern(id),
+    mutationFn: ({ userId, reason }: { userId: string; reason: string }) =>
+      manageInternsApi.deactivateIntern(userId, reason),
     onSuccess: async () => {
       toast.success("Intern deactivated successfully!");
       await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
@@ -114,6 +98,101 @@ export function useDeactivateIntern() {
   });
 }
 
+export function useInternDetail(userId: string | null) {
+  return useQuery({
+    queryKey: internKeys.manageInternDetail(userId ?? ""),
+    queryFn: () => manageInternsApi.getInternDetail(userId as string),
+    enabled: !!userId,
+  });
+}
+
+export function useReassignInterns() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: TReassignInternsPayload) =>
+      manageInternsApi.reassignInterns(payload),
+    onSuccess: async (data) => {
+      toast.success(`Moved ${data.moved_count} intern(s).`);
+      if (data.already_in_team.length > 0) {
+        toast.info(
+          `${data.already_in_team.length} already in that team; skipped.`,
+        );
+      }
+      await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to reassign interns" }),
+      );
+    },
+  });
+}
+
+// ── Teams ──────────────────────────────────────────────────
+export function useManageTeams(params?: TInternQueryParams) {
+  return useQuery({
+    queryKey: internKeys.manageTeams(params ?? {}),
+    queryFn: () => manageInternsApi.getTeams(params),
+    placeholderData: keepPreviousData,
+  });
+}
+
+function useTeamMutation<TVars, TData>(
+  mutationFn: (vars: TVars) => Promise<TData>,
+  success: string,
+  fallback: string,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn,
+    onSuccess: async () => {
+      toast.success(success);
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: [...internKeys.manage(), "teams"],
+        }),
+        queryClient.invalidateQueries({ queryKey: internKeys.activeTeams() }),
+      ]);
+    },
+    onError: (error) => {
+      toast.error(getApiResponseError(error, { fallback }));
+    },
+  });
+}
+
+export function useCreateTeam() {
+  return useTeamMutation(
+    (payload: TTeamPayload) => manageInternsApi.createTeam(payload),
+    "Team created successfully.",
+    "Failed to create team",
+  );
+}
+
+export function useUpdateTeam() {
+  return useTeamMutation(
+    ({ id, payload }: { id: string; payload: TTeamPayload }) =>
+      manageInternsApi.updateTeam(id, payload),
+    "Team updated successfully.",
+    "Failed to update team",
+  );
+}
+
+export function useDeactivateTeam() {
+  return useTeamMutation(
+    (id: string) => manageInternsApi.deactivateTeam(id),
+    "Team deactivated.",
+    "Failed to deactivate team",
+  );
+}
+
+export function useActivateTeam() {
+  return useTeamMutation(
+    (id: string) => manageInternsApi.activateTeam(id),
+    "Team activated.",
+    "Failed to activate team",
+  );
+}
+
 export function useManageInternsStatus() {
   return useQuery({
     queryKey: internKeys.manageStatus(),
@@ -121,18 +200,23 @@ export function useManageInternsStatus() {
   });
 }
 
+function saveBlob(blob: Blob, filename: string) {
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(url);
+}
+
 export function useExportInterns() {
   return useMutation({
-    mutationFn: () => manageInternsApi.exportInternsList(),
+    mutationFn: (params?: TInternQueryParams) =>
+      manageInternsApi.exportInternsList(params),
     onSuccess: (blob) => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "interns.csv";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      saveBlob(blob, "interns.csv");
       toast.success("Intern directory exported!");
     },
     onError: (error) => {
@@ -149,14 +233,7 @@ export function useDownloadImportTemplate() {
   return useMutation({
     mutationFn: () => manageInternsApi.downloadImportTemplate(),
     onSuccess: (blob) => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "intern_bulk_import_template.xlsx";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      saveBlob(blob, "intern_bulk_import_template.xlsx");
       toast.success("Template downloaded successfully!");
     },
     onError: (error) => {
@@ -334,7 +411,7 @@ export function useReviewLeave(id: string) {
   });
 }
 
-// ── Timesheets (read-only; approval removed) ───────────────
+// ── Timesheets (no approval; review note only) ─────────────
 export function useManageTimesheets(
   params?: TInternQueryParams,
   enabled = true,
@@ -344,6 +421,78 @@ export function useManageTimesheets(
     queryFn: () => manageInternsApi.getTimesheetsList(params),
     enabled,
     placeholderData: keepPreviousData,
+  });
+}
+
+export function useSaveTimesheetReviewNote(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (review_note: string) =>
+      manageInternsApi.saveTimesheetReviewNote(id, review_note),
+    onSuccess: async () => {
+      toast.success("Review note saved.");
+      await queryClient.invalidateQueries({
+        queryKey: [...internKeys.manage(), "timesheets"],
+      });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to save review note" }),
+      );
+    },
+  });
+}
+
+// ── Missing reports ────────────────────────────────────────
+export function useMissingTimesheets(
+  params?: TInternQueryParams,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: internKeys.missingTimesheets(params ?? {}),
+    queryFn: () => manageInternsApi.getMissingTimesheets(params),
+    enabled,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useMissingMonthlyReviews(
+  params?: TInternQueryParams,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: internKeys.missingMonthlyReviews(params ?? {}),
+    queryFn: () => manageInternsApi.getMissingMonthlyReviews(params),
+    enabled,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useExportMissingTimesheets() {
+  return useMutation({
+    mutationFn: (params: TInternQueryParams) =>
+      manageInternsApi.exportMissingTimesheets(params),
+    onSuccess: (blob, params) => {
+      saveBlob(blob, `missing-timesheets_${params.from}_${params.to}.csv`);
+      toast.success("Missing timesheets exported!");
+    },
+    onError: (error) => {
+      toast.error(getApiResponseError(error, { fallback: "Export failed" }));
+    },
+  });
+}
+
+export function useExportMissingMonthlyReviews() {
+  return useMutation({
+    mutationFn: (params: TInternQueryParams) =>
+      manageInternsApi.exportMissingMonthlyReviews(params),
+    onSuccess: (blob, params) => {
+      saveBlob(blob, `missing-monthly-reviews_${params.from}_${params.to}.csv`);
+      toast.success("Missing monthly reviews exported!");
+    },
+    onError: (error) => {
+      toast.error(getApiResponseError(error, { fallback: "Export failed" }));
+    },
   });
 }
 

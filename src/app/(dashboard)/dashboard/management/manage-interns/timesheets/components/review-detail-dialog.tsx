@@ -18,10 +18,12 @@ import {
   formatDateOnly,
   formatReviewMonth,
   formatTaskStatus,
-  getTimesheetDisplayStatus,
+  formatTeam,
   type TAdminMonthlyReview,
+  type TReviewer,
   type TTimesheet,
   useReviewMonthlyReview,
+  useSaveTimesheetReviewNote,
 } from "@/features/intern";
 
 const REVIEW_NOTE_MAX = 300;
@@ -105,8 +107,32 @@ function ReviewStatusBadge({ status }: { status: string }) {
   );
 }
 
-function DailyTimesheetDetails({ timesheet }: { timesheet: TTimesheet }) {
-  const isMissing = getTimesheetDisplayStatus(timesheet.status) === "MISSING";
+function ReviewedBy({
+  reviewer,
+  at,
+}: {
+  reviewer: TReviewer | null;
+  at: string | null;
+}) {
+  if (!reviewer && !at) return null;
+  return (
+    <p className="text-[10px] text-muted-foreground">
+      Reviewed
+      {reviewer && ` by ${reviewer.full_name} (${reviewer.muid})`}
+      {at && ` · ${new Date(at).toLocaleString()}`}
+    </p>
+  );
+}
+
+function DailyTimesheetDetails({
+  timesheet,
+  reviewNote,
+  onReviewNoteChange,
+}: {
+  timesheet: TTimesheet;
+  reviewNote: string;
+  onReviewNoteChange: (note: string) => void;
+}) {
   return (
     <div className="space-y-4 py-2 my-2 text-sm max-h-[60vh] overflow-y-auto pr-1 w-full min-w-0">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -138,24 +164,10 @@ function DailyTimesheetDetails({ timesheet }: { timesheet: TTimesheet }) {
             )}
           </span>
         </Field>
-        <Field label="Status">
-          <div className="mt-1">
-            {isMissing ? (
-              <Badge
-                variant="outline"
-                className="gap-1.5 text-destructive border-destructive/30 font-bold uppercase text-xs"
-              >
-                <XCircle className="w-3 h-3" /> Missing
-              </Badge>
-            ) : (
-              <Badge
-                variant="outline"
-                className="gap-1.5 text-success border-success/30 font-bold uppercase text-xs"
-              >
-                <CheckCircle2 className="w-3 h-3" /> Submitted
-              </Badge>
-            )}
-          </div>
+        <Field label="Team">
+          <span className="font-bold text-foreground text-sm">
+            {formatTeam(timesheet.team)}
+          </span>
         </Field>
       </div>
 
@@ -200,7 +212,26 @@ function DailyTimesheetDetails({ timesheet }: { timesheet: TTimesheet }) {
       <TextBlock label="Blockers" value={timesheet.blockers} tone="danger" />
       <TextBlock label="End of Day Note" value={timesheet.end_of_day_note} />
       <TextBlock label="Edit Reason" value={timesheet.edit_reason} />
-      <TextBlock label="Council Review Note" value={timesheet.review_note} />
+
+      <div className="space-y-2 pt-3 border-t border-border/20 flex flex-col gap-1">
+        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+          Review Note
+          <span className="tabular-nums">
+            {reviewNote.length}/{REVIEW_NOTE_MAX}
+          </span>
+        </span>
+        <Textarea
+          value={reviewNote}
+          maxLength={REVIEW_NOTE_MAX}
+          onChange={(e) => onReviewNoteChange(e.target.value)}
+          placeholder="Feedback visible to the intern (no approval needed)..."
+          className="min-h-[80px] text-xs font-semibold resize-none"
+        />
+        <ReviewedBy
+          reviewer={timesheet.reviewed_by}
+          at={timesheet.reviewed_at}
+        />
+      </div>
     </div>
   );
 }
@@ -231,9 +262,9 @@ function MonthlyReviewDetails({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Field label="Team / Guild">
+        <Field label="Team">
           <div className="inline-flex items-center rounded-full border border-border/40 px-2 py-0.5 text-foreground font-bold text-xs uppercase tracking-wider mt-1 w-fit">
-            {review.team || "-"}
+            {formatTeam(review.team)}
           </div>
         </Field>
         <Field label="Leave Days">
@@ -363,11 +394,7 @@ function MonthlyReviewDetails({
                 {review.review_note}
               </p>
             )}
-            {review.reviewed_at && (
-              <p className="text-[10px] text-muted-foreground">
-                Reviewed {new Date(review.reviewed_at).toLocaleString()}
-              </p>
-            )}
+            <ReviewedBy reviewer={review.reviewed_by} at={review.reviewed_at} />
           </div>
         )
       )}
@@ -391,13 +418,22 @@ export function ReviewDetailDialog({
   const reviewMutation = useReviewMonthlyReview(
     selectedMonthlyReview?.id || "",
   );
+  const noteMutation = useSaveTimesheetReviewNote(selectedTimesheet?.id || "");
 
   useEffect(() => {
-    setReviewNote(selectedMonthlyReview?.review_note ?? "");
-  }, [selectedMonthlyReview]);
+    setReviewNote(
+      selectedMonthlyReview?.review_note ??
+        selectedTimesheet?.review_note ??
+        "",
+    );
+  }, [selectedMonthlyReview, selectedTimesheet]);
 
   const isOpen = !!selectedTimesheet || !!selectedMonthlyReview;
   const canReview = selectedMonthlyReview?.status === "PENDING";
+  const canSaveNote =
+    !!selectedTimesheet &&
+    reviewNote.trim().length > 0 &&
+    reviewNote.trim() !== (selectedTimesheet.review_note ?? "");
 
   const handleReview = (action: "approve" | "reject") => {
     reviewMutation.mutate(
@@ -425,12 +461,16 @@ export function ReviewDetailDialog({
           <DialogDescription className="text-xs text-muted-foreground">
             {selectedMonthlyReview
               ? `${formatReviewMonth(selectedMonthlyReview)} (${formatDateOnly(selectedMonthlyReview.period_start)} – ${formatDateOnly(selectedMonthlyReview.period_end)}). Evaluate monthly performance, self-rating, and completed tasks.`
-              : "Read-only view of the intern's daily log."}
+              : "Timesheets count on submit. You can leave a review note."}
           </DialogDescription>
         </DialogHeader>
 
         {selectedTimesheet && (
-          <DailyTimesheetDetails timesheet={selectedTimesheet} />
+          <DailyTimesheetDetails
+            timesheet={selectedTimesheet}
+            reviewNote={reviewNote}
+            onReviewNoteChange={setReviewNote}
+          />
         )}
         {selectedMonthlyReview && (
           <MonthlyReviewDetails
@@ -471,6 +511,27 @@ export function ReviewDetailDialog({
                   Approve
                 </Button>
               </div>
+            </>
+          ) : selectedTimesheet ? (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
+              >
+                Close
+              </Button>
+              <Button
+                type="button"
+                onClick={() =>
+                  noteMutation.mutate(reviewNote.trim(), { onSuccess: onClose })
+                }
+                disabled={!canSaveNote || noteMutation.isPending}
+                className="gap-2 text-[10px] tracking-widest h-10 shadow-lg font-bold"
+              >
+                Save Note
+              </Button>
             </>
           ) : (
             <Button

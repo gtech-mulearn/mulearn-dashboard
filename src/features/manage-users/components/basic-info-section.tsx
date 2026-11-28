@@ -28,7 +28,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useGuilds } from "../../intern/hooks/use-intern";
+import {
+  EMPTY_INTERN_TEAM,
+  InternTeamFields,
+  isInternTeamValid,
+  toInternTeamPayload,
+} from "@/features/intern";
 import { useAssignUserRole } from "../hooks";
 import type { ManageUserFormValues } from "../schemas";
 import { INTERN_ROLE_NAME, MENTOR_ROLE_NAME, type UiOption } from "../schemas";
@@ -88,17 +93,16 @@ export function BasicInfoSection({
     "intern" | "mentor" | "both" | null
   >(null);
   const [pendingRoleLabel, setPendingRoleLabel] = useState("");
-  const [guild, setGuild] = useState("");
+  const [internTeam, setInternTeam] = useState(EMPTY_INTERN_TEAM);
   const [mentorTier, setMentorTier] = useState("");
   const [igIds, setIgIds] = useState<string[]>([]);
   const [orgId, setOrgId] = useState("");
   const assignRole = useAssignUserRole(user_id);
-  const { data: guildsList = [], isLoading: isLoadingGuilds } = useGuilds();
 
   // Sync: reset all extra fields whenever a new role is pending
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentional reactive reset — must re-run when pendingRoleId changes
   useEffect(() => {
-    setGuild("");
+    setInternTeam(EMPTY_INTERN_TEAM);
     setMentorTier("");
     setIgIds([]);
     setOrgId("");
@@ -163,9 +167,11 @@ export function BasicInfoSection({
 
     if (
       (pendingRoleType === "intern" || pendingRoleType === "both") &&
-      !guild
+      !isInternTeamValid(internTeam)
     ) {
-      toast.error("Please select a guild");
+      toast.error(
+        "Select a team. If you set dates, set both and keep end after join.",
+      );
       return;
     }
 
@@ -194,14 +200,18 @@ export function BasicInfoSection({
         const extra: Record<string, unknown> = {
           user_id,
           role_id: pendingRoleId,
-          guild,
+          ...toInternTeamPayload(internTeam),
           mentor_tier: mentorTier,
         };
         if (mentorTier === "IG_MENTOR") extra.ig_ids = igIds;
         else if (mentorTier === "CAMPUS_MENTOR") extra.org_id = orgId;
         payload = extra as Parameters<typeof assignRole.mutateAsync>[0];
       } else if (pendingRoleType === "intern") {
-        payload = { user_id, role_id: pendingRoleId, guild };
+        payload = {
+          user_id,
+          role_id: pendingRoleId,
+          ...toInternTeamPayload(internTeam),
+        };
       } else if (mentorTier === "IG_MENTOR") {
         payload = {
           user_id,
@@ -231,7 +241,7 @@ export function BasicInfoSection({
   };
 
   const showInlineExtra = !!pendingRoleId && !!pendingRoleType;
-  const needsGuild = pendingRoleType === "intern" || pendingRoleType === "both";
+  const needsTeam = pendingRoleType === "intern" || pendingRoleType === "both";
   const needsMentor =
     pendingRoleType === "mentor" || pendingRoleType === "both";
 
@@ -368,33 +378,13 @@ export function BasicInfoSection({
             </div>
           </div>
 
-          {/* Guild picker (intern / both) */}
-          {needsGuild && (
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Guild <span className="text-destructive">*</span>
-              </Label>
-              <Select
-                value={guild}
-                onValueChange={setGuild}
-                disabled={isLoadingGuilds || assignRole.isPending}
-              >
-                <SelectTrigger className="h-11 rounded-xl">
-                  <SelectValue
-                    placeholder={
-                      isLoadingGuilds ? "Loading guilds…" : "Select a guild…"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {guildsList.map((g) => (
-                    <SelectItem key={g} value={g}>
-                      {g}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Team + tenure (intern / both) */}
+          {needsTeam && (
+            <InternTeamFields
+              value={internTeam}
+              onChange={setInternTeam}
+              disabled={assignRole.isPending}
+            />
           )}
 
           {/* Mentor tier picker (mentor / both) */}

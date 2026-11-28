@@ -1483,7 +1483,6 @@ export const endpoints = {
       `/api/v1/dashboard/intern/monthly-reviews/${id}/`,
     monthlyReviewCurrent: "/api/v1/dashboard/intern/monthly-reviews/current/",
     monthlyReviewHistory: "/api/v1/dashboard/intern/monthly-reviews/history/",
-    tasksCategories: "/api/v1/dashboard/intern/tasks/categories/",
     tasksMine: "/api/v1/dashboard/intern/tasks/mine/",
     taskDetail: (id: string) => `/api/v1/dashboard/intern/tasks/${id}/detail/`,
     taskSubmit: (id: string) => `/api/v1/dashboard/intern/tasks/${id}/`,
@@ -1493,12 +1492,21 @@ export const endpoints = {
     leaveBalance: "/api/v1/dashboard/intern/leave/balance/",
     leaderboard: "/api/v1/dashboard/intern/leaderboard/",
     leaderboardMe: "/api/v1/dashboard/intern/leaderboard/me/",
-    guilds: "/api/v1/dashboard/intern/guilds/",
+    /** GET - Active teams `{id,name,code}` for dropdowns (Intern, Admin) */
+    teams: "/api/v1/dashboard/intern/teams/",
+    /** GET - Caller's team + members (paginated) */
+    teamMembers: "/api/v1/dashboard/intern/team/members/",
   },
   manageInterns: {
     interns: "/api/v1/dashboard/manage-interns/interns/",
-    internDetail: (id: string) =>
-      `/api/v1/dashboard/manage-interns/interns/${id}/`,
+    /** GET / PATCH / DELETE by user id */
+    internDetail: (userId: string) =>
+      `/api/v1/dashboard/manage-interns/interns/${userId}/`,
+    reassign: "/api/v1/dashboard/manage-interns/interns/reassign/",
+    teams: "/api/v1/dashboard/manage-interns/teams/",
+    teamDetail: (id: string) => `/api/v1/dashboard/manage-interns/teams/${id}/`,
+    teamActivate: (id: string) =>
+      `/api/v1/dashboard/manage-interns/teams/${id}/activate/`,
     status: "/api/v1/dashboard/manage-interns/status/",
     export: "/api/v1/dashboard/manage-interns/interns/export/",
     tasks: "/api/v1/dashboard/manage-interns/tasks/",
@@ -1513,8 +1521,17 @@ export const endpoints = {
     leaveReview: (id: string) =>
       `/api/v1/dashboard/manage-interns/leave/${id}/review/`,
     timesheetsReview: "/api/v1/dashboard/manage-interns/reviews/timesheets/",
-    timesheetReviewDetail: (id: string) =>
+    /** PATCH - Save a review note `{ review_note }` */
+    timesheetReview: (id: string) =>
       `/api/v1/dashboard/manage-interns/reviews/timesheets/${id}/review/`,
+    missingTimesheets:
+      "/api/v1/dashboard/manage-interns/reviews/timesheets/missing/",
+    missingTimesheetsExport:
+      "/api/v1/dashboard/manage-interns/reviews/timesheets/missing/export/",
+    missingMonthlyReviews:
+      "/api/v1/dashboard/manage-interns/reviews/monthly/missing/",
+    missingMonthlyReviewsExport:
+      "/api/v1/dashboard/manage-interns/reviews/monthly/missing/export/",
     monthlyReviews: "/api/v1/dashboard/manage-interns/reviews/monthly/",
     monthlyReviewDetail: (id: string) =>
       `/api/v1/dashboard/manage-interns/reviews/monthly/${id}/review/`,

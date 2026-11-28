@@ -29,31 +29,13 @@ export function addDaysToDateString(date: string, days: number): string {
 }
 
 /**
- * A timesheet can be edited until the end of the day after its `entry_date`
- * (IST). Legacy `REJECTED` timesheets can never be edited.
+ * A timesheet can be edited until the end of the second day after its
+ * `entry_date` (IST). Timesheets have no approval status.
  */
 export function isTimesheetEditable(
-  timesheet: Pick<TTimesheet, "entry_date" | "status">,
+  timesheet: Pick<TTimesheet, "entry_date">,
 ): boolean {
-  if (timesheet.status === "REJECTED") return false;
-  return getISTDateString() <= addDaysToDateString(timesheet.entry_date, 1);
-}
-
-/** Every status except legacy `REJECTED` counts as submitted. */
-export function isTimesheetCounted(timesheet: Pick<TTimesheet, "status">) {
-  return timesheet.status !== "REJECTED";
-}
-
-/**
- * Timesheets have no approval, so the UI only shows Submitted / Pending /
- * Missing. Legacy `APPROVED` / `PENDING` rows count, so they show as
- * `SUBMITTED`; legacy `REJECTED` rows don't count, so they show as `MISSING`.
- * (`PENDING` in the UI means "today, not yet submitted" — calendar only.)
- */
-export function getTimesheetDisplayStatus(
-  status: TTimesheet["status"],
-): "SUBMITTED" | "MISSING" {
-  return status === "REJECTED" ? "MISSING" : "SUBMITTED";
+  return getISTDateString() <= addDaysToDateString(timesheet.entry_date, 2);
 }
 
 export const TIMESHEET_TASK_STATUS_OPTIONS: Array<{
@@ -231,76 +213,9 @@ export function getTaskBaseKarma(task: Partial<TInternTask>): number {
   return TASK_COMPLEXITY_KARMA[complexity];
 }
 
-const CATEGORY_TO_GUILD: Record<string, string> = {
-  "Backend API": "Backend Guild",
-  "Auth API": "Backend Guild",
-  Bot: "Backend Guild",
-  Database: "Backend Guild",
-  DevOps: "Backend Guild",
-  "UI Components": "Frontend Guild",
-  "API Integration": "Frontend Guild",
-  "Bug Fix": "Frontend Guild",
-  Performance: "Frontend Guild",
-  Accessibility: "Frontend Guild",
-  Wireframes: "Design Guild",
-  Prototyping: "Design Guild",
-  Branding: "Design Guild",
-  Research: "Design Guild",
-};
-
-export function getTaskGuild(task: Partial<TInternTask>): string {
-  const record = task as UnknownRecord;
-  const directGuild = getRecordString(
-    record,
-    "guild",
-    "team",
-    "assigned_to_guild",
-    "task_guild",
-  );
-  if (directGuild && directGuild !== "UNASSIGNED") {
-    return directGuild;
-  }
-
-  // Fallback to mapping from category
-  const category = getRecordString(record, "category");
-  if (category) {
-    if (category in CATEGORY_TO_GUILD) {
-      return CATEGORY_TO_GUILD[category];
-    }
-
-    // Fuzzy matching
-    const lowerCat = category.toLowerCase();
-    if (
-      lowerCat.includes("backend") ||
-      lowerCat.includes("auth") ||
-      lowerCat.includes("database") ||
-      lowerCat.includes("devops") ||
-      lowerCat.includes("bot")
-    ) {
-      return "Backend Guild";
-    }
-    if (
-      lowerCat.includes("frontend") ||
-      lowerCat.includes("ui") ||
-      lowerCat.includes("integration") ||
-      lowerCat.includes("bug") ||
-      lowerCat.includes("performance") ||
-      lowerCat.includes("accessibility")
-    ) {
-      return "Frontend Guild";
-    }
-    if (
-      lowerCat.includes("design") ||
-      lowerCat.includes("wireframe") ||
-      lowerCat.includes("prototype") ||
-      lowerCat.includes("branding") ||
-      lowerCat.includes("research")
-    ) {
-      return "Design Guild";
-    }
-  }
-
-  return "UNASSIGNED";
+/** "Frontend (FE)" for a team ref, "—" when none. */
+export function formatTeam(team?: { name: string; code: string } | null) {
+  return team ? `${team.name} (${team.code})` : "—";
 }
 
 export function isCurrentLeaderboardUser(

@@ -90,7 +90,7 @@ export function BulkImportDialog({
           <DialogDescription>
             {showResults
               ? "Import results summary"
-              : "Download the template, fill in the MUID and Role columns, then upload the completed file."}
+              : "Download the template, fill in the MUID and Role columns (plus team, join_date and end_date for Intern / Intern Lead), then upload the completed file."}
           </DialogDescription>
         </DialogHeader>
 
@@ -103,7 +103,7 @@ export function BulkImportDialog({
                   Step 1: Download Template
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  XLSX with columns: muid, role
+                  XLSX with columns: muid, role, team, join_date, end_date
                 </p>
               </div>
               <Button

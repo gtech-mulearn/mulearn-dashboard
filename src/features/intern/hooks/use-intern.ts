@@ -297,13 +297,6 @@ export function useInternTasks(params?: TInternQueryParams) {
   });
 }
 
-export function useTaskCategories() {
-  return useQuery({
-    queryKey: [...internKeys.tasks(), "categories"],
-    queryFn: () => internApi.getTaskCategories(),
-  });
-}
-
 export function useTaskDetail(id: string) {
   return useQuery({
     queryKey: [...internKeys.tasks(), "detail", id],
@@ -418,10 +411,20 @@ export function useLeaderboardMe() {
   });
 }
 
-export function useGuilds(options?: { enabled?: boolean }) {
+/** Active teams `{id,name,code}` for dropdowns. */
+export function useActiveTeams(options?: { enabled?: boolean }) {
   return useQuery({
-    queryKey: internKeys.guilds(),
-    queryFn: () => internApi.getGuilds(),
+    queryKey: internKeys.activeTeams(),
+    queryFn: () => internApi.getActiveTeams(),
+    staleTime: 5 * 60 * 1000,
     ...options,
+  });
+}
+
+export function useMyTeamMembers(params?: TInternQueryParams) {
+  return useQuery({
+    queryKey: internKeys.myTeamMembers(params ?? {}),
+    queryFn: () => internApi.getMyTeamMembers(params),
+    placeholderData: keepPreviousData,
   });
 }

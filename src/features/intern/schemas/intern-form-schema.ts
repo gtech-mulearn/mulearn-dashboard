@@ -69,11 +69,14 @@ export const monthlyReviewSchema = z
 // Team Schema
 // ============================================
 
-/**
- * Team selection schema
- */
+/** Create / edit team form (`manage-interns/teams/`). */
 export const teamSchema = z.object({
-  name: z.string().min(1, "Team name is required"),
+  name: z.string().trim().min(1, "Team name is required"),
+  code: z
+    .string()
+    .trim()
+    .regex(/^[A-Za-z0-9]{2,10}$/, "Code must be 2-10 letters or digits."),
+  description: z.string().trim().optional(),
 });
 
 // ============================================

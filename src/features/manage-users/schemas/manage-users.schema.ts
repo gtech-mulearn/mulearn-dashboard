@@ -340,10 +340,12 @@ export type AssignRolePayload =
       role_id: string;
     }
   | {
-      /** Intern – guild is required */
+      /** Intern / Intern Lead – team required; dates for people not yet interns */
       user_id: string;
       role_id: string;
-      guild: string;
+      team_id: string;
+      join_date?: string;
+      end_date?: string;
     }
   | {
       /** General platform mentor */
@@ -374,7 +376,8 @@ export const AssignRoleResponseSchema = z
     response: z
       .object({
         message: z.string().optional(),
-        intern_guild_created: z.boolean().optional(),
+        intern_team_created: z.boolean().optional(),
+        promoted: z.boolean().optional(),
         mentor_profile_created: z.boolean().optional(),
       })
       .passthrough(),
@@ -396,7 +399,7 @@ export const AssignRoleFormSchema = z
     role_type: z.enum(["general", "intern", "mentor"]).default("general"),
 
     // Intern extras
-    guild: z.string().optional(),
+    team_id: z.string().optional(),
 
     // Mentor extras
     mentor_tier: MentorTierSchema.optional(),
@@ -404,11 +407,11 @@ export const AssignRoleFormSchema = z
     org_id: z.string().optional(),
   })
   .superRefine((data, ctx) => {
-    if (data.role_type === "intern" && !data.guild?.trim()) {
+    if (data.role_type === "intern" && !data.team_id?.trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["guild"],
-        message: "Guild is required for the Intern role",
+        path: ["team_id"],
+        message: "Team is required for the Intern role",
       });
     }
 

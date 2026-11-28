@@ -45,7 +45,6 @@ import { useUserProfile } from "@/features/auth";
 import {
   ActivityDetailDialog,
   getISTDateString,
-  isTimesheetCounted,
   TIMESHEET_TASK_STATUS_OPTIONS,
   type TInternTaskStatus,
   type TTimesheet,
@@ -93,7 +92,7 @@ export function TimesheetPageClient() {
 
   const entriesByDate = new Map<string, TTimesheet>();
   for (const ts of timesheetHistory?.data ?? []) {
-    if (isTimesheetCounted(ts)) entriesByDate.set(ts.entry_date, ts);
+    entriesByDate.set(ts.entry_date, ts);
   }
   const availableDates = [todayStr, yesterdayStr].filter(
     (d) => !entriesByDate.has(d),

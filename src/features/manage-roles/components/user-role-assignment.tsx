@@ -26,7 +26,12 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useInterestGroupsList } from "@/features/interest-groups";
-import { useGuilds } from "@/features/intern";
+import {
+  EMPTY_INTERN_TEAM,
+  InternTeamFields,
+  isInternTeamValid,
+  toInternTeamPayload,
+} from "@/features/intern";
 import { useCollegeSearch } from "@/features/onboarding";
 import { useInfiniteScroll } from "@/features/search";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -75,7 +80,7 @@ function SingleTab({ role }: { role: Role }) {
   }));
 
   // Extra details state
-  const [guild, setGuild] = useState("");
+  const [internTeam, setInternTeam] = useState(EMPTY_INTERN_TEAM);
   const [mentorTier, setMentorTier] = useState("");
   const [selectedIgs, setSelectedIgs] = useState<string[]>([]);
   const [orgId, setOrgId] = useState("");
@@ -88,7 +93,7 @@ function SingleTab({ role }: { role: Role }) {
   // Sync: Reset form fields when selectedUser or role changes
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentional reactive reset when user/role changes
   useEffect(() => {
-    setGuild("");
+    setInternTeam(EMPTY_INTERN_TEAM);
     setMentorTier("");
     setSelectedIgs([]);
     setOrgId("");
@@ -112,18 +117,6 @@ function SingleTab({ role }: { role: Role }) {
       enabled: Boolean(selectedUser) && isMentor && mentorTier === "IG_MENTOR",
     },
   );
-  const { data: guilds = [], isLoading: isLoadingGuilds } = useGuilds({
-    enabled: Boolean(selectedUser) && isIntern,
-  });
-
-  // Map guilds to Combobox options format
-  const guildOptions = useMemo(() => {
-    return guilds.map((guildName) => ({
-      id: guildName,
-      title: guildName,
-    }));
-  }, [guilds]);
-
   // Map IGs to MultiSelect options format
   const igOptions = useMemo(() => {
     const list = igsResponse?.response?.interestGroup || [];
@@ -137,23 +130,31 @@ function SingleTab({ role }: { role: Role }) {
   const isExtraValid = useMemo(() => {
     if (!selectedUser) return false;
     if (isIntern && isMentor) {
-      const guildOk = guild.trim().length > 0;
+      const teamOk = isInternTeamValid(internTeam);
       const tierOk =
         mentorTier === "IG_MENTOR"
           ? selectedIgs.length > 0
           : mentorTier === "CAMPUS_MENTOR"
             ? orgId.trim().length > 0
             : false;
-      return guildOk && tierOk;
+      return teamOk && tierOk;
     }
-    if (isIntern) return guild.trim().length > 0;
+    if (isIntern) return isInternTeamValid(internTeam);
     if (isMentor) {
       if (mentorTier === "IG_MENTOR") return selectedIgs.length > 0;
       if (mentorTier === "CAMPUS_MENTOR") return orgId.trim().length > 0;
       return false;
     }
     return true; // Not special role
-  }, [selectedUser, isIntern, isMentor, guild, mentorTier, selectedIgs, orgId]);
+  }, [
+    selectedUser,
+    isIntern,
+    isMentor,
+    internTeam,
+    mentorTier,
+    selectedIgs,
+    orgId,
+  ]);
 
   const handleSelect = (user: RoleUser) => {
     setSelectedUser(user);
@@ -164,10 +165,9 @@ function SingleTab({ role }: { role: Role }) {
   const handleAssign = () => {
     if (!selectedUser || !isExtraValid) return;
 
-    const extra: BulkAssignExtraPayload = {};
-    if (isIntern) {
-      extra.guild = guild.trim();
-    }
+    const extra: BulkAssignExtraPayload = isIntern
+      ? toInternTeamPayload(internTeam)
+      : {};
     if (isMentor) {
       extra.mentor_tier = mentorTier;
       if (mentorTier === "IG_MENTOR") {
@@ -283,24 +283,14 @@ function SingleTab({ role }: { role: Role }) {
             </p>
           </div>
 
-          {/* Guild Name (intern / both) */}
+          {/* Team + tenure (intern / both) */}
           {isIntern && (
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Guild Name <span className="text-destructive">*</span>
-              </Label>
-              <Combobox
-                options={guildOptions}
-                value={guild}
-                onValueChange={setGuild}
-                placeholder={
-                  isLoadingGuilds ? "Loading guilds..." : "Select a guild..."
-                }
-                searchPlaceholder="Search guilds..."
-                disabled={assignMutation.isPending || isLoadingGuilds}
-                className="h-11 rounded-xl"
-              />
-            </div>
+            <InternTeamFields
+              value={internTeam}
+              onChange={setInternTeam}
+              disabled={assignMutation.isPending}
+              enabled={Boolean(selectedUser)}
+            />
           )}
 
           {/* Mentor Tier (mentor / both) */}
@@ -419,7 +409,7 @@ function BulkAddTab({ role }: { role: Role }) {
   const bulkAssign = useBulkAssignRole(role.id);
 
   // Extra details state
-  const [guild, setGuild] = useState("");
+  const [internTeam, setInternTeam] = useState(EMPTY_INTERN_TEAM);
   const [mentorTier, setMentorTier] = useState("");
   const [selectedIgs, setSelectedIgs] = useState<string[]>([]);
   const [orgId, setOrgId] = useState("");
@@ -432,7 +422,7 @@ function BulkAddTab({ role }: { role: Role }) {
   // Sync: Reset form fields when role or selectedUsers becomes empty
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentional reactive reset — must re-run when role.id or selectedUsers empties
   useEffect(() => {
-    setGuild("");
+    setInternTeam(EMPTY_INTERN_TEAM);
     setMentorTier("");
     setSelectedIgs([]);
     setOrgId("");
@@ -457,18 +447,6 @@ function BulkAddTab({ role }: { role: Role }) {
         selectedUsers.length > 0 && isMentor && mentorTier === "IG_MENTOR",
     },
   );
-  const { data: guilds = [], isLoading: isLoadingGuilds } = useGuilds({
-    enabled: selectedUsers.length > 0 && isIntern,
-  });
-
-  // Map guilds to Combobox options format
-  const guildOptions = useMemo(() => {
-    return guilds.map((guildName) => ({
-      id: guildName,
-      title: guildName,
-    }));
-  }, [guilds]);
-
   // Map IGs to MultiSelect options format
   const igOptions = useMemo(() => {
     const list = igsResponse?.response?.interestGroup || [];
@@ -482,16 +460,16 @@ function BulkAddTab({ role }: { role: Role }) {
   const isExtraValid = useMemo(() => {
     if (selectedUsers.length === 0) return false;
     if (isIntern && isMentor) {
-      const guildOk = guild.trim().length > 0;
+      const teamOk = isInternTeamValid(internTeam);
       const tierOk =
         mentorTier === "IG_MENTOR"
           ? selectedIgs.length > 0
           : mentorTier === "CAMPUS_MENTOR"
             ? orgId.trim().length > 0
             : false;
-      return guildOk && tierOk;
+      return teamOk && tierOk;
     }
-    if (isIntern) return guild.trim().length > 0;
+    if (isIntern) return isInternTeamValid(internTeam);
     if (isMentor) {
       if (mentorTier === "IG_MENTOR") return selectedIgs.length > 0;
       if (mentorTier === "CAMPUS_MENTOR") return orgId.trim().length > 0;
@@ -502,7 +480,7 @@ function BulkAddTab({ role }: { role: Role }) {
     selectedUsers,
     isIntern,
     isMentor,
-    guild,
+    internTeam,
     mentorTier,
     selectedIgs,
     orgId,
@@ -519,10 +497,9 @@ function BulkAddTab({ role }: { role: Role }) {
     const ids = selectedUsers.map((u) => u.id);
     if (!ids.length || !isExtraValid) return;
 
-    const extra: BulkAssignExtraPayload = {};
-    if (isIntern) {
-      extra.guild = guild.trim();
-    }
+    const extra: BulkAssignExtraPayload = isIntern
+      ? toInternTeamPayload(internTeam)
+      : {};
     if (isMentor) {
       extra.mentor_tier = mentorTier;
       if (mentorTier === "IG_MENTOR") {
@@ -580,24 +557,14 @@ function BulkAddTab({ role }: { role: Role }) {
             </p>
           </div>
 
-          {/* Guild Name (intern / both) */}
+          {/* Team + tenure (intern / both) */}
           {isIntern && (
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Guild Name <span className="text-destructive">*</span>
-              </Label>
-              <Combobox
-                options={guildOptions}
-                value={guild}
-                onValueChange={setGuild}
-                placeholder={
-                  isLoadingGuilds ? "Loading guilds..." : "Select a guild..."
-                }
-                searchPlaceholder="Search guilds..."
-                disabled={bulkAssign.isPending || isLoadingGuilds}
-                className="h-11 rounded-xl"
-              />
-            </div>
+            <InternTeamFields
+              value={internTeam}
+              onChange={setInternTeam}
+              disabled={bulkAssign.isPending}
+              enabled={selectedUsers.length > 0}
+            />
           )}
 
           {/* Mentor Tier (mentor / both) */}

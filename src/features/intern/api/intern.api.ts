@@ -13,7 +13,9 @@ import type {
   TMonthlyReviewCurrent,
   TMonthlyReviewPayload,
   TMonthlyReviewPrefill,
+  TMyTeamMembers,
   TPaginatedData,
+  TTeamRef,
   TTimesheet,
   TTimesheetPrefill,
   TTimesheetSubmitPayload,
@@ -32,15 +34,26 @@ export interface TInternQueryParams {
    */
   sortOrder?: "asc" | "desc" | string;
   status?: string;
-  guild?: string;
   complexity?: string;
   category?: string;
-  team?: string;
+  /** Admin only: one team. */
+  team_id?: string;
+  /** `true` includes people who are no longer current members. */
+  include_former?: boolean;
+  /** Admin only (teams list): also list inactive teams. */
+  include_inactive?: boolean;
   muid?: string;
   date_from?: string;
   date_to?: string;
   year?: number;
   month?: number;
+  /** Missing timesheets: `YYYY-MM-DD` (default today). */
+  date?: string;
+  /** Missing timesheets: filter on-leave people. */
+  on_leave?: boolean;
+  /** CSV range exports: `YYYY-MM-DD` (timesheets) or `YYYY-MM` (monthly). */
+  from?: string;
+  to?: string;
 }
 
 function buildSortBy(params: TInternQueryParams): string | undefined {
@@ -66,10 +79,17 @@ export function buildQueryString(params?: TInternQueryParams): string {
   const sortBy = buildSortBy(params);
   if (sortBy) searchParams.set("sortBy", sortBy);
   if (params.status) searchParams.set("status", params.status);
-  if (params.guild) searchParams.set("guild", params.guild);
   if (params.complexity) searchParams.set("complexity", params.complexity);
   if (params.category) searchParams.set("category", params.category);
-  if (params.team) searchParams.set("team", params.team);
+  if (params.team_id) searchParams.set("team_id", params.team_id);
+  if (params.include_former) searchParams.set("include_former", "true");
+  if (params.include_inactive) searchParams.set("include_inactive", "true");
+  if (params.on_leave !== undefined) {
+    searchParams.set("on_leave", String(params.on_leave));
+  }
+  if (params.date) searchParams.set("date", params.date);
+  if (params.from) searchParams.set("from", params.from);
+  if (params.to) searchParams.set("to", params.to);
   if (params.muid) searchParams.set("muid", params.muid);
   if (params.date_from) searchParams.set("date_from", params.date_from);
   if (params.date_to) searchParams.set("date_to", params.date_to);
@@ -231,12 +251,6 @@ export const internApi = {
     });
   },
 
-  getTaskCategories: async (): Promise<Record<string, string[]>> => {
-    return apiClient.get<Record<string, string[]>>(
-      endpoints.intern.tasksCategories,
-    );
-  },
-
   getTaskDetail: async (id: string): Promise<TInternTask> => {
     return apiClient.get<TInternTask>(endpoints.intern.taskDetail(id));
   },
@@ -301,8 +315,18 @@ export const internApi = {
     }
   },
 
-  // ── Guilds ─────────────────────────────────────────────────
-  getGuilds: async (): Promise<string[]> => {
-    return apiClient.get<string[]>(endpoints.intern.guilds);
+  // ── Teams ──────────────────────────────────────────────────
+  /** Active teams for dropdowns (not paginated). */
+  getActiveTeams: async (): Promise<TTeamRef[]> => {
+    return apiClient.get<TTeamRef[]>(endpoints.intern.teams);
+  },
+
+  getMyTeamMembers: async (
+    params?: TInternQueryParams,
+  ): Promise<TMyTeamMembers> => {
+    const qs = buildQueryString(params);
+    return apiClient.get<TMyTeamMembers>(
+      `${endpoints.intern.teamMembers}${qs}`,
+    );
   },
 };

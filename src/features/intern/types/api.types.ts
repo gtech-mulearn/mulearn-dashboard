@@ -11,14 +11,71 @@ export interface TPaginatedData<T> {
   pagination: TPagination;
 }
 
+// ── Teams ────────────────────────────────────────────────────
+
+/** Compact team reference embedded in most intern rows. */
+export interface TTeamRef {
+  id: string;
+  name: string;
+  code: string;
+  is_active?: boolean;
+}
+
+/** Who reviewed a timesheet / leave / monthly review. */
+export interface TReviewer {
+  id: string;
+  full_name: string;
+  muid: string;
+}
+
+export interface TTeamLead {
+  full_name: string;
+  muid: string;
+  profile_pic: string | null;
+}
+
+/** Full team object from `manage-interns/teams/`. */
+export interface TTeam {
+  id: string;
+  name: string;
+  code: string;
+  description: string | null;
+  is_active: boolean;
+  deactivated_at: string | null;
+  member_count: number;
+  active_member_count: number;
+  leads: TTeamLead[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TTeamPayload {
+  name?: string;
+  /** 2–10 letters or digits; saved uppercase. */
+  code?: string;
+  description?: string | null;
+}
+
+export interface TTeamMember {
+  full_name: string;
+  muid: string;
+  profile_pic: string | null;
+  is_lead: boolean;
+}
+
+export interface TMyTeamMembers extends TPaginatedData<TTeamMember> {
+  team: TTeamRef;
+}
+
 export interface TInternOverviewStatus {
-  guild: string;
+  team: TTeamRef | null;
   status: string;
-  role?: "INTERN" | "INTERN_LEAD" | "Intern" | "Intern Lead";
+  join_date?: string;
   total_intern_karma: number;
   completed_tasks: number;
   complexity_score: number;
-  join_date?: string;
+  score?: number;
+  total_interns?: number;
 }
 
 export interface TInternActivityLog {
@@ -48,16 +105,6 @@ export type TInternTaskStatus =
   | "ON_HOLD"
   | "OVERDUE";
 
-/**
- * `SUBMITTED` is the only status for new timesheets (no approval).
- * `APPROVED` / `PENDING` / `REJECTED` exist only on legacy rows.
- */
-export type TTimesheetStatus =
-  | "SUBMITTED"
-  | "APPROVED"
-  | "PENDING"
-  | "REJECTED";
-
 /** Snapshot of a task update stored on a timesheet. */
 export interface TTimesheetTaskEntry {
   task_id: string;
@@ -75,9 +122,14 @@ export interface TTimesheet {
   blockers: string | null;
   end_of_day_note: string | null;
   edit_reason: string | null;
-  status: TTimesheetStatus;
   review_note: string | null;
+  reviewed_by: TReviewer | null;
+  reviewed_at: string | null;
+  team: TTeamRef | null;
+  /** Intern view only: false when logged under a previous team. */
+  is_current_team?: boolean;
   created_at: string;
+  score?: number;
   user_id?: string; // admin view
   user_name?: string; // admin view
   muid?: string; // admin view
@@ -168,7 +220,7 @@ export interface TMonthlyReview {
   month: number;
   period_start: string;
   period_end: string;
-  team: string;
+  team: TTeamRef | null;
   tasks_completed: TMonthlyReviewTaskCompleted[];
   monthly_review: string;
   task_remarks: TMonthlyTaskRemarks;
@@ -178,6 +230,7 @@ export interface TMonthlyReview {
   suggestions: string | null;
   status: TMonthlyReviewStatus;
   review_note: string | null;
+  reviewed_by: TReviewer | null;
   reviewed_at: string | null;
   created_at: string;
   updated_at: string;
@@ -187,7 +240,6 @@ export interface TAdminMonthlyReview extends TMonthlyReview {
   user_id: string;
   user_name: string;
   muid: string;
-  reviewed_by_id: string | null;
 }
 
 export interface TMonthlyReviewPrefillTask {
@@ -248,8 +300,7 @@ export interface TInternTask {
   created_by_name?: string;
   created_at: string;
   updated_at?: string;
-  team?: string;
-  guild?: string;
+  team: TTeamRef | null;
   deadline?: string;
 }
 
@@ -259,10 +310,14 @@ export interface TLeaveRequest {
   start_date: string;
   end_date: string;
   reason: string;
+  team?: TTeamRef | null;
   status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
   review_note: string | null;
+  reviewed_by?: TReviewer | null;
+  reviewed_at?: string | null;
   created_at: string;
   duration_days?: number;
+  user?: string;
   user_name?: string;
   user_muid?: string;
 }
@@ -296,36 +351,84 @@ export interface TLeaderboardMe {
 
 // ── Admin Manage Types ───────────────────────────────────────
 
+export type TInternStatus = "ACTIVE" | "AT_RISK" | "ON_LEAVE" | "INACTIVE";
+
+/** Row of `manage-interns/interns/`. Keyed by `user` (user id). */
 export interface TManageInternItem {
-  id: string;
   user: string;
   full_name: string;
   muid: string;
-  guild: string;
-  role?: "INTERN" | "INTERN_LEAD" | "Intern" | "Intern Lead";
-  status: "ACTIVE" | "AT_RISK" | "ON_LEAVE" | "INACTIVE";
-  current_status?: "ACTIVE" | "AT_RISK" | "INACTIVE";
-  previous_status?: "ACTIVE" | "AT_RISK" | "INACTIVE";
-  base_status?: "ACTIVE" | "AT_RISK" | "INACTIVE";
-  display_status?: "ACTIVE" | "AT_RISK" | "ON_LEAVE" | "INACTIVE";
-  resolved_status?: "ACTIVE" | "AT_RISK" | "ON_LEAVE" | "INACTIVE";
-  is_on_leave?: boolean;
-  leave_status?: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
-  active_leave_status?: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+  team: TTeamRef | null;
+  status: TInternStatus;
+  status_reason: string | null;
+  join_date: string | null;
+  end_date: string | null;
+  tenure_state: string | null;
+  days_left: number | null;
+  is_current: boolean;
+  exit_reason: string | null;
+  is_lead: boolean;
+  roles: string[];
   created_at: string;
+}
+
+export interface TInternCurrentTeam {
+  team: TTeamRef;
+  status: TInternStatus;
+  status_reason: string | null;
+  is_lead: boolean;
+  roles: string[];
+  join_date: string | null;
+  end_date: string | null;
+  tenure_state: string | null;
+  joined_at: string;
+}
+
+export interface TInternPreviousTeam {
+  team: TTeamRef;
+  exit_reason: string | null;
+  join_date: string | null;
+  end_date: string | null;
+  joined_at: string;
+  left_at: string | null;
+}
+
+/** `GET manage-interns/interns/<user_id>/` */
+export interface TInternDetail {
+  user: string;
+  full_name: string;
+  muid: string;
+  current_team: TInternCurrentTeam | null;
+  previous_teams: TInternPreviousTeam[];
 }
 
 export interface TOnboardInternPayload {
   mu_id?: string;
   user_id?: string;
-  guild: string;
-  status?: string;
+  team_id: string;
+  join_date: string;
+  end_date: string;
 }
 
+/** Send at least one of `status`, `is_lead`, `end_date`. `reason` is required with `status`. */
 export interface TUpdateInternPayload {
-  guild?: string;
-  status?: string;
-  role?: "INTERN" | "INTERN_LEAD" | "Intern" | "Intern Lead";
+  status?: "ACTIVE" | "AT_RISK" | "INACTIVE";
+  reason?: string;
+  is_lead?: boolean;
+  end_date?: string;
+}
+
+export interface TReassignInternsPayload {
+  user_ids: string[];
+  team_id: string;
+  end_date: string;
+}
+
+export interface TReassignInternsResponse {
+  moved_count: number;
+  /** MUIDs skipped because they were already in the team. */
+  already_in_team: string[];
+  leads_moved: { full_name: string; muid: string; from_team: string }[];
 }
 
 export interface TCreateTaskPayload {
@@ -333,9 +436,7 @@ export interface TCreateTaskPayload {
   description: string;
   category: string;
   complexity: string;
-  karma_awarded?: number;
   assigned_to: string;
-  team?: string;
   deadline?: string;
 }
 
@@ -344,12 +445,45 @@ export interface TUpdateTaskPayload {
   description?: string;
   category?: string;
   complexity?: string;
-  karma_awarded?: number;
   assigned_to?: string;
-  team?: string;
   deadline?: string;
   status?: string;
   remark?: string;
+}
+
+// ── Missing reports ──────────────────────────────────────────
+
+export interface TMissingTimesheetRow {
+  user: string;
+  full_name: string;
+  muid: string;
+  team: TTeamRef | null;
+  status: TInternStatus;
+  on_leave: boolean;
+  leave_type: string | null;
+}
+
+export interface TMissingTimesheets
+  extends TPaginatedData<TMissingTimesheetRow> {
+  date: string;
+  is_weekend: boolean;
+  can_still_submit: boolean;
+}
+
+export interface TMissingMonthlyReviewRow {
+  user: string;
+  full_name: string;
+  muid: string;
+  team: TTeamRef | null;
+  status: TInternStatus;
+  leave_days: number;
+}
+
+export interface TMissingMonthlyReviews
+  extends TPaginatedData<TMissingMonthlyReviewRow> {
+  year: number;
+  month: number;
+  window_open: boolean;
 }
 
 export interface TLeaveReviewPayload {
@@ -377,11 +511,13 @@ export interface TBulkImportRowSuccess {
   full_name?: string;
   name?: string;
   profile_pic?: string | null;
-  guild?: string;
+  team?: string;
 }
 
 export interface TBulkImportResponse {
+  /** Onboarded + promoted. */
   success_count: number;
+  promoted_count?: number;
   failed_count: number;
   failed_rows: TBulkImportRowError[];
   success_rows?: TBulkImportRowSuccess[];
