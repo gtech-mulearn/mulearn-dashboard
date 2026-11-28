@@ -34,10 +34,10 @@ export type TaskForm = {
   description: string;
   category: string;
   complexity: (typeof COMPLEXITY_OPTIONS)[number];
-  karma: string;
   assigned_to: string;
   assigneeName: string;
   assigneeMuid: string;
+  /** Display only: the server takes the team from the assignee. */
   team: string;
   deadline: string;
 };
@@ -46,8 +46,39 @@ interface InternOption {
   id: string;
   full_name: string;
   muid: string;
-  guild?: string;
-  role?: string;
+  team?: string;
+}
+
+/** Free-text category with suggestions from existing tasks. */
+export function CategoryInput({
+  value,
+  suggestions,
+  onChange,
+  required,
+}: {
+  value: string;
+  suggestions: string[];
+  onChange: (value: string) => void;
+  required?: boolean;
+}) {
+  return (
+    <>
+      <Input
+        required={required}
+        list="task-category-suggestions"
+        placeholder="e.g. UI Components"
+        maxLength={100}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-10 bg-background/50 border-border/50 font-bold text-xs rounded-xl"
+      />
+      <datalist id="task-category-suggestions">
+        {suggestions.map((c) => (
+          <option key={c} value={c} />
+        ))}
+      </datalist>
+    </>
+  );
 }
 
 interface AssignTaskDialogProps {
@@ -57,7 +88,7 @@ interface AssignTaskDialogProps {
   isAssigneeFocused: boolean;
   isInternsLoading: boolean;
   filteredAssignees: InternOption[];
-  createFormCategories: string[];
+  categorySuggestions: string[];
   isPending: boolean;
   onOpenChange: (open: boolean) => void;
   onFormChange: (form: TaskForm) => void;
@@ -75,7 +106,7 @@ export function AssignTaskDialog({
   isAssigneeFocused,
   isInternsLoading,
   filteredAssignees,
-  createFormCategories,
+  categorySuggestions,
   isPending,
   onOpenChange,
   onFormChange,
@@ -211,15 +242,15 @@ export function AssignTaskDialog({
               />
             </div>
 
-            {/* Guild & Category Row */}
+            {/* Team & Category Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Guild
+                  Team
                 </Label>
                 <Input
-                  value={form.team ? form.team.replace(/_/g, " ") : ""}
-                  placeholder="Select intern to populate Guild"
+                  value={form.team}
+                  placeholder="From the selected intern"
                   readOnly
                   disabled
                   className="h-10 bg-muted/40 border-border/40 font-bold text-xs uppercase cursor-not-allowed select-none rounded-xl"
@@ -229,38 +260,17 @@ export function AssignTaskDialog({
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                   Category <span className="text-destructive">*</span>
                 </Label>
-                <Select
+                <CategoryInput
+                  required
                   value={form.category}
-                  onValueChange={(v) => onFormChange({ ...form, category: v })}
-                  disabled={!form.team}
-                >
-                  <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase rounded-xl">
-                    <SelectValue
-                      placeholder={
-                        form.team ? "Select Category" : "Select Intern First"
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent
-                    position="popper"
-                    className="bg-card font-bold border-border/60 rounded-xl"
-                  >
-                    {createFormCategories.map((cat) => (
-                      <SelectItem
-                        key={cat}
-                        value={cat}
-                        className="font-bold text-xs uppercase"
-                      >
-                        {cat.replace(/_/g, " ")}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  suggestions={categorySuggestions}
+                  onChange={(v) => onFormChange({ ...form, category: v })}
+                />
               </div>
             </div>
 
-            {/* Complexity, Karma & Deadline Row */}
-            <div className="grid grid-cols-3 gap-4">
+            {/* Complexity & Deadline Row (karma is set on verify) */}
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                   Complexity
@@ -289,21 +299,6 @@ export function AssignTaskDialog({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Karma
-                </Label>
-                <Input
-                  type="number"
-                  min="0"
-                  placeholder="e.g. 100"
-                  value={form.karma}
-                  onChange={(e) =>
-                    onFormChange({ ...form, karma: e.target.value })
-                  }
-                  className="h-10 bg-background/50 border-border/50 font-bold rounded-xl"
-                />
               </div>
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">

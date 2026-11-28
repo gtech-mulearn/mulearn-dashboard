@@ -111,7 +111,10 @@ export async function fetchUsersByRole(
 export interface AssignUserRolePayload {
   user_id: string;
   role_id: string;
-  guild?: string;
+  /** Intern / Intern Lead: required. Dates for people who aren't interns yet. */
+  team_id?: string;
+  join_date?: string;
+  end_date?: string;
   mentor_tier?: string;
   ig_ids?: string[];
   org_id?: string;
@@ -188,22 +191,34 @@ export async function fetchUsersWithoutRole(
 }
 
 export interface BulkAssignExtraPayload {
-  guild?: string;
+  /** Intern / Intern Lead: required. One tenure for the whole list. */
+  team_id?: string;
+  join_date?: string;
+  end_date?: string;
   mentor_tier?: string;
   ig_ids?: string[];
   org_id?: string;
+}
+
+/** Intern / Intern Lead bulk assign: each user handled on their own. */
+export interface BulkAssignResult {
+  success_count?: number;
+  promoted_count?: number;
+  failed_count?: number;
+  failed?: { user_id: string; muid: string | null; reason: string }[];
 }
 
 export async function bulkAssignRole(
   roleId: string,
   users: string[],
   extra?: BulkAssignExtraPayload,
-): Promise<void> {
-  await apiClient.post(
+): Promise<BulkAssignResult> {
+  const res = await apiClient.post(
     endpoints.manageRoles.bulkAssign(roleId),
     { users, ...extra },
     GenericMutationResponseSchema,
   );
+  return (res.response ?? {}) as BulkAssignResult;
 }
 
 export async function bulkRemoveRole(

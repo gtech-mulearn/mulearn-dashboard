@@ -59,7 +59,7 @@ export function TaskDetailDialog({
                   variant="default"
                   className="text-[9px] font-black rounded-md uppercase tracking-wider px-2 py-0.5"
                 >
-                  {task.team}
+                  {task.team.name}
                 </Badge>
               )}
               <Badge

@@ -13,7 +13,11 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { type TLeaveRequest, useReviewLeave } from "@/features/intern";
+import {
+  formatTeam,
+  type TLeaveRequest,
+  useReviewLeave,
+} from "@/features/intern";
 
 const calculateDurationDays = (startStr: string, endStr: string) => {
   if (!startStr || !endStr) return 0;
@@ -193,6 +197,14 @@ export function LeaveEvaluateDialog({
                       )}
                     </div>
                   </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                      Team
+                    </span>
+                    <span className="font-bold text-foreground text-sm">
+                      {formatTeam(selectedLeave.team)}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-1">
@@ -217,14 +229,24 @@ export function LeaveEvaluateDialog({
                     />
                   </div>
                 ) : (
-                  selectedLeave.review_note && (
+                  (selectedLeave.review_note || selectedLeave.reviewed_by) && (
                     <div className="pt-2 border-t border-border/20 flex flex-col gap-1">
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                         Council Review Note
                       </span>
-                      <p className="p-2.5 bg-muted/20 border rounded-lg text-xs mt-1 text-muted-foreground leading-relaxed break-words">
-                        {selectedLeave.review_note}
-                      </p>
+                      {selectedLeave.review_note && (
+                        <p className="p-2.5 bg-muted/20 border rounded-lg text-xs mt-1 text-muted-foreground leading-relaxed break-words">
+                          {selectedLeave.review_note}
+                        </p>
+                      )}
+                      {selectedLeave.reviewed_by && (
+                        <span className="text-[11px] text-muted-foreground">
+                          By {selectedLeave.reviewed_by.full_name} (
+                          {selectedLeave.reviewed_by.muid})
+                          {selectedLeave.reviewed_at &&
+                            ` on ${new Date(selectedLeave.reviewed_at).toLocaleDateString()}`}
+                        </span>
+                      )}
                     </div>
                   )
                 )}

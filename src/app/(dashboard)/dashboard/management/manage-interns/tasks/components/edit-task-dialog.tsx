@@ -20,14 +20,16 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { COMPLEXITY_OPTIONS, type TaskForm } from "./assign-task-dialog";
+import {
+  CategoryInput,
+  COMPLEXITY_OPTIONS,
+  type TaskForm,
+} from "./assign-task-dialog";
 
 interface EditTaskDialogProps {
   editTask: { id: string } | null;
   form: TaskForm;
-  editFormCategories: string[];
-  createFormCategories: string[];
-  selectedUserGuild: string | null;
+  categorySuggestions: string[];
   isPending: boolean;
   onClose: () => void;
   onFormChange: (form: TaskForm) => void;
@@ -37,9 +39,7 @@ interface EditTaskDialogProps {
 export function EditTaskDialog({
   editTask,
   form,
-  editFormCategories,
-  createFormCategories,
-  selectedUserGuild,
+  categorySuggestions,
   isPending,
   onClose,
   onFormChange,
@@ -89,14 +89,14 @@ export function EditTaskDialog({
               />
             </div>
 
-            {/* Guild & Category Row */}
+            {/* Team & Category Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Guild
+                  Team
                 </Label>
                 <Input
-                  value={form.team ? form.team.replace(/_/g, " ") : ""}
+                  value={form.team}
                   readOnly
                   disabled
                   className="h-10 bg-muted/40 border-border/40 font-bold text-xs uppercase cursor-not-allowed select-none rounded-xl"
@@ -106,36 +106,16 @@ export function EditTaskDialog({
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                   Category
                 </Label>
-                <Select
+                <CategoryInput
                   value={form.category}
-                  onValueChange={(v) => onFormChange({ ...form, category: v })}
-                >
-                  <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase rounded-xl">
-                    <SelectValue placeholder="Select Category" />
-                  </SelectTrigger>
-                  <SelectContent
-                    position="popper"
-                    className="bg-card font-bold border-border/60 rounded-xl"
-                  >
-                    {(selectedUserGuild
-                      ? createFormCategories
-                      : editFormCategories
-                    ).map((cat) => (
-                      <SelectItem
-                        key={cat}
-                        value={cat}
-                        className="font-bold text-xs uppercase"
-                      >
-                        {cat.replace(/_/g, " ")}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  suggestions={categorySuggestions}
+                  onChange={(v) => onFormChange({ ...form, category: v })}
+                />
               </div>
             </div>
 
-            {/* Complexity, Karma & Deadline Row */}
-            <div className="grid grid-cols-3 gap-4">
+            {/* Complexity & Deadline Row (karma is set on verify) */}
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                   Complexity
@@ -164,21 +144,6 @@ export function EditTaskDialog({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Karma
-                </Label>
-                <Input
-                  type="number"
-                  min="0"
-                  placeholder="e.g. 100"
-                  value={form.karma}
-                  onChange={(e) =>
-                    onFormChange({ ...form, karma: e.target.value })
-                  }
-                  className="h-10 bg-background/50 border-border/50 font-bold rounded-xl"
-                />
               </div>
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">

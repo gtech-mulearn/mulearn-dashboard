@@ -38,14 +38,12 @@ import type {
   TMonthlyReviewPayload,
   TMonthlyReviewStatus,
   TTimesheet,
-  TTimesheetStatus,
   TTimesheetUpdatePayload,
 } from "../types";
 import {
   formatDateOnly,
   formatReviewMonth,
   formatTaskStatus,
-  getTimesheetDisplayStatus,
   isTimesheetEditable,
 } from "../utils/intern-helpers";
 
@@ -57,7 +55,7 @@ export type UnifiedActivity = {
   dateStr: string;
   rawDate: Date;
   status:
-    | TTimesheetStatus
+    | "SUBMITTED"
     | TMonthlyReviewStatus
     | "MISSING"
     | "CANCELLED"
@@ -109,7 +107,7 @@ export function timesheetToActivity(
     description: ts.description || "",
     dateStr: new Date(ts.created_at).toLocaleDateString(undefined, dateFormat),
     rawDate: new Date(ts.created_at),
-    status: getTimesheetDisplayStatus(ts.status),
+    status: "SUBMITTED",
     karma: null,
     raw: ts,
   };
@@ -605,11 +603,33 @@ export function ActivityDetailDialog({
                     </p>
                   )}
 
+                  {selectedTimesheet.team && (
+                    <p className="text-[11px] text-muted-foreground">
+                      <span className="font-black uppercase tracking-wider text-[9px]">
+                        Team:
+                      </span>{" "}
+                      {selectedTimesheet.team.name}
+                      {selectedTimesheet.is_current_team === false &&
+                        " (previous team)"}
+                    </p>
+                  )}
+
+                  {selectedTimesheet.review_note && (
+                    <div className="p-3 rounded-xl border border-brand-blue/30 bg-brand-blue/5 text-xs space-y-1">
+                      <p className="text-[9px] font-black uppercase tracking-widest text-brand-blue">
+                        Review note
+                        {selectedTimesheet.reviewed_by &&
+                          ` · ${selectedTimesheet.reviewed_by.full_name}`}
+                      </p>
+                      <p className="text-foreground/90">
+                        {selectedTimesheet.review_note}
+                      </p>
+                    </div>
+                  )}
+
                   {!canEditTimesheet && (
                     <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
-                      {selectedTimesheet.status === "REJECTED"
-                        ? "This timesheet can no longer be edited."
-                        : "The edit window for this timesheet has closed."}
+                      The edit window for this timesheet has closed.
                     </p>
                   )}
 

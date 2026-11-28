@@ -87,7 +87,6 @@ export async function fetchManageUserDetail(
   return {
     ...res,
     message: res.message ?? "Success",
-    intern_guild_created: res.intern_guild_created,
     mentor_profile_created: res.mentor_profile_created,
   } as unknown as ManageUserDetail;
 }
@@ -251,7 +250,8 @@ export async function fetchCollegesAndDepartments(districtId: string): Promise<{
 
 export async function assignUserRole(payload: AssignRolePayload): Promise<{
   message: string;
-  intern_guild_created?: boolean;
+  intern_team_created?: boolean;
+  promoted?: boolean;
   mentor_profile_created?: boolean;
 }> {
   const response = await apiClient.post(
@@ -262,7 +262,8 @@ export async function assignUserRole(payload: AssignRolePayload): Promise<{
   const res = response.response as unknown as Record<string, unknown>;
   return {
     message: (res.message as string | undefined) ?? "Success",
-    intern_guild_created: res.intern_guild_created as boolean | undefined,
+    intern_team_created: res.intern_team_created as boolean | undefined,
+    promoted: res.promoted as boolean | undefined,
     mentor_profile_created: res.mentor_profile_created as boolean | undefined,
   };
 }

@@ -94,14 +94,8 @@ export function InternStatsCards() {
   }
 
   const totalKarma = overview?.total_intern_karma ?? 0;
-  const userGuild = overview?.guild || "—";
+  const teamName = overview?.team?.name ?? "—";
   const userRank = meRank?.rank ?? "—";
-
-  const formattedGuild = userGuild.toUpperCase().endsWith("GUILD")
-    ? userGuild
-    : userGuild !== "—"
-      ? `${userGuild} Guild`
-      : "—";
 
   const completedTasks = overview?.completed_tasks ?? 0;
 
@@ -121,7 +115,7 @@ export function InternStatsCards() {
             {totalKarma.toLocaleString()}
           </div>
           <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-widest">
-            Currently in <span className="text-success">{formattedGuild}</span>
+            Currently in <span className="text-success">{teamName}</span>
           </p>
         </CardContent>
       </Card>

@@ -15,26 +15,20 @@ import { toast } from "sonner";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import type { TInternTask, TUpdateTaskPayload } from "@/features/intern";
 import {
   getComplexityColor,
-  getTaskGuild,
+  TeamBadge,
+  TeamFilterSelect,
   useCreateTask,
   useDeleteTask,
-  useGuilds,
   useManageInternsList,
   useManageTaskDetail,
   useManageTasks,
-  useTaskCategories,
   useUpdateTask,
   useVerifyTask,
 } from "@/features/intern";
@@ -42,14 +36,13 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   AssignTaskDialog,
-  COMPLEXITY_OPTIONS,
+  type COMPLEXITY_OPTIONS,
   type TaskForm,
 } from "./components/assign-task-dialog";
 import { EditTaskDialog } from "./components/edit-task-dialog";
 import {
   type ReviewForm,
   ReviewTaskDialog,
-  STATUS_OPTIONS,
 } from "./components/review-task-dialog";
 
 // ── Helpers ───────────────────────────────────────────────────
@@ -60,7 +53,6 @@ const blankForm: TaskForm = {
   description: "",
   category: "",
   complexity: "MEDIUM",
-  karma: "",
   assigned_to: "",
   assigneeName: "",
   assigneeMuid: "",
@@ -73,10 +65,8 @@ export function AdminTasksPageClient() {
   const [searchText, setSearchText] = useState("");
   const [page, setPage] = useState(1);
   const perPage = 15;
-  const [guildFilter, setGuildFilter] = useState("ALL");
-  const [complexityFilter, setComplexityFilter] = useState("ALL");
-  const [statusFilter, setStatusFilter] = useState("ALL");
-  const [categoryFilter, setCategoryFilter] = useState("ALL");
+  const [teamFilter, setTeamFilter] = useState("ALL");
+  const [includeFormer, setIncludeFormer] = useState(false);
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | undefined>(
     undefined,
@@ -152,9 +142,7 @@ export function AdminTasksPageClient() {
   const [isAssigneeFocused, setIsAssigneeFocused] = useState(false);
 
   const internsList = useMemo(() => {
-    return (internsData?.data ?? []).filter(
-      (item) => item.role?.toLowerCase() === "intern",
-    );
+    return (internsData?.data ?? []).filter((item) => !item.is_lead);
   }, [internsData]);
 
   // Map to InternOption shape — use `user` (user UUID) as `id` for assigned_to
@@ -170,8 +158,7 @@ export function AdminTasksPageClient() {
       id: item.user, // user UUID — what the API expects for assigned_to
       full_name: item.full_name,
       muid: item.muid,
-      guild: item.guild,
-      role: item.role,
+      team: item.team?.name,
     }));
   }, [internsList, assigneeQuery]);
 
@@ -181,73 +168,21 @@ export function AdminTasksPageClient() {
     page,
     perPage,
     search: debouncedSearch || undefined,
-    guild: guildFilter === "ALL" ? undefined : guildFilter,
-    complexity: complexityFilter === "ALL" ? undefined : complexityFilter,
-    status: statusFilter === "ALL" ? undefined : statusFilter,
-    category: categoryFilter === "ALL" ? undefined : categoryFilter,
+    // Backend: search covers title/status/category/assignee; sorts by created_at/status.
+    team_id: teamFilter === "ALL" ? undefined : teamFilter,
+    include_former: includeFormer || undefined,
     sortBy,
     sortOrder,
   });
 
-  const { data: guilds = [] } = useGuilds();
-  const DEFAULT_TEAMS = [
-    "DEVELOPMENT",
-    "DESIGN",
-    "TESTING",
-    "QA",
-    "PM",
-    "BACKEND",
-    "FRONTEND",
-  ];
-  const teams = guilds.length > 0 ? guilds : DEFAULT_TEAMS;
-
-  const { data: taskCategories = {} } = useTaskCategories();
-  const [selectedUserGuild, setSelectedUserGuild] = useState<string | null>(
-    null,
+  // Category is free text now; suggest ones already used on this page.
+  const categorySuggestions = useMemo(
+    () =>
+      [...new Set((tasksData?.data ?? []).map((t) => t.category))]
+        .filter(Boolean)
+        .sort(),
+    [tasksData?.data],
   );
-
-  const tableFilterCategories = useMemo(() => {
-    if (!guildFilter || guildFilter === "ALL") {
-      const set = new Set<string>();
-      Object.values(taskCategories || {}).forEach((cats) => {
-        if (Array.isArray(cats)) {
-          cats.forEach((cat) => {
-            set.add(cat);
-          });
-        }
-      });
-      return Array.from(set).sort();
-    }
-    const key = Object.keys(taskCategories || {}).find(
-      (k) => k.toUpperCase() === guildFilter.toUpperCase(),
-    );
-    return key ? (taskCategories[key] || []).slice().sort() : [];
-  }, [taskCategories, guildFilter]);
-
-  const createFormCategories = useMemo(() => {
-    if (selectedUserGuild) {
-      const key = Object.keys(taskCategories || {}).find(
-        (k) => k.toUpperCase() === selectedUserGuild.toUpperCase(),
-      );
-      if (key && taskCategories[key]) {
-        return taskCategories[key].slice().sort();
-      }
-    }
-    return [];
-  }, [taskCategories, selectedUserGuild]);
-
-  const editFormCategories = useMemo(() => {
-    if (editTask) {
-      const taskGuild = getTaskGuild(editTask);
-      const key = Object.keys(taskCategories || {}).find(
-        (k) => k.toUpperCase() === taskGuild.toUpperCase(),
-      );
-      if (key && taskCategories[key]) {
-        return taskCategories[key].slice().sort();
-      }
-    }
-    return [];
-  }, [taskCategories, editTask]);
 
   const createMutation = useCreateTask();
   const updateMutation = useUpdateTask(editTask?.id ?? "");
@@ -255,110 +190,41 @@ export function AdminTasksPageClient() {
   const reviewMutation = useUpdateTask(reviewTarget?.id ?? "");
   const verifyMutation = useVerifyTask();
 
-  const tasks = useMemo(() => {
-    let list = tasksData?.data ?? [];
-    if (statusFilter !== "ALL") {
-      list = list.filter((task) => task.status === statusFilter);
-    }
-    if (guildFilter !== "ALL") {
-      list = list.filter((task) => {
-        const guild = getTaskGuild(task);
-        return (
-          guild.toUpperCase().includes(guildFilter.toUpperCase()) ||
-          guildFilter.toUpperCase().includes(guild.toUpperCase())
-        );
-      });
-    }
-    if (complexityFilter !== "ALL") {
-      list = list.filter((task) => task.complexity === complexityFilter);
-    }
-    if (categoryFilter !== "ALL") {
-      list = list.filter((task) => task.category === categoryFilter);
-    }
+  const tasks = tasksData?.data ?? [];
 
-    if (sortBy) {
-      list = [...list].sort((a, b) => {
-        let valA = a[sortBy as keyof TInternTask];
-        let valB = b[sortBy as keyof TInternTask];
-
-        if (sortBy === "guild") {
-          valA = getTaskGuild(a);
-          valB = getTaskGuild(b);
-        }
-
-        if (valA === undefined || valA === null) valA = "";
-        if (valB === undefined || valB === null) valB = "";
-
-        if (sortBy === "deadline" || sortBy === "created_at") {
-          const timeA = valA ? new Date(valA as string).getTime() : 0;
-          const timeB = valB ? new Date(valB as string).getTime() : 0;
-          const isInvalidA = Number.isNaN(timeA);
-          const isInvalidB = Number.isNaN(timeB);
-          if (isInvalidA && isInvalidB) return 0;
-          if (isInvalidA) return sortOrder === "asc" ? 1 : -1;
-          if (isInvalidB) return sortOrder === "asc" ? -1 : 1;
-          return sortOrder === "asc" ? timeA - timeB : timeB - timeA;
-        }
-
-        const isNumA = typeof valA === "number";
-        const isNumB = typeof valB === "number";
-        if (isNumA && isNumB) {
-          return sortOrder === "asc"
-            ? (valA as unknown as number) - (valB as unknown as number)
-            : (valB as unknown as number) - (valA as unknown as number);
-        }
-
-        const strA = String(valA).toLowerCase();
-        const strB = String(valB).toLowerCase();
-        if (strA < strB) return sortOrder === "asc" ? -1 : 1;
-        if (strA > strB) return sortOrder === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
-
-    return list;
-  }, [
-    tasksData?.data,
-    statusFilter,
-    guildFilter,
-    complexityFilter,
-    categoryFilter,
-    sortBy,
-    sortOrder,
-  ]);
-
+  // Only `status` is a backend sort field among these columns.
   const columnOrder = useMemo(
     () => [
       {
         column: "title",
         Label: "Title",
-        isSortable: true,
+        isSortable: false,
         width: "min-w-[150px]",
       },
       {
         column: "assigned_to_name",
         Label: "Assigned To",
-        isSortable: true,
+        isSortable: false,
         width: "min-w-[200px]",
       },
-      { column: "guild", Label: "Guild", isSortable: true, width: "w-36" },
+      { column: "team", Label: "Team", isSortable: false, width: "w-28" },
       {
         column: "complexity",
         Label: "Complexity",
-        isSortable: true,
+        isSortable: false,
         width: "w-28",
       },
       {
         column: "karma_awarded",
         Label: "Karma",
-        isSortable: true,
+        isSortable: false,
         width: "w-20",
       },
       { column: "status", Label: "Status", isSortable: true, width: "w-40" },
       {
         column: "deadline",
         Label: "Deadline",
-        isSortable: true,
+        isSortable: false,
         width: "w-32",
       },
     ],
@@ -409,12 +275,8 @@ export function AdminTasksPageClient() {
               )}
             </div>
           );
-        case "guild":
-          return (
-            <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground font-bold uppercase tracking-wider">
-              {getTaskGuild(task).replace(/_/g, " ")}
-            </div>
-          );
+        case "team":
+          return <TeamBadge team={task.team} />;
         case "complexity":
           return (
             <div
@@ -469,21 +331,15 @@ export function AdminTasksPageClient() {
   // ── Open edit dialog with pre-filled values ───────────────
   const openEdit = useCallback((task: TInternTask) => {
     setEditTask(task);
-    const taskGuild = getTaskGuild(task);
-    setSelectedUserGuild(task.team || taskGuild || null);
     setForm({
       title: task.title,
       description: task.description,
       category: task.category,
       complexity: task.complexity as (typeof COMPLEXITY_OPTIONS)[number],
-      karma:
-        task.karma_awarded !== undefined && task.karma_awarded !== null
-          ? String(task.karma_awarded)
-          : "",
       assigned_to: task.assigned_to,
       assigneeName: task.assigned_to_name ?? "",
       assigneeMuid: "",
-      team: task.team ?? "",
+      team: task.team?.name ?? "",
       deadline: task.deadline?.slice(0, 10) ?? "",
     });
   }, []);
@@ -552,9 +408,7 @@ export function AdminTasksPageClient() {
         description: form.description,
         category: form.category,
         complexity: form.complexity,
-        karma_awarded: form.karma ? Number(form.karma) : undefined,
         assigned_to: form.assigned_to,
-        team: form.team || undefined,
         deadline: form.deadline || undefined,
       },
       {
@@ -577,8 +431,6 @@ export function AdminTasksPageClient() {
         description: form.description || undefined,
         category: form.category || undefined,
         complexity: form.complexity || undefined,
-        karma_awarded: form.karma ? Number(form.karma) : undefined,
-        team: form.team || undefined,
         deadline: form.deadline || undefined,
       },
       {
@@ -601,8 +453,8 @@ export function AdminTasksPageClient() {
   const handleVerifySubmit = () => {
     if (!reviewTarget) return;
     const payload: TUpdateTaskPayload = {
+      // karma_awarded is set only by the verify endpoint.
       status: reviewForm.status || undefined,
-      karma_awarded: reviewForm.karma ? Number(reviewForm.karma) : undefined,
       remark: reviewForm.remark || undefined,
     };
     reviewMutation.mutate(payload, {
@@ -631,7 +483,6 @@ export function AdminTasksPageClient() {
           onClick={() => {
             setForm({ ...blankForm });
             setAssigneeQuery("");
-            setSelectedUserGuild(null);
             setCreateOpen(true);
           }}
           className="gap-2 text-xs tracking-widest shadow-lg"
@@ -646,7 +497,7 @@ export function AdminTasksPageClient() {
         <div className="relative w-full md:w-48 focus-within:md:w-80 transition-all duration-300 ease-in-out shrink-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
           <Input
-            placeholder="Search tasks by title..."
+            placeholder="Search title, status, category, intern..."
             value={searchText}
             onChange={(e) => {
               setSearchText(e.target.value);
@@ -655,120 +506,31 @@ export function AdminTasksPageClient() {
             className="w-full pl-10 h-10 bg-background/50 border-border/50 font-medium"
           />
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 flex-1">
-          <Select
-            value={guildFilter}
-            onValueChange={(value) => {
-              setGuildFilter(value);
-              setCategoryFilter("ALL");
+        <div className="flex flex-wrap items-center gap-4 flex-1">
+          <TeamFilterSelect
+            value={teamFilter}
+            onChange={(value) => {
+              setTeamFilter(value);
               setPage(1);
             }}
-          >
-            <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
-              <SelectValue placeholder="Filter by Guild" />
-            </SelectTrigger>
-            <SelectContent
-              position="popper"
-              className="bg-card font-bold border-border/60"
+            className="w-48 h-10 bg-background/50 border-border/50 font-bold text-xs uppercase"
+          />
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="tasks-include-former"
+              checked={includeFormer}
+              onCheckedChange={(c) => {
+                setIncludeFormer(c === true);
+                setPage(1);
+              }}
+            />
+            <Label
+              htmlFor="tasks-include-former"
+              className="text-xs font-bold text-muted-foreground"
             >
-              <SelectItem value="ALL" className="font-bold text-xs uppercase">
-                All Guilds
-              </SelectItem>
-              {teams.map((team) => (
-                <SelectItem
-                  key={team}
-                  value={team}
-                  className="font-bold text-xs uppercase"
-                >
-                  {team.replace(/_/g, " ")}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            value={complexityFilter}
-            onValueChange={(value) => {
-              setComplexityFilter(value);
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
-              <SelectValue placeholder="Filter by Complexity" />
-            </SelectTrigger>
-            <SelectContent
-              position="popper"
-              className="bg-card font-bold border-border/60"
-            >
-              <SelectItem value="ALL" className="font-bold text-xs uppercase">
-                All Complexities
-              </SelectItem>
-              {COMPLEXITY_OPTIONS.map((complexity) => (
-                <SelectItem
-                  key={complexity}
-                  value={complexity}
-                  className="font-bold text-xs uppercase"
-                >
-                  {complexity}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            value={statusFilter}
-            onValueChange={(value) => {
-              setStatusFilter(value);
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
-              <SelectValue placeholder="Filter by Status" />
-            </SelectTrigger>
-            <SelectContent
-              position="popper"
-              className="bg-card font-bold border-border/60"
-            >
-              <SelectItem value="ALL" className="font-bold text-xs uppercase">
-                All Statuses
-              </SelectItem>
-              {STATUS_OPTIONS.map((status) => (
-                <SelectItem
-                  key={status}
-                  value={status}
-                  className="font-bold text-xs uppercase"
-                >
-                  {status.replace(/_/g, " ")}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            value={categoryFilter}
-            onValueChange={(value) => {
-              setCategoryFilter(value);
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
-              <SelectValue placeholder="Filter by Category" />
-            </SelectTrigger>
-            <SelectContent
-              position="popper"
-              className="bg-card font-bold border-border/60"
-            >
-              <SelectItem value="ALL" className="font-bold text-xs uppercase">
-                All Categories
-              </SelectItem>
-              {tableFilterCategories.map((category) => (
-                <SelectItem
-                  key={category}
-                  value={category}
-                  className="font-bold text-xs uppercase"
-                >
-                  {category.replace(/_/g, " ")}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+              Include former
+            </Label>
+          </div>
         </div>
       </div>
 
@@ -857,7 +619,7 @@ export function AdminTasksPageClient() {
         isAssigneeFocused={isAssigneeFocused}
         isInternsLoading={isInternsLoading}
         filteredAssignees={filteredAssignees}
-        createFormCategories={createFormCategories}
+        categorySuggestions={categorySuggestions}
         isPending={createMutation.isPending}
         onOpenChange={setCreateOpen}
         onFormChange={setForm}
@@ -869,12 +631,10 @@ export function AdminTasksPageClient() {
             assigned_to: user.id,
             assigneeName: user.full_name,
             assigneeMuid: user.muid,
-            category: "",
-            team: user.guild || "",
+            team: user.team || "",
           });
           setAssigneeQuery("");
           setIsAssigneeFocused(false);
-          setSelectedUserGuild(user.guild || null);
         }}
         onClearAssignee={() => {
           setForm({
@@ -882,9 +642,8 @@ export function AdminTasksPageClient() {
             assigned_to: "",
             assigneeName: "",
             assigneeMuid: "",
-            category: "",
+            team: "",
           });
-          setSelectedUserGuild(null);
         }}
         onSubmit={handleCreate}
       />
@@ -892,9 +651,7 @@ export function AdminTasksPageClient() {
       <EditTaskDialog
         editTask={editTask}
         form={form}
-        editFormCategories={editFormCategories}
-        createFormCategories={createFormCategories}
-        selectedUserGuild={selectedUserGuild}
+        categorySuggestions={categorySuggestions}
         isPending={updateMutation.isPending}
         onClose={() => setEditTask(null)}
         onFormChange={setForm}

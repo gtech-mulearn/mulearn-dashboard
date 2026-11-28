@@ -118,9 +118,9 @@ export const MANAGEMENT_ROLES = [
   ROLES.FELLOW,
 ] as const;
 
+// Backend manage-interns endpoints accept only Admins and Intern Leads.
 export const INTERN_MANAGEMENT_ROLES = [
   ROLES.ADMIN,
-  ROLES.ASSOCIATE,
   ROLES.INTERN_LEAD,
 ] as const;
 

@@ -19,12 +19,13 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Dialog,
@@ -43,19 +44,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { TManageInternItem } from "@/features/intern";
+import type { TManageInternItem, TTeamRef } from "@/features/intern";
 import {
-  resolveInternStatus,
+  formatDateOnly,
+  InternDetailDialog,
+  InternsStats,
+  OnboardDialog,
+  ReasonDialog,
+  ReassignDialog,
+  TeamBadge,
+  TeamFilterSelect,
+  UpdateDialog,
   useDeactivateIntern,
   useExportInterns,
-  useGuilds,
+  useIsInternAdmin,
   useManageInternsList,
   useUpdateIntern,
 } from "@/features/intern";
 import { useDebounce } from "@/hooks/use-debounce";
-import { InternsStats } from "../../../../../features/intern/components/interns-stats";
-import { OnboardDialog } from "../../../../../features/intern/components/onboard-dialog";
-import { UpdateDialog } from "../../../../../features/intern/components/update-dialog";
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -108,22 +114,14 @@ const statusColorClass: Record<string, string> = {
   all: "",
 };
 
-const DEFAULT_GUILDS = [
-  "DESIGN",
-  "FRONTEND",
-  "BACKEND",
-  "MOBILE",
-  "DEVOPS",
-  "QA",
-  "PM",
-];
-
 export function ManageInternsPageClient() {
+  const isAdmin = useIsInternAdmin();
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [teamFilter, setTeamFilter] = useState("ALL");
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | undefined>(
     undefined,
@@ -131,33 +129,44 @@ export function ManageInternsPageClient() {
 
   const debouncedSearch = useDebounce(searchText, 300);
 
-  // Dialog & Modal states
+  // Dialog & Modal states (interns are keyed by user id)
   const [isOnboardOpen, setIsOnboardOpen] = useState(false);
-  const [updateIntern, setUpdateIntern] = useState<{
-    id: string;
-    name: string;
-    guild: string;
-    status: string;
-    role?: "INTERN" | "INTERN_LEAD" | "Intern" | "Intern Lead";
-  } | null>(null);
-  const [deactivateIntern, setDeactivateIntern] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
-  const [activateIntern, setActivateIntern] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
+  const [updateIntern, setUpdateIntern] = useState<TManageInternItem | null>(
+    null,
+  );
+  const [deactivateIntern, setDeactivateIntern] =
+    useState<TManageInternItem | null>(null);
+  const [activateIntern, setActivateIntern] =
+    useState<TManageInternItem | null>(null);
+  const [detailUserId, setDetailUserId] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [reassignOpen, setReassignOpen] = useState(false);
+
+  const filters = {
+    status: statusFilter === "all" ? undefined : statusFilter,
+    team_id: teamFilter === "ALL" ? undefined : teamFilter,
+  };
 
   // Queries & Mutations
   const { data: listData, isLoading: isListLoading } = useManageInternsList({
     page,
     perPage,
     search: debouncedSearch || undefined,
-    status: statusFilter === "all" ? undefined : statusFilter,
+    ...filters,
     sortBy,
     sortOrder,
   });
+
+  const toggleSelected = useCallback(
+    (userId: string) =>
+      setSelected((prev) => {
+        const next = new Set(prev);
+        if (next.has(userId)) next.delete(userId);
+        else next.add(userId);
+        return next;
+      }),
+    [],
+  );
 
   const handleSort = (column: string) => {
     if (sortBy === column) {
@@ -174,57 +183,25 @@ export function ManageInternsPageClient() {
     setPage(1);
   };
 
-  const { data: guilds = [] } = useGuilds();
-  const guildOptions = useMemo(() => {
-    return guilds.length > 0 ? guilds : DEFAULT_GUILDS;
-  }, [guilds]);
-
   const deactivateMutation = useDeactivateIntern();
-  const activateMutation = useUpdateIntern(activateIntern?.id || "");
+  const activateMutation = useUpdateIntern(activateIntern?.user || "");
   const { mutateAsync: exportCsv, isPending: isExporting } = useExportInterns();
 
-  const getEditableStatus = (item: TManageInternItem) => {
-    return (
-      item.current_status ||
-      item.base_status ||
-      item.previous_status ||
-      (item.status !== "ON_LEAVE" ? item.status : undefined) ||
-      "ACTIVE"
-    );
-  };
-
   const rows = useMemo(() => {
-    const data = (listData?.data ?? []) as unknown as TManageInternItem[];
-    let resolvedRows = data.map((item) => ({
-      ...item,
-      resolved_status: resolveInternStatus(item),
-    }));
-
-    if (statusFilter !== "all") {
-      resolvedRows = resolvedRows.filter(
-        (item) =>
-          item.resolved_status?.toUpperCase() === statusFilter.toUpperCase(),
+    let data = listData?.data ?? [];
+    // Role has no server filter; filters the current page only.
+    if (roleFilter !== "all") {
+      data = data.filter(
+        (item) => (item.is_lead ? "INTERN_LEAD" : "INTERN") === roleFilter,
       );
     }
-
-    if (roleFilter !== "all") {
-      resolvedRows = resolvedRows.filter((item) => {
-        const itemRole = item.role ?? "INTERN";
-        const normalized =
-          itemRole === "Intern Lead" || itemRole === "INTERN_LEAD"
-            ? "INTERN_LEAD"
-            : "INTERN";
-        return normalized === roleFilter;
-      });
-    }
-
-    return resolvedRows as unknown as Data[];
-  }, [listData, statusFilter, roleFilter]);
+    return data as unknown as Data[];
+  }, [listData, roleFilter]);
 
   const totalPages = listData?.pagination?.totalPages ?? 1;
   const totalCount = listData?.pagination?.count ?? 0;
 
-  const isClientFiltered = statusFilter !== "all" || roleFilter !== "all";
+  const isClientFiltered = roleFilter !== "all";
   const displayedTotalCount = isClientFiltered ? rows.length : totalCount;
   const displayedTotalPages = isClientFiltered
     ? Math.ceil(rows.length / perPage) || 1
@@ -232,40 +209,55 @@ export function ManageInternsPageClient() {
 
   const tableColumns = useMemo(() => {
     return [
+      ...(isAdmin
+        ? [
+            {
+              column: "select",
+              Label: "",
+              isSortable: false,
+              wrap: (_data: string, _id: string, row: Data) => (
+                <Checkbox
+                  aria-label={`Select ${row.full_name}`}
+                  checked={selected.has(String(row.user))}
+                  onCheckedChange={() => toggleSelected(String(row.user))}
+                />
+              ),
+            },
+          ]
+        : []),
       {
         column: "full_name",
         Label: "Intern Name",
         isSortable: true,
         wrap: (data: string, _id: string, row: Data) => (
-          <div className="flex flex-col">
+          <button
+            type="button"
+            onClick={() => setDetailUserId(String(row.user))}
+            className="flex flex-col text-left hover:underline"
+          >
             <span className="font-bold text-foreground uppercase tracking-tight text-sm">
               {data}
             </span>
             <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest leading-none mt-1">
               {row.muid as string}
             </span>
-          </div>
+          </button>
         ),
       },
       {
-        column: "guild",
+        column: "team",
         Label: "Team",
-        isSortable: true,
-        wrap: (data: string) => (
-          <Badge
-            variant="outline"
-            className="font-bold uppercase tracking-wider"
-          >
-            {data}
-          </Badge>
+        isSortable: false,
+        wrap: (_data: string, _id: string, row: Data) => (
+          <TeamBadge team={row.team as unknown as TTeamRef | null} />
         ),
       },
       {
-        column: "role",
+        column: "is_lead",
         Label: "Role",
-        isSortable: true,
-        wrap: (data: string) =>
-          data === "INTERN_LEAD" || data === "Intern Lead" ? (
+        isSortable: false,
+        wrap: (_data: string, _id: string, row: Data) =>
+          row.is_lead ? (
             <Badge
               variant="outline"
               className="gap-1 font-bold text-amber-500 border-amber-500/30 bg-amber-500/5"
@@ -283,27 +275,35 @@ export function ManageInternsPageClient() {
           ),
       },
       {
-        column: "resolved_status",
+        column: "status",
         Label: "Status",
         isSortable: true,
-        wrap: (data: string) => getStatusBadge(data),
-      },
-      {
-        column: "created_at",
-        Label: "Joined Date",
-        isSortable: true,
-        wrap: (data: string) => (
-          <span className="text-xs font-bold text-foreground">
-            {new Date(data).toLocaleDateString(undefined, {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}
+        wrap: (data: string, _id: string, row: Data) => (
+          <span title={row.status_reason ? String(row.status_reason) : ""}>
+            {getStatusBadge(data)}
           </span>
         ),
       },
+      {
+        column: "join_date",
+        Label: "Tenure",
+        isSortable: false,
+        wrap: (_data: string, _id: string, row: Data) => (
+          <div className="flex flex-col text-xs font-bold text-foreground">
+            <span>
+              {row.join_date ? formatDateOnly(String(row.join_date)) : "—"} –{" "}
+              {row.end_date ? formatDateOnly(String(row.end_date)) : "—"}
+            </span>
+            {row.days_left !== null && row.days_left !== undefined && (
+              <span className="text-[10px] text-muted-foreground">
+                {String(row.days_left)} days left
+              </span>
+            )}
+          </div>
+        ),
+      },
     ];
-  }, []);
+  }, [isAdmin, selected, toggleSelected]);
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto w-full">
@@ -356,6 +356,16 @@ export function ManageInternsPageClient() {
             >
               <ListTodo className="w-4 h-4" />
               Tasks
+            </Button>
+          </Link>
+          <Link href="/dashboard/management/manage-interns/teams">
+            <Button
+              size="lg"
+              variant="default"
+              className="gap-2 text-xs tracking-widest shadow-lg"
+            >
+              <Users className="w-4 h-4" />
+              Teams
             </Button>
           </Link>
         </div>
@@ -486,6 +496,15 @@ export function ManageInternsPageClient() {
                   </SelectContent>
                 </Select>
 
+                <TeamFilterSelect
+                  value={teamFilter}
+                  onChange={(v) => {
+                    setTeamFilter(v);
+                    setPage(1);
+                  }}
+                  className="w-full sm:w-[160px] h-10 font-black uppercase text-[10px] tracking-widest border-border/40 bg-card/40"
+                />
+
                 <Select
                   value={roleFilter}
                   onValueChange={(val) => {
@@ -549,10 +568,19 @@ export function ManageInternsPageClient() {
                   </Select>
                 </div>
 
+                {isAdmin && selected.size > 0 && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setReassignOpen(true)}
+                    className="h-10 px-4 rounded-xl font-bold shrink-0"
+                  >
+                    Reassign ({selected.size})
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   onClick={async () => {
-                    await exportCsv();
+                    await exportCsv(filters);
                   }}
                   disabled={isExporting}
                   className="h-10 px-4 rounded-xl border-2 border-brand-blue text-brand-blue hover:bg-linear-to-r hover:bg-brand-blue hover:text-primary-foreground font-bold cursor-pointer transition-all duration-300 w-auto shrink-0"
@@ -570,63 +598,43 @@ export function ManageInternsPageClient() {
             page={page}
             perPage={perPage}
             columnOrder={tableColumns}
-            id={["id"]}
+            id={["user"]}
             slNoCellClassName="font-black text-muted-foreground/40 w-16"
             customActionRender={(row) => {
-              const isInactive = row.resolved_status === "INACTIVE";
+              const intern = row as unknown as TManageInternItem;
+              // INACTIVE = still a member, marked inactive (reactivate via status).
+              const isInactive = intern.status === "INACTIVE";
               return (
                 <div className="flex items-center gap-1.5 justify-center">
-                  {!isInactive && (
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    onClick={() => setUpdateIntern(intern)}
+                    className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+                    title="Edit Intern"
+                  >
+                    <Pencil className="size-4" />
+                  </Button>
+                  {isInactive && (
                     <Button
                       size="icon-sm"
                       variant="ghost"
-                      onClick={() => {
-                        const intern = row as unknown as TManageInternItem;
-                        setUpdateIntern({
-                          id: String(intern.id),
-                          name: String(intern.full_name),
-                          guild: String(intern.guild ?? ""),
-                          status: getEditableStatus(intern),
-                          role: intern.role ?? "INTERN",
-                        });
-                      }}
-                      className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-                      title="Edit Intern"
-                    >
-                      <Pencil className="size-4" />
-                    </Button>
-                  )}
-                  {isInactive ? (
-                    <Button
-                      size="icon-sm"
-                      variant="ghost"
-                      onClick={() => {
-                        setActivateIntern({
-                          id: String(row.id),
-                          name: String(row.full_name),
-                        });
-                      }}
+                      onClick={() => setActivateIntern(intern)}
                       className="rounded-md text-success hover:bg-success/10 hover:text-success"
-                      title="Activate Intern"
+                      title="Set Active"
                     >
                       <CheckCircle2 className="size-4 text-success" />
                     </Button>
-                  ) : (
-                    <Button
-                      size="icon-sm"
-                      variant="ghost"
-                      onClick={() => {
-                        setDeactivateIntern({
-                          id: String(row.id),
-                          name: String(row.full_name),
-                        });
-                      }}
-                      className="rounded-md text-destructive hover:bg-destructive/10 hover:text-destructive"
-                      title="Deactivate Intern"
-                    >
-                      <Shield className="size-4 text-destructive" />
-                    </Button>
                   )}
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    onClick={() => setDeactivateIntern(intern)}
+                    className="rounded-md text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    title="Remove from program"
+                  >
+                    <Shield className="size-4 text-destructive" />
+                  </Button>
                 </div>
               );
             }}
@@ -686,98 +694,67 @@ export function ManageInternsPageClient() {
       </ErrorBoundary>
 
       {/* Onboard Intern Dialog */}
-      <OnboardDialog
-        open={isOnboardOpen}
-        onOpenChange={setIsOnboardOpen}
-        guildOptions={guildOptions}
-      />
+      <OnboardDialog open={isOnboardOpen} onOpenChange={setIsOnboardOpen} />
 
-      {/* Update Intern Dialog */}
       <UpdateDialog
         open={updateIntern !== null}
         onOpenChange={(open) => {
           if (!open) setUpdateIntern(null);
         }}
         intern={updateIntern}
-        guildOptions={guildOptions}
       />
 
-      {/* Deactivate Intern Dialog */}
-      <ConfirmDialog
+      <InternDetailDialog
+        userId={detailUserId}
+        onClose={() => setDetailUserId(null)}
+      />
+
+      <ReassignDialog
+        userIds={[...selected]}
+        open={reassignOpen}
+        onOpenChange={setReassignOpen}
+        onDone={() => {
+          setReassignOpen(false);
+          setSelected(new Set());
+        }}
+      />
+
+      {/* Remove from program (DELETE): ends membership + intern roles */}
+      <ReasonDialog
         open={deactivateIntern !== null}
         onOpenChange={(open) => {
           if (!open) setDeactivateIntern(null);
         }}
-        title="Deactivate Intern"
-        description={`Are you sure you want to deactivate ${deactivateIntern?.name}? This will remove their intern status and set their record to INACTIVE.`}
-        confirmLabel="Deactivate"
-        variant="destructive"
+        title="Remove Intern"
+        description={`Remove ${deactivateIntern?.full_name} from the program? Their membership ends and both intern roles are removed. Onboard them again to bring them back.`}
+        confirmLabel="Remove"
+        destructive
         isPending={deactivateMutation.isPending}
-        onConfirm={() => {
-          if (!deactivateIntern?.id) return;
-          deactivateMutation.mutate(deactivateIntern.id, {
-            onSuccess: () => {
-              setDeactivateIntern(null);
-            },
-          });
+        onConfirm={(reason) => {
+          if (!deactivateIntern) return;
+          deactivateMutation.mutate(
+            { userId: deactivateIntern.user, reason },
+            { onSuccess: () => setDeactivateIntern(null) },
+          );
         }}
       />
 
-      {/* Activate Intern Dialog */}
-      <Dialog
+      <ReasonDialog
         open={activateIntern !== null}
         onOpenChange={(open) => {
           if (!open) setActivateIntern(null);
         }}
-      >
-        <DialogContent
-          className="w-full max-w-[calc(100%-2rem)] sm:max-w-md border-border/40 bg-card backdrop-blur-xl max-h-[calc(100vh-2rem)] flex flex-col p-4 sm:p-6 rounded-2xl"
-          onOpenAutoFocus={(e) => e.preventDefault()}
-        >
-          <DialogHeader>
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning/10 text-warning">
-                <AlertTriangle className="h-5 w-5" />
-              </div>
-              <DialogTitle className="text-lg font-black uppercase tracking-widest text-warning">
-                Activate Intern
-              </DialogTitle>
-            </div>
-            <DialogDescription className="text-sm font-medium text-muted-foreground mt-2">
-              Are you sure you want to activate {activateIntern?.name}? This
-              will set their record to ACTIVE.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="pt-4 gap-2 flex flex-col-reverse sm:flex-row sm:justify-end">
-            <Button
-              variant="outline"
-              onClick={() => setActivateIntern(null)}
-              disabled={activateMutation.isPending}
-              className="font-bold"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="default"
-              onClick={() => {
-                if (!activateIntern?.id) return;
-                activateMutation.mutate(
-                  { status: "ACTIVE" },
-                  {
-                    onSuccess: () => {
-                      setActivateIntern(null);
-                    },
-                  },
-                );
-              }}
-              disabled={activateMutation.isPending}
-              className="font-bold"
-            >
-              {activateMutation.isPending ? "Processing..." : "Activate"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        title="Set Active"
+        description={`Set ${activateIntern?.full_name} back to ACTIVE.`}
+        confirmLabel="Set Active"
+        isPending={activateMutation.isPending}
+        onConfirm={(reason) => {
+          activateMutation.mutate(
+            { status: "ACTIVE", reason },
+            { onSuccess: () => setActivateIntern(null) },
+          );
+        }}
+      />
     </div>
   );
 }

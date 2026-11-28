@@ -130,7 +130,7 @@ function ReviewSummary({ review }: { review: TMonthlyReview }) {
   return (
     <div className="space-y-4 text-sm">
       <div className="flex flex-wrap gap-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-        <span>Team: {review.team || "-"}</span>
+        <span>Team: {review.team?.name || "-"}</span>
         <span>Leave days: {review.leave_days}</span>
         {remarks?.rating ? <span>Rating: {remarks.rating} / 5</span> : null}
       </div>
@@ -401,7 +401,7 @@ export function MonthlyReviewForm({ onSuccess }: MonthlyReviewFormProps) {
                 {[
                   ["Full Name", userData?.full_name],
                   ["MUID", userData?.muid],
-                  ["Team", overview?.guild],
+                  ["Team", overview?.team?.name],
                   ["Leave days so far", String(prefill.leave_days)],
                 ].map(([label, value]) => (
                   <div key={label} className="space-y-1 min-w-0">

@@ -3,13 +3,20 @@ import type {
   TAdminMonthlyReview,
   TBulkImportResponse,
   TCreateTaskPayload,
+  TInternDetail,
   TInternTask,
   TLeaveRequest,
   TLeaveReviewPayload,
   TManageInternItem,
+  TMissingMonthlyReviews,
+  TMissingTimesheets,
   TMonthlyReviewReviewPayload,
   TOnboardInternPayload,
   TPaginatedData,
+  TReassignInternsPayload,
+  TReassignInternsResponse,
+  TTeam,
+  TTeamPayload,
   TTimesheet,
   TUpdateInternPayload,
   TUpdateTaskPayload,
@@ -27,25 +34,77 @@ export const manageInternsApi = {
     );
   },
 
-  getInternDetail: async (id: string): Promise<TManageInternItem> => {
-    return apiClient.get<TManageInternItem>(
-      endpoints.manageInterns.internDetail(id),
+  getInternDetail: async (userId: string): Promise<TInternDetail> => {
+    return apiClient.get<TInternDetail>(
+      endpoints.manageInterns.internDetail(userId),
     );
   },
 
-  onboardIntern: async (payload: TOnboardInternPayload): Promise<void> => {
-    await apiClient.post(endpoints.manageInterns.interns, payload);
+  onboardIntern: async (
+    payload: TOnboardInternPayload,
+  ): Promise<TManageInternItem> => {
+    return apiClient.post<TManageInternItem>(
+      endpoints.manageInterns.interns,
+      payload,
+    );
   },
 
   updateIntern: async (
-    id: string,
+    userId: string,
     payload: TUpdateInternPayload,
-  ): Promise<void> => {
-    await apiClient.patch(endpoints.manageInterns.internDetail(id), payload);
+  ): Promise<TManageInternItem> => {
+    return apiClient.patch<TManageInternItem>(
+      endpoints.manageInterns.internDetail(userId),
+      payload,
+    );
   },
 
-  deactivateIntern: async (id: string): Promise<void> => {
-    await apiClient.delete(endpoints.manageInterns.internDetail(id));
+  deactivateIntern: async (userId: string, reason: string): Promise<void> => {
+    await apiClient.delete(endpoints.manageInterns.internDetail(userId), {
+      reason,
+    });
+  },
+
+  reassignInterns: async (
+    payload: TReassignInternsPayload,
+  ): Promise<TReassignInternsResponse> => {
+    return apiClient.post<TReassignInternsResponse>(
+      endpoints.manageInterns.reassign,
+      payload,
+    );
+  },
+
+  // ── Teams ──────────────────────────────────────────────────
+  getTeams: async (
+    params?: TInternQueryParams,
+  ): Promise<TPaginatedData<TTeam>> => {
+    const qs = buildQueryString(params);
+    return apiClient.get<TPaginatedData<TTeam>>(
+      `${endpoints.manageInterns.teams}${qs}`,
+    );
+  },
+
+  createTeam: async (payload: TTeamPayload): Promise<TTeam> => {
+    return apiClient.post<TTeam>(endpoints.manageInterns.teams, payload);
+  },
+
+  updateTeam: async (id: string, payload: TTeamPayload): Promise<TTeam> => {
+    return apiClient.patch<TTeam>(
+      endpoints.manageInterns.teamDetail(id),
+      payload,
+    );
+  },
+
+  deactivateTeam: async (
+    id: string,
+  ): Promise<{ ended_memberships: number }> => {
+    return apiClient.delete<{ ended_memberships: number }>(
+      endpoints.manageInterns.teamDetail(id),
+    );
+  },
+
+  activateTeam: async (id: string): Promise<TTeam> => {
+    return apiClient.post<TTeam>(endpoints.manageInterns.teamActivate(id), {});
   },
 
   getInternsStatus: async (): Promise<Record<string, number>> => {
@@ -54,10 +113,12 @@ export const manageInternsApi = {
     );
   },
 
-  exportInternsList: async (): Promise<Blob> => {
-    return apiClient.get<Blob>(endpoints.manageInterns.export, undefined, {
-      responseType: "blob",
-    });
+  exportInternsList: async (params?: TInternQueryParams): Promise<Blob> => {
+    return apiClient.get<Blob>(
+      `${endpoints.manageInterns.export}${buildQueryString(params)}`,
+      undefined,
+      { responseType: "blob" },
+    );
   },
 
   // ── Task Management ────────────────────────────────────────
@@ -129,7 +190,7 @@ export const manageInternsApi = {
     await apiClient.patch(endpoints.manageInterns.leaveReview(id), payload);
   },
 
-  // ── Timesheets (read-only; approval removed) ───────────────
+  // ── Timesheets (no approval; review note only) ─────────────
   getTimesheetsList: async (
     params?: TInternQueryParams,
   ): Promise<TPaginatedData<TTimesheet>> => {
@@ -139,9 +200,50 @@ export const manageInternsApi = {
     );
   },
 
-  getTimesheetDetail: async (id: string): Promise<TTimesheet> => {
-    return apiClient.get<TTimesheet>(
-      endpoints.manageInterns.timesheetReviewDetail(id),
+  saveTimesheetReviewNote: async (
+    id: string,
+    review_note: string,
+  ): Promise<TTimesheet> => {
+    return apiClient.patch<TTimesheet>(
+      endpoints.manageInterns.timesheetReview(id),
+      { review_note },
+    );
+  },
+
+  // ── Missing reports ────────────────────────────────────────
+  getMissingTimesheets: async (
+    params?: TInternQueryParams,
+  ): Promise<TMissingTimesheets> => {
+    return apiClient.get<TMissingTimesheets>(
+      `${endpoints.manageInterns.missingTimesheets}${buildQueryString(params)}`,
+    );
+  },
+
+  exportMissingTimesheets: async (
+    params: TInternQueryParams,
+  ): Promise<Blob> => {
+    return apiClient.get<Blob>(
+      `${endpoints.manageInterns.missingTimesheetsExport}${buildQueryString(params)}`,
+      undefined,
+      { responseType: "blob" },
+    );
+  },
+
+  getMissingMonthlyReviews: async (
+    params?: TInternQueryParams,
+  ): Promise<TMissingMonthlyReviews> => {
+    return apiClient.get<TMissingMonthlyReviews>(
+      `${endpoints.manageInterns.missingMonthlyReviews}${buildQueryString(params)}`,
+    );
+  },
+
+  exportMissingMonthlyReviews: async (
+    params: TInternQueryParams,
+  ): Promise<Blob> => {
+    return apiClient.get<Blob>(
+      `${endpoints.manageInterns.missingMonthlyReviewsExport}${buildQueryString(params)}`,
+      undefined,
+      { responseType: "blob" },
     );
   },
 
@@ -152,12 +254,6 @@ export const manageInternsApi = {
     const qs = buildQueryString(params);
     return apiClient.get<TPaginatedData<TAdminMonthlyReview>>(
       `${endpoints.manageInterns.monthlyReviews}${qs}`,
-    );
-  },
-
-  getMonthlyReviewDetail: async (id: string): Promise<TAdminMonthlyReview> => {
-    return apiClient.get<TAdminMonthlyReview>(
-      endpoints.manageInterns.monthlyReviewDetail(id),
     );
   },
 

@@ -21,7 +21,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useInterestGroupsList } from "@/features/interest-groups";
-import { useGuilds } from "@/features/intern";
+import {
+  EMPTY_INTERN_TEAM,
+  InternTeamFields,
+  isInternTeamValid,
+  toInternTeamPayload,
+} from "@/features/intern";
 import { useCollegeSearch } from "@/features/onboarding";
 import type { BulkAssignExtraPayload } from "../api/manage-roles.api";
 import type { Role, RoleUser } from "../schemas";
@@ -55,7 +60,7 @@ export function ExtraAssignmentDialog({
   }, [role]);
 
   // Form states
-  const [guild, setGuild] = React.useState("");
+  const [internTeam, setInternTeam] = React.useState(EMPTY_INTERN_TEAM);
   const [mentorTier, setMentorTier] = React.useState("");
   const [selectedIgs, setSelectedIgs] = React.useState<string[]>([]);
   const [orgId, setOrgId] = React.useState("");
@@ -70,22 +75,10 @@ export function ExtraAssignmentDialog({
       enabled: open && isMentor && mentorTier === "IG_MENTOR",
     },
   );
-  const { data: guilds = [], isLoading: isLoadingGuilds } = useGuilds({
-    enabled: open && isIntern,
-  });
-
-  // Map guilds to Combobox options format
-  const guildOptions = React.useMemo(() => {
-    return guilds.map((guild) => ({
-      id: guild,
-      title: guild,
-    }));
-  }, [guilds]);
-
   // Sync: reset all fields when dialog opens or the target role changes
   // biome-ignore lint/correctness/useExhaustiveDependencies: open and role?.id are intentional triggers; setters are stable
   React.useEffect(() => {
-    setGuild("");
+    setInternTeam(EMPTY_INTERN_TEAM);
     setMentorTier("");
     setSelectedIgs([]);
     setOrgId("");
@@ -114,22 +107,31 @@ export function ExtraAssignmentDialog({
     if (!role || !user) return false;
     // Compound role: both intern and mentor
     if (isIntern && isMentor) {
-      const guildOk = guild.trim().length > 0;
+      const teamOk = isInternTeamValid(internTeam);
       const tierOk =
         mentorTier === "IG_MENTOR"
           ? selectedIgs.length > 0
           : mentorTier === "CAMPUS_MENTOR"
             ? orgId.trim().length > 0
             : false;
-      return guildOk && tierOk;
+      return teamOk && tierOk;
     }
-    if (isIntern) return guild.trim().length > 0;
+    if (isIntern) return isInternTeamValid(internTeam);
     if (isMentor) {
       if (mentorTier === "IG_MENTOR") return selectedIgs.length > 0;
       if (mentorTier === "CAMPUS_MENTOR") return orgId.trim().length > 0;
     }
     return false;
-  }, [role, user, isIntern, isMentor, guild, mentorTier, selectedIgs, orgId]);
+  }, [
+    role,
+    user,
+    isIntern,
+    isMentor,
+    internTeam,
+    mentorTier,
+    selectedIgs,
+    orgId,
+  ]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,7 +140,7 @@ export function ExtraAssignmentDialog({
     // Compound role: both intern and mentor
     if (isIntern && isMentor) {
       const extra: BulkAssignExtraPayload = {
-        guild: guild.trim(),
+        ...toInternTeamPayload(internTeam),
         mentor_tier: mentorTier,
       };
       if (mentorTier === "IG_MENTOR") extra.ig_ids = selectedIgs;
@@ -148,7 +150,7 @@ export function ExtraAssignmentDialog({
     }
 
     if (isIntern) {
-      onConfirm({ guild: guild.trim() });
+      onConfirm(toInternTeamPayload(internTeam));
     } else if (isMentor) {
       const extra: BulkAssignExtraPayload = { mentor_tier: mentorTier };
       if (mentorTier === "IG_MENTOR") extra.ig_ids = selectedIgs;
@@ -175,22 +177,12 @@ export function ExtraAssignmentDialog({
 
         <form onSubmit={handleSubmit} className="space-y-5 py-2">
           {isIntern && (
-            <div className="space-y-2">
-              <Label htmlFor="guild-input" className="text-sm font-semibold">
-                Guild Name <span className="text-destructive">*</span>
-              </Label>
-              <Combobox
-                options={guildOptions}
-                value={guild}
-                onValueChange={setGuild}
-                placeholder={
-                  isLoadingGuilds ? "Loading guilds..." : "Select a guild..."
-                }
-                searchPlaceholder="Search guilds..."
-                disabled={isPending || isLoadingGuilds}
-                className="h-11 rounded-xl"
-              />
-            </div>
+            <InternTeamFields
+              value={internTeam}
+              onChange={setInternTeam}
+              disabled={isPending}
+              enabled={open}
+            />
           )}
 
           {isMentor && (

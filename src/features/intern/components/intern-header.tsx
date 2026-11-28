@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar } from "lucide-react";
+import { Calendar, Users } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -39,8 +39,6 @@ export function InternHeader() {
   const userStatus = overview?.status || "ACTIVE";
   const userLevel = profile?.level || "1";
   const profilePic = profile?.profile_pic || userInfo?.profile_pic || null;
-  const _isInternLead =
-    overview?.role === "INTERN_LEAD" || overview?.role === "Intern Lead";
 
   const initials = userDisplayName
     .split(" ")
@@ -83,6 +81,18 @@ export function InternHeader() {
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-3">
+        {overview?.team && (
+          <Link href="/dashboard/intern/team">
+            <Button
+              size="lg"
+              variant="outline"
+              className="gap-2 text-xs tracking-widest"
+            >
+              <Users className="w-4 h-4" />
+              My Team
+            </Button>
+          </Link>
+        )}
         <Link href="/dashboard/intern/leave">
           <Button
             size="lg"
